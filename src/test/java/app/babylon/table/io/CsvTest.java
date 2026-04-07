@@ -19,7 +19,7 @@ import app.babylon.table.ColumnName;
 import app.babylon.table.ColumnObject;
 import app.babylon.table.TableColumnar;
 
-public class TableCsvTest
+public class CsvTest
 {
     @Test
     public void read_autoDetectByDefault_whenNoHeaderHintsProvided()
@@ -34,7 +34,7 @@ public class TableCsvTest
         DataSource ds = TestDataSources.fromString(csv, "auto-default.csv");
         ReadSettingsCSV settings = new ReadSettingsCSV();
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -57,7 +57,7 @@ public class TableCsvTest
         ReadSettingsCSV settings = new ReadSettingsCSV()
             .withHeaderStrategy(new HeaderStrategyExplicitRow(2));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(1, table.getRowCount());
@@ -81,7 +81,7 @@ public class TableCsvTest
                 ColumnName.of("Description"),
                 ColumnName.of("Amount")));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(1, table.getRowCount());
@@ -98,7 +98,7 @@ public class TableCsvTest
         ReadSettingsCSV settings = new ReadSettingsCSV()
             .withHeaderStrategy(new HeaderStrategyNoHeaders(10));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -124,7 +124,7 @@ public class TableCsvTest
             .withSelectedHeader(ColumnName.of("Date"))
             .withSelectedHeader(ColumnName.of("Amount"));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -147,7 +147,7 @@ public class TableCsvTest
         ReadSettingsCSV settings = new ReadSettingsCSV()
             .withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -169,7 +169,7 @@ public class TableCsvTest
         ReadSettingsCSV settings = new ReadSettingsCSV()
             .withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(50));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(1, table.getColumnCount());
         assertEquals(51, table.getRowCount());
@@ -189,7 +189,7 @@ public class TableCsvTest
         ReadSettingsCSV settings = new ReadSettingsCSV()
             .withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(1, table.getRowCount());
@@ -208,7 +208,7 @@ public class TableCsvTest
         ReadSettingsCSV settings = new ReadSettingsCSV()
             .withIncludeResourceName(ColumnName.of("ResourceName"));
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(4, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -234,7 +234,7 @@ public class TableCsvTest
         DataSource ds = TestDataSources.fromString(csv, "bank-statement-malformed.csv");
         ReadSettingsCSV settings = new ReadSettingsCSV();
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(5, table.getRowCount());
@@ -271,7 +271,7 @@ public class TableCsvTest
         ReadSettingsCSV settings = new ReadSettingsCSV()
             .withStripping(false);
 
-        TableColumnar table = TableCsv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
         assertEquals(1, table.getRowCount());
         assertEquals(" 2026-01-01 ", table.getString(ColumnName.of("Date")).get(0));

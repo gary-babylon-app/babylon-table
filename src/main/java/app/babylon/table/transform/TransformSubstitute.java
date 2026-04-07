@@ -1,0 +1,117 @@
+package app.babylon.table.transform;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import app.babylon.table.ArgumentChecks;
+import app.babylon.table.Column;
+import app.babylon.table.ColumnName;
+import app.babylon.table.ColumnObject;
+import app.babylon.table.Columns;
+import app.babylon.table.Is;
+
+public class TransformSubstitute extends TransformBase
+{
+    public static final String FUNCTION_NAME = "Substitute";
+
+    private final ColumnName columnName;
+    private final ColumnName newColumnName;
+    private final String defaultValueNewColumn;
+    private final Map<String, String> replaces;
+
+    public TransformSubstitute(String defaultValueNewColumn, ColumnName columnName, String... x)
+    {
+        this(defaultValueNewColumn, columnName, columnName, x);
+    }
+
+    public TransformSubstitute(String defaultValueNewColumn, ColumnName columnName, ColumnName newColumnName, String... x)
+    {
+        super(FUNCTION_NAME);
+        this.columnName = ArgumentChecks.nonNull(columnName);
+        this.newColumnName = ArgumentChecks.nonNull(newColumnName);
+        this.defaultValueNewColumn = defaultValueNewColumn;
+
+        this.replaces = new HashMap<>();
+
+        if (x.length%2!=0)
+        {
+            throw new RuntimeException(FUNCTION_NAME + " expects replaces to be in pairs.");
+        }
+
+        for(int i=0;i<x.length;i=i+2)
+        {
+            this.replaces.put(x[i].strip(), x[i+1].strip());
+        }
+    }
+
+    public TransformSubstitute(ColumnName columnName, ColumnName newColumnName, Map<String, String> replaces)
+    {
+        super(FUNCTION_NAME);
+        this.columnName = ArgumentChecks.nonNull(columnName);
+        this.newColumnName = ArgumentChecks.nonNull(newColumnName);
+        this.replaces = new HashMap<>(replaces);
+        this.defaultValueNewColumn = null;
+    }
+
+    public static TransformSubstitute of(String[] params)
+    {
+        if (Is.empty(params) || params.length < 4)
+        {
+            return null;
+        }
+
+        ColumnName columnName = ColumnName.parse(params[0]);
+        ColumnName newColumnName = ColumnName.parse(params[1]);
+        String[] remaining = java.util.Arrays.copyOfRange(params, 2, params.length);
+
+        if (remaining.length % 2 == 0)
+        {
+            return new TransformSubstitute(null, columnName, newColumnName, remaining);
+        }
+
+        if (remaining.length >= 3)
+        {
+            String defaultValueNewColumn = remaining[0];
+            String[] replaces = java.util.Arrays.copyOfRange(remaining, 1, remaining.length);
+            return new TransformSubstitute(defaultValueNewColumn, columnName, newColumnName, replaces);
+        }
+
+        return null;
+    }
+
+    @Override
+    public void apply(Map<ColumnName, Column> columnsByName)
+    {
+        Column column = columnsByName.get(this.columnName);
+        if (!Columns.isStringColumn(column))
+        {
+            return;
+        }
+        ColumnObject<String> stringColumn = Columns.asStringColumn(column);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName, String.class);
+        for(int i=0;i<stringColumn.size();++i)
+        {
+            String s = stringColumn.get(i);
+
+            if (!Is.empty(s))
+            {
+                String replaceValue = this.replaces.get(s);
+                if (replaceValue==null && this.defaultValueNewColumn!=null)
+                {
+                    replaceValue = this.defaultValueNewColumn;
+                }
+                if (replaceValue==null && this.defaultValueNewColumn==null)
+                {
+                    replaceValue = s;
+                }
+                newColumn.add(replaceValue);
+            }
+            else
+            {
+                newColumn.add(this.defaultValueNewColumn);
+            }
+        }
+        columnsByName.put(this.newColumnName, newColumn.build());
+    }
+
+}

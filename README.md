@@ -11,5 +11,6 @@ Highlights:
 
 - Java 21 baseline
 - No third-party runtime dependencies
-- Columnar table operations including filtering, grouping, aggregation, sorting, and transforms
+- Columnar table operations including filtering, grouping, aggregation, sorting, joins, and transforms
+- Table and column transform support for derived columns and reshape-style workflows
 - CSV reading support for in-memory and streaming-style workflows

@@ -1,0 +1,70 @@
+package app.babylon.table.transform;
+
+import java.util.Map;
+
+import app.babylon.table.ArgumentChecks;
+import app.babylon.table.Column;
+import app.babylon.table.ColumnName;
+import app.babylon.table.ColumnObject;
+import app.babylon.table.Columns;
+import app.babylon.table.Is;
+
+public class TransformSubstring extends TransformBase
+{
+    public static final String FUNCTION_NAME = "Substring";
+
+    private final ColumnName existingColumnName;
+    private final ColumnName newColumnName;
+    private final int first;
+    private final int last;
+
+    public TransformSubstring(ColumnName existingColumnName, ColumnName newColumnName, int first, int last)
+    {
+        super(FUNCTION_NAME);
+        this.existingColumnName = ArgumentChecks.nonNull(existingColumnName);
+        this.newColumnName = ArgumentChecks.nonNull(newColumnName);
+        this.first = Math.max(0, first);
+        this.last = Math.max(this.first+1, last);
+    }
+
+    public static TransformSubstring of(String[] params)
+    {
+        if (!Is.empty(params) && params.length >= 4)
+        {
+            return new TransformSubstring(
+                    ColumnName.of(params[0]),
+                    ColumnName.of(params[1]),
+                    Integer.parseInt(params[2]),
+                    Integer.parseInt(params[3]));
+        }
+        return null;
+    }
+
+    @Override
+    public void apply(Map<ColumnName, Column> columnsByName)
+    {
+        ColumnObject<String> column = Columns.asStringColumn(columnsByName.get(this.existingColumnName));
+        if (column == null)
+        {
+            return;
+        }
+        ColumnObject.Builder<String> newColumnBuilder = ColumnObject.builder(this.newColumnName, String.class);
+
+        for(int i=0;i<column.size();++i)
+        {
+            String s = column.get(i);
+            if (!Is.empty(s) && s.length()>=last)
+            {
+                s = s.substring(this.first, this.last);
+                newColumnBuilder.add(s);
+            }
+            else
+            {
+                newColumnBuilder.addNull();
+            }
+        }
+        ColumnObject<String> newColumn = newColumnBuilder.build();
+        columnsByName.put(newColumn.getName(), newColumn);
+    }
+
+}

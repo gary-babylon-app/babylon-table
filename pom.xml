@@ -5,7 +5,7 @@
 
     <groupId>app.babylon</groupId>
     <artifactId>babylon-table</artifactId>
-    <version>0.1.1-SNAPSHOT</version>
+    <version>0.1.1</version>
     <packaging>jar</packaging>
 
     <name>babylon-table</name>
@@ -42,7 +42,26 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.5.2</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.1</version>
+                </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>

@@ -15,7 +15,7 @@ import java.io.IOException;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableException;
 
-public class TableCsv
+public class Csv
 {
     public static TableColumnar read(DataSource ds, ReadSettingsCSV options)
     {

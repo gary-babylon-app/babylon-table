@@ -1,0 +1,161 @@
+/*
+ * Copyright 2026 Babylon Financial Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+package app.babylon.table.io;
+
+public final class RowBuffer implements Row
+{
+    private static final int DEFAULT_CHAR_CAPACITY = 256;
+    private static final int DEFAULT_FIELD_CAPACITY = 16;
+
+    private char[] chars;
+    private int[] starts;
+    private int[] lengths;
+    private int fieldCount;
+    private int charCount;
+    private int currentFieldStart;
+
+    public RowBuffer()
+    {
+        this(DEFAULT_CHAR_CAPACITY, DEFAULT_FIELD_CAPACITY);
+    }
+
+    RowBuffer(int charCapacity, int fieldCapacity)
+    {
+        this.chars = new char[Math.max(1, charCapacity)];
+        this.starts = new int[Math.max(1, fieldCapacity)];
+        this.lengths = new int[Math.max(1, fieldCapacity)];
+        this.fieldCount = 0;
+        this.charCount = 0;
+        this.currentFieldStart = 0;
+    }
+
+    RowBuffer(RowBuffer source)
+    {
+        this(source.charCount, source.fieldCount);
+        System.arraycopy(source.chars, 0, this.chars, 0, source.charCount);
+        System.arraycopy(source.starts, 0, this.starts, 0, source.fieldCount);
+        System.arraycopy(source.lengths, 0, this.lengths, 0, source.fieldCount);
+        this.fieldCount = source.fieldCount;
+        this.charCount = source.charCount;
+        this.currentFieldStart = source.currentFieldStart;
+    }
+
+    public void clear()
+    {
+        this.fieldCount = 0;
+        this.charCount = 0;
+        this.currentFieldStart = 0;
+    }
+
+    public void append(char ch)
+    {
+        ensureCharCapacity(this.charCount + 1);
+        this.chars[this.charCount++] = ch;
+    }
+
+    public void append(char[] source, int offset, int length)
+    {
+        if (length <= 0)
+        {
+            return;
+        }
+        ensureCharCapacity(this.charCount + length);
+        System.arraycopy(source, offset, this.chars, this.charCount, length);
+        this.charCount += length;
+    }
+
+    public void finishField()
+    {
+        ensureFieldCapacity(this.fieldCount + 1);
+        this.starts[this.fieldCount] = this.currentFieldStart;
+        this.lengths[this.fieldCount] = this.charCount - this.currentFieldStart;
+        ++this.fieldCount;
+        this.currentFieldStart = this.charCount;
+    }
+
+    @Override
+    public int fieldCount()
+    {
+        return this.fieldCount;
+    }
+
+    String getString(int fieldIndex)
+    {
+        return new String(this.chars, start(fieldIndex), length(fieldIndex));
+    }
+
+    String[] toStringArray()
+    {
+        String[] values = new String[this.fieldCount];
+        for (int i = 0; i < this.fieldCount; ++i)
+        {
+            values[i] = getString(i);
+        }
+        return values;
+    }
+
+    @Override
+    public RowBuffer copy()
+    {
+        return new RowBuffer(this);
+    }
+
+    @Override
+    public char[] chars()
+    {
+        return this.chars;
+    }
+
+    @Override
+    public int end()
+    {
+        return this.charCount;
+    }
+
+    @Override
+    public int start(int fieldIndex)
+    {
+        return this.starts[fieldIndex];
+    }
+
+    @Override
+    public int length(int fieldIndex)
+    {
+        return this.lengths[fieldIndex];
+    }
+
+    private void ensureCharCapacity(int minCapacity)
+    {
+        if (minCapacity <= this.chars.length)
+        {
+            return;
+        }
+        int newCapacity = Math.max(minCapacity, this.chars.length * 2);
+        char[] expanded = new char[newCapacity];
+        System.arraycopy(this.chars, 0, expanded, 0, this.charCount);
+        this.chars = expanded;
+    }
+
+    private void ensureFieldCapacity(int minCapacity)
+    {
+        if (minCapacity <= this.starts.length)
+        {
+            return;
+        }
+        int newCapacity = Math.max(minCapacity, this.starts.length * 2);
+        int[] expandedStarts = new int[newCapacity];
+        int[] expandedLengths = new int[newCapacity];
+        System.arraycopy(this.starts, 0, expandedStarts, 0, this.fieldCount);
+        System.arraycopy(this.lengths, 0, expandedLengths, 0, this.fieldCount);
+        this.starts = expandedStarts;
+        this.lengths = expandedLengths;
+    }
+}

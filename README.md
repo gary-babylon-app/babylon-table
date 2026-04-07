@@ -1,2 +1,4 @@
 # babylon-table
-babylon-table is a Java columnar table library for typed data processing, table transforms, filtering, grouping, aggregation, and efficient CSV ingestion, with support for both in-memory workflows and streaming-style execution patterns.
+babylon-table is a focused Java columnar table library with no third-party dependencies, 
+offering filtering, grouping, aggregation, data transformations, and efficient CSV ingestion 
+for both in-memory workflows and streaming-style execution patterns.

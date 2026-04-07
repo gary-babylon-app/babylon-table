@@ -5,7 +5,6 @@ dependencies, offering filtering, grouping, aggregation, data transformations, a
 efficient CSV ingestion for both in-memory workflows and streaming-style execution
 patterns.
 
-Current release: `0.1.1`
 
 Highlights:
 

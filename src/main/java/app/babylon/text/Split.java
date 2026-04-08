@@ -14,8 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import app.babylon.table.Is;
-
 public final class Split
 {
     private Split()
@@ -28,7 +26,7 @@ public final class Split
         {
             return List.of();
         }
-        if (Is.empty(separators))
+        if (Strings.isEmpty(separators))
         {
             separators = " ";
         }

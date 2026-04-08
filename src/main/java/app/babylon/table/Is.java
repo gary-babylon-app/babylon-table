@@ -10,10 +10,10 @@
 
 package app.babylon.table;
 
-import app.babylon.text.Strings;
-
 import java.util.Collection;
 import java.util.Map;
+
+import app.babylon.text.Strings;
 
 public class Is
 {
@@ -35,11 +35,6 @@ public class Is
     public static <T> boolean empty(T[] x)
     {
         return (x==null || x.length==0);
-    }
-
-    public static boolean empty(CharSequence s)
-    {
-        return Strings.isEmpty(s);
     }
 
     public static boolean alphaUpper(char c)

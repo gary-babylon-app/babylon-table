@@ -1,7 +1,5 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Map;
@@ -10,8 +8,8 @@ import app.babylon.table.ArgumentChecks;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.table.Is;
 import app.babylon.text.Split;
+import app.babylon.text.Strings;
 
 class TransformDecimalBinaryOperator extends TransformBase
 {

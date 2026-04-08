@@ -1,14 +1,12 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.util.Map;
 import java.util.function.Function;
 
 import app.babylon.table.ArgumentChecks;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
+import app.babylon.text.Strings;
 
 abstract class TransformStringColumnsBase<T> extends TransformBase
 {

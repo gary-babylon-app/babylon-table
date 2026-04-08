@@ -10,10 +10,6 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.Selection;
-import app.babylon.table.ToStringSettings;
-import app.babylon.table.column.Transformer;
-import app.babylon.table.ViewIndex;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -22,6 +18,10 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import app.babylon.table.Selection;
+import app.babylon.table.ToStringSettings;
+import app.babylon.table.ViewIndex;
 
 /**
  * A column that stores object values, including strings, dates, decimals, and

@@ -10,18 +10,17 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.aggregation.Aggregate;
-import app.babylon.table.column.Transformer;
-import app.babylon.table.ViewIndex;
-import app.babylon.text.BigDecimals;
-import app.babylon.text.Strings;
-
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+
+import app.babylon.table.ViewIndex;
+import app.babylon.table.aggregation.Aggregate;
+import app.babylon.text.BigDecimals;
+import app.babylon.text.Strings;
 
 //import app.babylon.BigDecimals;
 //import app.babylon.BigDecimals;

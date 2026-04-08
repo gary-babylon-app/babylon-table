@@ -1,17 +1,14 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 import app.babylon.table.ArgumentChecks;
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.Is;
 import app.babylon.table.TableColumnar;
-import app.babylon.table.transform.Transform;
+import app.babylon.table.column.ColumnObject;
+import app.babylon.text.Strings;
 
 public final class TransformRegistry
 {

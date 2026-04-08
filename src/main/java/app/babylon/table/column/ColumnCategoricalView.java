@@ -10,10 +10,10 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.column.Transformer;
-import app.babylon.table.ViewIndex;
 import java.util.ArrayList;
 import java.util.Collection;
+
+import app.babylon.table.ViewIndex;
 
 class ColumnCategoricalView<T> extends ColumnObjectView<T> implements ColumnCategorical<T>
 {

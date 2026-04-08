@@ -14,7 +14,7 @@ package app.babylon.table.io;
  * A row view that can be rebound to another source row while exposing only the
  * projected fields.
  */
-public interface RowProjected extends Row
+interface RowProjected extends Row
 {
     RowProjected with(Row source);
 }

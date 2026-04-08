@@ -1,7 +1,5 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,7 +8,7 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
-import app.babylon.table.Is;
+import app.babylon.text.Strings;
 
 public class TransformStringReplace extends TransformBase
 {

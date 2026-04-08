@@ -10,14 +10,14 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.Selection;
-import app.babylon.table.column.Transformer;
-import app.babylon.table.ViewIndex;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import app.babylon.table.Selection;
+import app.babylon.table.ViewIndex;
 
 /**
  * An object column optimised for repeated values by storing dictionary-encoded

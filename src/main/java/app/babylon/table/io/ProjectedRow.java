@@ -12,7 +12,7 @@ package app.babylon.table.io;
 
 import java.util.Objects;
 
-public final class ProjectedRow implements RowProjected
+final class ProjectedRow implements RowProjected
 {
     private final int[] projectedIndexes;
     private Row source;

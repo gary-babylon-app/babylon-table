@@ -10,8 +10,6 @@
 
 package app.babylon.table.io;
 
-import app.babylon.text.Strings;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;

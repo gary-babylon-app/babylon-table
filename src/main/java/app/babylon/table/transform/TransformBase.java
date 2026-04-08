@@ -14,7 +14,6 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
-import app.babylon.table.transform.Transform;
 import app.babylon.table.column.Transformer;
 
 abstract class TransformBase implements Transform

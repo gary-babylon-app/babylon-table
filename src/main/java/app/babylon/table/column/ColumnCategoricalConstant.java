@@ -10,11 +10,11 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.column.Transformer;
-import app.babylon.table.ViewIndex;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
+
+import app.babylon.table.ViewIndex;
 
 class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
 {

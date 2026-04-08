@@ -12,7 +12,7 @@ package app.babylon.table.io;
 
 import java.util.Objects;
 
-public final class RowProjectedStripped implements RowProjected
+final class RowProjectedStripped implements RowProjected
 {
     private final int[] projectedIndexes;
     private final int[] starts;

@@ -10,8 +10,6 @@
 
 package app.babylon.table.io;
 
-import app.babylon.text.Strings;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,10 +19,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import app.babylon.table.TableName;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
-import app.babylon.table.TableName;
 
 public class ReadSettingsCommon implements ReadSettings
 {
@@ -209,10 +207,5 @@ public class ReadSettingsCommon implements ReadSettings
         }
         x.addAll(this.requestedHeaders);
         return x;
-    }
-
-    private int currentScanLimit()
-    {
-        return this.headerStrategy == null ? DEFAULT_HEADER_SCAN_LIMIT : this.headerStrategy.getScanLimit();
     }
 }

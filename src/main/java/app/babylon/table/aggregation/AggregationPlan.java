@@ -33,34 +33,59 @@ public class AggregationPlan
 {
     private static final class RowConsumerGroupAggregatePlan implements RowConsumerResult<TableColumnar>
     {
+        private static final class GroupAccumulators
+        {
+            private final AccumulatorDouble[] accumulators;
+
+            private GroupAccumulators(int size)
+            {
+                this.accumulators = new AccumulatorDouble[size];
+                for (int i = 0; i < size; ++i)
+                {
+                    this.accumulators[i] = new AccumulatorDouble();
+                }
+            }
+        }
+
         private final AggregationPlan plan;
         private final int[] groupByPositions;
         private final int maxGroupByPosition;
-        private final int aggregatePosition;
-        private final Map<RowKey, AccumulatorDouble> accumulatorsByGroup;
+        private final int[] aggregatePositions;
+        private final int maxAggregatePosition;
+        private final Map<RowKey, GroupAccumulators> accumulatorsByGroup;
 
-        private RowConsumerGroupAggregatePlan(AggregationPlan plan, int[] groupByPositions, int aggregatePosition)
+        private RowConsumerGroupAggregatePlan(AggregationPlan plan, int[] groupByPositions, int[] aggregatePositions)
         {
             this.plan = plan;
             this.groupByPositions = Arrays.copyOf(groupByPositions, groupByPositions.length);
             this.maxGroupByPosition = max(this.groupByPositions);
-            this.aggregatePosition = aggregatePosition;
+            this.aggregatePositions = Arrays.copyOf(aggregatePositions, aggregatePositions.length);
+            this.maxAggregatePosition = max(this.aggregatePositions);
             this.accumulatorsByGroup = new LinkedHashMap<>();
         }
 
         @Override
         public void accept(Row row)
         {
-            if (row.fieldCount() <= Math.max(this.maxGroupByPosition, this.aggregatePosition))
+            if (row.fieldCount() <= Math.max(this.maxGroupByPosition, this.maxAggregatePosition))
             {
                 return;
             }
 
             char[] chars = row.chars();
             RowKey groupKey = RowKey.copyOf(row, this.groupByPositions);
-            AccumulatorDouble accumulator = this.accumulatorsByGroup.computeIfAbsent(groupKey,
-                    k -> new AccumulatorDouble());
-            accumulator.accept(chars, row.start(this.aggregatePosition), row.length(this.aggregatePosition));
+            GroupAccumulators accumulators = this.accumulatorsByGroup.computeIfAbsent(groupKey,
+                    k -> new GroupAccumulators(this.aggregatePositions.length));
+            for (int i = 0; i < this.aggregatePositions.length; ++i)
+            {
+                int aggregatePosition = this.aggregatePositions[i];
+                int length = row.length(aggregatePosition);
+                if (length <= 0)
+                {
+                    continue;
+                }
+                accumulators.accumulators[i].accept(chars, row.start(aggregatePosition), length);
+            }
         }
 
         @Override
@@ -73,14 +98,14 @@ public class AggregationPlan
                 groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i), String.class);
             }
             ColumnBuilder[] aggregateBuilders = newAggregateBuilders(this.plan);
-            for (Map.Entry<RowKey, AccumulatorDouble> entry : this.accumulatorsByGroup.entrySet())
+            for (Map.Entry<RowKey, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())
             {
                 RowKey groupKey = entry.getKey();
                 for (int i = 0; i < groupByBuilders.length; ++i)
                 {
                     groupByBuilders[i].add(groupKey.getString(i));
                 }
-                addAggregateValues(aggregateBuilders, this.plan, entry.getValue());
+                addAggregateValues(aggregateBuilders, this.plan, entry.getValue().accumulators);
             }
 
             Column[] columns = new Column[aggregateBuilders.length + groupByBuilders.length];
@@ -100,32 +125,11 @@ public class AggregationPlan
 
     }
 
-    public static final class AggregateSpec
-    {
-        private final ColumnName sourceColumnName;
-        private final ColumnName outputColumnName;
-        private final Aggregate aggregate;
-
-        public AggregateSpec(ColumnName sourceColumnName, ColumnName outputColumnName, Aggregate aggregate)
-        {
-            this.sourceColumnName = app.babylon.lang.ArgumentCheck.nonNull(sourceColumnName);
-            this.outputColumnName = app.babylon.lang.ArgumentCheck.nonNull(outputColumnName);
-            this.aggregate = app.babylon.lang.ArgumentCheck.nonNull(aggregate);
-        }
-
-        public ColumnName getSourceColumnName()
-        {
-            return this.sourceColumnName;
-        }
-
-        public ColumnName getOutputColumnName()
-        {
-            return this.outputColumnName;
-        }
-
-        public Aggregate getAggregate()
-        {
-            return this.aggregate;
+    public static record AggregateSpec(ColumnName sourceColumnName, ColumnName outputColumnName, Aggregate aggregate) {
+        public AggregateSpec {
+            sourceColumnName = app.babylon.lang.ArgumentCheck.nonNull(sourceColumnName);
+            outputColumnName = app.babylon.lang.ArgumentCheck.nonNull(outputColumnName);
+            aggregate = app.babylon.lang.ArgumentCheck.nonNull(aggregate);
         }
     }
 
@@ -291,8 +295,8 @@ public class AggregationPlan
             String[] selectedHeaders = headerDetection.getSelectedHeaders();
             int[] groupByPositions = new int[this.groupByColumns.size()];
             Arrays.fill(groupByPositions, -1);
-            int aggregatePosition = -1;
-            ColumnName aggregateColumnName = this.aggregateSpecs.get(0).getSourceColumnName();
+            int[] aggregatePositions = new int[this.aggregateSpecs.size()];
+            Arrays.fill(aggregatePositions, -1);
             for (int i = 0; i < selectedHeaders.length; ++i)
             {
                 ColumnName columnName = options.getRenameColumnName(selectedHeaders[i]);
@@ -303,9 +307,12 @@ public class AggregationPlan
                         groupByPositions[j] = i;
                     }
                 }
-                if (aggregateColumnName.equals(columnName))
+                for (int j = 0; j < this.aggregateSpecs.size(); ++j)
                 {
-                    aggregatePosition = i;
+                    if (this.aggregateSpecs.get(j).sourceColumnName().equals(columnName))
+                    {
+                        aggregatePositions[j] = i;
+                    }
                 }
             }
             for (int i = 0; i < groupByPositions.length; ++i)
@@ -316,12 +323,15 @@ public class AggregationPlan
                             "Group-by column not present in selected headers: " + this.groupByColumns.get(i));
                 }
             }
-            if (aggregatePosition < 0)
+            for (int i = 0; i < aggregatePositions.length; ++i)
             {
-                throw new IllegalArgumentException(
-                        "Aggregate source column not present in selected headers: " + aggregateColumnName);
+                if (aggregatePositions[i] < 0)
+                {
+                    throw new IllegalArgumentException("Aggregate source column not present in selected headers: "
+                            + this.aggregateSpecs.get(i).sourceColumnName());
+                }
             }
-            return new RowConsumerGroupAggregatePlan(this, groupByPositions, aggregatePosition);
+            return new RowConsumerGroupAggregatePlan(this, groupByPositions, aggregatePositions);
         };
         return Csv.read(dataSource, effectiveReadSettings, rowConsumerFactory);
     }
@@ -338,18 +348,12 @@ public class AggregationPlan
             throw new IllegalArgumentException("Current AggregationPlan.execute requires at least one aggregate.");
         }
 
-        ColumnName aggregateColumnName = this.aggregateSpecs.get(0).getSourceColumnName();
         for (AggregateSpec aggregateSpec : this.aggregateSpecs)
         {
-            if (!aggregateColumnName.equals(aggregateSpec.getSourceColumnName()))
+            if (!isSupportedAggregate(aggregateSpec.aggregate()))
             {
                 throw new IllegalArgumentException(
-                        "Current AggregationPlan.execute supports exactly one aggregate source column.");
-            }
-            if (!isSupportedAggregate(aggregateSpec.getAggregate()))
-            {
-                throw new IllegalArgumentException(
-                        "Unsupported aggregate for current AggregationPlan.execute: " + aggregateSpec.getAggregate());
+                        "Unsupported aggregate for current AggregationPlan.execute: " + aggregateSpec.aggregate());
             }
         }
     }
@@ -366,12 +370,12 @@ public class AggregationPlan
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {
             AggregateSpec aggregateSpec = plan.aggregateSpecs.get(i);
-            if (aggregateSpec.getAggregate() == Aggregate.COUNT)
+            if (aggregateSpec.aggregate() == Aggregate.COUNT)
             {
-                aggregateBuilders[i] = ColumnLong.builder(aggregateSpec.getOutputColumnName());
+                aggregateBuilders[i] = ColumnLong.builder(aggregateSpec.outputColumnName());
             } else
             {
-                aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.getOutputColumnName());
+                aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.outputColumnName());
             }
         }
         return aggregateBuilders;
@@ -383,24 +387,24 @@ public class AggregationPlan
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {
             AggregateSpec aggregateSpec = plan.aggregateSpecs.get(i);
-            if (aggregateSpec.getAggregate() == Aggregate.COUNT)
+            if (aggregateSpec.aggregate() == Aggregate.COUNT)
             {
-                aggregateBuilders[i] = ColumnLong.builder(aggregateSpec.getOutputColumnName());
+                aggregateBuilders[i] = ColumnLong.builder(aggregateSpec.outputColumnName());
                 continue;
             }
 
-            Column sourceColumn = table.get(aggregateSpec.getSourceColumnName());
+            Column sourceColumn = table.get(aggregateSpec.sourceColumnName());
             if (sourceColumn instanceof ColumnDouble)
             {
-                aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.getOutputColumnName());
+                aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.outputColumnName());
             } else if (sourceColumn instanceof ColumnObject<?>
                     && BigDecimal.class.equals(sourceColumn.getType().getValueClass()))
             {
-                aggregateBuilders[i] = ColumnObject.builderDecimal(aggregateSpec.getOutputColumnName());
+                aggregateBuilders[i] = ColumnObject.builderDecimal(aggregateSpec.outputColumnName());
             } else
             {
                 throw new IllegalArgumentException(
-                        "Unsupported aggregate source column type for " + aggregateSpec.getSourceColumnName() + ": "
+                        "Unsupported aggregate source column type for " + aggregateSpec.sourceColumnName() + ": "
                                 + (sourceColumn == null ? "null" : sourceColumn.getClass().getSimpleName()));
             }
         }
@@ -408,17 +412,17 @@ public class AggregationPlan
     }
 
     private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, AggregationPlan plan,
-            AccumulatorDouble accumulator)
+            AccumulatorDouble[] accumulators)
     {
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {
-            Aggregate aggregate = plan.aggregateSpecs.get(i).getAggregate();
+            Aggregate aggregate = plan.aggregateSpecs.get(i).aggregate();
             if (aggregate == Aggregate.COUNT)
             {
-                ((ColumnLong.Builder) aggregateBuilders[i]).add(accumulator.getCount());
+                ((ColumnLong.Builder) aggregateBuilders[i]).add(accumulators[i].getCount());
             } else
             {
-                ((ColumnDouble.Builder) aggregateBuilders[i]).add(valueOf(accumulator, aggregate));
+                ((ColumnDouble.Builder) aggregateBuilders[i]).add(valueOf(accumulators[i], aggregate));
             }
         }
     }
@@ -428,8 +432,8 @@ public class AggregationPlan
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {
             AggregateSpec aggregateSpec = plan.aggregateSpecs.get(i);
-            Aggregate aggregate = aggregateSpec.getAggregate();
-            Column sourceColumn = table.get(aggregateSpec.getSourceColumnName());
+            Aggregate aggregate = aggregateSpec.aggregate();
+            Column sourceColumn = table.get(aggregateSpec.sourceColumnName());
             ColumnBuilder builder = aggregateBuilders[i];
 
             if (aggregate == Aggregate.COUNT)
@@ -455,7 +459,7 @@ public class AggregationPlan
                 continue;
             }
             throw new IllegalArgumentException("Unsupported aggregate source column type for "
-                    + aggregateSpec.getSourceColumnName() + ": " + sourceColumn.getClass().getSimpleName());
+                    + aggregateSpec.sourceColumnName() + ": " + sourceColumn.getClass().getSimpleName());
         }
     }
 

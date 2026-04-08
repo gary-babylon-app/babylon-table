@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import app.babylon.table.column.Column.Type;
 
-final class ColumnTypes
+public final class ColumnTypes
 {
 
     private static final Map<Class<?>, Column.Type> CACHE = new ConcurrentHashMap<>();

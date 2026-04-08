@@ -1,7 +1,6 @@
 package app.babylon.table.aggregation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,9 +30,9 @@ class AggregationPlanTest
         assertEquals(1, plan.getGroupByColumns().size());
         assertEquals(STATION, plan.getGroupByColumns().get(0));
         assertEquals(1, plan.getAggregateSpecs().size());
-        assertEquals(OBSERVATION, plan.getAggregateSpecs().get(0).getSourceColumnName());
-        assertEquals(MEAN_OBSERVATION, plan.getAggregateSpecs().get(0).getOutputColumnName());
-        assertEquals(Aggregate.MEAN, plan.getAggregateSpecs().get(0).getAggregate());
+        assertEquals(OBSERVATION, plan.getAggregateSpecs().get(0).sourceColumnName());
+        assertEquals(MEAN_OBSERVATION, plan.getAggregateSpecs().get(0).outputColumnName());
+        assertEquals(Aggregate.MEAN, plan.getAggregateSpecs().get(0).aggregate());
     }
 
     @Test
@@ -96,17 +95,38 @@ class AggregationPlanTest
     }
 
     @Test
-    void executeShouldRejectMultipleAggregateSourceColumnsForNow()
+    void executeShouldSupportMultipleAggregateSourceColumns()
     {
+        final ColumnName COLUMN_1 = ColumnName.of("Column1");
+        final ColumnName COLUMN_2 = ColumnName.of("Column2");
+        final ColumnName COLUMN_3 = ColumnName.of("Column3");
         final ColumnName STATION = ColumnName.of("Station");
         final ColumnName TEMPERATURE = ColumnName.of("Temperature");
         final ColumnName HUMIDITY = ColumnName.of("Humidity");
+        final ColumnName MIN_TEMPERATURE = ColumnName.of("MinTemperature");
+        final ColumnName MAX_HUMIDITY = ColumnName.of("MaxHumidity");
 
-        AggregationPlan plan = new AggregationPlan().withGroupBy(STATION).withAggregate(TEMPERATURE, Aggregate.MIN)
-                .withAggregate(HUMIDITY, Aggregate.MAX);
+        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class)
+                .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class).withGroupBy(STATION)
+                .withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
+                .withAggregate(HUMIDITY, MAX_HUMIDITY, Aggregate.MAX);
 
-        assertThrows(IllegalArgumentException.class,
-                () -> plan.execute(DataSources.fromString("Amsterdam;10.0;85.0\n", "1brc.csv"), new ReadSettingsCSV()));
+        ReadSettingsCSV readSettings = new ReadSettingsCSV().withSeparator(';')
+                .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
+                .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE)
+                .withColumnRename(COLUMN_3, HUMIDITY);
+
+        TableColumnar table = plan.execute(
+                DataSources.fromString("Amsterdam;10.0;85.0\nAmsterdam;12.0;82.0\nLondon;7.0;91.0\n", "1brc.csv"),
+                readSettings);
+
+        assertEquals(2, table.getRowCount());
+        assertEquals("Amsterdam", table.getString(STATION).get(0));
+        assertEquals(10.0d, table.getDouble(MIN_TEMPERATURE).get(0));
+        assertEquals(85.0d, table.getDouble(MAX_HUMIDITY).get(0));
+        assertEquals("London", table.getString(STATION).get(1));
+        assertEquals(7.0d, table.getDouble(MIN_TEMPERATURE).get(1));
+        assertEquals(91.0d, table.getDouble(MAX_HUMIDITY).get(1));
     }
 
     @Test

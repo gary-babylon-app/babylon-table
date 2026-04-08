@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.Map;
 import java.util.function.Function;
 
@@ -71,10 +73,10 @@ public class TransformToType<T> extends TransformBase
         {
             ColumnName from = ColumnName.of(params[0]);
             ColumnName to = ColumnName.of(params[1]);
-            ColumnObject.Mode mode = (params.length >= 3 && !Is.empty(params[2]))
+            ColumnObject.Mode mode = (params.length >= 3 && !Strings.isEmpty(params[2]))
                     ? ColumnObject.Mode.parse(params[2])
                     : ColumnObject.Mode.CATEGORICAL;
-            TransformParseMode parseMode = (params.length >= 4 && !Is.empty(params[3]))
+            TransformParseMode parseMode = (params.length >= 4 && !Strings.isEmpty(params[3]))
                     ? TransformParseMode.parse(params[3])
                     : TransformParseMode.EXACT;
             return new TransformToType<>(valueClass, mode, parseMode, from, parser, to);
@@ -175,7 +177,7 @@ public class TransformToType<T> extends TransformBase
 
     private T parseValue(String s)
     {
-        return Is.empty(s) ? null : parseMode.apply(parser, s);
+        return Strings.isEmpty(s) ? null : parseMode.apply(parser, s);
     }
 
 }

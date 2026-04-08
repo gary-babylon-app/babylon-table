@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.text.Strings;
+
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;

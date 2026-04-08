@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.Map;
 
 import app.babylon.table.ArgumentChecks;
@@ -7,7 +9,7 @@ import app.babylon.table.Column;
 import app.babylon.table.ColumnName;
 import app.babylon.table.ColumnObject;
 import app.babylon.table.Is;
-import app.babylon.table.text.Split;
+import app.babylon.text.Split;
 
 public class TransformSplit extends TransformBase
 {
@@ -59,7 +61,7 @@ public class TransformSplit extends TransformBase
         for(int i=0;i<toSplit.size();++i)
         {
             String s = toSplit.get(i);
-            if (!Is.empty(s))
+            if (!Strings.isEmpty(s))
             {
                 String[] splitValues = Split.literal(s, this.splitOn, true);
                 int size = Math.min(splitValues.length, newColumns.length);

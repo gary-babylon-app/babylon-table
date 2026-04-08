@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.Map;
 import java.util.function.Function;
 
@@ -43,7 +45,7 @@ abstract class TransformStringColumnsBase<T> extends TransformBase
 
     private T parseValue(Function<CharSequence, T> parser, CharSequence s)
     {
-        if (Is.empty(s))
+        if (Strings.isEmpty(s))
         {
             return null;
         }

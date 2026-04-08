@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Map;
@@ -9,7 +11,7 @@ import app.babylon.table.Column;
 import app.babylon.table.ColumnName;
 import app.babylon.table.ColumnObject;
 import app.babylon.table.Is;
-import app.babylon.table.text.Split;
+import app.babylon.text.Split;
 
 class TransformDecimalBinaryOperator extends TransformBase
 {
@@ -96,7 +98,7 @@ class TransformDecimalBinaryOperator extends TransformBase
 
         final String FUNCTION_NAME = s.substring(0, indexOf);
 
-        if (Is.empty(s) || s.length() < FUNCTION_NAME.length() + 3)
+        if (Strings.isEmpty(s) || s.length() < FUNCTION_NAME.length() + 3)
         {
             throw new RuntimeException("Invalid string for " + FUNCTION_NAME + " construction.");
         }

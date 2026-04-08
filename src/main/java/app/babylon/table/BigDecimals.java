@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.text.Strings;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 
@@ -65,7 +67,7 @@ public final class BigDecimals
         {
             s = s.strip();
         }
-        if (Is.empty(s))
+        if (Strings.isEmpty(s))
         {
             return false;
         }
@@ -75,7 +77,7 @@ public final class BigDecimals
             return false;
         }
         s = cc.cleanUp();
-        return !Is.empty(s);
+        return !Strings.isEmpty(s);
     }
 
     public static String removeCommas(String s)
@@ -128,7 +130,7 @@ public final class BigDecimals
 
     public static BigDecimal extract(CharSequence sentence)
     {
-        if (Is.empty(sentence))
+        if (Strings.isEmpty(sentence))
         {
             return null;
         }
@@ -151,7 +153,7 @@ public final class BigDecimals
 
     public static Double extractDouble(CharSequence sentence)
     {
-        if (Is.empty(sentence))
+        if (Strings.isEmpty(sentence))
         {
             return null;
         }
@@ -194,7 +196,7 @@ public final class BigDecimals
             }
 
             String normalized = cc.cleanUp();
-            if (Is.empty(normalized))
+            if (Strings.isEmpty(normalized))
             {
                 return null;
             }
@@ -265,7 +267,7 @@ public final class BigDecimals
 
     private static boolean isScientificDecimal(String s)
     {
-        if (Is.empty(s))
+        if (Strings.isEmpty(s))
         {
             return false;
         }
@@ -495,7 +497,7 @@ public final class BigDecimals
         private boolean cannotBeDecimal()
         {
             int allowedHyphens = getScientificECount() == 1 ? 2 : 1;
-            return Is.empty(text)
+            return Strings.isEmpty(text)
                     || !hasDigits()
                     || hasInvalidCharacters()
                     || hasSpaces()

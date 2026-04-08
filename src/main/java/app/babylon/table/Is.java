@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.text.Strings;
+
 import java.util.Collection;
 import java.util.Map;
 
@@ -37,7 +39,7 @@ public class Is
 
     public static boolean empty(CharSequence s)
     {
-        return (s==null || s.length()==0);
+        return Strings.isEmpty(s);
     }
 
     public static boolean alphaUpper(char c)
@@ -57,7 +59,7 @@ public class Is
 
     public static boolean strictLeftDecimal(String s, int until)
     {
-        if (Is.empty(s))
+        if (Strings.isEmpty(s))
         {
             return false;
         }
@@ -99,7 +101,7 @@ public class Is
 
     public static boolean integer(String s)
     {
-        if (Is.empty(s))
+        if (Strings.isEmpty(s))
         {
             return false;
         }

@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -12,7 +14,7 @@ import app.babylon.table.Column;
 import app.babylon.table.ColumnName;
 import app.babylon.table.ColumnObject;
 import app.babylon.table.Is;
-import app.babylon.table.text.Split;
+import app.babylon.text.Split;
 
 public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
 {
@@ -130,7 +132,7 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
     }
     public static TransformToDecimal of(String s)
     {
-        if (Is.empty(s) || s.length()<FUNCTION_NAME.length()+3)
+        if (Strings.isEmpty(s) || s.length()<FUNCTION_NAME.length()+3)
         {
             throw new RuntimeException("Invalid string for " + FUNCTION_NAME + " construction.");
         }

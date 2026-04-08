@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,7 +34,7 @@ public final class TransformRegistry
 
     public Transform create(String functionName, String... params)
     {
-        if (Is.empty(functionName))
+        if (Strings.isEmpty(functionName))
         {
             return null;
         }

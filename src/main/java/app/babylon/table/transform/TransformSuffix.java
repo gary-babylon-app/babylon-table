@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import app.babylon.table.ColumnName;
 import app.babylon.table.Is;
 
@@ -36,6 +38,6 @@ public class TransformSuffix extends TransformStringToString
     @Override
     protected String transformString(String s)
     {
-        return Is.empty(s) ? null : s.concat(this.suffix);
+        return Strings.isEmpty(s) ? null : s.concat(this.suffix);
     }
 }

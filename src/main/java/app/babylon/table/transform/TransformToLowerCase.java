@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.Locale;
 
 import app.babylon.table.ColumnName;
@@ -40,6 +42,6 @@ public class TransformToLowerCase extends TransformStringToString
     @Override
     protected String transformString(String s)
     {
-        return Is.empty(s) ? s : s.toLowerCase(Locale.ROOT);
+        return Strings.isEmpty(s) ? s : s.toLowerCase(Locale.ROOT);
     }
 }

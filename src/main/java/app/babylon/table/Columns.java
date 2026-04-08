@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.text.Strings;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.HashMap;

@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.text.Strings;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -21,7 +23,7 @@ import java.util.Set;
 
 import app.babylon.table.Column;
 import app.babylon.table.ColumnName;
-import app.babylon.table.Strings;
+import app.babylon.text.Strings;
 import app.babylon.table.TableName;
 
 public class ReadSettingsCommon implements ReadSettings

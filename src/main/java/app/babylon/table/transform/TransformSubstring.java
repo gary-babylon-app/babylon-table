@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.Map;
 
 import app.babylon.table.ArgumentChecks;
@@ -53,7 +55,7 @@ public class TransformSubstring extends TransformBase
         for(int i=0;i<column.size();++i)
         {
             String s = column.get(i);
-            if (!Is.empty(s) && s.length()>=last)
+            if (!Strings.isEmpty(s) && s.length()>=last)
             {
                 s = s.substring(this.first, this.last);
                 newColumnBuilder.add(s);

@@ -2,7 +2,7 @@ package app.babylon.table.transform;
 
 import java.util.function.Function;
 
-import app.babylon.table.text.Sentence;
+import app.babylon.text.Sentence;
 
 public enum TransformParseMode
 {

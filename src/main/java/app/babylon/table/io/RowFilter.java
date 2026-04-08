@@ -10,13 +10,15 @@
 
 package app.babylon.table.io;
 
+import app.babylon.text.Strings;
+
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import app.babylon.table.ColumnName;
-import app.babylon.table.Strings;
+import app.babylon.text.Strings;
 
 final class RowFilter
 {

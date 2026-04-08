@@ -10,13 +10,15 @@
 
 package app.babylon.table.io;
 
+import app.babylon.text.Strings;
+
 import app.babylon.table.Column;
 import app.babylon.table.ColumnBuilder;
 import app.babylon.table.ColumnDouble;
 import app.babylon.table.ColumnName;
 import app.babylon.table.ColumnObject;
 import app.babylon.table.Columns;
-import app.babylon.table.Strings;
+import app.babylon.text.Strings;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;

@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.regex.Pattern;
 
 import app.babylon.table.ArgumentChecks;
@@ -38,7 +40,7 @@ public class TransformClassify extends TransformStringToString
     @Override
     protected String transformString(String s)
     {
-        if (Is.empty(s))
+        if (Strings.isEmpty(s))
         {
             return s;
         }

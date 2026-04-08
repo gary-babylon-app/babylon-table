@@ -10,13 +10,15 @@
 
 package app.babylon.table.io;
 
+import app.babylon.text.Strings;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import app.babylon.table.ColumnName;
-import app.babylon.table.Strings;
+import app.babylon.text.Strings;
 
 /**
  * Detects header rows and selected columns for an input stream according to a

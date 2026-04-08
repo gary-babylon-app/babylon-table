@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import app.babylon.table.ColumnName;
 import app.babylon.table.Is;
 
@@ -38,6 +40,6 @@ public class TransformStrip extends TransformStringToString
     @Override
     protected String transformString(String s)
     {
-        return Is.empty(s) ? s : s.strip();
+        return Strings.isEmpty(s) ? s : s.strip();
     }
 }

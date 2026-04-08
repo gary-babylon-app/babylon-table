@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -93,7 +95,7 @@ public class TransformSubstitute extends TransformBase
         {
             String s = stringColumn.get(i);
 
-            if (!Is.empty(s))
+            if (!Strings.isEmpty(s))
             {
                 String replaceValue = this.replaces.get(s);
                 if (replaceValue==null && this.defaultValueNewColumn!=null)

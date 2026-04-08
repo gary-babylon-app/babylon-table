@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.text.Strings;
+
 public class TablesToString
 {
 

@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table.text;
+package app.babylon.text;
 
 import java.util.ArrayList;
 import java.util.List;

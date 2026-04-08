@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.text.Strings;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +49,7 @@ public class TransformStringReplace extends TransformBase
         for(int i=0;i<column.size();++i)
         {
             String s = column.get(i);
-            if (!Is.empty(s))
+            if (!Strings.isEmpty(s))
             {
                 if (!old2New.containsKey(s))
                 {
@@ -59,7 +61,7 @@ public class TransformStringReplace extends TransformBase
                 {
                     s = old2New.get(s);
                 }
-                if (!Is.empty(s))
+                if (!Strings.isEmpty(s))
                 {
                     newColumn.add(s);
                 }

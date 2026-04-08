@@ -13,7 +13,6 @@ package app.babylon.table;
 import java.util.Arrays;
 import java.util.Objects;
 
-
 class ColumnByteBuilderArray implements ColumnByte.Builder
 {
     private final ColumnName name;
@@ -115,7 +114,8 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         private final boolean isAllSet;
         private final boolean isNoneSet;
 
-        private ColumnByteStream(ColumnName name, byte[] bytes, ListBit isSet, int size, boolean isAllSet, boolean isNoneSet)
+        private ColumnByteStream(ColumnName name, byte[] bytes, ListBit isSet, int size, boolean isAllSet,
+                boolean isNoneSet)
         {
             this.name = Objects.requireNonNull(name);
             this.bytes = Objects.requireNonNull(bytes);
@@ -132,7 +132,7 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         @Override
         public Column copy(ColumnName x)
         {
-        	throw new TableException("Copy not implemented yet.");
+            throw new TableException("Copy not implemented yet.");
         }
         @Override
         public Type getType()
@@ -211,24 +211,16 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         @Override
         public boolean isXls()
         {
-            return size >= 8
-                && (this.bytes[0] & 0xFF) == 0xD0
-                && (this.bytes[1] & 0xFF) == 0xCF
-                && (this.bytes[2] & 0xFF) == 0x11
-                && (this.bytes[3] & 0xFF) == 0xE0
-                && (this.bytes[4] & 0xFF) == 0xA1
-                && (this.bytes[5] & 0xFF) == 0xB1
-                && (this.bytes[6] & 0xFF) == 0x1A
-                && (this.bytes[7] & 0xFF) == 0xE1;
+            return size >= 8 && (this.bytes[0] & 0xFF) == 0xD0 && (this.bytes[1] & 0xFF) == 0xCF
+                    && (this.bytes[2] & 0xFF) == 0x11 && (this.bytes[3] & 0xFF) == 0xE0
+                    && (this.bytes[4] & 0xFF) == 0xA1 && (this.bytes[5] & 0xFF) == 0xB1
+                    && (this.bytes[6] & 0xFF) == 0x1A && (this.bytes[7] & 0xFF) == 0xE1;
         }
 
         private boolean isZip()
         {
-            return size >= 4
-                && this.bytes[0] == 0x50
-                && this.bytes[1] == 0x4B
-                && this.bytes[2] == 0x03
-                && this.bytes[3] == 0x04;
+            return size >= 4 && this.bytes[0] == 0x50 && this.bytes[1] == 0x4B && this.bytes[2] == 0x03
+                    && this.bytes[3] == 0x04;
         }
 
         @Override

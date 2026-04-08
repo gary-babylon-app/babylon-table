@@ -2,7 +2,6 @@ package app.babylon.table.transform;
 
 import app.babylon.table.ColumnName;
 
-
 public class TransformAdd extends TransformDecimalBinaryOperator
 {
     public static final String FUNCTION_NAME = "Add";

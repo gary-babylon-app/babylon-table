@@ -29,7 +29,8 @@ public class ColumnLocalDateViewTest
         original.add(ColumnLocalDates.stringToDate("20230220", DateFormat.YMD));
         original.addNull();
 
-        int[] viewIndex = new int[] {1, 3};
+        int[] viewIndex = new int[]
+        {1, 3};
         ViewIndex rowIndex = ViewIndex.builder().addAll(viewIndex).build();
 
         ColumnObject<LocalDate> view = original.build().view(rowIndex);

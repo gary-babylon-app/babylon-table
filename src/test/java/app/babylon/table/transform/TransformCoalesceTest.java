@@ -44,12 +44,11 @@ public class TransformCoalesceTest
         thirdBuilder.add("d");
         thirdBuilder.addNull();
 
-        TableColumnar table = Tables.newTable(TableName.of("t"),
-                firstBuilder.build(),
-                secondBuilder.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), firstBuilder.build(), secondBuilder.build(),
                 thirdBuilder.build());
 
-        TableColumnar transformed = table.apply(new TransformCoalesce(output, ColumnObject.Mode.AUTO, first, second, third));
+        TableColumnar transformed = table
+                .apply(new TransformCoalesce(output, ColumnObject.Mode.AUTO, first, second, third));
 
         ColumnObject<String> chosen = transformed.getString(output);
         assertEquals("b", chosen.get(0));
@@ -77,12 +76,11 @@ public class TransformCoalesceTest
         thirdBuilder.add("z");
         thirdBuilder.add("z");
 
-        TableColumnar table = Tables.newTable(TableName.of("t"),
-                firstBuilder.build(),
-                secondBuilder.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), firstBuilder.build(), secondBuilder.build(),
                 thirdBuilder.build());
 
-        Transform transform = Transforms.registry().create("Coalesce", "Chosen", "CATEGORICAL", "First", "Second", "Third");
+        Transform transform = Transforms.registry().create("Coalesce", "Chosen", "CATEGORICAL", "First", "Second",
+                "Third");
         TableColumnar transformed = table.apply(transform);
 
         assertTrue(transformed.get(ColumnName.of("Chosen")) instanceof ColumnCategorical<?>);
@@ -122,12 +120,11 @@ public class TransformCoalesceTest
         thirdBuilder.add(new BigDecimal("4.00"));
         thirdBuilder.add(new BigDecimal("5.50"));
 
-        TableColumnar table = Tables.newTable(TableName.of("t"),
-                firstBuilder.build(),
-                secondBuilder.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), firstBuilder.build(), secondBuilder.build(),
                 thirdBuilder.build());
 
-        TableColumnar transformed = table.apply(new TransformCoalesce(output, ColumnObject.Mode.AUTO, first, second, third));
+        TableColumnar transformed = table
+                .apply(new TransformCoalesce(output, ColumnObject.Mode.AUTO, first, second, third));
 
         ColumnObject<BigDecimal> chosen = transformed.getDecimal(output);
         assertEquals(0, new BigDecimal("2.50").compareTo(chosen.get(0)));

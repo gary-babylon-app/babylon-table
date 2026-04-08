@@ -25,7 +25,8 @@ public class ColumnStringViewTest
         original.add("abc3");
         original.add("abc4");
 
-        int[] viewIndex = new int[] { 1, 3 };
+        int[] viewIndex = new int[]
+        {1, 3};
         ViewIndex rowIndex = ViewIndex.builder().addAll(viewIndex).build();
 
         ColumnObject<String> view = Columns.newStringView(original.build(), rowIndex);

@@ -72,8 +72,7 @@ public class TransformToDouble extends TransformBase
             if (parsed == null)
             {
                 builder.addNull();
-            }
-            else
+            } else
             {
                 builder.add(parsed.doubleValue());
             }

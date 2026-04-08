@@ -89,8 +89,7 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
             if (rowIndex.isSet(i) && isSet(0))
             {
                 builder.add(getValue());
-            }
-            else
+            } else
             {
                 builder.addNull();
             }

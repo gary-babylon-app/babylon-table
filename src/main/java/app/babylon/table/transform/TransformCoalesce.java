@@ -37,21 +37,13 @@ public class TransformCoalesce extends TransformBase
         }
         if (params.length == 4)
         {
-            return new TransformCoalesce(
-                    ColumnName.of(params[0]),
-                    ColumnObject.Mode.AUTO,
-                    ColumnName.of(params[1]),
-                    ColumnName.of(params[2]),
-                    ColumnName.of(params[3]));
+            return new TransformCoalesce(ColumnName.of(params[0]), ColumnObject.Mode.AUTO, ColumnName.of(params[1]),
+                    ColumnName.of(params[2]), ColumnName.of(params[3]));
         }
         if (params.length >= 5)
         {
-            return new TransformCoalesce(
-                    ColumnName.of(params[0]),
-                    ColumnObject.Mode.parse(params[1]),
-                    ColumnName.of(params[2]),
-                    ColumnName.of(params[3]),
-                    ColumnName.of(params[4]));
+            return new TransformCoalesce(ColumnName.of(params[0]), ColumnObject.Mode.parse(params[1]),
+                    ColumnName.of(params[2]), ColumnName.of(params[3]), ColumnName.of(params[4]));
         }
         return null;
     }
@@ -63,8 +55,7 @@ public class TransformCoalesce extends TransformBase
         Column second = columnsByName.get(this.secondColumnName);
         Column third = columnsByName.get(this.thirdColumnName);
 
-        if (!(first instanceof ColumnObject<?> firstObject)
-                || !(second instanceof ColumnObject<?> secondObject)
+        if (!(first instanceof ColumnObject<?> firstObject) || !(second instanceof ColumnObject<?> secondObject)
                 || !(third instanceof ColumnObject<?> thirdObject))
         {
             return;
@@ -73,19 +64,20 @@ public class TransformCoalesce extends TransformBase
         Class<?> valueClass = first.getType().getValueClass();
         if (!valueClass.equals(second.getType().getValueClass()) || !valueClass.equals(third.getType().getValueClass()))
         {
-            throw new IllegalArgumentException("Coalesce requires matching value classes: "
-                    + first.getName() + ", " + second.getName() + ", " + third.getName());
+            throw new IllegalArgumentException("Coalesce requires matching value classes: " + first.getName() + ", "
+                    + second.getName() + ", " + third.getName());
         }
         if (first.size() != second.size() || first.size() != third.size())
         {
-            throw new IllegalArgumentException("Coalesce requires columns to have matching sizes: "
-                    + first.getName() + ", " + second.getName() + ", " + third.getName());
+            throw new IllegalArgumentException("Coalesce requires columns to have matching sizes: " + first.getName()
+                    + ", " + second.getName() + ", " + third.getName());
         }
 
         coalesce(columnsByName, firstObject, secondObject, thirdObject, valueClass);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings(
+    {"unchecked", "rawtypes"})
     private void coalesce(Map<ColumnName, Column> columnsByName, ColumnObject<?> first, ColumnObject<?> second,
             ColumnObject<?> third, Class<?> valueClass)
     {
@@ -95,16 +87,13 @@ public class TransformCoalesce extends TransformBase
             if (first.isSet(i))
             {
                 builder.add(first.get(i));
-            }
-            else if (second.isSet(i))
+            } else if (second.isSet(i))
             {
                 builder.add(second.get(i));
-            }
-            else if (third.isSet(i))
+            } else if (third.isSet(i))
             {
                 builder.add(third.get(i));
-            }
-            else
+            } else
             {
                 builder.addNull();
             }

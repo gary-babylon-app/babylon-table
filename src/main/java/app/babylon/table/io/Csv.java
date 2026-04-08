@@ -28,19 +28,13 @@ public class Csv
         return read(ds, options, headerStrategy, RowConsumerTableBuilding.factory());
     }
 
-    public static <T> T read(
-            DataSource ds,
-            ReadSettingsCSV options,
-            RowConsumerFactory<T> rowConsumerFactory)
+    public static <T> T read(DataSource ds, ReadSettingsCSV options, RowConsumerFactory<T> rowConsumerFactory)
     {
         HeaderStrategy headerStrategy = options == null ? null : options.getHeaderStrategy();
         return read(ds, options, headerStrategy, rowConsumerFactory);
     }
 
-    public static <T> T read(
-            DataSource ds,
-            ReadSettingsCSV options,
-            HeaderStrategy headerStrategy,
+    public static <T> T read(DataSource ds, ReadSettingsCSV options, HeaderStrategy headerStrategy,
             RowConsumerFactory<T> rowConsumerFactory)
     {
         if (options == null)
@@ -75,12 +69,10 @@ public class Csv
                 rowConsumer.accept(projectedRow.with(parsedRowStream.current()));
             }
             return rowConsumer.buildResult(ds);
-        }
-        catch (TableException e)
+        } catch (TableException e)
         {
             throw e;
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             throw new TableException("Failed to read table from data source '" + ds.getName() + "'.", e);
         }
@@ -90,7 +82,7 @@ public class Csv
     {
         RowProjected projectedRow = options.isStripping()
                 ? new RowProjectedStripped(headerDetection.getSelectedPositions())
-                        : new ProjectedRow(headerDetection.getSelectedPositions());
+                : new ProjectedRow(headerDetection.getSelectedPositions());
         return projectedRow;
     }
 }

@@ -20,10 +20,14 @@ class RowKeyTest
     @Test
     void shouldCompareAndHashByProjectedFieldValues()
     {
-        RowKey key1 = RowKey.copyOf(new TestRow("A", "10", "X"), new int[] {0, 1});
-        RowKey key2 = RowKey.copyOf(new TestRow("A", "10", "Y"), new int[] {0, 1});
-        RowKey key3 = RowKey.copyOf(new TestRow("AB", "C", "Z"), new int[] {0, 1});
-        RowKey key4 = RowKey.copyOf(new TestRow("A", "BC", "Q"), new int[] {0, 1});
+        RowKey key1 = RowKey.copyOf(new TestRow("A", "10", "X"), new int[]
+        {0, 1});
+        RowKey key2 = RowKey.copyOf(new TestRow("A", "10", "Y"), new int[]
+        {0, 1});
+        RowKey key3 = RowKey.copyOf(new TestRow("AB", "C", "Z"), new int[]
+        {0, 1});
+        RowKey key4 = RowKey.copyOf(new TestRow("A", "BC", "Q"), new int[]
+        {0, 1});
 
         assertEquals(key1, key2);
         assertEquals(key1.hashCode(), key2.hashCode());
@@ -35,7 +39,8 @@ class RowKeyTest
     @Test
     void shouldUseCharBackedKeyForSingleField()
     {
-        RowKey key = RowKey.copyOf(new TestRow("Zürich"), new int[] {0});
+        RowKey key = RowKey.copyOf(new TestRow("Zürich"), new int[]
+        {0});
 
         assertEquals("RowKey1", key.getClass().getSimpleName());
         assertEquals("Zürich", key.getString(0));
@@ -44,7 +49,8 @@ class RowKeyTest
     @Test
     void shouldUseCharBackedKeyForNonLatin1SingleField()
     {
-        RowKey key = RowKey.copyOf(new TestRow("Chișinău"), new int[] {0});
+        RowKey key = RowKey.copyOf(new TestRow("Chișinău"), new int[]
+        {0});
 
         assertEquals("RowKey1", key.getClass().getSimpleName());
         assertEquals("Chișinău", key.getString(0));

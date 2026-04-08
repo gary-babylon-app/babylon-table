@@ -24,17 +24,17 @@ public class ColumnNameTest
     {
         String s = "Gary Kennedy-20";
         String expected = "garykennedy20";
-        
+
         String actual = ColumnName.clean(s);
-        
-        assertEquals(expected, actual, s);     
-        
+
+        assertEquals(expected, actual, s);
+
         ColumnName col1 = ColumnName.of(s);
         ColumnName col2 = ColumnName.of(expected);
-        
+
         assertEquals(col1, col2);
-        assertEquals(0, col1.compareTo(col2));        
-        
+        assertEquals(0, col1.compareTo(col2));
+
     }
 
     @Test
@@ -45,9 +45,8 @@ public class ColumnNameTest
 
         ColumnName cn = ColumnName.of(s);
         assertEquals(expected, cn.toSnake());
-        
-    }
 
+    }
 
     @Test
     public void testCamelUpper()
@@ -57,20 +56,20 @@ public class ColumnNameTest
 
         ColumnName cn = ColumnName.of(s);
         assertEquals(expected, cn.getValue());
-        
+
     }
-    
+
     @Test
     public void testSplitToWords()
     {
         String s = "garyKennedy20";
-       
+
         ColumnName cn = ColumnName.of(s);
         Collection<String> words = cn.toWords(null);
 
         assertTrue(words.contains("Gary"));
         assertTrue(words.contains("Kennedy20"));
-        
+
     }
 
     @Test
@@ -129,29 +128,10 @@ public class ColumnNameTest
     public void testSeparatorVariantsNormalizeToSameName()
     {
         String[] variants = new String[]
-        {
-            "trade date",
-            "trade   date",
-            "trade\tdate",
-            "trade-date",
-            "trade.date",
-            "trade,date",
-            "trade/date",
-            "trade\\date",
-            "trade:date",
-            "trade;date",
-            "trade@date",
-            "trade#date",
-            "trade%date",
-            "trade&date",
-            "trade*date",
-            "trade(date)",
-            "trade[date]",
-            "trade{date}",
-            "trade\"date\"",
-            "trade'date'",
-            "  trade date  "
-        };
+        {"trade date", "trade   date", "trade\tdate", "trade-date", "trade.date", "trade,date", "trade/date",
+                "trade\\date", "trade:date", "trade;date", "trade@date", "trade#date", "trade%date", "trade&date",
+                "trade*date", "trade(date)", "trade[date]", "trade{date}", "trade\"date\"", "trade'date'",
+                "  trade date  "};
 
         for (String variant : variants)
         {

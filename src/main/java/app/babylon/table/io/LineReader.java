@@ -14,8 +14,8 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * Iterates through parsed rows from an input source while exposing the current row
- * and reader settings.
+ * Iterates through parsed rows from an input source while exposing the current
+ * row and reader settings.
  */
 public interface LineReader extends Closeable
 {

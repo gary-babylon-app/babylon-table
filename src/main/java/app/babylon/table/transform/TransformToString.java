@@ -14,7 +14,7 @@ public class TransformToString extends TransformBase
     public static final String FUNCTION_NAME = "ToString";
 
     private ColumnName[] columnNames;
-    private Map<ColumnName,ColumnName> newColumnNames;
+    private Map<ColumnName, ColumnName> newColumnNames;
 
     public TransformToString(ColumnName... columnNames)
     {
@@ -25,13 +25,14 @@ public class TransformToString extends TransformBase
     public TransformToString(ColumnName columnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.columnNames = new ColumnName[]{ArgumentChecks.nonNull(columnName)};
-        this.newColumnNames = (newColumnName!=null)?Map.of(columnName, newColumnName):Map.of();
+        this.columnNames = new ColumnName[]
+        {ArgumentChecks.nonNull(columnName)};
+        this.newColumnNames = (newColumnName != null) ? Map.of(columnName, newColumnName) : Map.of();
     }
 
     public static Transform of(String... params)
     {
-        if (!Is.empty(params) && params.length>=2)
+        if (!Is.empty(params) && params.length >= 2)
         {
             ColumnName columnName = ColumnName.parse(params[0]);
             ColumnName newColumnName = ColumnName.parse(params[1]);
@@ -54,7 +55,7 @@ public class TransformToString extends TransformBase
                 Column c = validColumns[i];
                 ColumnName newColumnName = newColumnNames.getOrDefault(c.getName(), c.getName());
                 ColumnObject.Builder<String> cc = ColumnObject.builder(newColumnName, String.class);
-                for(int j=0;j<c.size();++j)
+                for (int j = 0; j < c.size(); ++j)
                 {
                     cc.add(c.toString(j));
                 }

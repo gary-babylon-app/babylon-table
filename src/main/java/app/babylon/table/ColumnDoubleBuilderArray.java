@@ -12,10 +12,7 @@ package app.babylon.table;
 
 import java.util.Objects;
 
-
-
 import java.util.Arrays;
-
 
 class ColumnDoubleBuilderArray implements ColumnDouble.Builder
 {
@@ -209,8 +206,7 @@ class ColumnDoubleBuilderArray implements ColumnDouble.Builder
             if (x == null || x.length < this.size)
             {
                 x = Arrays.copyOf(this.values, this.size);
-            }
-            else
+            } else
             {
                 System.arraycopy(this.values, 0, x, 0, this.size);
             }
@@ -256,8 +252,7 @@ class ColumnDoubleBuilderArray implements ColumnDouble.Builder
             if (original.isConstant())
             {
                 this.isConstant = true;
-            }
-            else
+            } else
             {
                 boolean constant = true;
                 for (int i = 1; i < rowIndex.size(); ++i)
@@ -269,7 +264,8 @@ class ColumnDoubleBuilderArray implements ColumnDouble.Builder
                         constant = false;
                         break;
                     }
-                    if (currentSet && Double.compare(original.get(rowIndex.get(i - 1)), original.get(rowIndex.get(i))) != 0)
+                    if (currentSet
+                            && Double.compare(original.get(rowIndex.get(i - 1)), original.get(rowIndex.get(i))) != 0)
                     {
                         constant = false;
                         break;
@@ -281,13 +277,11 @@ class ColumnDoubleBuilderArray implements ColumnDouble.Builder
             {
                 this.isAllSet = false;
                 this.isNoneSet = true;
-            }
-            else if (original.isAllSet() && rowIndex.isAllSet())
+            } else if (original.isAllSet() && rowIndex.isAllSet())
             {
                 this.isAllSet = true;
                 this.isNoneSet = false;
-            }
-            else
+            } else
             {
                 boolean anySet = false;
                 boolean anyUnset = false;

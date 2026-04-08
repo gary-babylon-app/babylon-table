@@ -24,12 +24,8 @@ public class CsvTest
     @Test
     public void read_autoDetectByDefault_whenNoHeaderHintsProvided()
     {
-        String csv = ""
-            + "Account,12345678\n"
-            + "SortCode,12-34-56\n"
-            + "Date,Description,Amount\n"
-            + "2026-01-01,Coffee,3.50\n"
-            + "2026-01-02,Salary,1000.00\n";
+        String csv = "" + "Account,12345678\n" + "SortCode,12-34-56\n" + "Date,Description,Amount\n"
+                + "2026-01-01,Coffee,3.50\n" + "2026-01-02,Salary,1000.00\n";
 
         DataSource ds = TestDataSources.fromString(csv, "auto-default.csv");
         ReadSettingsCSV settings = new ReadSettingsCSV();
@@ -47,15 +43,10 @@ public class CsvTest
     @Test
     public void read_explicitHeaderRowIndex_ignoresScanLimit()
     {
-        String csv = ""
-            + "A,1\n"
-            + "B,2\n"
-            + "Date,Description,Amount\n"
-            + "2026-01-01,Coffee,3.50\n";
+        String csv = "" + "A,1\n" + "B,2\n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n";
 
         DataSource ds = TestDataSources.fromString(csv, "explicit-header-row.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withHeaderStrategy(new HeaderStrategyExplicitRow(2));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withHeaderStrategy(new HeaderStrategyExplicitRow(2));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -67,19 +58,11 @@ public class CsvTest
     @Test
     public void read_expectedHeaders_withScanLimit()
     {
-        String csv = ""
-            + "Meta,Value\n"
-            + "Account,123\n"
-            + "Date,Description,Amount\n"
-            + "2026-01-01,Coffee,3.50\n";
+        String csv = "" + "Meta,Value\n" + "Account,123\n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n";
 
         DataSource ds = TestDataSources.fromString(csv, "expected-header.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withHeaderStrategy(new HeaderStrategyExpectedHeaders(
-                10,
-                ColumnName.of("Date"),
-                ColumnName.of("Description"),
-                ColumnName.of("Amount")));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withHeaderStrategy(new HeaderStrategyExpectedHeaders(10,
+                ColumnName.of("Date"), ColumnName.of("Description"), ColumnName.of("Amount")));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -90,13 +73,10 @@ public class CsvTest
     @Test
     public void read_noHeaders_generatesColumnNamesAndTreatsAllRowsAsData()
     {
-        String csv = ""
-            + "john smith,london,uk\n"
-            + "mary jones,paris\n";
+        String csv = "" + "john smith,london,uk\n" + "mary jones,paris\n";
 
         DataSource ds = TestDataSources.fromString(csv, "no-headers.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withHeaderStrategy(new HeaderStrategyNoHeaders(10));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withHeaderStrategy(new HeaderStrategyNoHeaders(10));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -114,15 +94,11 @@ public class CsvTest
     @Test
     public void read_noHeaders_ignoresSelectedHeaders()
     {
-        String csv = ""
-            + "john smith,london,uk\n"
-            + "mary jones,paris,fr\n";
+        String csv = "" + "john smith,london,uk\n" + "mary jones,paris,fr\n";
 
         DataSource ds = TestDataSources.fromString(csv, "no-headers-selected.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withHeaderStrategy(new HeaderStrategyNoHeaders(100))
-            .withSelectedHeader(ColumnName.of("Date"))
-            .withSelectedHeader(ColumnName.of("Amount"));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withHeaderStrategy(new HeaderStrategyNoHeaders(100))
+                .withSelectedHeader(ColumnName.of("Date")).withSelectedHeader(ColumnName.of("Amount"));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -136,16 +112,11 @@ public class CsvTest
     @Test
     public void read_widestNonEmptyRow_detectsHeaderAndDataRows()
     {
-        String csv = ""
-            + "Account,12345678\n"
-            + "SortCode,12-34-56\n"
-            + "Date,Description,Amount\n"
-            + "2026-01-01,Coffee,3.50\n"
-            + "2026-01-02,Salary,1000.00\n";
+        String csv = "" + "Account,12345678\n" + "SortCode,12-34-56\n" + "Date,Description,Amount\n"
+                + "2026-01-01,Coffee,3.50\n" + "2026-01-02,Salary,1000.00\n";
 
         DataSource ds = TestDataSources.fromString(csv, "widest-row.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -166,8 +137,7 @@ public class CsvTest
         csv.append("2026-01-01,Coffee,3.50\n");
 
         DataSource ds = TestDataSources.fromString(csv.toString(), "widest-row-limit.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(50));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(50));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -180,14 +150,10 @@ public class CsvTest
     @Test
     public void read_widestNonEmptyRow_treatsTrimmedNaAsEmptyForHeaderScoring()
     {
-        String csv = ""
-            + "  n/a  ,  N/A  \n"
-            + "Date,Description,Amount\n"
-            + "2026-01-01,Coffee,3.50\n";
+        String csv = "" + "  n/a  ,  N/A  \n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n";
 
         DataSource ds = TestDataSources.fromString(csv, "widest-row-na.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -199,14 +165,10 @@ public class CsvTest
     @Test
     public void read_includeResourceName_addsConstantColumnWithoutChangingRowCount()
     {
-        String csv = ""
-            + "Date,Description,Amount\n"
-            + "2026-01-01,Coffee,3.50\n"
-            + "2026-01-02,Salary,1000.00\n";
+        String csv = "" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n" + "2026-01-02,Salary,1000.00\n";
 
         DataSource ds = TestDataSources.fromString(csv, "resource-name.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withIncludeResourceName(ColumnName.of("ResourceName"));
+        ReadSettingsCSV settings = new ReadSettingsCSV().withIncludeResourceName(ColumnName.of("ResourceName"));
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);
@@ -220,16 +182,11 @@ public class CsvTest
     @Test
     public void read_autoDetect_padsMalformedDataRowsAfterProjection()
     {
-        String csv = ""
-            + "Account Name,Everyday Current Account\n"
-            + "Account Number,12345678\n"
-            + "Statement Period,2026-01\n"
-            + "Date,Description,Amount\n"
-            + "2026-01-01,\"Coffee, corner shop\",-3.50\n"
-            + "2026-01-02,\"Salary \"\"Bonus\"\"\r\nAdjustment\",1000.00\n"
-            + "2026-01-03,\"Card Payment\"\n"
-            + "2026-01-04,\"Rent\",-500.00\n"
-            + "2026-01-05 Only Date Present\n";
+        String csv = "" + "Account Name,Everyday Current Account\n" + "Account Number,12345678\n"
+                + "Statement Period,2026-01\n" + "Date,Description,Amount\n"
+                + "2026-01-01,\"Coffee, corner shop\",-3.50\n"
+                + "2026-01-02,\"Salary \"\"Bonus\"\"\r\nAdjustment\",1000.00\n" + "2026-01-03,\"Card Payment\"\n"
+                + "2026-01-04,\"Rent\",-500.00\n" + "2026-01-05 Only Date Present\n";
 
         DataSource ds = TestDataSources.fromString(csv, "bank-statement-malformed.csv");
         ReadSettingsCSV settings = new ReadSettingsCSV();
@@ -263,13 +220,10 @@ public class CsvTest
     @Test
     public void read_withStrippingFalse_preservesWhitespace()
     {
-        String csv = ""
-            + "Date,Description,Amount\n"
-            + " 2026-01-01 , Coffee , 3.50 \n";
+        String csv = "" + "Date,Description,Amount\n" + " 2026-01-01 , Coffee , 3.50 \n";
 
         DataSource ds = TestDataSources.fromString(csv, "no-strip.csv");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-            .withStripping(false);
+        ReadSettingsCSV settings = new ReadSettingsCSV().withStripping(false);
 
         TableColumnar table = Csv.read(ds, settings);
         assertNotNull(table);

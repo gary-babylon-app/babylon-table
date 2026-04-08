@@ -55,7 +55,6 @@ public final class BigDecimals
         return Columns.stringToType(column, BigDecimals::parse, BigDecimal.class);
     }
 
-
     public static boolean isExtractableDecimalWord(String s)
     {
         if (s == null)
@@ -202,8 +201,7 @@ public final class BigDecimals
             }
 
             return new PreparedDecimal(normalized, cc.isPercent(), cc.isNegativeBracket());
-        }
-        catch (Throwable t)
+        } catch (Throwable t)
         {
             return null;
         }
@@ -228,8 +226,7 @@ public final class BigDecimals
                 bd = new BigDecimal(s).negate(MathContext.DECIMAL64);
             }
             return bd.stripTrailingZeros();
-        }
-        catch (Throwable t)
+        } catch (Throwable t)
         {
             return null;
         }
@@ -253,8 +250,7 @@ public final class BigDecimals
                 value = -value;
             }
             return value;
-        }
-        catch (Throwable t)
+        } catch (Throwable t)
         {
             return null;
         }
@@ -296,8 +292,7 @@ public final class BigDecimals
                 if (hasExponent)
                 {
                     hasExponentDigit = true;
-                }
-                else
+                } else
                 {
                     hasDigitBeforeExponent = true;
                 }
@@ -370,10 +365,10 @@ public final class BigDecimals
     private static boolean isCurrencySymbol(char c)
     {
         return switch (c)
-                {
-                case '$', '€', '£', '¥', 'R' -> true;
-                default -> false;
-                };
+        {
+            case '$', '€', '£', '¥', 'R' -> true;
+            default -> false;
+        };
     }
 
     private static final class Classifier
@@ -405,30 +400,30 @@ public final class BigDecimals
                 char c = s.charAt(i);
                 switch (c)
                 {
-                case ' ' -> spaces = true;
-                case ',' -> commas = true;
-                case '.' -> {
-                    ++dot;
-                }
-                case '-' -> {
-                    ++hyphen;
-                }
-                case 'e', 'E' -> {
-                    ++scientificE;
-                }
-                case '%', '(', ')' -> {
-                    // deliberate, these are valid
-                }
-                case '$', '€', '£', '¥', 'R' -> currency = true;
-                default -> {
-                    if (c >= '0' && c <= '9')
-                    {
-                        ++digit;
-                    } else
-                    {
-                        ++invalid;
+                    case ' ' -> spaces = true;
+                    case ',' -> commas = true;
+                    case '.' -> {
+                        ++dot;
                     }
-                }
+                    case '-' -> {
+                        ++hyphen;
+                    }
+                    case 'e', 'E' -> {
+                        ++scientificE;
+                    }
+                    case '%', '(', ')' -> {
+                        // deliberate, these are valid
+                    }
+                    case '$', '€', '£', '¥', 'R' -> currency = true;
+                    default -> {
+                        if (c >= '0' && c <= '9')
+                        {
+                            ++digit;
+                        } else
+                        {
+                            ++invalid;
+                        }
+                    }
                 }
             }
 
@@ -497,13 +492,8 @@ public final class BigDecimals
         private boolean cannotBeDecimal()
         {
             int allowedHyphens = getScientificECount() == 1 ? 2 : 1;
-            return Strings.isEmpty(text)
-                    || !hasDigits()
-                    || hasInvalidCharacters()
-                    || hasSpaces()
-                    || getScientificECount() > 1
-                    || getHyphenCount() > allowedHyphens
-                    || getDotCount() > 1;
+            return Strings.isEmpty(text) || !hasDigits() || hasInvalidCharacters() || hasSpaces()
+                    || getScientificECount() > 1 || getHyphenCount() > allowedHyphens || getDotCount() > 1;
         }
 
         private String cleanUp()

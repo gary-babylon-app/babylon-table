@@ -213,8 +213,6 @@ public class ReadSettingsCommon implements ReadSettings
 
     private int currentScanLimit()
     {
-        return this.headerStrategy == null
-                ? DEFAULT_HEADER_SCAN_LIMIT
-                : this.headerStrategy.getScanLimit();
+        return this.headerStrategy == null ? DEFAULT_HEADER_SCAN_LIMIT : this.headerStrategy.getScanLimit();
     }
 }

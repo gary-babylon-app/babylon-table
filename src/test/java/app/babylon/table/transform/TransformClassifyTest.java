@@ -31,8 +31,8 @@ public class TransformClassifyTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(
-                new TransformClassify(from, to, Pattern.compile("\\([^)]+\\)"), "Y", "N"));
+        TableColumnar transformed = table
+                .apply(new TransformClassify(from, to, Pattern.compile("\\([^)]+\\)"), "Y", "N"));
 
         ColumnObject<String> classified = transformed.getString(to);
         assertEquals("Y", classified.get(0));
@@ -53,8 +53,8 @@ public class TransformClassifyTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(
-                new TransformClassify(from, to, Pattern.compile("\\([^)]+\\)"), "Y", "N"));
+        TableColumnar transformed = table
+                .apply(new TransformClassify(from, to, Pattern.compile("\\([^)]+\\)"), "Y", "N"));
 
         assertTrue(transformed.get(to) instanceof ColumnCategorical<?>);
         ColumnCategorical<String> classified = transformed.getCategorical(to);

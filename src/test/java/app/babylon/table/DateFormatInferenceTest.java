@@ -28,7 +28,8 @@ class DateFormatInferenceTest
         clearDmy.add("16/02/2026");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {ambiguous.build(), clearDmy.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {ambiguous.build(), clearDmy.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.DMY, inferred[0]);
@@ -47,7 +48,8 @@ class DateFormatInferenceTest
         ymd.add("2026-03-02");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {dmy.build(), ymd.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {dmy.build(), ymd.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.DMY, inferred[0]);
@@ -62,7 +64,8 @@ class DateFormatInferenceTest
         excel.add("45201");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {excel.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {excel.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.ExcelLocalDate, inferred[0]);
@@ -76,7 +79,8 @@ class DateFormatInferenceTest
         alpha.add("14-Feb-2026");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {alpha.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {alpha.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.DMY, inferred[0]);
@@ -90,7 +94,8 @@ class DateFormatInferenceTest
         alpha.add("14Feb2026");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {alpha.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {alpha.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.DMY, inferred[0]);
@@ -104,7 +109,8 @@ class DateFormatInferenceTest
         alpha.add("9Feb2026");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {alpha.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {alpha.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.DMY, inferred[0]);
@@ -118,7 +124,8 @@ class DateFormatInferenceTest
         numeric.add("13-1-2026");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {numeric.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {numeric.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.DMY, inferred[0]);
@@ -133,7 +140,8 @@ class DateFormatInferenceTest
         noisy.add("abc");
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {noisy.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {noisy.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.Unknown, inferred[0]);
@@ -161,7 +169,8 @@ class DateFormatInferenceTest
         }
 
         @SuppressWarnings("unchecked")
-        ColumnObject<String>[] columns = new ColumnObject[] {mixed.build()};
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {mixed.build()};
         DateFormat[] inferred = DateFormatInference.inferFormats(columns);
 
         assertEquals(DateFormat.DMY, inferred[0]);

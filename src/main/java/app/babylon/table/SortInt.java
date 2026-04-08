@@ -14,7 +14,6 @@ import java.util.Objects;
 
 import java.util.Arrays;
 
-
 public final class SortInt
 {
     private SortInt()
@@ -59,8 +58,7 @@ public final class SortInt
             if (comparator.compare(temp[left], temp[right]) <= 0)
             {
                 values[out++] = temp[left++];
-            }
-            else
+            } else
             {
                 values[out++] = temp[right++];
             }

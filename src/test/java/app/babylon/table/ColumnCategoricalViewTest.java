@@ -15,7 +15,6 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import org.junit.jupiter.api.Test;
 
-
 public class ColumnCategoricalViewTest
 {
     private enum E
@@ -38,12 +37,13 @@ public class ColumnCategoricalViewTest
         rowIndexBuilder.add(1);
         ViewIndex rowIndex = rowIndexBuilder.build();
 
-        ColumnCategorical<E> view = (ColumnCategorical<E>)original.view(rowIndex);
+        ColumnCategorical<E> view = (ColumnCategorical<E>) original.view(rowIndex);
 
         assertEquals(original.getCategoryCode(2), view.getCategoryCode(0));
         assertEquals(original.getCategoryCode(0), view.getCategoryCode(1));
         assertEquals(original.getCategoryCode(1), view.getCategoryCode(2));
-        assertArrayEquals(new int[] {1, 2}, view.getCategoryCodes(null));
+        assertArrayEquals(new int[]
+        {1, 2}, view.getCategoryCodes(null));
     }
 
     @Test
@@ -60,7 +60,8 @@ public class ColumnCategoricalViewTest
         rowIndexBuilder.add(2);
         ViewIndex rowIndex = rowIndexBuilder.build();
 
-        ColumnCategorical<E> view = (ColumnCategorical<E>)original.view(rowIndex);
-        assertArrayEquals(new int[] {1}, view.getCategoryCodes(null));
+        ColumnCategorical<E> view = (ColumnCategorical<E>) original.view(rowIndex);
+        assertArrayEquals(new int[]
+        {1}, view.getCategoryCodes(null));
     }
 }

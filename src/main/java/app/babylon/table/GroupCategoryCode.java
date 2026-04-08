@@ -14,7 +14,6 @@ import java.util.Objects;
 
 import java.util.Arrays;
 
-
 final class GroupCategoryCode
 {
     private final int[] values;
@@ -26,17 +25,20 @@ final class GroupCategoryCode
 
     static GroupCategoryCode of(int value0)
     {
-        return new GroupCategoryCode(new int[] {value0});
+        return new GroupCategoryCode(new int[]
+        {value0});
     }
 
     static GroupCategoryCode of(int value0, int value1)
     {
-        return new GroupCategoryCode(new int[] {value0, value1});
+        return new GroupCategoryCode(new int[]
+        {value0, value1});
     }
 
     static GroupCategoryCode of(int value0, int value1, int value2)
     {
-        return new GroupCategoryCode(new int[] {value0, value1, value2});
+        return new GroupCategoryCode(new int[]
+        {value0, value1, value2});
     }
 
     static GroupCategoryCode of(int[] values)

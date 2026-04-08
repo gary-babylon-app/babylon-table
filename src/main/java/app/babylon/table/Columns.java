@@ -36,27 +36,24 @@ public class Columns
         {
             throw new IllegalArgumentException("Not a string column: " + column);
         }
-        return (ColumnObject<String>)column;
+        return (ColumnObject<String>) column;
     }
 
-    public static <T> Map<T,Integer> frequencyMap(ColumnObject<T> c)
+    public static <T> Map<T, Integer> frequencyMap(ColumnObject<T> c)
     {
-        Map<T,Integer> m = new HashMap<>();
-        for(int i = 0; i < c.size(); ++i)
+        Map<T, Integer> m = new HashMap<>();
+        for (int i = 0; i < c.size(); ++i)
         {
             if (c.isSet(i))
             {
                 T t = c.get(i);
-                m.put(t, m.getOrDefault(t, 0)+1);
+                m.put(t, m.getOrDefault(t, 0) + 1);
             }
         }
         return m;
     }
 
-    public static <S> ColumnObject<S> stringToType(
-            Column column,
-            Function<String, S> parser,
-            Class<S> targetClass)
+    public static <S> ColumnObject<S> stringToType(Column column, Function<String, S> parser, Class<S> targetClass)
     {
         if (!(column instanceof ColumnObject<?> co))
         {
@@ -77,9 +74,8 @@ public class Columns
             @SuppressWarnings("unchecked")
             ColumnObject<String> strings = (ColumnObject<String>) co;
 
-            Transformer<String, S> transformer = Transformer.of(
-                s -> Strings.isEmpty(s) ? null : parser.apply(s),
-                targetClass);
+            Transformer<String, S> transformer = Transformer.of(s -> Strings.isEmpty(s) ? null : parser.apply(s),
+                    targetClass);
 
             return strings.transform(transformer);
         }
@@ -89,7 +85,7 @@ public class Columns
 
     public static boolean isEmpty(Column column)
     {
-        if (column==null || column.size()==0)
+        if (column == null || column.size() == 0)
         {
             return true;
         }
@@ -109,16 +105,13 @@ public class Columns
             if (!valueClass.isPrimitive())
             {
                 return ColumnObject.builder(colName, valueClass);
-            }
-            else if (int.class.equals(valueClass))
+            } else if (int.class.equals(valueClass))
             {
                 return ColumnInt.builder(colName);
-            }
-            else if (double.class.equals(valueClass))
+            } else if (double.class.equals(valueClass))
             {
                 return ColumnDouble.builder(colName);
-            }
-            else if (long.class.equals(valueClass))
+            } else if (long.class.equals(valueClass))
             {
                 return ColumnLong.builder(colName);
             }
@@ -145,21 +138,20 @@ public class Columns
         return new ColumnCategoricalConstant<T>(colName, value, size, valueClass);
     }
 
-
     public static BigDecimal aggregate(ColumnObject<BigDecimal> cd, Aggregate aggregate)
     {
         switch (aggregate)
         {
-            case SUM:
+            case SUM :
                 return sum(cd);
-            case MIN:
+            case MIN :
                 return min(cd);
-            case MAX:
+            case MAX :
                 return max(cd);
-            case MEAN:
+            case MEAN :
                 return mean(cd);
 
-            default:
+            default :
                 return null;
         }
     }
@@ -168,16 +160,16 @@ public class Columns
     {
         switch (aggregate)
         {
-            case SUM:
+            case SUM :
                 return sum(cd);
-            case MIN:
+            case MIN :
                 return min(cd);
-            case MAX:
+            case MAX :
                 return max(cd);
-            case MEAN:
+            case MEAN :
                 return mean(cd);
 
-            default:
+            default :
                 throw new IllegalArgumentException("Unsupported aggregate " + aggregate + " for double column.");
         }
     }
@@ -186,7 +178,7 @@ public class Columns
     {
         BigDecimal sum = BigDecimal.ZERO;
         MathContext mc = MathContext.DECIMAL64;
-        for(int i=0;i<cd.size();++i)
+        for (int i = 0; i < cd.size(); ++i)
         {
             if (cd.isSet(i))
             {
@@ -201,7 +193,7 @@ public class Columns
         BigDecimal sum = BigDecimal.ZERO;
         MathContext mc = MathContext.DECIMAL64;
         int n = 0;
-        for(int i=0;i<cd.size();++i)
+        for (int i = 0; i < cd.size(); ++i)
         {
             if (cd.isSet(i))
             {
@@ -215,7 +207,7 @@ public class Columns
     private static double sum(ColumnDouble cd)
     {
         double sum = 0.0d;
-        for(int i=0;i<cd.size();++i)
+        for (int i = 0; i < cd.size(); ++i)
         {
             if (cd.isSet(i))
             {
@@ -229,7 +221,7 @@ public class Columns
     {
         double sum = 0.0d;
         int n = 0;
-        for(int i=0;i<cd.size();++i)
+        for (int i = 0; i < cd.size(); ++i)
         {
             if (cd.isSet(i))
             {
@@ -240,50 +232,50 @@ public class Columns
         return sum / n;
     }
 
-//    private static BigDecimal max(ColumnObject<BigDecimal> cd)
-//    {
-//        if (cd.size()==0)
-//        {
-//            throw new RuntimeException("Can not compute max on column with no values. " + cd.getName());
-//        }
-//
-//        BigDecimal max = null;
-//        for(int i=0;i<cd.size();++i)
-//        {
-//            if (cd.isSet(i))
-//            {
-//                BigDecimal v = cd.get(i);
-//                if (max==null)
-//                {
-//                    max = v;
-//                }
-//                else if (max.compareTo(v)<0)
-//                {
-//                    max = v;
-//                }
-//            }
-//        }
-//        return max;
-//    }
+    // private static BigDecimal max(ColumnObject<BigDecimal> cd)
+    // {
+    // if (cd.size()==0)
+    // {
+    // throw new RuntimeException("Can not compute max on column with no values. " +
+    // cd.getName());
+    // }
+    //
+    // BigDecimal max = null;
+    // for(int i=0;i<cd.size();++i)
+    // {
+    // if (cd.isSet(i))
+    // {
+    // BigDecimal v = cd.get(i);
+    // if (max==null)
+    // {
+    // max = v;
+    // }
+    // else if (max.compareTo(v)<0)
+    // {
+    // max = v;
+    // }
+    // }
+    // }
+    // return max;
+    // }
 
-    public static <T extends Comparable<? super T>>  T max(ColumnObject<T> co)
+    public static <T extends Comparable<? super T>> T max(ColumnObject<T> co)
     {
-        if (co.size()==0)
+        if (co.size() == 0)
         {
             throw new RuntimeException("Can not compute max on column with no values. " + co.getName());
         }
 
         T max = null;
-        for(int i=0;i<co.size();++i)
+        for (int i = 0; i < co.size(); ++i)
         {
             if (co.isSet(i))
             {
                 T v = co.get(i);
-                if (max==null)
+                if (max == null)
                 {
                     max = v;
-                }
-                else if (max.compareTo(v)<0)
+                } else if (max.compareTo(v) < 0)
                 {
                     max = v;
                 }
@@ -294,18 +286,18 @@ public class Columns
 
     private static double max(ColumnDouble cd)
     {
-        if (cd.size()==0)
+        if (cd.size() == 0)
         {
             throw new RuntimeException("Can not compute max on column with no values. " + cd.getName());
         }
 
         Double max = null;
-        for(int i=0;i<cd.size();++i)
+        for (int i = 0; i < cd.size(); ++i)
         {
             if (cd.isSet(i))
             {
                 double v = cd.get(i);
-                if (max==null || Double.compare(max, v) < 0)
+                if (max == null || Double.compare(max, v) < 0)
                 {
                     max = v;
                 }
@@ -316,22 +308,21 @@ public class Columns
 
     private static BigDecimal min(ColumnObject<BigDecimal> cd)
     {
-        if (cd.size()==0)
+        if (cd.size() == 0)
         {
             throw new RuntimeException("Can not compute min on column with no values. " + cd.getName());
         }
 
         BigDecimal min = null;
-        for(int i=0;i<cd.size();++i)
+        for (int i = 0; i < cd.size(); ++i)
         {
             if (cd.isSet(i))
             {
                 BigDecimal v = cd.get(i);
-                if (min==null)
+                if (min == null)
                 {
                     min = v;
-                }
-                else if (min.compareTo(v)>0)
+                } else if (min.compareTo(v) > 0)
                 {
                     min = v;
                 }
@@ -342,18 +333,18 @@ public class Columns
 
     private static double min(ColumnDouble cd)
     {
-        if (cd.size()==0)
+        if (cd.size() == 0)
         {
             throw new RuntimeException("Can not compute min on column with no values. " + cd.getName());
         }
 
         Double min = null;
-        for(int i=0;i<cd.size();++i)
+        for (int i = 0; i < cd.size(); ++i)
         {
             if (cd.isSet(i))
             {
                 double v = cd.get(i);
-                if (min==null || Double.compare(min, v) > 0)
+                if (min == null || Double.compare(min, v) > 0)
                 {
                     min = v;
                 }
@@ -380,7 +371,7 @@ public class Columns
     @SuppressWarnings("unchecked")
     public static Column concat(List<Column> columns)
     {
-        if (columns.size()==0)
+        if (columns.size() == 0)
         {
             return null;
         }
@@ -393,8 +384,8 @@ public class Columns
             Column c = columns.get(i);
             if (!sameValueClass(type, c.getType()))
             {
-                throw new IllegalArgumentException("Cannot concat different column types: "
-                    + type + " and " + c.getType() + " for column " + outputColumnName);
+                throw new IllegalArgumentException("Cannot concat different column types: " + type + " and "
+                        + c.getType() + " for column " + outputColumnName);
             }
         }
 
@@ -405,18 +396,17 @@ public class Columns
             {
                 throw new IllegalStateException("Unsupported categorical column type for concat: " + type);
             }
-            Class<Object> typedValueClass = (Class<Object>)valueClass;
+            Class<Object> typedValueClass = (Class<Object>) valueClass;
             ColumnCategorical.Builder<Object> newColumn = ColumnCategorical.builder(outputColumnName, typedValueClass);
             for (Column c : columns)
             {
-                ColumnCategorical<Object> cc = (ColumnCategorical<Object>)c;
+                ColumnCategorical<Object> cc = (ColumnCategorical<Object>) c;
                 for (int j = 0; j < cc.size(); ++j)
                 {
                     if (cc.isSet(j))
                     {
                         newColumn.add(cc.get(j));
-                    }
-                    else
+                    } else
                     {
                         newColumn.addNull();
                     }
@@ -432,23 +422,23 @@ public class Columns
             {
                 throw new IllegalStateException("Unsupported object column type for concat: " + type);
             }
-            Class<Object> typedValueClass = (Class<Object>)valueClass;
+            Class<Object> typedValueClass = (Class<Object>) valueClass;
             ColumnObject.Builder<Object> newColumn = ColumnObject.builder(outputColumnName, typedValueClass);
 
             for (Column c : columns)
             {
                 if (!(c instanceof ColumnObject<?>))
                 {
-                    throw new IllegalArgumentException("Cannot concat object with non-object for column " + outputColumnName);
+                    throw new IllegalArgumentException(
+                            "Cannot concat object with non-object for column " + outputColumnName);
                 }
-                ColumnObject<Object> co = (ColumnObject<Object>)c;
+                ColumnObject<Object> co = (ColumnObject<Object>) c;
                 for (int j = 0; j < co.size(); ++j)
                 {
                     if (co.isSet(j))
                     {
                         newColumn.add(co.get(j));
-                    }
-                    else
+                    } else
                     {
                         newColumn.addNull();
                     }
@@ -462,14 +452,13 @@ public class Columns
             ColumnInt.Builder newColumn = ColumnInt.builder(outputColumnName);
             for (Column c : columns)
             {
-                ColumnInt ci = (ColumnInt)c;
+                ColumnInt ci = (ColumnInt) c;
                 for (int j = 0; j < ci.size(); ++j)
                 {
                     if (ci.isSet(j))
                     {
                         newColumn.add(ci.get(j));
-                    }
-                    else
+                    } else
                     {
                         newColumn.addNull();
                     }
@@ -482,14 +471,13 @@ public class Columns
             ColumnLong.Builder newColumn = ColumnLong.builder(outputColumnName);
             for (Column c : columns)
             {
-                ColumnLong cl = (ColumnLong)c;
+                ColumnLong cl = (ColumnLong) c;
                 for (int j = 0; j < cl.size(); ++j)
                 {
                     if (cl.isSet(j))
                     {
                         newColumn.add(cl.get(j));
-                    }
-                    else
+                    } else
                     {
                         newColumn.addNull();
                     }
@@ -502,14 +490,13 @@ public class Columns
             ColumnDouble.Builder newColumn = ColumnDouble.builder(outputColumnName);
             for (Column c : columns)
             {
-                ColumnDouble cd = (ColumnDouble)c;
+                ColumnDouble cd = (ColumnDouble) c;
                 for (int j = 0; j < cd.size(); ++j)
                 {
                     if (cd.isSet(j))
                     {
                         newColumn.add(cd.get(j));
-                    }
-                    else
+                    } else
                     {
                         newColumn.addNull();
                     }
@@ -522,14 +509,13 @@ public class Columns
             ColumnByte.Builder newColumn = ColumnByte.builder(outputColumnName);
             for (Column c : columns)
             {
-                ColumnByte cb = (ColumnByte)c;
+                ColumnByte cb = (ColumnByte) c;
                 for (int j = 0; j < cb.size(); ++j)
                 {
                     if (cb.isSet(j))
                     {
                         newColumn.add(cb.get(j));
-                    }
-                    else
+                    } else
                     {
                         newColumn.addNull();
                     }
@@ -563,22 +549,21 @@ public class Columns
     {
         StringBuilder builder = new StringBuilder();
         builder.append(column.getName().getValue());
-        for(int i=0;i<Math.max(Math.min(2, column.size()),0);++i)
+        for (int i = 0; i < Math.max(Math.min(2, column.size()), 0); ++i)
         {
-            if(i!=0)
+            if (i != 0)
             {
                 builder.append(", ");
-            }
-            else
+            } else
             {
                 builder.append("[");
             }
             builder.append(column.toString(i));
         }
-        if (column.size()>1)
+        if (column.size() > 1)
         {
             builder.append(", ... ,");
-            builder.append(column.toString(column.size()-1));
+            builder.append(column.toString(column.size() - 1));
         }
         builder.append("]");
 

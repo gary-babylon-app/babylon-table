@@ -17,16 +17,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-
 public class ColumnByteSemanticsTest
 {
     @Test
     public void byteColumnTracksNullsAndValues()
     {
         ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("bytes.bin"));
-        builder.add((byte)42);
+        builder.add((byte) 42);
         builder.addNull();
-        builder.add((byte)-5);
+        builder.add((byte) -5);
 
         ColumnByte column = builder.build();
 
@@ -43,14 +42,14 @@ public class ColumnByteSemanticsTest
     public void detectsXlsHeader()
     {
         ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("sample.xls"));
-        builder.add((byte)0xD0);
-        builder.add((byte)0xCF);
-        builder.add((byte)0x11);
-        builder.add((byte)0xE0);
-        builder.add((byte)0xA1);
-        builder.add((byte)0xB1);
-        builder.add((byte)0x1A);
-        builder.add((byte)0xE1);
+        builder.add((byte) 0xD0);
+        builder.add((byte) 0xCF);
+        builder.add((byte) 0x11);
+        builder.add((byte) 0xE0);
+        builder.add((byte) 0xA1);
+        builder.add((byte) 0xB1);
+        builder.add((byte) 0x1A);
+        builder.add((byte) 0xE1);
         ColumnByte column = builder.build();
 
         assertTrue(column.isXls());
@@ -61,20 +60,20 @@ public class ColumnByteSemanticsTest
     public void detectsXlsxZipHeaderUnlessNamedZip()
     {
         ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("sample.xlsx"));
-        builder.add((byte)0x50);
-        builder.add((byte)0x4B);
-        builder.add((byte)0x03);
-        builder.add((byte)0x04);
+        builder.add((byte) 0x50);
+        builder.add((byte) 0x4B);
+        builder.add((byte) 0x03);
+        builder.add((byte) 0x04);
         ColumnByte xlsx = builder.build();
 
         assertTrue(xlsx.isXlsx());
         assertFalse(xlsx.isXls());
 
         ColumnByte.Builder zipBuilder = ColumnByte.builder(ColumnName.of("sample.zip"));
-        zipBuilder.add((byte)0x50);
-        zipBuilder.add((byte)0x4B);
-        zipBuilder.add((byte)0x03);
-        zipBuilder.add((byte)0x04);
+        zipBuilder.add((byte) 0x50);
+        zipBuilder.add((byte) 0x4B);
+        zipBuilder.add((byte) 0x03);
+        zipBuilder.add((byte) 0x04);
         ColumnByte zip = zipBuilder.build();
 
         assertFalse(zip.isXlsx());
@@ -84,7 +83,7 @@ public class ColumnByteSemanticsTest
     public void viewAndGetAsColumnRemainUnsupportedForNow()
     {
         ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("bytes.bin"));
-        builder.add((byte)1);
+        builder.add((byte) 1);
         ColumnByte column = builder.build();
 
         ViewIndex.Builder rowIndexBuilder = ViewIndex.builder();

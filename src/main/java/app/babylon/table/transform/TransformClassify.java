@@ -15,9 +15,10 @@ public class TransformClassify extends TransformStringToString
     private final String newColumnFoundValue;
     private final String newColumnNotFoundValue;
 
-    public TransformClassify(ColumnName existingColumnName, ColumnName newColumnName, Pattern pattern, String newColumnFoundValue, String newColumnNotFoundValue)
+    public TransformClassify(ColumnName existingColumnName, ColumnName newColumnName, Pattern pattern,
+            String newColumnFoundValue, String newColumnNotFoundValue)
     {
-        super(FUNCTION_NAME, existingColumnName, newColumnName==null?existingColumnName:newColumnName);
+        super(FUNCTION_NAME, existingColumnName, newColumnName == null ? existingColumnName : newColumnName);
         this.pattern = ArgumentChecks.nonNull(pattern);
         this.newColumnFoundValue = newColumnFoundValue;
         this.newColumnNotFoundValue = newColumnNotFoundValue;

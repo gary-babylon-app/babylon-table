@@ -28,7 +28,8 @@ final class LineReaderCSVFixedWidth implements LineReader
     private final ReadSettingsCSV settings;
     private final RowFixedWidth current;
 
-    protected LineReaderCSVFixedWidth(BufferedInputStream instream, ReadSettingsCSV settings, Charset charset, int bomLength)
+    protected LineReaderCSVFixedWidth(BufferedInputStream instream, ReadSettingsCSV settings, Charset charset,
+            int bomLength)
     {
         Objects.requireNonNull(settings, "settings must not be null");
         int[] configuredWidths = settings.getFixedWidths();
@@ -50,8 +51,7 @@ final class LineReaderCSVFixedWidth implements LineReader
             {
                 skipBytes(instream, bomLength);
             }
-        }
-        catch (IOException e)
+        } catch (IOException e)
         {
             throw new RuntimeException("Failed to skip fixed-width BOM bytes.", e);
         }
@@ -91,12 +91,10 @@ final class LineReaderCSVFixedWidth implements LineReader
             if (nextRowEnd == -1)
             {
                 nextTerminator = nextLf;
-            }
-            else if (nextLf == -1)
+            } else if (nextLf == -1)
             {
                 nextTerminator = nextRowEnd;
-            }
-            else
+            } else
             {
                 nextTerminator = Math.min(nextRowEnd, nextLf);
             }
@@ -155,7 +153,7 @@ final class LineReaderCSVFixedWidth implements LineReader
     @Override
     public void close() throws IOException
     {
-        if (this.reader!=null)
+        if (this.reader != null)
         {
             this.reader.close();
         }

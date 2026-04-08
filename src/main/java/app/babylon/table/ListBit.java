@@ -45,8 +45,7 @@ public interface ListBit
             if (value)
             {
                 this.bits.set(this.size);
-            }
-            else
+            } else
             {
                 this.bits.clear(this.size);
             }
@@ -88,7 +87,7 @@ public interface ListBit
             private ArrayBit(Builder builder)
             {
                 this.size = builder.size();
-                this.bits = (BitSet)builder.bits.clone();
+                this.bits = (BitSet) builder.bits.clone();
                 builder.bits = null;
                 builder.size = 0;
             }
@@ -118,7 +117,7 @@ public interface ListBit
             @Override
             public ListBit copy()
             {
-                return new ArrayBit((BitSet)this.bits.clone(), this.size);
+                return new ArrayBit((BitSet) this.bits.clone(), this.size);
             }
         }
     }

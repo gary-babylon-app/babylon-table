@@ -26,7 +26,8 @@ class TableColumnarJoin extends TableColumnarCommon
     private final Set<ColumnName> rightColumnNames;
     private final ConcurrentMap<ColumnName, Column> rightColumnViews;
 
-    TableColumnarJoin(TableName name, TableDescription description, TableColumnar left, TableColumnar right, ViewIndex rowIndex, ColumnName... rightColumnsToAdd)
+    TableColumnarJoin(TableName name, TableDescription description, TableColumnar left, TableColumnar right,
+            ViewIndex rowIndex, ColumnName... rightColumnsToAdd)
     {
         super(description);
         this.name = Objects.requireNonNull(name);
@@ -84,8 +85,7 @@ class TableColumnarJoin extends TableColumnarCommon
         {
             return null;
         }
-        return this.rightColumnViews.computeIfAbsent(x, colName ->
-        {
+        return this.rightColumnViews.computeIfAbsent(x, colName -> {
             Column originalColumn = this.right.get(colName);
             return originalColumn.view(this.rowIndex);
         });

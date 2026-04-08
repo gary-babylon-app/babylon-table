@@ -12,9 +12,6 @@ package app.babylon.text;
 
 public final class Strings
 {
-    private Strings()
-    {
-    }
 
     public static String toCamelUpperPreserve(String x)
     {
@@ -52,13 +49,11 @@ public final class Strings
                 {
                     result.append(Character.toUpperCase(currentChar));
                     newWord = false;
-                }
-                else
+                } else
                 {
                     result.append(Character.toLowerCase(currentChar));
                 }
-            }
-            else
+            } else
             {
                 newWord = true;
             }
@@ -122,8 +117,8 @@ public final class Strings
     }
 
     /**
-     * Unicode-aware edge stripping (like {@link String#strip()}) plus
-     * additional ingestion cleanup characters.
+     * Unicode-aware edge stripping (like {@link String#strip()}) plus additional
+     * ingestion cleanup characters.
      */
     public static String stripx(CharSequence s)
     {
@@ -189,12 +184,7 @@ public final class Strings
 
     private static boolean isStrippable(char c)
     {
-        return Character.isWhitespace(c)
-            || c == '\u00A0'
-            || c == '\u200B'
-            || c == '\u200C'
-            || c == '\u200D'
-            || c == '\uFEFF'
-            || c == '\uFFFD';
+        return Character.isWhitespace(c) || c == '\u00A0' || c == '\u200B' || c == '\u200C' || c == '\u200D'
+                || c == '\uFEFF' || c == '\uFFFD';
     }
 }

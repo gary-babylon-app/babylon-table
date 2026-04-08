@@ -27,11 +27,7 @@ public class ColumnObjectJoinTest
         original.add("abc2");
         original.add("abc3");
 
-        ViewIndex rowIndex = ViewIndex.builder()
-                .add(1)
-                .addNull()
-                .add(1)
-                .build();
+        ViewIndex rowIndex = ViewIndex.builder().add(1).addNull().add(1).build();
 
         ColumnObject<String> join = original.build().view(rowIndex);
 

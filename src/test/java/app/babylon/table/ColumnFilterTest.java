@@ -30,7 +30,8 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        TableColumnar filtered = table.filter(ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A")));
+        TableColumnar filtered = table
+                .filter(ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A")));
 
         assertEquals(2, filtered.getRowCount());
         assertEquals("Alice", filtered.getString(ColumnName.of("name")).get(0));
@@ -64,9 +65,9 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        ColumnFilter left = ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A"));
-        ColumnFilter right = ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x ->
-        {
+        ColumnFilter left = ColumnFilter.of(ColumnName.of("name"),
+                (Predicate<Object>) x -> ((String) x).startsWith("A"));
+        ColumnFilter right = ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> {
             rightEvaluations.incrementAndGet();
             return ((String) x).length() > 3;
         });
@@ -87,8 +88,10 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        ColumnFilter startsWithA = ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A"));
-        ColumnFilter startsWithB = ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("B"));
+        ColumnFilter startsWithA = ColumnFilter.of(ColumnName.of("name"),
+                (Predicate<Object>) x -> ((String) x).startsWith("A"));
+        ColumnFilter startsWithB = ColumnFilter.of(ColumnName.of("name"),
+                (Predicate<Object>) x -> ((String) x).startsWith("B"));
 
         TableColumnar filtered = table.filter(startsWithA.or(startsWithB));
 
@@ -105,7 +108,8 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        ColumnFilter startsWithA = ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A"));
+        ColumnFilter startsWithA = ColumnFilter.of(ColumnName.of("name"),
+                (Predicate<Object>) x -> ((String) x).startsWith("A"));
 
         TableColumnar filtered = table.filter(startsWithA.not());
 
@@ -122,8 +126,8 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        TableColumnar filtered = table.filter(
-                ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("Z")));
+        TableColumnar filtered = table
+                .filter(ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("Z")));
 
         assertNotNull(filtered);
         assertEquals(0, filtered.getRowCount());

@@ -11,7 +11,8 @@
 package app.babylon.table;
 
 /**
- * Represents a tabular data set with a name, description, and row/column dimensions.
+ * Represents a tabular data set with a name, description, and row/column
+ * dimensions.
  */
 public interface Table
 {

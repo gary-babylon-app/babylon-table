@@ -65,14 +65,13 @@ public interface GroupKey extends Comparable<GroupKey>
             }
             if (o1 instanceof Comparable)
             {
-                Comparable<Object> c1 = (Comparable<Object>)o1;
+                Comparable<Object> c1 = (Comparable<Object>) o1;
                 int c = c1.compareTo(o2);
                 if (c != 0)
                 {
                     return c;
                 }
-            }
-            else
+            } else
             {
                 throw new RuntimeException("GroupKey element " + o1 + " is not comparable");
             }

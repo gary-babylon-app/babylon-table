@@ -48,8 +48,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(
-            TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber, "From", "To", "CATEGORICAL", "FIRST_IN"));
+        TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
+                "From", "To", "CATEGORICAL", "FIRST_IN"));
 
         ColumnCategorical<Integer> ints = transformed.getCategorical(to, Integer.class);
         assertEquals(Integer.valueOf(1), ints.get(0));
@@ -67,8 +67,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(
-            TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber, "From", "To", "ARRAY", "LAST_IN"));
+        TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
+                "From", "To", "ARRAY", "LAST_IN"));
 
         ColumnObject<Integer> ints = transformed.getTyped(to, Integer.class);
         assertEquals(Integer.valueOf(2), ints.get(0));
@@ -86,8 +86,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(
-            TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber, "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
+        TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
+                "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
 
         ColumnCategorical<Integer> ints = transformed.getCategorical(to, Integer.class);
         assertEquals(Integer.valueOf(1), ints.get(0));

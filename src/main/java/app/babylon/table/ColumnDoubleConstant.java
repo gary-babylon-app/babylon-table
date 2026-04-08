@@ -12,8 +12,6 @@ package app.babylon.table;
 
 import java.util.Objects;
 
-
-
 class ColumnDoubleConstant implements ColumnDouble
 {
     private final ColumnName name;
@@ -77,8 +75,7 @@ class ColumnDoubleConstant implements ColumnDouble
             if (rowIndex.isSet(i) && this.isSet)
             {
                 builder.add(this.value);
-            }
-            else
+            } else
             {
                 builder.addNull();
             }

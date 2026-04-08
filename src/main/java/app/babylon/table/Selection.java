@@ -14,7 +14,6 @@ import java.util.Objects;
 
 import java.util.BitSet;
 
-
 public class Selection
 {
     private BitSet bits;
@@ -25,13 +24,14 @@ public class Selection
     {
         this.name = ArgumentChecks.nonEmpty(name);
         bits = new BitSet(255);
-        size=0;
+        size = 0;
     }
 
     /**
      *
      * @param name
-     * @param bitSet - careful this is not copied, so selection is mutable.
+     * @param bitSet
+     *            - careful this is not copied, so selection is mutable.
      * @param size
      */
     private Selection(String name, BitSet bitSet, int size)
@@ -77,7 +77,7 @@ public class Selection
 
     public Selection not()
     {
-        //unnesscart copy of copied array, find better way to deep copy;
+        // unnesscart copy of copied array, find better way to deep copy;
         BitSet bitset = BitSet.valueOf(this.bits.toLongArray());
         bitset.flip(0, size);
 

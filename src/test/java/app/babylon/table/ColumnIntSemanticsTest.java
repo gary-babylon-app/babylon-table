@@ -16,13 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-
 public class ColumnIntSemanticsTest
 {
     @Test
     public void mutableColumnTracksNullsAndSupportsRegularValues()
     {
-        ColumnInt.Builder columnBuilder = (ColumnInt.Builder)ColumnInt.builder(ColumnName.of("values"));
+        ColumnInt.Builder columnBuilder = (ColumnInt.Builder) ColumnInt.builder(ColumnName.of("values"));
         columnBuilder.add(42);
         columnBuilder.addNull();
         columnBuilder.add(-123);
@@ -40,7 +39,7 @@ public class ColumnIntSemanticsTest
     @Test
     public void mutableCopyPreservesValuesAndNullMarkers()
     {
-        ColumnInt.Builder builder = (ColumnInt.Builder)ColumnInt.builder(ColumnName.of("original"));
+        ColumnInt.Builder builder = (ColumnInt.Builder) ColumnInt.builder(ColumnName.of("original"));
         builder.add(10);
         builder.addNull();
         builder.add(-3);
@@ -61,14 +60,14 @@ public class ColumnIntSemanticsTest
     @Test
     public void copyWithNewNamePreservesData()
     {
-        ColumnInt.Builder builder = (ColumnInt.Builder)ColumnInt.builder(ColumnName.of("source"));
+        ColumnInt.Builder builder = (ColumnInt.Builder) ColumnInt.builder(ColumnName.of("source"));
         builder.add(7);
         builder.addNull();
         ColumnInt original = builder.build();
 
         Column renamed = original.copy(ColumnName.of("target"));
         assertTrue(renamed instanceof ColumnInt);
-        ColumnInt renamedInt = (ColumnInt)renamed;
+        ColumnInt renamedInt = (ColumnInt) renamed;
 
         assertEquals(ColumnName.of("target"), renamedInt.getName());
         assertEquals(2, renamedInt.size());
@@ -79,7 +78,7 @@ public class ColumnIntSemanticsTest
     @Test
     public void getAsColumnReturnsSingleRowConstantColumn()
     {
-        ColumnInt.Builder sourceBuilder = (ColumnInt.Builder)ColumnInt.builder(ColumnName.of("source"));
+        ColumnInt.Builder sourceBuilder = (ColumnInt.Builder) ColumnInt.builder(ColumnName.of("source"));
         sourceBuilder.add(11);
         sourceBuilder.add(22);
         ColumnInt source = sourceBuilder.build();
@@ -113,7 +112,7 @@ public class ColumnIntSemanticsTest
         indexBuilder.add(3);
         indexBuilder.add(1);
 
-        ColumnInt view = (ColumnInt)constant.view(indexBuilder.build());
+        ColumnInt view = (ColumnInt) constant.view(indexBuilder.build());
 
         assertEquals(3, view.size());
         assertEquals(ColumnName.of("c"), view.getName());

@@ -16,9 +16,6 @@ import java.util.regex.Pattern;
 
 public final class Split
 {
-    private Split()
-    {
-    }
 
     public static List<String> anyChars(CharSequence input, String separators)
     {
@@ -43,8 +40,7 @@ public final class Split
                     words.add(s.substring(start, i));
                     start = -1;
                 }
-            }
-            else if (start < 0)
+            } else if (start < 0)
             {
                 start = i;
             }
@@ -64,7 +60,8 @@ public final class Split
         }
         if (delimiter == null || delimiter.isEmpty())
         {
-            return new String[] {input};
+            return new String[]
+            {input};
         }
         return input.split(Pattern.quote(delimiter), preserveEmpty ? -1 : 0);
     }

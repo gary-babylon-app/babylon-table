@@ -25,7 +25,7 @@ public class TablesToString
     }
     public static String printSmallTable(TableColumnar table, ToStringSettings settings)
     {
-        if (table.getColumnCount()<=MAX_NUMBER_COLUMNS && table.getRowCount()<=MAX_NUMBER_ROWS)
+        if (table.getColumnCount() <= MAX_NUMBER_COLUMNS && table.getRowCount() <= MAX_NUMBER_ROWS)
         {
             return printFullTable(table);
         }
@@ -38,19 +38,19 @@ public class TablesToString
         builder.append(table.getName()).append("\n");
         builder.append(table.getDescription()).append("\n");
 
-        boolean padMiddle = table.getColumnCount()>columns.length;
+        boolean padMiddle = table.getColumnCount() > columns.length;
 
         plusHyphenLine(columns, widths, builder, padMiddle);
         headerValues(columns, widths, builder, padMiddle);
         plusHyphenLine(columns, widths, builder, padMiddle);
 
         int maxNumberRows = Math.min(MAX_NUMBER_ROWS, table.getRowCount());
-        for(int j = 0;j<maxNumberRows/2+1;++j)
+        for (int j = 0; j < maxNumberRows / 2 + 1; ++j)
         {
             rowValues(settings, j, columns, widths, builder, padMiddle);
         }
 
-        boolean padRows = table.getRowCount()>MAX_NUMBER_ROWS;
+        boolean padRows = table.getRowCount() > MAX_NUMBER_ROWS;
 
         if (padRows)
         {
@@ -59,7 +59,8 @@ public class TablesToString
             builder.append("...\n");
         }
 
-        for(int j = Math.max(maxNumberRows/2+1, table.getRowCount()-maxNumberRows/2+1);j<table.getRowCount();++j)
+        for (int j = Math.max(maxNumberRows / 2 + 1, table.getRowCount() - maxNumberRows / 2 + 1); j < table
+                .getRowCount(); ++j)
         {
             rowValues(settings, j, columns, widths, builder, padMiddle);
         }
@@ -69,20 +70,19 @@ public class TablesToString
         return builder.toString();
     }
 
-
     private static Column[] getColumnsToPrint(TableColumnar table, int MAX_NUMBER_COLUMNS)
     {
         int numberofColumns = Math.min(MAX_NUMBER_COLUMNS, table.getColumnCount());
 
         Column[] columns = table.getColumns();
         Column[] columns2Print = new Column[numberofColumns];
-        for(int i=0;i<numberofColumns/2;++i)
+        for (int i = 0; i < numberofColumns / 2; ++i)
         {
             columns2Print[i] = columns[i];
         }
-        for(int i=numberofColumns/2; i<numberofColumns;++i)
+        for (int i = numberofColumns / 2; i < numberofColumns; ++i)
         {
-            int colIndex = table.getColumnCount()-numberofColumns+i;
+            int colIndex = table.getColumnCount() - numberofColumns + i;
             columns2Print[i] = columns[colIndex];
         }
         return columns2Print;
@@ -92,16 +92,16 @@ public class TablesToString
     {
         int[] widths = new int[columns.length];
 
-        for(int i=0;i<columns.length;++i)
+        for (int i = 0; i < columns.length; ++i)
         {
             Column column = columns[i];
             widths[i] = column.getName().getValue().length();
             int maxNumberRows = Math.min(MAX_NUMBER_ROWS, column.size());
-            for(int j = 0;j<maxNumberRows/2+1;++j)
+            for (int j = 0; j < maxNumberRows / 2 + 1; ++j)
             {
                 widths[i] = Math.max(column.toString(j, settings).length(), widths[i]);
             }
-            for(int j = Math.max(maxNumberRows/2+1, column.size()-maxNumberRows/2+1);j<column.size();++j)
+            for (int j = Math.max(maxNumberRows / 2 + 1, column.size() - maxNumberRows / 2 + 1); j < column.size(); ++j)
             {
                 widths[i] = Math.max(column.toString(j, settings).length(), widths[i]);
             }
@@ -111,7 +111,7 @@ public class TablesToString
     private static void headerValues(Column[] columns, int[] widths, StringBuilder builder, boolean padMiddle)
     {
         builder.append("|");
-        for(int i=0;i<columns.length/2;++i)
+        for (int i = 0; i < columns.length / 2; ++i)
         {
             ColumnName columnName = columns[i].getName();
             String v = padValue(i, columnName.getValue(), widths[i]);
@@ -121,7 +121,7 @@ public class TablesToString
         {
             builder.append(" ... |");
         }
-        for(int i=columns.length/2;i<columns.length;++i)
+        for (int i = columns.length / 2; i < columns.length; ++i)
         {
             ColumnName columnName = columns[i].getName();
             String v = padValue(i, columnName.getValue(), widths[i]);
@@ -130,10 +130,11 @@ public class TablesToString
         builder.append("\n");
     }
 
-    private static void rowValues(ToStringSettings settings, int j, Column[] columns, int[] widths, StringBuilder builder, boolean padMiddle)
+    private static void rowValues(ToStringSettings settings, int j, Column[] columns, int[] widths,
+            StringBuilder builder, boolean padMiddle)
     {
         builder.append("|");
-        for(int i=0;i<columns.length/2;++i)
+        for (int i = 0; i < columns.length / 2; ++i)
         {
             String s = columns[i].toString(j, settings);
             String v = padValue(i, s, widths[i]);
@@ -143,7 +144,7 @@ public class TablesToString
         {
             builder.append(" ... |");
         }
-        for(int i=columns.length/2;i<columns.length;++i)
+        for (int i = columns.length / 2; i < columns.length; ++i)
         {
             String s = columns[i].toString(j, settings);
             String v = padValue(i, s, widths[i]);
@@ -153,7 +154,7 @@ public class TablesToString
     }
     private static void plusHyphenLine(Column[] columns, int[] widths, StringBuilder builder, boolean padMiddle)
     {
-        for(int i=0;i<columns.length/2;++i)
+        for (int i = 0; i < columns.length / 2; ++i)
         {
             builder.append("+").append(Strings.rightPad("", widths[i], '-'));
         }
@@ -163,7 +164,7 @@ public class TablesToString
             builder.append("+ ... ");
         }
 
-        for(int i=columns.length/2;i<columns.length;++i)
+        for (int i = columns.length / 2; i < columns.length; ++i)
         {
             builder.append("+").append(Strings.rightPad("", widths[i], '-'));
         }
@@ -173,11 +174,10 @@ public class TablesToString
 
     private static String padValue(int columnIndex, String v, int width)
     {
-        if (columnIndex==0)
+        if (columnIndex == 0)
         {
             return Strings.rightPad(v, width, SPACE);
-        }
-        else
+        } else
         {
             return Strings.leftPad(v, width, SPACE);
         }
@@ -193,11 +193,11 @@ public class TablesToString
         Column[] columns = table.getColumns();
         int[] widths = new int[columns.length];
 
-        for(int i=0;i<columns.length;++i)
+        for (int i = 0; i < columns.length; ++i)
         {
             Column column = columns[i];
             widths[i] = column.getName().getValue().length();
-            for(int j=0;j<column.size();++j)
+            for (int j = 0; j < column.size(); ++j)
             {
                 widths[i] = Math.max(column.toString(j, settings).length(), widths[i]);
             }
@@ -207,51 +207,48 @@ public class TablesToString
         builder.append(table.getName()).append("\n");
         builder.append(table.getDescription()).append("\n");
 
-        for(int i=0;i<columns.length;++i)
+        for (int i = 0; i < columns.length; ++i)
         {
             builder.append("+").append(Strings.rightPad("", widths[i], '-'));
         }
         builder.append("+\n");
 
-
-        for(int i=0;i<columns.length;++i)
+        for (int i = 0; i < columns.length; ++i)
         {
             ColumnName columnName = columns[i].getName();
-            if (i==0)
+            if (i == 0)
             {
                 builder.append("|").append(Strings.rightPad(columnName.getValue(), widths[i], SPACE));
-            }
-            else
+            } else
             {
                 builder.append("|").append(Strings.leftPad(columnName.getValue(), widths[i], SPACE));
             }
         }
         builder.append("|\n");
 
-        for(int i=0;i<columns.length;++i)
+        for (int i = 0; i < columns.length; ++i)
         {
             builder.append("+").append(Strings.rightPad("", widths[i], '-'));
         }
         builder.append("+\n");
 
         int rowCount = Math.min(numRows, table.getRowCount());
-        for(int j=0;j<rowCount;++j)
+        for (int j = 0; j < rowCount; ++j)
         {
-            for(int i=0;i<columns.length;++i)
+            for (int i = 0; i < columns.length; ++i)
             {
                 Column column = columns[i];
-                if (i==0)
+                if (i == 0)
                 {
                     builder.append("|").append(Strings.rightPad(column.toString(j, settings), widths[i], SPACE));
-                }
-                else
+                } else
                 {
                     builder.append("|").append(Strings.leftPad(column.toString(j, settings), widths[i], SPACE));
                 }
             }
             builder.append("|\n");
         }
-        for(int i=0;i<columns.length;++i)
+        for (int i = 0; i < columns.length; ++i)
         {
             builder.append("+").append(Strings.rightPad("", widths[i], '-'));
         }

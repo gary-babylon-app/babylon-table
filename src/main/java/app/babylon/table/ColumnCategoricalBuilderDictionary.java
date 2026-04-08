@@ -46,8 +46,7 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         if (code == 0)
         {
             this.hasAnyUnset = true;
-        }
-        else
+        } else
         {
             this.hasAnySet = true;
         }
@@ -292,9 +291,8 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
             return (T) this.dictionary[this.categoricalList.get(i)];
         }
 
-        
-		@SuppressWarnings("unchecked")
-		@Override
+        @SuppressWarnings("unchecked")
+        @Override
         public T getCategoryValue(int categoryCode)
         {
             return (T) this.dictionary[categoryCode];
@@ -354,7 +352,7 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         }
 
         @SuppressWarnings("unchecked")
-		@Override
+        @Override
         public Collection<T> getCategoricalValues(Collection<T> x)
         {
             if (x == null)

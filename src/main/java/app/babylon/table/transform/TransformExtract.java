@@ -28,7 +28,7 @@ public class TransformExtract extends TransformStringToString
 
     public static TransformExtract of(String[] params)
     {
-        if (!Is.empty(params) && params.length>=3)
+        if (!Is.empty(params) && params.length >= 3)
         {
             ColumnName columnName = ColumnName.of(params[0]);
             ColumnName newColumnName = ColumnName.of(params[1]);

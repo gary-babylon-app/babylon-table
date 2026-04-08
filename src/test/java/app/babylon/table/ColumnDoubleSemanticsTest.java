@@ -10,7 +10,6 @@
 
 package app.babylon.table;
 
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -18,13 +17,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-
 public class ColumnDoubleSemanticsTest
 {
     @Test
     public void mutableColumnTracksNullsAndSupportsRegularValues()
     {
-        ColumnDouble.Builder columnBuilder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("values"));
+        ColumnDouble.Builder columnBuilder = (ColumnDouble.Builder) ColumnDouble.builder(ColumnName.of("values"));
         columnBuilder.add(42.0);
         columnBuilder.addNull();
         columnBuilder.add(-123.5);
@@ -42,7 +40,7 @@ public class ColumnDoubleSemanticsTest
     @Test
     public void mutableCopyPreservesValuesAndNullMarkers()
     {
-        ColumnDouble.Builder builder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("original"));
+        ColumnDouble.Builder builder = (ColumnDouble.Builder) ColumnDouble.builder(ColumnName.of("original"));
         builder.add(10.25);
         builder.addNull();
         builder.add(-3.0);
@@ -63,14 +61,14 @@ public class ColumnDoubleSemanticsTest
     @Test
     public void copyWithNewNamePreservesData()
     {
-        ColumnDouble.Builder builder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("source"));
+        ColumnDouble.Builder builder = (ColumnDouble.Builder) ColumnDouble.builder(ColumnName.of("source"));
         builder.add(7.5);
         builder.addNull();
         ColumnDouble original = builder.build();
 
         Column renamed = original.copy(ColumnName.of("target"));
         assertTrue(renamed instanceof ColumnDouble);
-        ColumnDouble renamedDouble = (ColumnDouble)renamed;
+        ColumnDouble renamedDouble = (ColumnDouble) renamed;
 
         assertEquals(ColumnName.of("target"), renamedDouble.getName());
         assertEquals(2, renamedDouble.size());
@@ -81,7 +79,7 @@ public class ColumnDoubleSemanticsTest
     @Test
     public void getAsColumnReturnsSingleRowConstantColumn()
     {
-        ColumnDouble.Builder sourceBuilder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("source"));
+        ColumnDouble.Builder sourceBuilder = (ColumnDouble.Builder) ColumnDouble.builder(ColumnName.of("source"));
         sourceBuilder.add(11.0);
         sourceBuilder.add(22.0);
         ColumnDouble source = sourceBuilder.build();
@@ -115,7 +113,7 @@ public class ColumnDoubleSemanticsTest
         indexBuilder.add(2);
         indexBuilder.add(1);
 
-        ColumnDouble view = (ColumnDouble)constant.view(indexBuilder.build());
+        ColumnDouble view = (ColumnDouble) constant.view(indexBuilder.build());
 
         assertEquals(3, view.size());
         assertEquals(ColumnName.of("c"), view.getName());
@@ -130,7 +128,7 @@ public class ColumnDoubleSemanticsTest
     @Test
     public void aggregateSupportsDoubleColumns()
     {
-        ColumnDouble.Builder builder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("values"));
+        ColumnDouble.Builder builder = (ColumnDouble.Builder) ColumnDouble.builder(ColumnName.of("values"));
         builder.add(1.5);
         builder.addNull();
         builder.add(3.0);
@@ -146,7 +144,7 @@ public class ColumnDoubleSemanticsTest
     @Test
     public void builderShouldAcceptCharSequenceValues()
     {
-        ColumnDouble.Builder builder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("values"));
+        ColumnDouble.Builder builder = (ColumnDouble.Builder) ColumnDouble.builder(ColumnName.of("values"));
         builder.add("1.25");
         builder.add("12.50");
         builder.add("1 2 3");
@@ -167,7 +165,7 @@ public class ColumnDoubleSemanticsTest
     @Test
     public void builderShouldAcceptCharArraySlices()
     {
-        ColumnDouble.Builder builder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("values"));
+        ColumnDouble.Builder builder = (ColumnDouble.Builder) ColumnDouble.builder(ColumnName.of("values"));
         char[] chars = "xx12.75yy".toCharArray();
         builder.add(chars, 2, 5);
         builder.add(chars, 0, 2);
@@ -181,27 +179,27 @@ public class ColumnDoubleSemanticsTest
     @Test
     public void groupByAggregateSupportsDoubleColumns()
     {
-        ColumnCategorical.Builder<String> stationBuilder = ColumnCategorical.builder(ColumnName.of("station"), String.class);
+        ColumnCategorical.Builder<String> stationBuilder = ColumnCategorical.builder(ColumnName.of("station"),
+                String.class);
         stationBuilder.add("A");
         stationBuilder.add("A");
         stationBuilder.add("B");
         stationBuilder.add("B");
 
-        ColumnDouble.Builder temperatureBuilder = (ColumnDouble.Builder)ColumnDouble.builder(ColumnName.of("temperature"));
+        ColumnDouble.Builder temperatureBuilder = (ColumnDouble.Builder) ColumnDouble
+                .builder(ColumnName.of("temperature"));
         temperatureBuilder.add(10.0);
         temperatureBuilder.add(14.0);
         temperatureBuilder.add(-1.0);
         temperatureBuilder.add(3.0);
 
-        TableColumnar table = Tables.newTable(
-            TableName.of("measurements"),
-            new TableDescription(""),
-            stationBuilder.build(),
-            temperatureBuilder.build()
-        );
+        TableColumnar table = Tables.newTable(TableName.of("measurements"), new TableDescription(""),
+                stationBuilder.build(), temperatureBuilder.build());
 
-        TableColumnar summary = table.groupBy(ColumnName.of("station"))
-            .aggregate(TableName.of("summary"), new ColumnName[] {ColumnName.of("temperature")}, new Aggregate[] {Aggregate.MEAN});
+        TableColumnar summary = table.groupBy(ColumnName.of("station")).aggregate(TableName.of("summary"),
+                new ColumnName[]
+                {ColumnName.of("temperature")}, new Aggregate[]
+                {Aggregate.MEAN});
 
         ColumnDouble means = summary.getDouble(ColumnName.of("temperature"));
         Assertions.assertNotNull(means);
@@ -212,8 +210,7 @@ public class ColumnDoubleSemanticsTest
             if ("A".equals(station))
             {
                 assertEquals(12.0, means.get(i), 1e-12);
-            }
-            else if ("B".equals(station))
+            } else if ("B".equals(station))
             {
                 assertEquals(1.0, means.get(i), 1e-12);
             }

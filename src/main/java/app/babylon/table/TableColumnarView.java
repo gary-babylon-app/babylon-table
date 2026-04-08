@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-
 class TableColumnarView extends TableColumnarCommon
 {
     private final TableName name;
@@ -32,13 +31,14 @@ class TableColumnarView extends TableColumnarCommon
         this(name, null, original, rowIndex, original.getColumnNames());
     }
 
-    public TableColumnarView(TableName name, TableDescription tableDescription, TableColumnar original, ViewIndex rowIndex)
+    public TableColumnarView(TableName name, TableDescription tableDescription, TableColumnar original,
+            ViewIndex rowIndex)
     {
         this(name, tableDescription, original, rowIndex, original.getColumnNames());
     }
 
-    public TableColumnarView(TableName name, TableDescription tableDescription, TableColumnar original, ViewIndex rowIndex,
-            ColumnName[] activeColumnNames)
+    public TableColumnarView(TableName name, TableDescription tableDescription, TableColumnar original,
+            ViewIndex rowIndex, ColumnName[] activeColumnNames)
     {
         super(tableDescription);
         this.name = Objects.requireNonNull(name);
@@ -110,8 +110,7 @@ class TableColumnarView extends TableColumnarCommon
         {
             return null;
         }
-        return this.columnViews.computeIfAbsent(x, colName ->
-        {
+        return this.columnViews.computeIfAbsent(x, colName -> {
             Column originalColumn = this.original.get(colName);
             if (originalColumn == null)
             {
@@ -126,18 +125,17 @@ class TableColumnarView extends TableColumnarCommon
     {
         Column[] c = new Column[getColumnCount()];
         ColumnName[] colNames = this.activeColumnNames;
-        for(int i=0;i<c.length;++i)
+        for (int i = 0; i < c.length; ++i)
         {
             c[i] = get(colNames[i]);
         }
         return c;
     }
 
-
     @Override
     public TableColumnar removeColumns(ColumnName... x)
     {
-        if(!Empties.isEmpty(x))
+        if (!Empties.isEmpty(x))
         {
             Set<ColumnName> columnsToRemove = new HashSet<>();
             for (ColumnName columnName : x)
@@ -161,7 +159,8 @@ class TableColumnarView extends TableColumnarCommon
                     ++j;
                 }
             }
-            return new TableColumnarView(getName(), getDescription(), this.original, this.rowIndex, remainingColumnNames);
+            return new TableColumnarView(getName(), getDescription(), this.original, this.rowIndex,
+                    remainingColumnNames);
         }
         return this;
     }

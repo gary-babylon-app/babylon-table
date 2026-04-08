@@ -12,14 +12,9 @@ package app.babylon.table;
 
 import java.util.Locale;
 
-public enum DateFormat 
+public enum DateFormat
 {
-    DMY, 
-    YMD, 
-    MDY, 
-    ExcelLocalDate, 
-    ExcelLocalDateTime, 
-    Unknown;
+    DMY, YMD, MDY, ExcelLocalDate, ExcelLocalDateTime, Unknown;
 
     public static DateFormat parse(String s)
     {
@@ -28,17 +23,21 @@ public enum DateFormat
             return null;
         }
         s = s.toUpperCase(Locale.UK).strip();
-        switch(s)
+        switch (s)
         {
-            case "DMY" ->
-            { return DMY; }
-            case "MDY" ->
-            { return MDY; }
-            case "YMD" ->
-            { return YMD; }
-            default    ->
-            { return null;}
+            case "DMY" -> {
+                return DMY;
+            }
+            case "MDY" -> {
+                return MDY;
+            }
+            case "YMD" -> {
+                return YMD;
+            }
+            default -> {
+                return null;
+            }
         }
 
     }
-}; 
+};

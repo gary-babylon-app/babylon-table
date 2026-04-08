@@ -21,7 +21,8 @@ public class CategoryCodeListTest
     @Test
     public void defaultBuilderShouldBuildIntBackedList()
     {
-        CategoryCodeList list = CategoryCodeList.builder().add(3).add(70000).addAll(new int[]{9, 11}).build();
+        CategoryCodeList list = CategoryCodeList.builder().add(3).add(70000).addAll(new int[]
+        {9, 11}).build();
         assertEquals(4, list.size());
         assertEquals(3, list.get(0));
         assertEquals(70000, list.get(1));
@@ -46,11 +47,13 @@ public class CategoryCodeListTest
     @Test
     public void toArrayShouldBeDefensive()
     {
-        CategoryCodeList list = CategoryCodeList.builder().addAll(new int[]{1, 2, 3}).build();
+        CategoryCodeList list = CategoryCodeList.builder().addAll(new int[]
+        {1, 2, 3}).build();
         int[] copy = list.toArray(null);
         copy[0] = 99;
         assertEquals(1, list.get(0));
-        assertArrayEquals(new int[]{1, 2, 3}, list.toArray(null));
+        assertArrayEquals(new int[]
+        {1, 2, 3}, list.toArray(null));
     }
 
     @Test

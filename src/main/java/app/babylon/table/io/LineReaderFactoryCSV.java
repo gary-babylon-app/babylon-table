@@ -38,8 +38,7 @@ public class LineReaderFactoryCSV implements LineReaderFactory
                 return new LineReaderCSVFixedWidth(bufferedStream, readSettingCSV, charset, bomLength);
             }
             return new LineReaderCSV(bufferedStream, readSettingCSV, charset, bomLength);
-        }
-        else
+        } else
         {
             throw new IllegalArgumentException();
         }

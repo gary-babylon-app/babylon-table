@@ -34,12 +34,8 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
     private final String[] strippedValues;
     private final ReadSettingsCSV options;
 
-    RowConsumerTableBuilding(
-            ReadSettingsCSV options,
-            RowFilter rowFilter,
-            byte[] columnKinds,
-            ColumnBuilder[] columnBuilders,
-            String[] strippedValues)
+    RowConsumerTableBuilding(ReadSettingsCSV options, RowFilter rowFilter, byte[] columnKinds,
+            ColumnBuilder[] columnBuilders, String[] strippedValues)
     {
         this.options = options;
         this.rowFilter = rowFilter;
@@ -81,22 +77,22 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         {
             switch (this.columnKinds[i])
             {
-            case KIND_DOUBLE:
-                if (Strings.isEmpty(this.strippedValues[i]))
-                {
-                    ((ColumnDouble.Builder) this.columnBuilders[i]).addNull();
-                }
-                else
-                {
-                    ((ColumnDouble.Builder) this.columnBuilders[i]).add(chars, rowValues.start(i), rowValues.length(i));
-                }
-                break;
-            case KIND_STRING:
-            default:
-                @SuppressWarnings("unchecked")
-                ColumnObject.Builder<String> builder = (ColumnObject.Builder<String>) this.columnBuilders[i];
-                builder.add(this.strippedValues[i]);
-                break;
+                case KIND_DOUBLE :
+                    if (Strings.isEmpty(this.strippedValues[i]))
+                    {
+                        ((ColumnDouble.Builder) this.columnBuilders[i]).addNull();
+                    } else
+                    {
+                        ((ColumnDouble.Builder) this.columnBuilders[i]).add(chars, rowValues.start(i),
+                                rowValues.length(i));
+                    }
+                    break;
+                case KIND_STRING :
+                default :
+                    @SuppressWarnings("unchecked")
+                    ColumnObject.Builder<String> builder = (ColumnObject.Builder<String>) this.columnBuilders[i];
+                    builder.add(this.strippedValues[i]);
+                    break;
             }
         }
     }
@@ -130,11 +126,7 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         byte[] columnKinds = initialiseColumnKinds(options, columnNames);
         ColumnBuilder[] columnBuilders = initialiseColumnBuilders(options, columnNames);
         RowFilter rowFilter = new RowFilter(options, columnNames);
-        return new RowConsumerTableBuilding(
-                options,
-                rowFilter,
-                columnKinds,
-                columnBuilders,
+        return new RowConsumerTableBuilding(options, rowFilter, columnKinds, columnBuilders,
                 new String[columnBuilders.length]);
     }
 
@@ -163,8 +155,7 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnKinds[i] = KIND_DOUBLE;
-            }
-            else
+            } else
             {
                 columnKinds[i] = KIND_STRING;
             }
@@ -172,9 +163,7 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         return columnKinds;
     }
 
-    private static ColumnBuilder[] initialiseColumnBuilders(
-            ReadSettingsCSV options,
-            ColumnName[] columnNames)
+    private static ColumnBuilder[] initialiseColumnBuilders(ReadSettingsCSV options, ColumnName[] columnNames)
     {
         ColumnBuilder[] columnBuilders = new ColumnBuilder[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
@@ -184,8 +173,7 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnBuilders[i] = ColumnDouble.builder(columnName);
-            }
-            else
+            } else
             {
                 columnBuilders[i] = ColumnObject.builder(columnName, String.class);
             }

@@ -17,7 +17,8 @@ import java.util.function.LongPredicate;
 import java.util.function.Predicate;
 
 /**
- * Defines a reusable row filter that binds to a table and evaluates rows by index.
+ * Defines a reusable row filter that binds to a table and evaluates rows by
+ * index.
  */
 @FunctionalInterface
 public interface ColumnFilter
@@ -27,8 +28,7 @@ public interface ColumnFilter
     default ColumnFilter and(ColumnFilter other)
     {
         ColumnFilter right = Objects.requireNonNull(other);
-        return table ->
-        {
+        return table -> {
             IntPredicate leftPredicate = this.bind(table);
             IntPredicate rightPredicate = right.bind(table);
             return i -> leftPredicate.test(i) && rightPredicate.test(i);
@@ -38,8 +38,7 @@ public interface ColumnFilter
     default ColumnFilter or(ColumnFilter other)
     {
         ColumnFilter right = Objects.requireNonNull(other);
-        return table ->
-        {
+        return table -> {
             IntPredicate leftPredicate = this.bind(table);
             IntPredicate rightPredicate = right.bind(table);
             return i -> leftPredicate.test(i) || rightPredicate.test(i);
@@ -48,8 +47,7 @@ public interface ColumnFilter
 
     default ColumnFilter not()
     {
-        return table ->
-        {
+        return table -> {
             IntPredicate predicate = this.bind(table);
             return i -> !predicate.test(i);
         };
@@ -59,8 +57,7 @@ public interface ColumnFilter
     {
         ColumnName name = Objects.requireNonNull(columnName);
         Predicate<Object> p = Objects.requireNonNull(predicate);
-        return table ->
-        {
+        return table -> {
             Column column = table.get(name);
             if (!(column instanceof ColumnObject<?> co))
             {
@@ -75,8 +72,7 @@ public interface ColumnFilter
     {
         ColumnName name = Objects.requireNonNull(columnName);
         IntPredicate p = Objects.requireNonNull(predicate);
-        return table ->
-        {
+        return table -> {
             ColumnInt column = table.getInt(name);
             if (column == null)
             {
@@ -91,8 +87,7 @@ public interface ColumnFilter
     {
         ColumnName name = Objects.requireNonNull(columnName);
         LongPredicate p = Objects.requireNonNull(predicate);
-        return table ->
-        {
+        return table -> {
             ColumnLong column = table.getLong(name);
             if (column == null)
             {
@@ -107,8 +102,7 @@ public interface ColumnFilter
     {
         ColumnName name = Objects.requireNonNull(columnName);
         DoublePredicate p = Objects.requireNonNull(predicate);
-        return table ->
-        {
+        return table -> {
             ColumnDouble column = table.getDouble(name);
             if (column == null)
             {

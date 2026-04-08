@@ -47,25 +47,25 @@ public class TransformSplit extends TransformBase
     public void apply(Map<ColumnName, Column> columnsByName)
     {
         @SuppressWarnings("unchecked")
-		ColumnObject<String> toSplit = (ColumnObject<String>) columnsByName.get(columnToSplit);
+        ColumnObject<String> toSplit = (ColumnObject<String>) columnsByName.get(columnToSplit);
         if (toSplit == null)
         {
             return;
         }
         @SuppressWarnings("unchecked")
-		ColumnObject.Builder<String>[] newColumns = new ColumnObject.Builder[splitColumnNames.length];
-        for(int i=0;i<splitColumnNames.length;++i)
+        ColumnObject.Builder<String>[] newColumns = new ColumnObject.Builder[splitColumnNames.length];
+        for (int i = 0; i < splitColumnNames.length; ++i)
         {
             newColumns[i] = ColumnObject.builder(splitColumnNames[i], String.class);
         }
-        for(int i=0;i<toSplit.size();++i)
+        for (int i = 0; i < toSplit.size(); ++i)
         {
             String s = toSplit.get(i);
             if (!Strings.isEmpty(s))
             {
                 String[] splitValues = Split.literal(s, this.splitOn, true);
                 int size = Math.min(splitValues.length, newColumns.length);
-                for(int j=0;j<size;++j)
+                for (int j = 0; j < size; ++j)
                 {
                     newColumns[j].add(splitValues[j]);
                 }
@@ -73,17 +73,16 @@ public class TransformSplit extends TransformBase
                 {
                     newColumns[j].addNull();
                 }
-            }
-            else
+            } else
             {
-                for(int j=0;j<newColumns.length;++j)
+                for (int j = 0; j < newColumns.length; ++j)
                 {
                     newColumns[j].addNull();;
                 }
             }
         }
         @SuppressWarnings("unchecked")
-		ColumnObject<String>[] builtColumns = new ColumnObject[newColumns.length];
+        ColumnObject<String>[] builtColumns = new ColumnObject[newColumns.length];
         for (int i = 0; i < newColumns.length; ++i)
         {
             builtColumns[i] = newColumns[i].build();

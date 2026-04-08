@@ -19,32 +19,32 @@ public class Is
 {
     public static boolean empty(int[] x)
     {
-        return (x==null || x.length==0);
+        return (x == null || x.length == 0);
     }
 
     public static <T> boolean empty(Collection<T> x)
     {
-        return (x==null || x.size()==0);
+        return (x == null || x.size() == 0);
     }
 
-    public static <U,V> boolean empty(Map<U, V> x)
+    public static <U, V> boolean empty(Map<U, V> x)
     {
-        return (x==null || x.size()==0);
+        return (x == null || x.size() == 0);
     }
 
     public static <T> boolean empty(T[] x)
     {
-        return (x==null || x.length==0);
+        return (x == null || x.length == 0);
     }
 
     public static boolean alphaUpper(char c)
     {
-        return (c>='A' && c<='Z');
+        return (c >= 'A' && c <= 'Z');
     }
 
     public static boolean alphaNumeric(char c)
     {
-        return (c>='a' && c<='z') || (c>='A' && c<='Z') || digit(c);
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || digit(c);
     }
 
     public static boolean digit(char c)
@@ -71,23 +71,20 @@ public class Is
             if (c >= '0' && c <= '9')
             {
                 hasDigit = true;
-            }
-            else if (c == '.')
+            } else if (c == '.')
             {
                 if (hasDot)
                 {
                     return false; // second dot → invalid
                 }
                 hasDot = true;
-            }
-            else
+            } else
             {
                 return false; // invalid char
             }
         }
         return hasDigit;
     }
-
 
     public static boolean decimal(String s)
     {
@@ -112,8 +109,7 @@ public class Is
             if (c >= '0' && c <= '9')
             {
                 hasDigit = true;
-            }
-            else
+            } else
             {
                 return false; // invalid char
             }

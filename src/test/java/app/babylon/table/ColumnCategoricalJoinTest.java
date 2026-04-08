@@ -32,11 +32,7 @@ public class ColumnCategoricalJoinTest
         builder.add(E.A);
         ColumnCategorical<E> original = builder.build();
 
-        ViewIndex rowIndex = ViewIndex.builder()
-                .add(2)
-                .addNull()
-                .add(1)
-                .build();
+        ViewIndex rowIndex = ViewIndex.builder().add(2).addNull().add(1).build();
 
         ColumnCategorical<E> join = original.view(rowIndex);
 
@@ -45,6 +41,7 @@ public class ColumnCategoricalJoinTest
         assertEquals(null, join.get(1));
         assertEquals(E.B, join.get(2));
         assertEquals(0, join.getCategoryCode(1));
-        assertArrayEquals(new int[] {1, 2}, join.getCategoryCodes(null));
+        assertArrayEquals(new int[]
+        {1, 2}, join.getCategoryCodes(null));
     }
 }

@@ -55,8 +55,7 @@ public class DataSources
                 buf.write((byte) result);
             }
             return buf.toString(StandardCharsets.UTF_8.name());
-        }
-        catch (Throwable t)
+        } catch (Throwable t)
         {
             throw new RuntimeException(t);
         }
@@ -74,8 +73,7 @@ public class DataSources
                 return "";
             }
             return new String(buffer, 0, count, StandardCharsets.UTF_8);
-        }
-        catch (Throwable t)
+        } catch (Throwable t)
         {
             throw new RuntimeException(t);
         }

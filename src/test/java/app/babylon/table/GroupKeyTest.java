@@ -24,11 +24,11 @@ public class GroupKeyTest
     {
         String account = "HLGIA";
         LocalDate tradeDate = LocalDate.of(2024, 8, 20);
-        
+
         GroupKey key1 = GroupKey.of(account, tradeDate);
         GroupKey key2 = GroupKey.of(account, tradeDate);
         GroupKey key3 = GroupKey.of(account, tradeDate, account);
-        
+
         assertEquals(key1, key2);
         assertEquals(key1.hashCode(), key2.hashCode());
         assertNotEquals(key1.hashCode(), key3.hashCode());

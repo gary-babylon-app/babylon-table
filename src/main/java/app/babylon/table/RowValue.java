@@ -18,9 +18,7 @@ final class RowValue
 {
     private enum ValueCategory
     {
-        OBJECT,
-        INT,
-        LONG
+        OBJECT, INT, LONG
     }
 
     private final ColumnName[] names;
@@ -60,8 +58,7 @@ final class RowValue
                     rowValue.objects[j] = value;
                     rowValue.isSet[j] = true;
                 }
-            }
-            else if (column instanceof ColumnInt ints)
+            } else if (column instanceof ColumnInt ints)
             {
                 rowValue.valueCategories[j] = ValueCategory.INT;
                 if (ints.isSet(rowIndex))
@@ -69,8 +66,7 @@ final class RowValue
                     rowValue.ints[j] = ints.get(rowIndex);
                     rowValue.isSet[j] = true;
                 }
-            }
-            else if (column instanceof ColumnLong longs)
+            } else if (column instanceof ColumnLong longs)
             {
                 rowValue.valueCategories[j] = ValueCategory.LONG;
                 if (longs.isSet(rowIndex))
@@ -78,13 +74,10 @@ final class RowValue
                     rowValue.longs[j] = longs.get(rowIndex);
                     rowValue.isSet[j] = true;
                 }
-            }
-            else
+            } else
             {
-                throw new IllegalArgumentException(
-                        "removeDuplicates does not support key column type "
-                                + column.getClass().getSimpleName()
-                                + " for column " + column.getName());
+                throw new IllegalArgumentException("removeDuplicates does not support key column type "
+                        + column.getClass().getSimpleName() + " for column " + column.getName());
             }
         }
         return rowValue;
@@ -138,8 +131,7 @@ final class RowValue
             RowValue that = (RowValue) obj;
             for (int i = 0; i < this.valueCategories.length; ++i)
             {
-                if (!Objects.equals(this.names[i], that.names[i])
-                        || this.valueCategories[i] != that.valueCategories[i]
+                if (!Objects.equals(this.names[i], that.names[i]) || this.valueCategories[i] != that.valueCategories[i]
                         || this.isSet[i] != that.isSet[i])
                 {
                     return false;
@@ -150,25 +142,25 @@ final class RowValue
                 }
                 switch (this.valueCategories[i])
                 {
-                    case OBJECT:
+                    case OBJECT :
                         if (!Objects.equals(this.objects[i], that.objects[i]))
                         {
                             return false;
                         }
                         break;
-                    case INT:
+                    case INT :
                         if (this.ints[i] != that.ints[i])
                         {
                             return false;
                         }
                         break;
-                    case LONG:
+                    case LONG :
                         if (this.longs[i] != that.longs[i])
                         {
                             return false;
                         }
                         break;
-                    default:
+                    default :
                         throw new IllegalStateException("Unsupported RowValue category " + this.valueCategories[i]);
                 }
             }
@@ -191,16 +183,16 @@ final class RowValue
             }
             switch (this.valueCategories[i])
             {
-                case OBJECT:
+                case OBJECT :
                     result = 31 * result + Objects.hashCode(this.objects[i]);
                     break;
-                case INT:
+                case INT :
                     result = 31 * result + Integer.hashCode(this.ints[i]);
                     break;
-                case LONG:
+                case LONG :
                     result = 31 * result + Long.hashCode(this.longs[i]);
                     break;
-                default:
+                default :
                     throw new IllegalStateException("Unsupported RowValue category " + this.valueCategories[i]);
             }
         }
@@ -210,13 +202,10 @@ final class RowValue
     @Override
     public String toString()
     {
-        return "RowValue(names=" + Arrays.toString(this.names)
-                + ", valueCategories=" + Arrays.toString(this.valueCategories)
-                + ", isSet=" + Arrays.toString(this.isSet)
-                + ", objects=" + Arrays.toString(this.objects)
-                + ", ints=" + Arrays.toString(this.ints)
-                + ", longs=" + Arrays.toString(this.longs)
-                + ")";
+        return "RowValue(names=" + Arrays.toString(this.names) + ", valueCategories="
+                + Arrays.toString(this.valueCategories) + ", isSet=" + Arrays.toString(this.isSet) + ", objects="
+                + Arrays.toString(this.objects) + ", ints=" + Arrays.toString(this.ints) + ", longs="
+                + Arrays.toString(this.longs) + ")";
     }
 
     private int indexOf(ColumnName columnName)

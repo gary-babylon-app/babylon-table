@@ -30,13 +30,19 @@ class TransformToLocalDateFormatInferenceTest
         settleDates.add("18/02/2026");
 
         TableDescription description = new TableDescription("Description here...");
-        TableColumnar table = Tables.newTable(TableName.of("t"), description, (Column) tradeDates.build(), (Column) settleDates.build());
-        TableColumnar transformed = table.apply(new TransformToLocalDate(ColumnName.of("trade_date"), ColumnName.of("settle_date")));
+        TableColumnar table = Tables.newTable(TableName.of("t"), description, (Column) tradeDates.build(),
+                (Column) settleDates.build());
+        TableColumnar transformed = table
+                .apply(new TransformToLocalDate(ColumnName.of("trade_date"), ColumnName.of("settle_date")));
 
-        assertEquals(LocalDate.of(2026, 2, 15), transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(0));
-        assertEquals(LocalDate.of(2026, 2, 16), transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(1));
-        assertEquals(LocalDate.of(2026, 2, 17), transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(0));
-        assertEquals(LocalDate.of(2026, 2, 18), transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(1));
+        assertEquals(LocalDate.of(2026, 2, 15),
+                transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(0));
+        assertEquals(LocalDate.of(2026, 2, 16),
+                transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(1));
+        assertEquals(LocalDate.of(2026, 2, 17),
+                transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(0));
+        assertEquals(LocalDate.of(2026, 2, 18),
+                transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(1));
     }
 
     @Test
@@ -51,7 +57,8 @@ class TransformToLocalDateFormatInferenceTest
         settleDates.add("04/05/2026");
 
         TableDescription description = new TableDescription("Description here...");
-        TableColumnar table = Tables.newTable(TableName.of("t2"), description, (Column) tradeDates.build(), (Column) settleDates.build());
+        TableColumnar table = Tables.newTable(TableName.of("t2"), description, (Column) tradeDates.build(),
+                (Column) settleDates.build());
 
         assertThrows(IllegalArgumentException.class,
                 () -> table.apply(new TransformToLocalDate(ColumnName.of("trade_date"), ColumnName.of("settle_date"))));
@@ -69,24 +76,31 @@ class TransformToLocalDateFormatInferenceTest
         settleDates.add("07/08/2026");
 
         TableDescription description = new TableDescription("Description here...");
-        TableColumnar table = Tables.newTable(TableName.of("t3"), description, (Column) tradeDates.build(), (Column) settleDates.build());
-        TableColumnar transformed = table.apply(new TransformToLocalDate(DateFormat.DMY,
-                ColumnName.of("trade_date"), ColumnName.of("settle_date")));
+        TableColumnar table = Tables.newTable(TableName.of("t3"), description, (Column) tradeDates.build(),
+                (Column) settleDates.build());
+        TableColumnar transformed = table.apply(
+                new TransformToLocalDate(DateFormat.DMY, ColumnName.of("trade_date"), ColumnName.of("settle_date")));
 
-        assertEquals(LocalDate.of(2026, 2, 1), transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(0));
-        assertEquals(LocalDate.of(2026, 4, 3), transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(1));
-        assertEquals(LocalDate.of(2026, 6, 5), transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(0));
-        assertEquals(LocalDate.of(2026, 8, 7), transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(1));
+        assertEquals(LocalDate.of(2026, 2, 1),
+                transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(0));
+        assertEquals(LocalDate.of(2026, 4, 3),
+                transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(1));
+        assertEquals(LocalDate.of(2026, 6, 5),
+                transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(0));
+        assertEquals(LocalDate.of(2026, 8, 7),
+                transformed.getTyped(ColumnName.of("settle_date"), LocalDate.class).get(1));
     }
 
     @Test
     void shouldBackfillAmbiguousColumnFromDominantFormatWhenAnotherColumnUsesDifferentIdentifiableFormat()
     {
-        ColumnObject.Builder<String> dominantTradeDates = ColumnObject.builder(ColumnName.of("trade_date"), String.class);
+        ColumnObject.Builder<String> dominantTradeDates = ColumnObject.builder(ColumnName.of("trade_date"),
+                String.class);
         dominantTradeDates.add("15/02/2026");
         dominantTradeDates.add("16/02/2026");
 
-        ColumnObject.Builder<String> dominantSettleDates = ColumnObject.builder(ColumnName.of("settle_date"), String.class);
+        ColumnObject.Builder<String> dominantSettleDates = ColumnObject.builder(ColumnName.of("settle_date"),
+                String.class);
         dominantSettleDates.add("17/02/2026");
         dominantSettleDates.add("18/02/2026");
 
@@ -99,19 +113,15 @@ class TransformToLocalDateFormatInferenceTest
         ambiguousDates.add("03/02/2026");
 
         TableDescription description = new TableDescription("Description here...");
-        TableColumnar table = Tables.newTable(TableName.of("t4"), description,
-                (Column) dominantTradeDates.build(),
-                (Column) dominantSettleDates.build(),
-                (Column) isoEndDates.build(),
-                (Column) ambiguousDates.build());
-        TableColumnar transformed = table.apply(new TransformToLocalDate(
-                ColumnName.of("trade_date"),
-                ColumnName.of("settle_date"),
-                ColumnName.of("end_date"),
-                ColumnName.of("booking_date")));
+        TableColumnar table = Tables.newTable(TableName.of("t4"), description, (Column) dominantTradeDates.build(),
+                (Column) dominantSettleDates.build(), (Column) isoEndDates.build(), (Column) ambiguousDates.build());
+        TableColumnar transformed = table.apply(new TransformToLocalDate(ColumnName.of("trade_date"),
+                ColumnName.of("settle_date"), ColumnName.of("end_date"), ColumnName.of("booking_date")));
 
-        assertEquals(LocalDate.of(2026, 2, 1), transformed.getTyped(ColumnName.of("booking_date"), LocalDate.class).get(0));
-        assertEquals(LocalDate.of(2026, 2, 3), transformed.getTyped(ColumnName.of("booking_date"), LocalDate.class).get(1));
+        assertEquals(LocalDate.of(2026, 2, 1),
+                transformed.getTyped(ColumnName.of("booking_date"), LocalDate.class).get(0));
+        assertEquals(LocalDate.of(2026, 2, 3),
+                transformed.getTyped(ColumnName.of("booking_date"), LocalDate.class).get(1));
         assertEquals(LocalDate.of(2026, 3, 1), transformed.getTyped(ColumnName.of("end_date"), LocalDate.class).get(0));
     }
 
@@ -126,8 +136,10 @@ class TransformToLocalDateFormatInferenceTest
         TableColumnar table = Tables.newTable(TableName.of("t5"), description, (Column) tradeDates.build());
         TableColumnar transformed = table.apply(new TransformToLocalDate(ColumnName.of("trade_date")));
 
-        assertEquals(LocalDate.of(2026, 2, 1), transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(0));
-        assertEquals(LocalDate.of(2026, 4, 3), transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(1));
+        assertEquals(LocalDate.of(2026, 2, 1),
+                transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(0));
+        assertEquals(LocalDate.of(2026, 4, 3),
+                transformed.getTyped(ColumnName.of("trade_date"), LocalDate.class).get(1));
     }
 
     @Test
@@ -158,7 +170,9 @@ class TransformToLocalDateFormatInferenceTest
         TableColumnar table = Tables.newTable(TableName.of("t7"), description, (Column) tradeDates.build());
         TableColumnar transformed = table.apply(transform);
 
-        assertEquals(LocalDate.of(2026, 2, 15), transformed.getTyped(ColumnName.of("parsed_trade_date"), LocalDate.class).get(0));
-        assertEquals(LocalDate.of(2026, 2, 16), transformed.getTyped(ColumnName.of("parsed_trade_date"), LocalDate.class).get(1));
+        assertEquals(LocalDate.of(2026, 2, 15),
+                transformed.getTyped(ColumnName.of("parsed_trade_date"), LocalDate.class).get(0));
+        assertEquals(LocalDate.of(2026, 2, 16),
+                transformed.getTyped(ColumnName.of("parsed_trade_date"), LocalDate.class).get(1));
     }
 }

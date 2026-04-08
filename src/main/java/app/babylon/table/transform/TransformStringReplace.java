@@ -26,7 +26,8 @@ public class TransformStringReplace extends TransformBase
         this(existingColumnName, existingColumnName, target, replacement);
     }
 
-    public TransformStringReplace(ColumnName existingColumnName, ColumnName newColumnName, String target, String replacement)
+    public TransformStringReplace(ColumnName existingColumnName, ColumnName newColumnName, String target,
+            String replacement)
     {
         super(FUNCTION_NAME);
         this.existingColumnName = ArgumentChecks.nonNull(existingColumnName);
@@ -38,7 +39,7 @@ public class TransformStringReplace extends TransformBase
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-		ColumnObject<String> column =  Columns.asStringColumn(columnsByName.get(this.existingColumnName)) ;
+        ColumnObject<String> column = Columns.asStringColumn(columnsByName.get(this.existingColumnName));
         if (column == null)
         {
             return;
@@ -46,7 +47,7 @@ public class TransformStringReplace extends TransformBase
         ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName, String.class);
         Map<String, String> old2New = new HashMap<>();
 
-        for(int i=0;i<column.size();++i)
+        for (int i = 0; i < column.size(); ++i)
         {
             String s = column.get(i);
             if (!Strings.isEmpty(s))
@@ -56,21 +57,18 @@ public class TransformStringReplace extends TransformBase
                     String r = s.replace(target, replacement);
                     old2New.put(s, r);
                     s = r;
-                }
-                else
+                } else
                 {
                     s = old2New.get(s);
                 }
                 if (!Strings.isEmpty(s))
                 {
                     newColumn.add(s);
-                }
-                else
+                } else
                 {
                     newColumn.addNull();
                 }
-            }
-            else
+            } else
             {
                 newColumn.addNull();
             }

@@ -25,7 +25,9 @@ import app.babylon.table.DateFormatInference;
 public class HeaderStrategyAuto implements HeaderStrategy
 {
     private enum CellType
-    { TEXT, NUM, DATE, BLANK }
+    {
+        TEXT, NUM, DATE, BLANK
+    }
 
     private final int scanLimit;
 
@@ -88,12 +90,10 @@ public class HeaderStrategyAuto implements HeaderStrategy
                 if (t == CellType.TEXT)
                 {
                     textCnt++;
-                }
-                else if (t == CellType.NUM)
+                } else if (t == CellType.NUM)
                 {
                     numCnt++;
-                }
-                else if (t == CellType.DATE)
+                } else if (t == CellType.DATE)
                 {
                     dateCnt++;
                 }

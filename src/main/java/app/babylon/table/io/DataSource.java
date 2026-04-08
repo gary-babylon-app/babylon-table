@@ -13,7 +13,8 @@ package app.babylon.table.io;
 import java.io.InputStream;
 
 /**
- * Supplies a named input stream for reading tabular data from an external source.
+ * Supplies a named input stream for reading tabular data from an external
+ * source.
  */
 public interface DataSource
 {

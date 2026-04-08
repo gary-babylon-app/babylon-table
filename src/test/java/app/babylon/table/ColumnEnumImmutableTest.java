@@ -28,20 +28,23 @@ public class ColumnEnumImmutableTest
     @Test
     public void mutableIsConstantShouldTrackEqualAndUnequalSequences()
     {
-        ColumnCategorical.Builder<TestEnum> sameBuilder = ColumnCategorical.builder(ColumnName.of("same"), TestEnum.class);
+        ColumnCategorical.Builder<TestEnum> sameBuilder = ColumnCategorical.builder(ColumnName.of("same"),
+                TestEnum.class);
         sameBuilder.add(TestEnum.A);
         sameBuilder.add(TestEnum.A);
         sameBuilder.add(TestEnum.A);
         ColumnCategorical<TestEnum> same = sameBuilder.build();
         assertTrue(same.isConstant());
 
-        ColumnCategorical.Builder<TestEnum> mixedBuilder = ColumnCategorical.builder(ColumnName.of("mixed"), TestEnum.class);
+        ColumnCategorical.Builder<TestEnum> mixedBuilder = ColumnCategorical.builder(ColumnName.of("mixed"),
+                TestEnum.class);
         mixedBuilder.add(TestEnum.A);
         mixedBuilder.add(TestEnum.B);
         ColumnCategorical<TestEnum> mixed = mixedBuilder.build();
         assertFalse(mixed.isConstant());
 
-        ColumnCategorical.Builder<TestEnum> nullsBuilder = ColumnCategorical.builder(ColumnName.of("nulls"), TestEnum.class);
+        ColumnCategorical.Builder<TestEnum> nullsBuilder = ColumnCategorical.builder(ColumnName.of("nulls"),
+                TestEnum.class);
         nullsBuilder.add(null);
         nullsBuilder.add(null);
         ColumnCategorical<TestEnum> nulls = nullsBuilder.build();

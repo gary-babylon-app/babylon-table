@@ -11,8 +11,8 @@
 package app.babylon.table.io;
 
 /**
- * Creates row consumers after header detection has established how incoming rows
- * should be interpreted.
+ * Creates row consumers after header detection has established how incoming
+ * rows should be interpreted.
  */
 public interface RowConsumerFactory<T>
 {

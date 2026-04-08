@@ -35,7 +35,8 @@ public class DataSourceProbeTest
     @Test
     public void testBomDetectionUtf8()
     {
-        byte[] bytes = new byte[] {(byte)0xEF, (byte)0xBB, (byte)0xBF, 'a', ',', 'b'};
+        byte[] bytes = new byte[]
+        {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, 'a', ',', 'b'};
         DataSourceProbe snippet = DataSourceProbe.of(bytes, "x.csv");
         assertTrue(snippet.hasBom());
         assertTrue(snippet.hasUtf8Bom());
@@ -48,7 +49,8 @@ public class DataSourceProbeTest
     @Test
     public void testBomDetectionUtf16Le()
     {
-        byte[] bytes = new byte[] {(byte)0xFF, (byte)0xFE, 'a', 0x00};
+        byte[] bytes = new byte[]
+        {(byte) 0xFF, (byte) 0xFE, 'a', 0x00};
         DataSourceProbe snippet = DataSourceProbe.of(bytes, "x.csv");
         assertTrue(snippet.hasBom());
         assertFalse(snippet.hasUtf8Bom());
@@ -61,7 +63,8 @@ public class DataSourceProbeTest
     @Test
     public void testNoBomDetection()
     {
-        byte[] bytes = new byte[] {'a', ',', 'b'};
+        byte[] bytes = new byte[]
+        {'a', ',', 'b'};
         DataSourceProbe snippet = DataSourceProbe.of(bytes, "x.csv");
         assertFalse(snippet.hasBom());
         assertFalse(snippet.hasUtf8Bom());

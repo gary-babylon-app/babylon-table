@@ -27,7 +27,6 @@ public class TransformToLocalDate extends TransformBase
     private final DateFormat format;
     private final ColumnName[] newColumnNames;
 
-
     public TransformToLocalDate(ColumnName... columnNames)
     {
         this(null, columnNames);
@@ -49,9 +48,11 @@ public class TransformToLocalDate extends TransformBase
     public TransformToLocalDate(ColumnName columnName, ColumnName newColumnName, DateFormat format)
     {
         super(FUNCTION_NAME);
-        this.columnNames = new ColumnName[]{ArgumentChecks.nonNull(columnName)};
+        this.columnNames = new ColumnName[]
+        {ArgumentChecks.nonNull(columnName)};
         this.format = format;
-        this.newColumnNames = new ColumnName[]{ArgumentChecks.nonNull(newColumnName)};
+        this.newColumnNames = new ColumnName[]
+        {ArgumentChecks.nonNull(newColumnName)};
     }
 
     public static TransformToLocalDate of(String... params)
@@ -103,19 +104,15 @@ public class TransformToLocalDate extends TransformBase
                     ColumnName newColumnName = (newColumnNames == null) ? c.getName() : newColumnNames[i];
                     DateFormat dateFormat = effectiveFormats[i];
                     final Map<String, LocalDate> values = valuesByFormat.get(dateFormat);
-                    Transformer<String, LocalDate> transformer = Transformer.of(
-                        values::get,
-                        LocalDate.class,
-                        newColumnName
-                    );
+                    Transformer<String, LocalDate> transformer = Transformer.of(values::get, LocalDate.class,
+                            newColumnName);
                     transformedColumns.add(cs.transform(transformer));
-                }
-                else if (!(c instanceof ColumnObject<?> && LocalDate.class.equals(c.getType().getValueClass())))
+                } else if (!(c instanceof ColumnObject<?> && LocalDate.class.equals(c.getType().getValueClass())))
                 {
                     throw new RuntimeException("Cannot convert to LocalDate from " + c.getName());
                 }
             }
-            if (transformedColumns.size()>0)
+            if (transformedColumns.size() > 0)
             {
                 putColumns(columnsByName, transformedColumns.toArray(new Column[transformedColumns.size()]));
             }

@@ -14,8 +14,8 @@ import java.util.Objects;
 import java.util.function.Function;
 
 /**
- * Transforms individual column values from one type to another while carrying the
- * target value type and optional output column name.
+ * Transforms individual column values from one type to another while carrying
+ * the target value type and optional output column name.
  */
 public interface Transformer<T, S> extends Function<T, S>
 {

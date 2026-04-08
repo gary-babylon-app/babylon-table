@@ -159,12 +159,10 @@ public interface ViewIndex
             if (this.maxValue <= CategoryCodeList.BYTE_MAX_VALUE - 1)
             {
                 out = new ArrayByte(this.values, this.size);
-            }
-            else if (this.maxValue <= CategoryCodeList.CHAR_MAX_VALUE - 1)
+            } else if (this.maxValue <= CategoryCodeList.CHAR_MAX_VALUE - 1)
             {
                 out = new ArrayChar(this.values, this.size, this.hasNulls);
-            }
-            else
+            } else
             {
                 out = new ArrayInt(this.values, this.size, this.hasNulls);
             }

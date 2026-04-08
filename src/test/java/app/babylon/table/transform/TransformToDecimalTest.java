@@ -59,7 +59,8 @@ class TransformToDecimalTest
         builder.addNull();
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(ColumnName.of("amount")).apply((Column) source);
+        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(ColumnName.of("amount"))
+                .apply((Column) source);
         assertTrue(transformedBase instanceof ColumnCategorical<?>);
 
         ColumnCategorical<BigDecimal> transformed = (ColumnCategorical<BigDecimal>) transformedBase;
@@ -75,7 +76,8 @@ class TransformToDecimalTest
         assertEquals(0, transformed.getCategoryCode(1));
         assertEquals(0, transformed.getCategoryCode(3));
         assertEquals(0, transformed.getCategoryCode(4));
-        assertArrayEquals(new int[] {transformed.getCategoryCode(0)}, transformed.getCategoryCodes(null));
+        assertArrayEquals(new int[]
+        {transformed.getCategoryCode(0)}, transformed.getCategoryCodes(null));
     }
 
     @Test
@@ -87,7 +89,8 @@ class TransformToDecimalTest
         builder.add("bad");
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(ColumnName.of("amount")).apply((Column) source);
+        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(ColumnName.of("amount"))
+                .apply((Column) source);
         assertTrue(transformedBase instanceof ColumnCategorical<?>);
 
         ColumnCategorical<BigDecimal> transformed = (ColumnCategorical<BigDecimal>) transformedBase;
@@ -111,7 +114,8 @@ class TransformToDecimalTest
         builder.add("bad");
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(ColumnName.of("amount")).apply((Column) source);
+        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(ColumnName.of("amount"))
+                .apply((Column) source);
         ColumnCategorical<BigDecimal> transformed = (ColumnCategorical<BigDecimal>) transformedBase;
 
         ViewIndex.Builder rowIndexBuilder = ViewIndex.builder();
@@ -127,7 +131,8 @@ class TransformToDecimalTest
         assertDecimalEquals("10", view.get(0));
         assertEquals(view.getCategoryCode(0), view.getCategoryCode(1));
         assertEquals(view.getCategoryCode(0), view.getCategoryCode(2));
-        assertArrayEquals(new int[] {view.getCategoryCode(0)}, view.getCategoryCodes(null));
+        assertArrayEquals(new int[]
+        {view.getCategoryCode(0)}, view.getCategoryCodes(null));
     }
 
     @Test
@@ -141,17 +146,17 @@ class TransformToDecimalTest
         otherBuilder.add("x");
         otherBuilder.add("y");
 
-        ColumnObject.Builder<BigDecimal> existingDecimalBuilder = ColumnObject.builderDecimal(ColumnName.of("existing"));
+        ColumnObject.Builder<BigDecimal> existingDecimalBuilder = ColumnObject
+                .builderDecimal(ColumnName.of("existing"));
         existingDecimalBuilder.add(new BigDecimal("3"));
         existingDecimalBuilder.add(new BigDecimal("4"));
         ColumnObject<BigDecimal> existingDecimal = existingDecimalBuilder.build();
 
-        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""),
-                amountBuilder.build(),
-                otherBuilder.build(),
-                existingDecimal);
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amountBuilder.build(),
+                otherBuilder.build(), existingDecimal);
 
-        TableColumnar transformed = table.apply(new TransformToDecimal(ColumnName.of("amount"), ColumnName.of("existing")));
+        TableColumnar transformed = table
+                .apply(new TransformToDecimal(ColumnName.of("amount"), ColumnName.of("existing")));
 
         ColumnObject<BigDecimal> amount = transformed.getDecimal(ColumnName.of("amount"));
         assertDecimalEquals("1", amount.get(0));

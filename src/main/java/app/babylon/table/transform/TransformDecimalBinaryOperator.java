@@ -25,8 +25,8 @@ class TransformDecimalBinaryOperator extends TransformBase
     private final ColumnName rightColumnName;
     private final OPERATOR operator;
 
-    public TransformDecimalBinaryOperator(ColumnName leftColumnName, OPERATOR operator,
-        ColumnName rightColumnName, ColumnName newColumnName)
+    public TransformDecimalBinaryOperator(ColumnName leftColumnName, OPERATOR operator, ColumnName rightColumnName,
+            ColumnName newColumnName)
     {
         super(operator.toString());
         this.leftColumnName = ArgumentChecks.nonNull(leftColumnName);
@@ -62,24 +62,23 @@ class TransformDecimalBinaryOperator extends TransformBase
                 BigDecimal newValue = null;
                 switch (this.operator)
                 {
-                    case Subtract:
+                    case Subtract :
                         newValue = left.subtract(right, MathContext.DECIMAL64);
                         break;
-                    case Add:
+                    case Add :
                         newValue = left.add(right, MathContext.DECIMAL64);
                         break;
-                    case Multiply:
+                    case Multiply :
                         newValue = left.multiply(right, MathContext.DECIMAL64);
                         break;
-                    case Divide:
+                    case Divide :
                         newValue = left.divide(right, MathContext.DECIMAL64);
                         break;
-                    default:
+                    default :
                         throw new RuntimeException("Unknown operator. " + this.operator);
                 }
                 newColumn.add(newValue);
-            }
-            else
+            } else
             {
                 newColumn.addNull();
             }
@@ -91,7 +90,7 @@ class TransformDecimalBinaryOperator extends TransformBase
     public static TransformDecimalBinaryOperator of(String s)
     {
         int indexOf = s.indexOf('(');
-        if (indexOf<1)
+        if (indexOf < 1)
         {
             throw new RuntimeException("Invalid function name " + s);
         }

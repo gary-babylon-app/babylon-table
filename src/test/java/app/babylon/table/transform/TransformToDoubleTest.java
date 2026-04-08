@@ -80,12 +80,11 @@ class TransformToDoubleTest
         existingDoubleBuilder.add(4.0d);
         ColumnDouble existingDouble = existingDoubleBuilder.build();
 
-        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""),
-                amountBuilder.build(),
-                otherBuilder.build(),
-                existingDouble);
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amountBuilder.build(),
+                otherBuilder.build(), existingDouble);
 
-        TableColumnar transformed = table.apply(new TransformToDouble(ColumnName.of("amount"), ColumnName.of("parsed")));
+        TableColumnar transformed = table
+                .apply(new TransformToDouble(ColumnName.of("amount"), ColumnName.of("parsed")));
 
         ColumnDouble parsed = transformed.getDouble(ColumnName.of("parsed"));
         assertEquals(1.25d, parsed.get(0), 1.0e-12);
@@ -104,7 +103,8 @@ class TransformToDoubleTest
         builder.add(3.5d);
         ColumnDouble source = builder.build();
 
-        ColumnDouble transformed = new TransformToDouble(ColumnName.of("amount"), ColumnName.of("renamed")).apply((Column) source);
+        ColumnDouble transformed = new TransformToDouble(ColumnName.of("amount"), ColumnName.of("renamed"))
+                .apply((Column) source);
 
         assertNotSame(source, transformed);
         assertEquals(ColumnName.of("renamed"), transformed.getName());

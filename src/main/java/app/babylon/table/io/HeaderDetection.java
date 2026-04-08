@@ -29,11 +29,8 @@ public class HeaderDetection
         this(headersFound, syntheticHeaders, headersFound, identityPositions(headersFound.length));
     }
 
-    public HeaderDetection(
-        String[] headersFound,
-        boolean syntheticHeaders,
-        String[] selectedHeaders,
-        int[] selectedPositions)
+    public HeaderDetection(String[] headersFound, boolean syntheticHeaders, String[] selectedHeaders,
+            int[] selectedPositions)
     {
         this.headersFound = Objects.requireNonNull(headersFound);
         this.syntheticHeaders = syntheticHeaders;

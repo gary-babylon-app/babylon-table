@@ -6,10 +6,7 @@ import app.babylon.text.Sentence;
 
 public enum TransformParseMode
 {
-    EXACT,
-    FIRST_IN,
-    LAST_IN,
-    ONLY_ONE_IN;
+    EXACT, FIRST_IN, LAST_IN, ONLY_ONE_IN;
 
     public static TransformParseMode parse(String s)
     {

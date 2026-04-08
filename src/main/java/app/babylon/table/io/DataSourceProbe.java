@@ -71,17 +71,15 @@ public class DataSourceProbe
 
     public boolean isXls()
     {
-        return bytes.length > 7
-            && bytes[0] == (byte) 0xD0 && bytes[1] == (byte) 0xCF && bytes[2] == (byte) 0x11
-            && bytes[3] == (byte) 0xE0 && bytes[4] == (byte) 0xA1 && bytes[5] == (byte) 0xB1
-            && bytes[6] == (byte) 0x1A && bytes[7] == (byte) 0xE1;
+        return bytes.length > 7 && bytes[0] == (byte) 0xD0 && bytes[1] == (byte) 0xCF && bytes[2] == (byte) 0x11
+                && bytes[3] == (byte) 0xE0 && bytes[4] == (byte) 0xA1 && bytes[5] == (byte) 0xB1
+                && bytes[6] == (byte) 0x1A && bytes[7] == (byte) 0xE1;
     }
 
     public boolean isZip()
     {
-        return bytes.length > 3
-            && bytes[0] == (byte) 0x50 && bytes[1] == (byte) 0x4B
-            && bytes[2] == (byte) 0x03 && bytes[3] == (byte) 0x04;
+        return bytes.length > 3 && bytes[0] == (byte) 0x50 && bytes[1] == (byte) 0x4B && bytes[2] == (byte) 0x03
+                && bytes[3] == (byte) 0x04;
     }
 
     public boolean isXlsx()
@@ -126,32 +124,22 @@ public class DataSourceProbe
 
     public boolean hasUtf8Bom()
     {
-        return bytes.length > 2
-            && bytes[0] == (byte) 0xEF
-            && bytes[1] == (byte) 0xBB
-            && bytes[2] == (byte) 0xBF;
+        return bytes.length > 2 && bytes[0] == (byte) 0xEF && bytes[1] == (byte) 0xBB && bytes[2] == (byte) 0xBF;
     }
 
     public boolean hasUtf16LeBom()
     {
-        return bytes.length > 1
-            && bytes[0] == (byte) 0xFF
-            && bytes[1] == (byte) 0xFE;
+        return bytes.length > 1 && bytes[0] == (byte) 0xFF && bytes[1] == (byte) 0xFE;
     }
 
     public boolean hasUtf16BeBom()
     {
-        return bytes.length > 1
-            && bytes[0] == (byte) 0xFE
-            && bytes[1] == (byte) 0xFF;
+        return bytes.length > 1 && bytes[0] == (byte) 0xFE && bytes[1] == (byte) 0xFF;
     }
 
     public boolean isPdf()
     {
-        return bytes.length > 3
-            && bytes[0] == (byte) 0x25
-            && bytes[1] == (byte) 0x50
-            && bytes[2] == (byte) 0x44
-            && bytes[3] == (byte) 0x46;
+        return bytes.length > 3 && bytes[0] == (byte) 0x25 && bytes[1] == (byte) 0x50 && bytes[2] == (byte) 0x44
+                && bytes[3] == (byte) 0x46;
     }
 }

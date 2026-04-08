@@ -12,7 +12,6 @@ package app.babylon.table;
 
 import java.util.Objects;
 
-
 class ColumnIntConstant implements ColumnInt
 {
     private final ColumnName name;
@@ -85,8 +84,7 @@ class ColumnIntConstant implements ColumnInt
             if (rowIndex.isSet(i) && this.isSet)
             {
                 builder.add(this.value);
-            }
-            else
+            } else
             {
                 builder.addNull();
             }
@@ -97,11 +95,11 @@ class ColumnIntConstant implements ColumnInt
     @Override
     public int[] toArray(int[] x)
     {
-        if (x==null || x.length<size)
+        if (x == null || x.length < size)
         {
             x = new int[size];
         }
-        for(int i=0;i<size;++i)
+        for (int i = 0; i < size; ++i)
         {
             x[i] = value;
         }

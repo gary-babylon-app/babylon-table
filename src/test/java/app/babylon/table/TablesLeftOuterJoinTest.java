@@ -45,7 +45,8 @@ public class TablesLeftOuterJoinTest
         ColumnInt.Builder rightScores = ColumnInt.builder(rightScore);
         rightScores.add(7);
 
-        TableColumnar right = Tables.newTable(TableName.of("right"), rightKeyBuilder.build(), rightValues.build(), rightScores.build());
+        TableColumnar right = Tables.newTable(TableName.of("right"), rightKeyBuilder.build(), rightValues.build(),
+                rightScores.build());
 
         TableColumnar joined = Tables.leftOuterJoin(left, right, key, key, rightValue, rightScore);
 

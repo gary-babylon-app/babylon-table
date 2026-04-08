@@ -18,7 +18,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-
 public final class DateFormatInference
 {
     private static final long EXCEL_MIN = 25569L;
@@ -120,9 +119,8 @@ public final class DateFormatInference
 
         Verification bestVerification = verifyColumn(column, ranking.best());
         double bestFullConfidence = 1.0d - bestVerification.failureRate();
-        if (bestVerification.failureRate() <= MAX_FAILURE_RATE
-            && bestFullConfidence >= MIN_CONFIDENCE
-            && (ranking.bestConfidence() - bestFullConfidence) <= MAX_CONFIDENCE_DROP)
+        if (bestVerification.failureRate() <= MAX_FAILURE_RATE && bestFullConfidence >= MIN_CONFIDENCE
+                && (ranking.bestConfidence() - bestFullConfidence) <= MAX_CONFIDENCE_DROP)
         {
             return new ColumnInference(ranking.best(), bestFullConfidence);
         }
@@ -545,8 +543,7 @@ public final class DateFormatInference
             BigDecimal bd = new BigDecimal(facts.text());
             double d = bd.doubleValue();
             return d >= EXCEL_MIN && d <= EXCEL_MAX;
-        }
-        catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             return false;
         }
@@ -555,10 +552,8 @@ public final class DateFormatInference
     private static boolean isValidYyyyMmDd8(DateValueFacts facts)
     {
         String s = facts.text();
-        int y = ((s.charAt(0) - '0') * 1000)
-            + ((s.charAt(1) - '0') * 100)
-            + ((s.charAt(2) - '0') * 10)
-            + (s.charAt(3) - '0');
+        int y = ((s.charAt(0) - '0') * 1000) + ((s.charAt(1) - '0') * 100) + ((s.charAt(2) - '0') * 10)
+                + (s.charAt(3) - '0');
         int m = ((s.charAt(4) - '0') * 10) + (s.charAt(5) - '0');
         int d = ((s.charAt(6) - '0') * 10) + (s.charAt(7) - '0');
         if (m < 1 || m > 12 || d < 1 || d > 31)
@@ -593,23 +588,20 @@ public final class DateFormatInference
         return (year % 400) == 0;
     }
 
-    private record ColumnInference(DateFormat format, double confidence)
-    {
+    private record ColumnInference(DateFormat format, double confidence) {
     }
 
-    private record CandidateRanking(DateFormat best, DateFormat second, double bestConfidence, double margin)
-    {
+    private record CandidateRanking(DateFormat best, DateFormat second, double bestConfidence, double margin) {
     }
 
-    private record Verification(int checked, int failed)
-    {
+    private record Verification(int checked, int failed) {
         double failureRate()
         {
             if (checked <= 0)
             {
                 return 1.0d;
             }
-            return (double)failed / (double)checked;
+            return (double) failed / (double) checked;
         }
     }
 
@@ -628,8 +620,7 @@ public final class DateFormatInference
                 secondVotes = bestVotes;
                 best = entry.getKey();
                 bestVotes = v;
-            }
-            else if (v > secondVotes)
+            } else if (v > secondVotes)
             {
                 second = entry.getKey();
                 secondVotes = v;
@@ -640,18 +631,16 @@ public final class DateFormatInference
         {
             return new CandidateRanking(null, null, 0.0d, 0.0d);
         }
-        double bestConfidence = (double)bestVotes / (double)sampledNonEmpty;
-        double secondConfidence = secondVotes <= 0 ? 0.0d : (double)secondVotes / (double)sampledNonEmpty;
+        double bestConfidence = (double) bestVotes / (double) sampledNonEmpty;
+        double secondConfidence = secondVotes <= 0 ? 0.0d : (double) secondVotes / (double) sampledNonEmpty;
         return new CandidateRanking(best, second, bestConfidence, bestConfidence - secondConfidence);
     }
 
     private static List<DateFormat> rankAll(Map<DateFormat, Integer> votes)
     {
-        return votes.entrySet()
-            .stream()
-            .sorted((a, b) -> Integer.compare(b.getValue().intValue(), a.getValue().intValue()))
-            .map(Map.Entry::getKey)
-            .toList();
+        return votes.entrySet().stream()
+                .sorted((a, b) -> Integer.compare(b.getValue().intValue(), a.getValue().intValue()))
+                .map(Map.Entry::getKey).toList();
     }
 
     private static Verification verifyColumn(ColumnObject<String> column, DateFormat format)

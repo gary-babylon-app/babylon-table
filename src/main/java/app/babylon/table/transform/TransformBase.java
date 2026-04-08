@@ -50,15 +50,16 @@ abstract class TransformBase implements Transform
         return selectedColumns;
     }
 
-    protected <T> Column[] transformStringColumns(Map<ColumnName, Column> columnsByName, ColumnName[] selectedColumnNames,
-            ColumnName[] newColumnNames, Class<T> valueClass, Function<CharSequence, T> transformFunction)
+    protected <T> Column[] transformStringColumns(Map<ColumnName, Column> columnsByName,
+            ColumnName[] selectedColumnNames, ColumnName[] newColumnNames, Class<T> valueClass,
+            Function<CharSequence, T> transformFunction)
     {
         Column[] validColumns = getColumns(columnsByName, selectedColumnNames);
         return transformStringColumns(validColumns, newColumnNames, valueClass, transformFunction);
     }
 
-    protected <T> Column[] transformStringColumns(Column[] validColumns, ColumnName[] newColumnNames, Class<T> valueClass,
-            Function<CharSequence, T> transformFunction)
+    protected <T> Column[] transformStringColumns(Column[] validColumns, ColumnName[] newColumnNames,
+            Class<T> valueClass, Function<CharSequence, T> transformFunction)
     {
         Set<String> uniqueStrings = gatherUniqueStrings(validColumns);
         Map<String, T> actualConversion = new HashMap<>();
@@ -74,12 +75,10 @@ abstract class TransformBase implements Transform
                 ColumnName newColumnName = (newColumnNames == null) ? c.getName() : newColumnNames[i];
                 Transformer<String, T> transformer = Transformer.of(actualConversion::get, valueClass, newColumnName);
                 transformedColumns[i] = stringColumn.transform(transformer);
-            }
-            else if (valueClass.equals(c.getType().getValueClass()))
+            } else if (valueClass.equals(c.getType().getValueClass()))
             {
                 transformedColumns[i] = c;
-            }
-            else
+            } else
             {
                 throw new RuntimeException("Cannot convert from " + c.getName());
             }

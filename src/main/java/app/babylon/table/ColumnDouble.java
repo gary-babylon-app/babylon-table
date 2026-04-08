@@ -33,8 +33,7 @@ public interface ColumnDouble extends Column
             try
             {
                 return add(Double.parseDouble(x.toString()));
-            }
-            catch (RuntimeException e)
+            } catch (RuntimeException e)
             {
                 return addNull();
             }
@@ -49,8 +48,7 @@ public interface ColumnDouble extends Column
             try
             {
                 return add(Double.parseDouble(new String(chars, start, length)));
-            }
-            catch (RuntimeException e)
+            } catch (RuntimeException e)
             {
                 return addNull();
             }

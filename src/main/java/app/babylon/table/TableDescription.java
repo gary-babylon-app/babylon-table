@@ -10,7 +10,7 @@
 
 package app.babylon.table;
 
-public class TableDescription 
+public class TableDescription
 {
     private String value;
 
@@ -30,7 +30,7 @@ public class TableDescription
     }
 
     @Override
-    public String toString() 
+    public String toString()
     {
         return this.value;
     }

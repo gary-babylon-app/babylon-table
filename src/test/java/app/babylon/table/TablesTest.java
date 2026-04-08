@@ -27,11 +27,7 @@ public class TablesTest
         empty.addNull();
         empty.addNull();
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                a.build(),
-                empty.build());
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), a.build(), empty.build());
 
         TableColumnar pruned = table.prune();
 

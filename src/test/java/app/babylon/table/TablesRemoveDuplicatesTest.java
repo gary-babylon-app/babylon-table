@@ -35,11 +35,7 @@ class TablesRemoveDuplicatesTest
         names.add("Bob");
         names.add("Bob duplicate");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                ids.build(),
-                names.build());
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), ids.build(), names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, ID);
 
@@ -66,11 +62,7 @@ class TablesRemoveDuplicatesTest
         names.add("Bob");
         names.add("Bob duplicate");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                ids.build(),
-                names.build());
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), ids.build(), names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, ID);
 
@@ -97,11 +89,7 @@ class TablesRemoveDuplicatesTest
         names.add("Bob");
         names.add("Bob duplicate");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                ids.build(),
-                names.build());
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), ids.build(), names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, ID);
 
@@ -128,10 +116,7 @@ class TablesRemoveDuplicatesTest
         names.add("Alice duplicate");
         names.add("Bob");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                amounts.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amounts.build(),
                 names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, AMOUNT);
@@ -159,10 +144,7 @@ class TablesRemoveDuplicatesTest
         names.add("Zero duplicate");
         names.add("One");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                amounts.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amounts.build(),
                 names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, AMOUNT);
@@ -190,10 +172,7 @@ class TablesRemoveDuplicatesTest
         names.add("Thousand duplicate");
         names.add("Two thousand");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                amounts.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amounts.build(),
                 names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, AMOUNT);
@@ -221,10 +200,7 @@ class TablesRemoveDuplicatesTest
         names.add("Null duplicate");
         names.add("One");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                amounts.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amounts.build(),
                 names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, AMOUNT);
@@ -249,10 +225,7 @@ class TablesRemoveDuplicatesTest
         names.add("Null");
         names.add("Zero");
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                amounts.build(),
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amounts.build(),
                 names.build());
 
         TableColumnar deduped = Tables.removeDuplicates(table, AMOUNT);
@@ -271,12 +244,8 @@ class TablesRemoveDuplicatesTest
         values.add(1.0);
         values.add(2.0);
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                values.build());
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), values.build());
 
-        assertThrows(IllegalArgumentException.class,
-                () -> Tables.removeDuplicates(table, VALUE));
+        assertThrows(IllegalArgumentException.class, () -> Tables.removeDuplicates(table, VALUE));
     }
 }

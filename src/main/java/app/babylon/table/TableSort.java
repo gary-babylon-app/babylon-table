@@ -13,7 +13,9 @@ package app.babylon.table;
 public class TableSort
 {
     public enum SortOrder
-    {Natural, Reverse};
+    {
+        Natural, Reverse
+    };
 
     public static TableColumnar sort(TableColumnar table, ColumnName... x)
     {
@@ -22,7 +24,7 @@ public class TableSort
 
     public static TableColumnar sort(TableColumnar table, SortOrder sortOrder, ColumnName... x)
     {
-        if (x==null || table.getRowCount()==0)
+        if (x == null || table.getRowCount() == 0)
         {
             return table;
         }

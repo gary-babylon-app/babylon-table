@@ -40,7 +40,8 @@ public class SplitTest
     {
         String[] actual = Split.literal("a,,b,", ",", true);
 
-        assertArrayEquals(new String[] {"a", "", "b", ""}, actual);
+        assertArrayEquals(new String[]
+        {"a", "", "b", ""}, actual);
     }
 
     @Test
@@ -48,7 +49,8 @@ public class SplitTest
     {
         String[] actual = Split.literal("a,,b,", ",", false);
 
-        assertArrayEquals(new String[] {"a", "", "b"}, actual);
+        assertArrayEquals(new String[]
+        {"a", "", "b"}, actual);
     }
 
     @Test
@@ -56,7 +58,8 @@ public class SplitTest
     {
         String[] actual = Split.commaSeparatedParams(" left , middle,right ");
 
-        assertArrayEquals(new String[] {" left", "middle", "right "}, actual);
+        assertArrayEquals(new String[]
+        {" left", "middle", "right "}, actual);
     }
 
     @Test
@@ -64,6 +67,7 @@ public class SplitTest
     {
         String[] actual = Split.whitespace("  alpha\tbeta \n gamma  ");
 
-        assertArrayEquals(new String[] {"alpha", "beta", "gamma"}, actual);
+        assertArrayEquals(new String[]
+        {"alpha", "beta", "gamma"}, actual);
     }
 }

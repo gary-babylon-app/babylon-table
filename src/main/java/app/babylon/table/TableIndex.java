@@ -15,7 +15,6 @@ import java.util.Objects;
 import java.util.HashMap;
 import java.util.Map;
 
-
 public class TableIndex
 {
     private final TableColumnar table;
@@ -28,18 +27,18 @@ public class TableIndex
         Column[] columns = table.getColumns(columnNames);
         this.index = new HashMap<>();
 
-        for(int i=0;i<table.getRowCount();++i)
+        for (int i = 0; i < table.getRowCount(); ++i)
         {
             Object[] key = new Object[columns.length];
-            for(int j=0;j<columns.length;++j)
+            for (int j = 0; j < columns.length; ++j)
             {
                 if (columns[j] instanceof ColumnObject co)
                 {
                     key[j] = co.get(i);
-                }
-                else
+                } else
                 {
-                    throw new RuntimeException("column " + columns[j].getName() + " not columnobject, cannot form an index");
+                    throw new RuntimeException(
+                            "column " + columns[j].getName() + " not columnobject, cannot form an index");
                 }
             }
             GroupKey groupKey = GroupKey.of(key);

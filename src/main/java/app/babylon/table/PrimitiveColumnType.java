@@ -12,10 +12,7 @@ package app.babylon.table;
 
 enum PrimitiveColumnType implements Column.Type
 {
-    BYTE("byte", byte.class),
-    INT("int", int.class),
-    LONG("long", long.class),
-    DOUBLE("double", double.class);
+    BYTE("byte", byte.class), INT("int", int.class), LONG("long", long.class), DOUBLE("double", double.class);
 
     private final String id;
     private final Class<?> valueClass;

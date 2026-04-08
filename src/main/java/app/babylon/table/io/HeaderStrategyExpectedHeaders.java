@@ -90,8 +90,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
                 return new HeaderDetection(rowBuffer.toStringArray());
             }
         }
-        throw new RuntimeException(
-            "Can not find headers from expected names within " + this.scanLimit + " rows.");
+        throw new RuntimeException("Can not find headers from expected names within " + this.scanLimit + " rows.");
     }
 
     private static Collection<ColumnName> toColumnNames(ColumnName[] expectedHeaders)

@@ -24,7 +24,7 @@ public class TransformAbs extends TransformBase
     {
         super(FUNCTION_NAME);
         this.columnName = ArgumentChecks.nonNull(x);
-        this.newColumnName = (newColumnName==null)?x:newColumnName;
+        this.newColumnName = (newColumnName == null) ? x : newColumnName;
     }
 
     @Override
@@ -39,14 +39,13 @@ public class TransformAbs extends TransformBase
         ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
 
         ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(newColumnName);
-        for(int i=0;i<oldColumn.size();++i)
+        for (int i = 0; i < oldColumn.size(); ++i)
         {
             BigDecimal bd = oldColumn.get(i);
-            if (bd!=null)
+            if (bd != null)
             {
                 newColumn.add(bd.abs(MathContext.DECIMAL64));
-            }
-            else
+            } else
             {
                 newColumn.addNull();
             }

@@ -22,10 +22,8 @@ class AggregationPlanTest
         final ColumnName OBSERVATION = ColumnName.of("observation");
         final ColumnName MEAN_OBSERVATION = ColumnName.of("mean_observation");
 
-        AggregationPlan plan = new AggregationPlan()
-                .withOutputTableName(TableName.of("summary"))
-                .withTransform(new TransformToDouble(OBSERVATION))
-                .withGroupBy(STATION)
+        AggregationPlan plan = new AggregationPlan().withOutputTableName(TableName.of("summary"))
+                .withTransform(new TransformToDouble(OBSERVATION)).withGroupBy(STATION)
                 .withAggregate(OBSERVATION, MEAN_OBSERVATION, Aggregate.MEAN);
 
         assertEquals(TableName.of("summary"), plan.getOutputTableName());
@@ -44,9 +42,8 @@ class AggregationPlanTest
         final ColumnName STATION = ColumnName.of("station");
         final ColumnName OBSERVATION = ColumnName.of("observation");
 
-        AggregationPlan plan = new AggregationPlan()
-                .withColumnType(STATION, String.class)
-                .withColumnType(OBSERVATION, double.class);
+        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class).withColumnType(OBSERVATION,
+                double.class);
 
         assertEquals(Column.Type.of(String.class), plan.getColumnType(STATION));
         assertEquals(Column.Type.of(double.class), plan.getColumnType(OBSERVATION));
@@ -66,26 +63,20 @@ class AggregationPlanTest
         final ColumnName TEMPERATURE_MEAN = ColumnName.of("Mean");
         final ColumnName TEMPERATURE_MAX = ColumnName.of("Max");
 
-        AggregationPlan plan = new AggregationPlan()
-                .withColumnType(STATION, String.class)
-                .withColumnType(TEMPERATURE, double.class)
-                .withOutputTableName(TableName.of("StationSummary"))
-                .withGroupBy(STATION)
-                .withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
+        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class)
+                .withColumnType(TEMPERATURE, double.class).withOutputTableName(TableName.of("StationSummary"))
+                .withGroupBy(STATION).withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, TEMPERATURE_SUM, Aggregate.SUM)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MIN, Aggregate.MIN)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MEAN, Aggregate.MEAN)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MAX, Aggregate.MAX);
 
-        ReadSettingsCSV readSettings = new ReadSettingsCSV()
-                .withSeparator(';')
+        ReadSettingsCSV readSettings = new ReadSettingsCSV().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
-                .withColumnRename(COLUMN_1, STATION)
-                .withColumnRename(COLUMN_2, TEMPERATURE);
+                .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE);
 
         TableColumnar table = plan.execute(
-                DataSources.fromString("Amsterdam;10.0\nAmsterdam;14.0\nLondon;7.0\n", "1brc.csv"),
-                readSettings);
+                DataSources.fromString("Amsterdam;10.0\nAmsterdam;14.0\nLondon;7.0\n", "1brc.csv"), readSettings);
 
         assertEquals(TableName.of("StationSummary"), table.getName());
         assertEquals(2, table.getRowCount());
@@ -111,9 +102,7 @@ class AggregationPlanTest
         final ColumnName TEMPERATURE = ColumnName.of("Temperature");
         final ColumnName HUMIDITY = ColumnName.of("Humidity");
 
-        AggregationPlan plan = new AggregationPlan()
-                .withGroupBy(STATION)
-                .withAggregate(TEMPERATURE, Aggregate.MIN)
+        AggregationPlan plan = new AggregationPlan().withGroupBy(STATION).withAggregate(TEMPERATURE, Aggregate.MIN)
                 .withAggregate(HUMIDITY, Aggregate.MAX);
 
         assertThrows(IllegalArgumentException.class,
@@ -132,27 +121,19 @@ class AggregationPlanTest
         final ColumnName TEMPERATURE_COUNT = ColumnName.of("Count");
         final ColumnName TEMPERATURE_MEAN = ColumnName.of("Mean");
 
-        AggregationPlan plan = new AggregationPlan()
-                .withColumnType(STATION, String.class)
-                .withColumnType(COUNTRY, String.class)
-                .withColumnType(TEMPERATURE, double.class)
-                .withOutputTableName(TableName.of("StationCountrySummary"))
-                .withGroupBy(STATION, COUNTRY)
+        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class)
+                .withColumnType(COUNTRY, String.class).withColumnType(TEMPERATURE, double.class)
+                .withOutputTableName(TableName.of("StationCountrySummary")).withGroupBy(STATION, COUNTRY)
                 .withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MEAN, Aggregate.MEAN);
 
-        ReadSettingsCSV readSettings = new ReadSettingsCSV()
-                .withSeparator(';')
+        ReadSettingsCSV readSettings = new ReadSettingsCSV().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
-                .withColumnRename(COLUMN_1, STATION)
-                .withColumnRename(COLUMN_2, COUNTRY)
+                .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, COUNTRY)
                 .withColumnRename(COLUMN_3, TEMPERATURE);
 
-        TableColumnar table = plan.execute(
-                DataSources.fromString(
-                        "Amsterdam;NL;10.0\nAmsterdam;NL;14.0\nAmsterdam;US;30.0\nLondon;UK;7.0\n",
-                        "1brc.csv"),
-                readSettings);
+        TableColumnar table = plan.execute(DataSources.fromString(
+                "Amsterdam;NL;10.0\nAmsterdam;NL;14.0\nAmsterdam;US;30.0\nLondon;UK;7.0\n", "1brc.csv"), readSettings);
 
         assertEquals(3, table.getRowCount());
         assertEquals("Amsterdam", table.getString(STATION).get(0));

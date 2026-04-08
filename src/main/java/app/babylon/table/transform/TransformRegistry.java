@@ -70,8 +70,7 @@ public final class TransformRegistry
             if (t != null)
             {
                 transforms.add(t);
-            }
-            else
+            } else
             {
                 System.out.println(functionName + " not applied, couldnt create transform");
             }

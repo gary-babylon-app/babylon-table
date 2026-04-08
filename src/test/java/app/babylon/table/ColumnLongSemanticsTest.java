@@ -16,13 +16,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-
 public class ColumnLongSemanticsTest
 {
     @Test
     public void mutableColumnTracksNullsAndSupportsRegularValues()
     {
-        ColumnLong.Builder columnBuilder = (ColumnLong.Builder)ColumnLong.builder(ColumnName.of("values"));
+        ColumnLong.Builder columnBuilder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("values"));
         columnBuilder.add(42L);
         columnBuilder.addNull();
         columnBuilder.add(-123L);
@@ -40,7 +39,7 @@ public class ColumnLongSemanticsTest
     @Test
     public void mutableCopyPreservesValuesAndNullMarkers()
     {
-        ColumnLong.Builder builder = (ColumnLong.Builder)ColumnLong.builder(ColumnName.of("original"));
+        ColumnLong.Builder builder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("original"));
         builder.add(10L);
         builder.addNull();
         builder.add(-3L);
@@ -61,14 +60,14 @@ public class ColumnLongSemanticsTest
     @Test
     public void copyWithNewNamePreservesData()
     {
-        ColumnLong.Builder builder = (ColumnLong.Builder)ColumnLong.builder(ColumnName.of("source"));
+        ColumnLong.Builder builder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("source"));
         builder.add(7L);
         builder.addNull();
         ColumnLong original = builder.build();
 
         Column renamed = original.copy(ColumnName.of("target"));
         assertTrue(renamed instanceof ColumnLong);
-        ColumnLong renamedLong = (ColumnLong)renamed;
+        ColumnLong renamedLong = (ColumnLong) renamed;
 
         assertEquals(ColumnName.of("target"), renamedLong.getName());
         assertEquals(2, renamedLong.size());
@@ -79,7 +78,7 @@ public class ColumnLongSemanticsTest
     @Test
     public void getAsColumnReturnsSingleRowConstantColumn()
     {
-        ColumnLong.Builder sourceBuilder = (ColumnLong.Builder)ColumnLong.builder(ColumnName.of("source"));
+        ColumnLong.Builder sourceBuilder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("source"));
         sourceBuilder.add(11L);
         sourceBuilder.add(22L);
         ColumnLong source = sourceBuilder.build();
@@ -113,7 +112,7 @@ public class ColumnLongSemanticsTest
         indexBuilder.add(4);
         indexBuilder.add(0);
 
-        ColumnLong view = (ColumnLong)constant.view(indexBuilder.build());
+        ColumnLong view = (ColumnLong) constant.view(indexBuilder.build());
 
         assertEquals(3, view.size());
         assertEquals(ColumnName.of("c"), view.getName());

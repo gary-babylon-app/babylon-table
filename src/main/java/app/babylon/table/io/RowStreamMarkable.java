@@ -24,9 +24,9 @@ public interface RowStreamMarkable
     void mark(int rowIndex);
 
     /**
-     * Reset the stream to the first data row following the row previously marked
-     * by {@link #mark(int)}. If no row was marked, resets to the start of the
-     * recorded rows.
+     * Reset the stream to the first data row following the row previously marked by
+     * {@link #mark(int)}. If no row was marked, resets to the start of the recorded
+     * rows.
      */
     void reset();
 

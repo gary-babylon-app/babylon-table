@@ -15,7 +15,6 @@ import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-
 public final class GroupBys
 {
     private GroupBys()
@@ -31,8 +30,7 @@ public final class GroupBys
         if (spec.columns.length == 1)
         {
             groupedRowIndexes = groupBySingleCategorical(spec.columns[0], rowCount);
-        }
-        else
+        } else
         {
             groupedRowIndexes = groupByMultipleCategorical(spec.columns, rowCount);
         }
@@ -54,7 +52,8 @@ public final class GroupBys
             }
             if (!(column instanceof ColumnCategorical<?> categorical))
             {
-                throw new IllegalArgumentException("GroupBy requires categorical columns only: " + requested + " is " + column.getClass().getSimpleName());
+                throw new IllegalArgumentException("GroupBy requires categorical columns only: " + requested + " is "
+                        + column.getClass().getSimpleName());
             }
             columns[i] = categorical;
             types[i] = column.getType();
@@ -75,7 +74,8 @@ public final class GroupBys
             {
                 rows = ViewIndex.builder();
                 rowIndexesByCode.put(code, rows);
-                groupKeysByCode.put(code, createGroupKey(new ColumnCategorical<?>[] {column}, i));
+                groupKeysByCode.put(code, createGroupKey(new ColumnCategorical<?>[]
+                {column}, i));
             }
             rows.add(i);
         }
@@ -87,7 +87,8 @@ public final class GroupBys
         return grouped;
     }
 
-    private static Map<GroupKey, ViewIndex.Builder> groupByMultipleCategorical(ColumnCategorical<?>[] columns, int rowCount)
+    private static Map<GroupKey, ViewIndex.Builder> groupByMultipleCategorical(ColumnCategorical<?>[] columns,
+            int rowCount)
     {
         Map<GroupCategoryCode, ViewIndex.Builder> rowsByCompositeCode = new LinkedHashMap<>();
         Map<GroupCategoryCode, GroupKey> keysByCompositeCode = new LinkedHashMap<>();
@@ -145,10 +146,8 @@ public final class GroupBys
         }
         if (n == 3)
         {
-            return GroupCategoryCode.of(
-                bucketIndex(columns[0], row),
-                bucketIndex(columns[1], row),
-                bucketIndex(columns[2], row));
+            return GroupCategoryCode.of(bucketIndex(columns[0], row), bucketIndex(columns[1], row),
+                    bucketIndex(columns[2], row));
         }
         int[] codes = new int[n];
         for (int i = 0; i < n; ++i)
@@ -158,11 +157,8 @@ public final class GroupBys
         return GroupCategoryCode.of(codes);
     }
 
-    private static GroupBy buildGroupByFromRowIndexes(
-        TableColumnar table,
-        Column.Type[] groupTypes,
-        ColumnName[] groupNames,
-        Map<GroupKey, ViewIndex.Builder> rowIndexesByGroup)
+    private static GroupBy buildGroupByFromRowIndexes(TableColumnar table, Column.Type[] groupTypes,
+            ColumnName[] groupNames, Map<GroupKey, ViewIndex.Builder> rowIndexesByGroup)
     {
         Map<GroupKey, TableColumnar> groupTables = new HashMap<>();
         for (Entry<GroupKey, ViewIndex.Builder> e : rowIndexesByGroup.entrySet())

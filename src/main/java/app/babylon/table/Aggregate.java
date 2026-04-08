@@ -10,7 +10,7 @@
 
 package app.babylon.table;
 
-public enum Aggregate 
+public enum Aggregate
 {
     COUNT, SUM, MAX, MIN, MEAN;
 }

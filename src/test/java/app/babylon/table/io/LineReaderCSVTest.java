@@ -27,14 +27,17 @@ public class LineReaderCSVTest
         String csv = "A,B\r\n1,\"hello\r\nworld\"\r\n2,x\r\n";
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try(LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new ReadSettingsCSV()))
+        try (LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new ReadSettingsCSV()))
         {
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"A", "B"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"A", "B"}, ((RowBuffer) reader.current()).toStringArray());
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"1", "hello\r\nworld"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"1", "hello\r\nworld"}, ((RowBuffer) reader.current()).toStringArray());
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"2", "x"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"2", "x"}, ((RowBuffer) reader.current()).toStringArray());
             assertFalse(reader.next());
         }
     }
@@ -45,13 +48,15 @@ public class LineReaderCSVTest
         String csv = "A,B,C\n1,2,3\n4,5,6\n";
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try(LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new ReadSettingsCSV()))
+        try (LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new ReadSettingsCSV()))
         {
             assertTrue(reader.next());
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"1", "2", "3"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"1", "2", "3"}, ((RowBuffer) reader.current()).toStringArray());
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"4", "5", "6"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"4", "5", "6"}, ((RowBuffer) reader.current()).toStringArray());
             assertFalse(reader.next());
         }
     }
@@ -59,20 +64,19 @@ public class LineReaderCSVTest
     @Test
     public void readLineShouldStripUtf8BomAndParse() throws Exception
     {
-        byte[] utf8BomCsv = new byte[] {
-            (byte)0xEF, (byte)0xBB, (byte)0xBF,
-            'A', ',', 'B', '\n',
-            '1', ',', '2', '\n'
-        };
+        byte[] utf8BomCsv = new byte[]
+        {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, 'A', ',', 'B', '\n', '1', ',', '2', '\n'};
         DataSource dataSource = TestDataSources.fromBytes(utf8BomCsv, "Test");
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try(LineReader reader = factory.create(dataSource, new ReadSettingsCSV()))
+        try (LineReader reader = factory.create(dataSource, new ReadSettingsCSV()))
         {
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"A", "B"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"A", "B"}, ((RowBuffer) reader.current()).toStringArray());
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"1", "2"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"1", "2"}, ((RowBuffer) reader.current()).toStringArray());
             assertFalse(reader.next());
         }
     }
@@ -90,12 +94,14 @@ public class LineReaderCSVTest
         DataSource dataSource = TestDataSources.fromBytes(out.toByteArray(), "Test");
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try(LineReader reader = factory.create(dataSource, new ReadSettingsCSV()))
+        try (LineReader reader = factory.create(dataSource, new ReadSettingsCSV()))
         {
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"A", "B"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"A", "B"}, ((RowBuffer) reader.current()).toStringArray());
             assertTrue(reader.next());
-            assertArrayEquals(new String[] {"1", "2"}, ((RowBuffer) reader.current()).toStringArray());
+            assertArrayEquals(new String[]
+            {"1", "2"}, ((RowBuffer) reader.current()).toStringArray());
             assertFalse(reader.next());
         }
     }
@@ -111,16 +117,18 @@ public class LineReaderCSVTest
         out.write(body);
 
         DataSource dataSource = TestDataSources.fromBytes(out.toByteArray(), "fixed-width.txt");
-        ReadSettingsCSV settings = new ReadSettingsCSV()
-                .withFixedWidths(new int[] {4, 4});
+        ReadSettingsCSV settings = new ReadSettingsCSV().withFixedWidths(new int[]
+        {4, 4});
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try(LineReader reader = factory.create(dataSource, settings))
+        try (LineReader reader = factory.create(dataSource, settings))
         {
             assertTrue(reader.next());
-            assertRowEquals(new String[] {"ABCD", "WXYZ"}, reader.current());
+            assertRowEquals(new String[]
+            {"ABCD", "WXYZ"}, reader.current());
             assertTrue(reader.next());
-            assertRowEquals(new String[] {"1234", "5678"}, reader.current());
+            assertRowEquals(new String[]
+            {"1234", "5678"}, reader.current());
             assertFalse(reader.next());
         }
     }

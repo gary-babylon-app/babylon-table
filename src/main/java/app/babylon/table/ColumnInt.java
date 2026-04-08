@@ -13,8 +13,8 @@ package app.babylon.table;
 import java.util.function.IntPredicate;
 
 /**
- * A column of nullable int values with efficient primitive access and predicate-based
- * row selection.
+ * A column of nullable int values with efficient primitive access and
+ * predicate-based row selection.
  */
 public interface ColumnInt extends Column
 {

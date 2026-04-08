@@ -18,7 +18,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class Selections
 {
     public static TableColumnar select(TableColumnar table, ColumnName colName, Pattern matchingPattern)
@@ -26,7 +25,7 @@ public class Selections
         ColumnObject<String> column = table.getString(colName);
         Selection selection = new Selection(column.getName() + " matchs pattern " + matchingPattern.pattern());
 
-        Set<String> uniques = (Set<String>)column.getAll(new HashSet<>());
+        Set<String> uniques = (Set<String>) column.getAll(new HashSet<>());
         Set<String> matched = new HashSet<>();
 
         for (String s : uniques)
@@ -43,8 +42,7 @@ public class Selections
             if (!Strings.isEmpty(s) && matched.contains(s))
             {
                 selection.add(true);
-            }
-            else
+            } else
             {
                 selection.add(false);
             }

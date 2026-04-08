@@ -26,10 +26,7 @@ class TablesToStringDecimalFormattingTest
         quantity.add(new BigDecimal("1E+2"));
         quantity.add(new BigDecimal("-4E+1"));
 
-        TableColumnar table = Tables.newTable(
-            TableName.of("t"),
-            new TableDescription(""),
-            quantity.build());
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), quantity.build());
 
         String printed = table.toString(ToStringSettings.standard());
 

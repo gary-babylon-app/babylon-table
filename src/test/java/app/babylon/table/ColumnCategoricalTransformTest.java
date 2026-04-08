@@ -45,7 +45,8 @@ class ColumnCategoricalTransformTest
         assertNotEquals(transformed.getCategoryCode(0), transformed.getCategoryCode(1));
         assertNotEquals(transformed.getCategoryCode(3), transformed.getCategoryCode(4));
         assertNotEquals(transformed.getCategoryCode(0), transformed.getCategoryCode(3));
-        assertArrayEquals(new int[] {1, 2, 3, 4}, transformed.getCategoryCodes(null));
+        assertArrayEquals(new int[]
+        {1, 2, 3, 4}, transformed.getCategoryCodes(null));
     }
 
     @Test
@@ -57,7 +58,8 @@ class ColumnCategoricalTransformTest
 
         assertTrue(transformed.isConstant());
         assertEquals(4, transformed.size());
-        assertArrayEquals(new int[] {1}, transformed.getCategoryCodes(null));
+        assertArrayEquals(new int[]
+        {1}, transformed.getCategoryCodes(null));
         assertEquals("x", transformed.get(0));
         assertEquals("x", transformed.get(3));
     }
@@ -104,7 +106,8 @@ class ColumnCategoricalTransformTest
         assertEquals("c", transformed.get(0));
         assertEquals("c", transformed.get(1));
         assertEquals(view.getCategoryCode(0), transformed.getCategoryCode(0));
-        assertArrayEquals(new int[] {view.getCategoryCode(0)}, transformed.getCategoryCodes(null));
+        assertArrayEquals(new int[]
+        {view.getCategoryCode(0)}, transformed.getCategoryCodes(null));
     }
 
     @Test
@@ -132,7 +135,8 @@ class ColumnCategoricalTransformTest
         assertNotEquals(view.getCategoryCode(0), view.getCategoryCode(1));
         assertEquals(view.getCategoryCode(0), view.getCategoryCode(2));
         int[] liveCodes = view.getCategoryCodes(null);
-        assertArrayEquals(new int[] {view.getCategoryCode(0), view.getCategoryCode(1)}, liveCodes);
+        assertArrayEquals(new int[]
+        {view.getCategoryCode(0), view.getCategoryCode(1)}, liveCodes);
     }
 
     @Test

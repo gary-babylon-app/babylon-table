@@ -26,18 +26,15 @@ public class TransformSubstring extends TransformBase
         this.existingColumnName = ArgumentChecks.nonNull(existingColumnName);
         this.newColumnName = ArgumentChecks.nonNull(newColumnName);
         this.first = Math.max(0, first);
-        this.last = Math.max(this.first+1, last);
+        this.last = Math.max(this.first + 1, last);
     }
 
     public static TransformSubstring of(String[] params)
     {
         if (!Is.empty(params) && params.length >= 4)
         {
-            return new TransformSubstring(
-                    ColumnName.of(params[0]),
-                    ColumnName.of(params[1]),
-                    Integer.parseInt(params[2]),
-                    Integer.parseInt(params[3]));
+            return new TransformSubstring(ColumnName.of(params[0]), ColumnName.of(params[1]),
+                    Integer.parseInt(params[2]), Integer.parseInt(params[3]));
         }
         return null;
     }
@@ -52,15 +49,14 @@ public class TransformSubstring extends TransformBase
         }
         ColumnObject.Builder<String> newColumnBuilder = ColumnObject.builder(this.newColumnName, String.class);
 
-        for(int i=0;i<column.size();++i)
+        for (int i = 0; i < column.size(); ++i)
         {
             String s = column.get(i);
-            if (!Strings.isEmpty(s) && s.length()>=last)
+            if (!Strings.isEmpty(s) && s.length() >= last)
             {
                 s = s.substring(this.first, this.last);
                 newColumnBuilder.add(s);
-            }
-            else
+            } else
             {
                 newColumnBuilder.addNull();
             }

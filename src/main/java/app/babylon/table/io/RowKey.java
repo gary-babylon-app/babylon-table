@@ -25,10 +25,10 @@ public abstract class RowKey
 
         return switch (positions.length)
         {
-        case 1 -> RowKey1.copyOf(row, positions[0]);
-        case 2 -> RowKey2.copyOf(row, positions[0], positions[1]);
-        case 3 -> RowKey3.copyOf(row, positions[0], positions[1], positions[2]);
-        default -> RowKeyN.copyOfN(row, positions);
+            case 1 -> RowKey1.copyOf(row, positions[0]);
+            case 2 -> RowKey2.copyOf(row, positions[0], positions[1]);
+            case 3 -> RowKey3.copyOf(row, positions[0], positions[1], positions[2]);
+            default -> RowKeyN.copyOfN(row, positions);
         };
     }
 
@@ -277,9 +277,7 @@ public abstract class RowKey
             }
 
             int length1 = this.chars.length - this.length0;
-            if (other.fieldCount() != 2
-                    || other.fieldLength(0) != this.length0
-                    || other.fieldLength(1) != length1)
+            if (other.fieldCount() != 2 || other.fieldLength(0) != this.length0 || other.fieldLength(1) != length1)
             {
                 return false;
             }
@@ -337,9 +335,9 @@ public abstract class RowKey
         {
             return switch (fieldIndex)
             {
-            case 0 -> 0;
-            case 1 -> this.length1;
-            default -> this.length1 + this.length2;
+                case 0 -> 0;
+                case 1 -> this.length1;
+                default -> this.length1 + this.length2;
             };
         }
 
@@ -348,9 +346,9 @@ public abstract class RowKey
         {
             return switch (fieldIndex)
             {
-            case 0 -> this.length1;
-            case 1 -> this.length2;
-            default -> this.length3;
+                case 0 -> this.length1;
+                case 1 -> this.length2;
+                default -> this.length3;
             };
         }
 
@@ -402,9 +400,7 @@ public abstract class RowKey
             {
                 return false;
             }
-            if (other.fieldCount() != 3
-                    || other.fieldLength(0) != this.length1
-                    || other.fieldLength(1) != this.length2
+            if (other.fieldCount() != 3 || other.fieldLength(0) != this.length1 || other.fieldLength(1) != this.length2
                     || other.fieldLength(2) != this.length3)
             {
                 return false;

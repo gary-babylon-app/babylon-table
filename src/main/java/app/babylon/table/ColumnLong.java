@@ -13,8 +13,8 @@ package app.babylon.table;
 import java.util.function.LongPredicate;
 
 /**
- * A column of nullable long values with efficient primitive access and predicate-based
- * row selection.
+ * A column of nullable long values with efficient primitive access and
+ * predicate-based row selection.
  */
 public interface ColumnLong extends Column
 {

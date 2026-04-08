@@ -54,7 +54,7 @@ final class DictionaryEncoding<T>
     @SuppressWarnings("unchecked")
     T valueOf(int code)
     {
-        return (T)this.codeToValue[code];
+        return (T) this.codeToValue[code];
     }
 
     int size()

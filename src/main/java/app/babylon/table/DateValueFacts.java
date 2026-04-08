@@ -182,8 +182,7 @@ final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            }
-            else
+            } else
             {
                 break;
             }
@@ -194,8 +193,7 @@ final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            }
-            else
+            } else
             {
                 break;
             }
@@ -209,14 +207,12 @@ final class DateValueFacts
                 if (i < s.length())
                 {
                     c = s.charAt(i++);
-                }
-                else
+                } else
                 {
                     break;
                 }
             }
-        }
-        else
+        } else
         {
             while (isDigit(c))
             {
@@ -224,8 +220,7 @@ final class DateValueFacts
                 if (i < s.length())
                 {
                     c = s.charAt(i++);
-                }
-                else
+                } else
                 {
                     break;
                 }
@@ -237,8 +232,7 @@ final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            }
-            else
+            } else
             {
                 break;
             }
@@ -251,8 +245,7 @@ final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            }
-            else
+            } else
             {
                 break;
             }
@@ -348,7 +341,8 @@ final class DateValueFacts
         {
             return null;
         }
-        return new int[] {a, b, c};
+        return new int[]
+        {a, b, c};
     }
 
     private static boolean isDigit(char c)
@@ -367,10 +361,10 @@ final class DateValueFacts
         DateFormat effectiveFormat = format;
         if (this.size() == 8 && this.onlyDigits())
         {
-            chronoFields = new String[] {this.text().substring(0, 4), this.text().substring(4, 6), this.text().substring(6, 8)};
+            chronoFields = new String[]
+            {this.text().substring(0, 4), this.text().substring(4, 6), this.text().substring(6, 8)};
             effectiveFormat = DateFormat.YMD;
-        }
-        else
+        } else
         {
             if (effectiveFormat == null)
             {
@@ -432,11 +426,10 @@ final class DateValueFacts
                 BigDecimal bd = new BigDecimal(this.text());
                 if (bd.doubleValue() >= 25569d && bd.doubleValue() <= 109575d)
                 {
-                    long dateValue = (long)bd.doubleValue();
+                    long dateValue = (long) bd.doubleValue();
                     return LocalDate.ofEpochDay(dateValue + (LocalDate.EPOCH.toEpochDay() - 25569L));
                 }
-            }
-            catch (NumberFormatException e)
+            } catch (NumberFormatException e)
             {
                 return null;
             }
@@ -496,56 +489,43 @@ final class DateValueFacts
     {
         switch (chronoField)
         {
-            case "JAN" ->
-            {
+            case "JAN" -> {
                 return 1;
             }
-            case "FEB" ->
-            {
+            case "FEB" -> {
                 return 2;
             }
-            case "MAR" ->
-            {
+            case "MAR" -> {
                 return 3;
             }
-            case "APR" ->
-            {
+            case "APR" -> {
                 return 4;
             }
-            case "MAY" ->
-            {
+            case "MAY" -> {
                 return 5;
             }
-            case "JUN" ->
-            {
+            case "JUN" -> {
                 return 6;
             }
-            case "JUL" ->
-            {
+            case "JUL" -> {
                 return 7;
             }
-            case "AUG" ->
-            {
+            case "AUG" -> {
                 return 8;
             }
-            case "SEP" ->
-            {
+            case "SEP" -> {
                 return 9;
             }
-            case "OCT" ->
-            {
+            case "OCT" -> {
                 return 10;
             }
-            case "NOV" ->
-            {
+            case "NOV" -> {
                 return 11;
             }
-            case "DEC" ->
-            {
+            case "DEC" -> {
                 return 12;
             }
-            default ->
-            {
+            default -> {
                 return -1;
             }
         }
@@ -566,15 +546,14 @@ final class DateValueFacts
         }
 
         Integer c1 = null;
-        if (this.alphaCount()>0)
+        if (this.alphaCount() > 0)
         {
             int month = monthNumber(chronoFields[1].toUpperCase(Locale.UK));
             if (month > 0)
             {
                 c1 = Integer.valueOf(month);
             }
-        }
-        else
+        } else
         {
             c1 = parseInt(chronoFields[1]);
         }
@@ -588,34 +567,31 @@ final class DateValueFacts
         int day;
         switch (format)
         {
-            case YMD ->
-            {
+            case YMD -> {
                 year = c0.intValue();
                 month = c1.intValue();
                 day = c2.intValue();
             }
-            case DMY ->
-            {
+            case DMY -> {
                 day = c0.intValue();
                 month = c1.intValue();
                 year = c2.intValue();
             }
-            case MDY ->
-            {
+            case MDY -> {
                 month = c0.intValue();
                 day = c1.intValue();
                 year = c2.intValue();
             }
-            default ->
-            {
+            default -> {
                 return null;
             }
         }
         if (year < 100)
         {
-            year+= 2000;
+            year += 2000;
         }
-        return new int[] {year, month, day};
+        return new int[]
+        {year, month, day};
     }
 
 }

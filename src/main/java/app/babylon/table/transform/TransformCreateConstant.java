@@ -20,17 +20,23 @@ public class TransformCreateConstant extends TransformBase
     public TransformCreateConstant(ColumnName newColumnName, String newColumnValue)
     {
         super(FUNCTION_NAME);
-        this.newColumnNames = new ColumnName[]{newColumnName};
-        this.newColumnValues = new Object[]{newColumnValue};
-        this.valueClasses = new Class<?>[]{String.class};
+        this.newColumnNames = new ColumnName[]
+        {newColumnName};
+        this.newColumnValues = new Object[]
+        {newColumnValue};
+        this.valueClasses = new Class<?>[]
+        {String.class};
     }
 
     public <T> TransformCreateConstant(Class<T> valueClass, ColumnName newColumnName, T newColumnValue)
     {
         super(FUNCTION_NAME);
-        this.newColumnNames = new ColumnName[]{newColumnName};
-        this.newColumnValues = new Object[]{newColumnValue};
-        this.valueClasses = new Class<?>[]{valueClass};
+        this.newColumnNames = new ColumnName[]
+        {newColumnName};
+        this.newColumnValues = new Object[]
+        {newColumnValue};
+        this.valueClasses = new Class<?>[]
+        {valueClass};
     }
 
     public TransformCreateConstant(ColumnName[] newColumnNames, Object[] newColumnValues, Class<?>[] valueClasses)
@@ -43,7 +49,7 @@ public class TransformCreateConstant extends TransformBase
 
     public static TransformCreateConstant of(String[] params)
     {
-        if (!Is.empty(params) && params.length>=2)
+        if (!Is.empty(params) && params.length >= 2)
         {
             ColumnName newColumnName = ColumnName.parse(params[0]);
             String value = (params[1]);
@@ -61,7 +67,7 @@ public class TransformCreateConstant extends TransformBase
         }
         int rowCount = columnsByName.isEmpty() ? 0 : columnsByName.values().iterator().next().size();
         Column[] newColumns = new Column[newColumnNames.length];
-        for(int i=0;i<newColumnNames.length;++i)
+        for (int i = 0; i < newColumnNames.length; ++i)
         {
             newColumns[i] = newConstantColumn(newColumnNames[i], newColumnValues[i], rowCount, valueClasses[i]);
         }
@@ -74,9 +80,9 @@ public class TransformCreateConstant extends TransformBase
         StringBuilder builder = new StringBuilder();
         builder.append(FUNCTION_NAME);
         builder.append("(");
-        for(int i=0;i<this.newColumnNames.length;++i)
+        for (int i = 0; i < this.newColumnNames.length; ++i)
         {
-            if (i!=0)
+            if (i != 0)
             {
                 builder.append(", ");
             }
@@ -93,8 +99,10 @@ public class TransformCreateConstant extends TransformBase
         return newConstantColumnTyped(columnName, value, rowCount, valueClass);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    private static <T> ColumnObject<T> newConstantColumnTyped(ColumnName columnName, Object value, int rowCount, Class<?> valueClass)
+    @SuppressWarnings(
+    {"unchecked", "rawtypes"})
+    private static <T> ColumnObject<T> newConstantColumnTyped(ColumnName columnName, Object value, int rowCount,
+            Class<?> valueClass)
     {
         return Columns.newCategorical(columnName, (T) value, rowCount, (Class) valueClass);
     }

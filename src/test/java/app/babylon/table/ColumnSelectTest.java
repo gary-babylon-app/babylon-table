@@ -104,8 +104,7 @@ public class ColumnSelectTest
             {
                 assertTrue(selection.get(i));
                 selected++;
-            }
-            else
+            } else
             {
                 assertFalse(selection.get(i));
             }

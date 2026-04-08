@@ -22,8 +22,8 @@ import java.util.Objects;
 import app.babylon.table.TableSort.SortOrder;
 
 /**
- * A column-oriented table whose data is exposed as named columns and can be sliced,
- * filtered, transformed, grouped, and sorted.
+ * A column-oriented table whose data is exposed as named columns and can be
+ * sliced, filtered, transformed, grouped, and sorted.
  */
 public interface TableColumnar extends Table
 {
@@ -103,10 +103,9 @@ public interface TableColumnar extends Table
         return TablesToString.printFullTable(this, settings, this.getRowCount());
     }
 
-
     default public Column[] getColumns(ColumnName... x)
     {
-        if (x==null)
+        if (x == null)
         {
             return null;
         }
@@ -132,8 +131,7 @@ public interface TableColumnar extends Table
         if (!Empties.isEmpty(x))
         {
             return new TableColumnarMap(getName(), getDescription(), getColumns(x));
-        }
-        else
+        } else
         {
             return this;
         }
@@ -164,9 +162,9 @@ public interface TableColumnar extends Table
     default public TableColumnar apply(Transform... transforms)
     {
         Map<ColumnName, Column> columnsByName = getColumns(new LinkedHashMap<>());
-        for(Transform transform: transforms)
+        for (Transform transform : transforms)
         {
-            if (transform!=null)
+            if (transform != null)
             {
                 transform.apply(columnsByName);
             }
@@ -177,9 +175,9 @@ public interface TableColumnar extends Table
     default public TableColumnar apply(Collection<Transform> transforms)
     {
         Map<ColumnName, Column> columnsByName = getColumns(new LinkedHashMap<>());
-        for(Transform transform: transforms)
+        for (Transform transform : transforms)
         {
-            if (transform!=null)
+            if (transform != null)
             {
                 transform.apply(columnsByName);
             }
@@ -190,7 +188,7 @@ public interface TableColumnar extends Table
     default public TableColumnar apply(Transform transform)
     {
         Map<ColumnName, Column> columnsByName = getColumns(new LinkedHashMap<>());
-        if (transform!=null)
+        if (transform != null)
         {
             transform.apply(columnsByName);
         }
@@ -209,15 +207,15 @@ public interface TableColumnar extends Table
 
     public static boolean isEmpty(TableColumnar table)
     {
-        if (table==null)
+        if (table == null)
         {
             return true;
         }
-        if (table.getColumnCount()==0)
+        if (table.getColumnCount() == 0)
         {
             return true;
         }
-        if (table.getRowCount()==0)
+        if (table.getRowCount() == 0)
         {
             return true;
         }

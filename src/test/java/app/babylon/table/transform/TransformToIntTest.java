@@ -80,10 +80,8 @@ class TransformToIntTest
         existingIntBuilder.add(4);
         ColumnInt existingInt = existingIntBuilder.build();
 
-        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""),
-                amountBuilder.build(),
-                otherBuilder.build(),
-                existingInt);
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amountBuilder.build(),
+                otherBuilder.build(), existingInt);
 
         TableColumnar transformed = table.apply(new TransformToInt(ColumnName.of("amount"), ColumnName.of("parsed")));
 
@@ -104,7 +102,8 @@ class TransformToIntTest
         builder.add(3);
         ColumnInt source = builder.build();
 
-        ColumnInt transformed = new TransformToInt(ColumnName.of("amount"), ColumnName.of("renamed")).apply((Column) source);
+        ColumnInt transformed = new TransformToInt(ColumnName.of("amount"), ColumnName.of("renamed"))
+                .apply((Column) source);
 
         assertNotSame(source, transformed);
         assertEquals(ColumnName.of("renamed"), transformed.getName());

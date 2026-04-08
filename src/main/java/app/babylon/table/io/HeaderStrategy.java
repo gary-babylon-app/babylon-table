@@ -61,11 +61,8 @@ public interface HeaderStrategy
                 selectedPositions.add(i);
             }
         }
-        return new HeaderDetection(
-            headersFound,
-            false,
-            selectedHeaders.toArray(new String[selectedHeaders.size()]),
-            toIntArray(selectedPositions));
+        return new HeaderDetection(headersFound, false, selectedHeaders.toArray(new String[selectedHeaders.size()]),
+                toIntArray(selectedPositions));
     }
 
     HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, ReadSettings readSettings) throws IOException;

@@ -22,11 +22,9 @@ import app.babylon.table.ColumnName;
 import app.babylon.table.Empties;
 import app.babylon.table.TableName;
 
-
 public class ReadSettingsCSV extends ReadSettingsCommon
 {
-    public static final Predicate<String> NON_EMPTY = s ->
-    {
+    public static final Predicate<String> NON_EMPTY = s -> {
         if (s == null)
         {
             return false;
@@ -49,7 +47,7 @@ public class ReadSettingsCSV extends ReadSettingsCommon
     int[] fixedWidths;
     Charset charset;
     boolean autoDetectEncoding;
-    
+
     public ReadSettingsCSV()
     {
         super();
@@ -112,7 +110,7 @@ public class ReadSettingsCSV extends ReadSettingsCommon
 
     public int[] getFixedWidths()
     {
-        if (this.fixedWidths==null)
+        if (this.fixedWidths == null)
         {
             return null;
         }
@@ -126,8 +124,8 @@ public class ReadSettingsCSV extends ReadSettingsCommon
             this.rowIncludeFilters.put(x, filter);
         }
         return this;
-    }    
-    
+    }
+
     public ReadSettingsCSV withRowExcludeFilter(ColumnName x, Predicate<String> filter)
     {
         if (filter != null)
@@ -135,14 +133,14 @@ public class ReadSettingsCSV extends ReadSettingsCommon
             this.rowExcludeFilters.put(x, filter);
         }
         return this;
-    }    
-    
+    }
+
     public ReadSettingsCSV withFixedWidths(int[] fixedWiths)
     {
-        if (fixedWiths==null)
+        if (fixedWiths == null)
         {
             this.fixedWidths = null;
-            return this;            
+            return this;
         }
         this.fixedWidths = Arrays.copyOf(fixedWiths, fixedWiths.length);
         return this;
@@ -178,18 +176,18 @@ public class ReadSettingsCSV extends ReadSettingsCommon
         return this;
     }
 
-    public ReadSettingsCSV withSelectedHeader(ColumnName x)    
+    public ReadSettingsCSV withSelectedHeader(ColumnName x)
     {
         super.withSelectedHeader(x);
         return this;
-    }    
-    
-    public ReadSettingsCSV withSelectedHeaders(ColumnName... x)    
+    }
+
+    public ReadSettingsCSV withSelectedHeaders(ColumnName... x)
     {
         super.withSelectedHeaders(x);
         return this;
     }
-    
+
     public ReadSettingsCSV withColumnRename(ColumnName original, ColumnName newName)
     {
         super.withColumnRename(original, newName);
@@ -207,7 +205,7 @@ public class ReadSettingsCSV extends ReadSettingsCommon
         super.withColumnType(columnName, valueClass);
         return this;
     }
-    
+
     public char getSeparator()
     {
         return separator;
@@ -222,7 +220,7 @@ public class ReadSettingsCSV extends ReadSettingsCommon
     {
         return super.isStripping();
     }
-    
+
     public boolean hasRowIncludeFilters()
     {
         return this.rowIncludeFilters.size() > 0;

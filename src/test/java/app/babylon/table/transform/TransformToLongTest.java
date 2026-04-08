@@ -82,10 +82,8 @@ class TransformToLongTest
         existingLongBuilder.add(4L);
         ColumnLong existingLong = existingLongBuilder.build();
 
-        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""),
-                amountBuilder.build(),
-                otherBuilder.build(),
-                existingLong);
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amountBuilder.build(),
+                otherBuilder.build(), existingLong);
 
         TableColumnar transformed = table.apply(new TransformToLong(ColumnName.of("amount"), ColumnName.of("parsed")));
 
@@ -106,7 +104,8 @@ class TransformToLongTest
         builder.add(3L);
         ColumnLong source = builder.build();
 
-        ColumnLong transformed = new TransformToLong(ColumnName.of("amount"), ColumnName.of("renamed")).apply((Column) source);
+        ColumnLong transformed = new TransformToLong(ColumnName.of("amount"), ColumnName.of("renamed"))
+                .apply((Column) source);
 
         assertNotSame(source, transformed);
         assertEquals(ColumnName.of("renamed"), transformed.getName());

@@ -127,9 +127,9 @@ public class ColumnDecimalTest
         ColumnObject<BigDecimal> cd = cdBuilder.build();
 
         BigDecimal ELEVEN = new BigDecimal("11");
-        assertTrue(ELEVEN.compareTo(Columns.aggregate(cd, Aggregate.SUM))==0);
+        assertTrue(ELEVEN.compareTo(Columns.aggregate(cd, Aggregate.SUM)) == 0);
 
-        assertTrue(BigDecimal.ZERO.compareTo(Columns.aggregate(cd, Aggregate.MIN))==0);
-        assertTrue(BigDecimal.TEN.compareTo(Columns.aggregate(cd, Aggregate.MAX))==0);
+        assertTrue(BigDecimal.ZERO.compareTo(Columns.aggregate(cd, Aggregate.MIN)) == 0);
+        assertTrue(BigDecimal.TEN.compareTo(Columns.aggregate(cd, Aggregate.MAX)) == 0);
     }
 }

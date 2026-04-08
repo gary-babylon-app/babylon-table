@@ -15,9 +15,6 @@ import java.util.function.Function;
 
 public final class Sentence
 {
-    private Sentence()
-    {
-    }
 
     public static <T> T firstIn(Function<CharSequence, T> parser, CharSequence sentence)
     {

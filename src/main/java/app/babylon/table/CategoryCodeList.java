@@ -128,12 +128,10 @@ public interface CategoryCodeList
             if (this.maxValue <= BYTE_MAX_VALUE)
             {
                 out = new ArrayByte(this.values, this.size);
-            }
-            else if (this.maxValue <= CHAR_MAX_VALUE)
+            } else if (this.maxValue <= CHAR_MAX_VALUE)
             {
                 out = new ArrayChar(this.values, this.size);
-            }
-            else
+            } else
             {
                 out = new ArrayInt(this.values, this.size);
             }

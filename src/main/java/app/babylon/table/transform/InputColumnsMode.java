@@ -2,8 +2,7 @@ package app.babylon.table.transform;
 
 public enum InputColumnsMode
 {
-    RETAIN,
-    REMOVE;
+    RETAIN, REMOVE;
 
     public static InputColumnsMode parse(CharSequence s)
     {

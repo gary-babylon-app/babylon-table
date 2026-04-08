@@ -27,9 +27,7 @@ public interface ColumnObject<T> extends Column
 {
     public enum Mode
     {
-        AUTO,
-        CATEGORICAL,
-        ARRAY;
+        AUTO, CATEGORICAL, ARRAY;
 
         public static Mode parse(String s)
         {
@@ -177,43 +175,43 @@ public interface ColumnObject<T> extends Column
 
     default public String toString(int i, ToStringSettings settings)
     {
-    	if (!isSet(i))
-    	{
-    		return "";
-    	}
+        if (!isSet(i))
+        {
+            return "";
+        }
 
-    	if (this instanceof ColumnObject<?> co)
-    	{
-    		Class<?> valueClass = getType().getValueClass();
-    		if (BigDecimal.class.equals(valueClass))
-    		{
-    			BigDecimal value = (BigDecimal) co.get(i);
-    			if (value == null)
-    			{
-    				return "";
-    			}
-    			if (settings != null && settings.isStripTrailingZeros())
-    			{
-    				value = value.stripTrailingZeros();
-    			}
-    			return value.toPlainString();
-    		}
-    		
-    		if (LocalDate.class.equals(valueClass))
-    		{
-    			LocalDate value = (LocalDate) co.get(i);
-    			if (value == null)
-    			{
-    				return "";
-    			}
-    			return value.format(settings == null
-    					? ToStringSettings.standard().getDateFormatter(null)
-                  : settings.getDateFormatter(null));
-    		}
-    	}
-    	return toString(i);
+        if (this instanceof ColumnObject<?> co)
+        {
+            Class<?> valueClass = getType().getValueClass();
+            if (BigDecimal.class.equals(valueClass))
+            {
+                BigDecimal value = (BigDecimal) co.get(i);
+                if (value == null)
+                {
+                    return "";
+                }
+                if (settings != null && settings.isStripTrailingZeros())
+                {
+                    value = value.stripTrailingZeros();
+                }
+                return value.toPlainString();
+            }
+
+            if (LocalDate.class.equals(valueClass))
+            {
+                LocalDate value = (LocalDate) co.get(i);
+                if (value == null)
+                {
+                    return "";
+                }
+                return value.format(settings == null
+                        ? ToStringSettings.standard().getDateFormatter(null)
+                        : settings.getDateFormatter(null));
+            }
+        }
+        return toString(i);
     }
-    
+
     public static <T> boolean equals(ColumnObject<T> a, Object obj)
     {
         if (a == obj)

@@ -52,7 +52,8 @@ public class TableViewTest
     public void newTableViewShouldDefensivelyCopyViewIndex()
     {
         TableColumnar table = sampleTable();
-        int[] indexes = new int[] { 1 };
+        int[] indexes = new int[]
+        {1};
         ViewIndex.Builder rowIndexBuilder = ViewIndex.builder();
         rowIndexBuilder.addAll(indexes);
         TableColumnar view = Tables.newTableView(TableName.of("v"), table, rowIndexBuilder.build());
@@ -90,11 +91,7 @@ public class TableViewTest
         empty.addNull();
         empty.addNull();
 
-        TableColumnar table = Tables.newTable(
-                TableName.of("t"),
-                new TableDescription(""),
-                a.build(),
-                empty.build());
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), a.build(), empty.build());
 
         ViewIndex.Builder rowIndexBuilder = ViewIndex.builder();
         rowIndexBuilder.add(1).add(0);
@@ -108,7 +105,6 @@ public class TableViewTest
         assertEquals("a1", pruned.getString(ColumnName.of("A")).get(0));
         assertEquals("a0", pruned.getString(ColumnName.of("A")).get(1));
     }
-
 
     @Test
     public void newTableViewWithRowIndexShouldProjectRows()

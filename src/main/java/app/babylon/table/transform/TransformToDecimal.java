@@ -43,14 +43,15 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
         this(columnName, newColumnName, null, toAbsolute);
     }
 
-    public TransformToDecimal(ColumnName columnName, ColumnName newColumnName, Function<CharSequence, BigDecimal> parser)
+    public TransformToDecimal(ColumnName columnName, ColumnName newColumnName,
+            Function<CharSequence, BigDecimal> parser)
     {
         this(columnName, newColumnName, parser, false);
     }
 
     public static TransformToDecimal of(String... params)
     {
-        if (!Is.empty(params) && params.length>=3)
+        if (!Is.empty(params) && params.length >= 3)
         {
             ColumnName columnName = ColumnName.parse(params[0]);
             ColumnName newColumnName = ColumnName.parse(params[1]);
@@ -62,13 +63,12 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
 
     public static TransformToDecimal of(ColumnName x)
     {
-        if (x!=null)
+        if (x != null)
         {
             return new TransformToDecimal(x, x, false);
         }
         return null;
     }
-
 
     public TransformToDecimal(Collection<ColumnName> columnNames)
     {
@@ -77,9 +77,10 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
 
     public ColumnObject<BigDecimal> apply(Column x)
     {
-        Column[] y = new Column[] {x};
+        Column[] y = new Column[]
+        {x};
         Column[] z = apply(y);
-        if (z!=null && z.length>0)
+        if (z != null && z.length > 0)
         {
             @SuppressWarnings("unchecked")
             ColumnObject<BigDecimal> result = (ColumnObject<BigDecimal>) z[0];
@@ -107,8 +108,7 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
 
     private static Function<CharSequence, BigDecimal> newTransformFunction(boolean toAbsolute)
     {
-        return s ->
-        {
+        return s -> {
             BigDecimal bd = BigDecimals.parse(s);
             if (bd == null)
             {
@@ -122,21 +122,21 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
         };
     }
 
-    private TransformToDecimal(ColumnName columnName, ColumnName newColumnName, Function<CharSequence, BigDecimal> parser,
-            boolean toAbsolute)
+    private TransformToDecimal(ColumnName columnName, ColumnName newColumnName,
+            Function<CharSequence, BigDecimal> parser, boolean toAbsolute)
     {
-        super(FUNCTION_NAME,
-                new ColumnName[]{ArgumentChecks.nonNull(columnName)},
-                new ColumnName[]{ArgumentChecks.nonNull(newColumnName)});
+        super(FUNCTION_NAME, new ColumnName[]
+        {ArgumentChecks.nonNull(columnName)}, new ColumnName[]
+        {ArgumentChecks.nonNull(newColumnName)});
         this.parser = resolveParser(parser, newTransformFunction(toAbsolute));
     }
     public static TransformToDecimal of(String s)
     {
-        if (Strings.isEmpty(s) || s.length()<FUNCTION_NAME.length()+3)
+        if (Strings.isEmpty(s) || s.length() < FUNCTION_NAME.length() + 3)
         {
             throw new RuntimeException("Invalid string for " + FUNCTION_NAME + " construction.");
         }
-        s = s.substring(FUNCTION_NAME.length()+1, s.length()-1);
+        s = s.substring(FUNCTION_NAME.length() + 1, s.length() - 1);
         String[] params = Split.commaSeparatedParams(s);
         ColumnName[] columnNames = ColumnName.of(params);
 
@@ -147,7 +147,6 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
     public String toString()
     {
         return FUNCTION_NAME + "("
-                + Arrays.stream(columnNames).map(ColumnName::toString).collect(Collectors.joining(","))
-                + ")";
+                + Arrays.stream(columnNames).map(ColumnName::toString).collect(Collectors.joining(",")) + ")";
     }
 }

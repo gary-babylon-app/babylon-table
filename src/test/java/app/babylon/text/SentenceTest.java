@@ -50,8 +50,7 @@ public class SentenceTest
         try
         {
             return Integer.valueOf(s.toString());
-        }
-        catch (NumberFormatException e)
+        } catch (NumberFormatException e)
         {
             return null;
         }

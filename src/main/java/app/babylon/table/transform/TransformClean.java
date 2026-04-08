@@ -8,14 +8,13 @@ import app.babylon.table.ColumnName;
 import app.babylon.table.ColumnObject;
 import app.babylon.table.ToStringSettings;
 
-
 public class TransformClean extends TransformBase
 {
     public static final String FUNCTION_NAME = "Clean";
     private final ColumnName columnToClean;
-    private final Function<String,String> cleanFunction;
+    private final Function<String, String> cleanFunction;
 
-    public TransformClean(ColumnName column, Function<String,String> cleanFunction)
+    public TransformClean(ColumnName column, Function<String, String> cleanFunction)
     {
         super(FUNCTION_NAME);
         this.columnToClean = column;
@@ -33,7 +32,7 @@ public class TransformClean extends TransformBase
         ColumnObject.Builder<String> cleanedColumn = ColumnObject.builder(this.columnToClean, String.class);
         ToStringSettings settings = ToStringSettings.standard();
 
-        for(int i=0; i<column.size(); i++)
+        for (int i = 0; i < column.size(); i++)
         {
             cleanedColumn.add(cleanFunction.apply(column.toString(i, settings)));
         }

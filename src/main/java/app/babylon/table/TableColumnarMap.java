@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-
 class TableColumnarMap extends TableColumnarCommon
 {
     private final TableName name;
@@ -45,23 +44,23 @@ class TableColumnarMap extends TableColumnarCommon
 
         Map<ColumnName, Column> byName = new LinkedHashMap<>();
         int index = 0;
-        for (Column column: columns)
+        for (Column column : columns)
         {
             ColumnName columnName = column.getName();
 
             if (index > 0)
             {
                 mcl = Math.min(mcl, column.size());
-            }
-            else
+            } else
             {
                 mcl = column.size();
             }
 
             Column dupicateColumn = byName.get(columnName);
-            if (dupicateColumn!=null)
+            if (dupicateColumn != null)
             {
-                throw new RuntimeException("Duplicate detected, column " + dupicateColumn.getName() + " already present, fail to add " + columnName);
+                throw new RuntimeException("Duplicate detected, column " + dupicateColumn.getName()
+                        + " already present, fail to add " + columnName);
             }
             this.columnOrder[index++] = columnName;
             byName.put(columnName, column);
@@ -86,7 +85,7 @@ class TableColumnarMap extends TableColumnarCommon
     @Override
     public Collection<ColumnName> getColumnNames(Collection<ColumnName> x)
     {
-        if (x==null)
+        if (x == null)
         {
             x = new ArrayList<>();
         }
@@ -109,7 +108,6 @@ class TableColumnarMap extends TableColumnarCommon
     {
         return minColumnLength;
     }
-
 
     @Override
     public Column get(ColumnName x)
@@ -134,14 +132,13 @@ class TableColumnarMap extends TableColumnarCommon
         return columns;
     }
 
-
     @Override
     public TableColumnar removeColumns(ColumnName... x)
     {
         if (!Empties.isEmpty(x))
         {
             Set<ColumnName> columnsToRemove = new HashSet<>();
-            for(ColumnName columnName: x)
+            for (ColumnName columnName : x)
             {
                 if (contains(columnName))
                 {
@@ -165,8 +162,7 @@ class TableColumnarMap extends TableColumnarCommon
                 }
             }
             return new TableColumnarMap(getName(), getDescription(), allColumns);
-        }
-        else
+        } else
         {
             return this;
         }

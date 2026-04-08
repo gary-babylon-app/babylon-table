@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
 
-
 class ColumnObjectTransformTest
 {
     @Test
@@ -30,10 +29,10 @@ class ColumnObjectTransformTest
         ColumnObject<BigDecimal> column = builder.build();
 
         ViewIndex rowIndex = ViewIndex.builder().add(2).add(1).build();
-        ColumnObject<BigDecimal> view = (ColumnObject<BigDecimal>)column.view(rowIndex);
+        ColumnObject<BigDecimal> view = (ColumnObject<BigDecimal>) column.view(rowIndex);
 
-        ColumnObject<String> transformed = view.transform(
-            Transformer.of(BigDecimal::toPlainString, String.class, ColumnName.of("amount_text")));
+        ColumnObject<String> transformed = view
+                .transform(Transformer.of(BigDecimal::toPlainString, String.class, ColumnName.of("amount_text")));
 
         assertEquals(ColumnName.of("amount_text"), transformed.getName());
         assertEquals("3.0", transformed.get(0));

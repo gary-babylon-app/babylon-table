@@ -122,6 +122,6 @@ public class GroupBy
             return;
         }
         throw new IllegalArgumentException("Unsupported aggregate source column type for " + sourceColumn.getName()
-            + ": " + sourceColumn.getClass().getSimpleName());
+                + ": " + sourceColumn.getClass().getSimpleName());
     }
 }

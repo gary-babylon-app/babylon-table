@@ -27,11 +27,12 @@ public class ColumnDecimalViewTest
         originalBuilder.add(BigDecimals.parse(""));
         originalBuilder.add(BigDecimals.parse("99.99"));
 
-        int[] viewIndex = new int[] {1, 3};
+        int[] viewIndex = new int[]
+        {1, 3};
         ViewIndex rowIndex = ViewIndex.builder().addAll(viewIndex).build();
 
         @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> view = (ColumnObject<BigDecimal>)Columns.newView(originalBuilder.build(), rowIndex);
+        ColumnObject<BigDecimal> view = (ColumnObject<BigDecimal>) Columns.newView(originalBuilder.build(), rowIndex);
 
         assertEquals(viewIndex.length, view.size());
         assertEquals(new BigDecimal("100100.32"), view.get(0));

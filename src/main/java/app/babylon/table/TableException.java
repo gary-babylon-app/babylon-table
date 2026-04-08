@@ -10,12 +10,11 @@
 
 package app.babylon.table;
 
-
 public class TableException extends RuntimeException
 {
     private static final long serialVersionUID = 1L;
 
-	public TableException(String message)
+    public TableException(String message)
     {
         super(message);
     }

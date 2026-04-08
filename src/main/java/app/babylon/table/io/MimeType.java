@@ -14,10 +14,9 @@ import java.util.function.Function;
 
 public enum MimeType
 {
-    APPLICATION_PDF("application/pdf"),
-    EXCEL_XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
-    TEXT_CSV("text/csv"),
-    TEXT_PLAIN("text/plain");
+    APPLICATION_PDF("application/pdf"), EXCEL_XLSX(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"), TEXT_CSV(
+                    "text/csv"), TEXT_PLAIN("text/plain");
 
     public static final Function<CharSequence, MimeType> PARSER = MimeType::parse;
 

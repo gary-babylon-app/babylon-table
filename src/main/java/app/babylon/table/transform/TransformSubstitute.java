@@ -26,7 +26,8 @@ public class TransformSubstitute extends TransformBase
         this(defaultValueNewColumn, columnName, columnName, x);
     }
 
-    public TransformSubstitute(String defaultValueNewColumn, ColumnName columnName, ColumnName newColumnName, String... x)
+    public TransformSubstitute(String defaultValueNewColumn, ColumnName columnName, ColumnName newColumnName,
+            String... x)
     {
         super(FUNCTION_NAME);
         this.columnName = ArgumentChecks.nonNull(columnName);
@@ -35,14 +36,14 @@ public class TransformSubstitute extends TransformBase
 
         this.replaces = new HashMap<>();
 
-        if (x.length%2!=0)
+        if (x.length % 2 != 0)
         {
             throw new RuntimeException(FUNCTION_NAME + " expects replaces to be in pairs.");
         }
 
-        for(int i=0;i<x.length;i=i+2)
+        for (int i = 0; i < x.length; i = i + 2)
         {
-            this.replaces.put(x[i].strip(), x[i+1].strip());
+            this.replaces.put(x[i].strip(), x[i + 1].strip());
         }
     }
 
@@ -91,24 +92,23 @@ public class TransformSubstitute extends TransformBase
         }
         ColumnObject<String> stringColumn = Columns.asStringColumn(column);
         ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName, String.class);
-        for(int i=0;i<stringColumn.size();++i)
+        for (int i = 0; i < stringColumn.size(); ++i)
         {
             String s = stringColumn.get(i);
 
             if (!Strings.isEmpty(s))
             {
                 String replaceValue = this.replaces.get(s);
-                if (replaceValue==null && this.defaultValueNewColumn!=null)
+                if (replaceValue == null && this.defaultValueNewColumn != null)
                 {
                     replaceValue = this.defaultValueNewColumn;
                 }
-                if (replaceValue==null && this.defaultValueNewColumn==null)
+                if (replaceValue == null && this.defaultValueNewColumn == null)
                 {
                     replaceValue = s;
                 }
                 newColumn.add(replaceValue);
-            }
-            else
+            } else
             {
                 newColumn.add(this.defaultValueNewColumn);
             }

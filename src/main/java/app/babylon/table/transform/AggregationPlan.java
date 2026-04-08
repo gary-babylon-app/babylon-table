@@ -32,8 +32,7 @@ public class AggregationPlan
 {
     public enum KeyStrategy
     {
-        AUTO,
-        ROW_KEY
+        AUTO, ROW_KEY
     }
 
     private static final class RowConsumerGroupAggregatePlan implements RowConsumerResult<TableColumnar>
@@ -44,10 +43,7 @@ public class AggregationPlan
         private final int aggregatePosition;
         private final Map<RowKey, AccumulatorDouble> accumulatorsByGroup;
 
-        private RowConsumerGroupAggregatePlan(
-                AggregationPlan plan,
-                int[] groupByPositions,
-                int aggregatePosition)
+        private RowConsumerGroupAggregatePlan(AggregationPlan plan, int[] groupByPositions, int aggregatePosition)
         {
             this.plan = plan;
             this.groupByPositions = Arrays.copyOf(groupByPositions, groupByPositions.length);
@@ -66,7 +62,8 @@ public class AggregationPlan
 
             char[] chars = row.chars();
             RowKey groupKey = RowKey.copyOf(row, this.groupByPositions);
-            AccumulatorDouble accumulator = this.accumulatorsByGroup.computeIfAbsent(groupKey, k -> new AccumulatorDouble());
+            AccumulatorDouble accumulator = this.accumulatorsByGroup.computeIfAbsent(groupKey,
+                    k -> new AccumulatorDouble());
             accumulator.accept(chars, row.start(this.aggregatePosition), row.length(this.aggregatePosition));
         }
 
@@ -74,7 +71,7 @@ public class AggregationPlan
         public TableColumnar buildResult(DataSource dataSource)
         {
             @SuppressWarnings("unchecked")
-			ColumnObject.Builder<String>[] groupByBuilders = new ColumnObject.Builder[this.plan.groupByColumns.size()];
+            ColumnObject.Builder<String>[] groupByBuilders = new ColumnObject.Builder[this.plan.groupByColumns.size()];
             for (int i = 0; i < groupByBuilders.length; ++i)
             {
                 groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i), String.class);
@@ -99,7 +96,9 @@ public class AggregationPlan
             {
                 columns[i + groupByBuilders.length] = aggregateBuilders[i].build();
             }
-            TableName tableName = this.plan.outputTableName == null ? TableName.of("Summary") : this.plan.outputTableName;
+            TableName tableName = this.plan.outputTableName == null
+                    ? TableName.of("Summary")
+                    : this.plan.outputTableName;
             return Tables.newTable(tableName, columns);
         }
 
@@ -239,10 +238,7 @@ public class AggregationPlan
         return withAggregate(sourceColumnName, sourceColumnName, aggregate);
     }
 
-    public AggregationPlan withAggregate(
-            ColumnName sourceColumnName,
-            ColumnName outputColumnName,
-            Aggregate aggregate)
+    public AggregationPlan withAggregate(ColumnName sourceColumnName, ColumnName outputColumnName, Aggregate aggregate)
     {
         this.aggregateSpecs.add(new AggregateSpec(sourceColumnName, outputColumnName, aggregate));
         return this;
@@ -261,8 +257,7 @@ public class AggregationPlan
         {
             effectiveReadSettings.withColumnType(entry.getKey(), entry.getValue());
         }
-        RowConsumerFactory<TableColumnar> rowConsumerFactory = (options, headerDetection) ->
-        {
+        RowConsumerFactory<TableColumnar> rowConsumerFactory = (options, headerDetection) -> {
             String[] selectedHeaders = headerDetection.getSelectedHeaders();
             int[] groupByPositions = new int[this.groupByColumns.size()];
             Arrays.fill(groupByPositions, -1);
@@ -287,12 +282,14 @@ public class AggregationPlan
             {
                 if (groupByPositions[i] < 0)
                 {
-                    throw new IllegalArgumentException("Group-by column not present in selected headers: " + this.groupByColumns.get(i));
+                    throw new IllegalArgumentException(
+                            "Group-by column not present in selected headers: " + this.groupByColumns.get(i));
                 }
             }
             if (aggregatePosition < 0)
             {
-                throw new IllegalArgumentException("Aggregate source column not present in selected headers: " + aggregateColumnName);
+                throw new IllegalArgumentException(
+                        "Aggregate source column not present in selected headers: " + aggregateColumnName);
             }
             return new RowConsumerGroupAggregatePlan(this, groupByPositions, aggregatePosition);
         };
@@ -303,7 +300,8 @@ public class AggregationPlan
     {
         if (this.groupByColumns.isEmpty())
         {
-            throw new IllegalArgumentException("Current AggregationPlan.execute requires at least one group-by column.");
+            throw new IllegalArgumentException(
+                    "Current AggregationPlan.execute requires at least one group-by column.");
         }
         if (this.aggregateSpecs.isEmpty())
         {
@@ -321,19 +319,15 @@ public class AggregationPlan
             if (!isSupportedAggregate(aggregateSpec.getAggregate()))
             {
                 throw new IllegalArgumentException(
-                        "Unsupported aggregate for current AggregationPlan.execute: "
-                                + aggregateSpec.getAggregate());
+                        "Unsupported aggregate for current AggregationPlan.execute: " + aggregateSpec.getAggregate());
             }
         }
     }
 
     private static boolean isSupportedAggregate(Aggregate aggregate)
     {
-        return aggregate == Aggregate.COUNT
-                || aggregate == Aggregate.MIN
-                || aggregate == Aggregate.MAX
-                || aggregate == Aggregate.SUM
-                || aggregate == Aggregate.MEAN;
+        return aggregate == Aggregate.COUNT || aggregate == Aggregate.MIN || aggregate == Aggregate.MAX
+                || aggregate == Aggregate.SUM || aggregate == Aggregate.MEAN;
     }
 
     private static ColumnBuilder[] newAggregateBuilders(AggregationPlan plan)
@@ -345,8 +339,7 @@ public class AggregationPlan
             if (aggregateSpec.getAggregate() == Aggregate.COUNT)
             {
                 aggregateBuilders[i] = ColumnLong.builder(aggregateSpec.getOutputColumnName());
-            }
-            else
+            } else
             {
                 aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.getOutputColumnName());
             }
@@ -354,7 +347,8 @@ public class AggregationPlan
         return aggregateBuilders;
     }
 
-    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, AggregationPlan plan, AccumulatorDouble accumulator)
+    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, AggregationPlan plan,
+            AccumulatorDouble accumulator)
     {
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {
@@ -362,8 +356,7 @@ public class AggregationPlan
             if (aggregate == Aggregate.COUNT)
             {
                 ((ColumnLong.Builder) aggregateBuilders[i]).add(accumulator.getCount());
-            }
-            else
+            } else
             {
                 ((ColumnDouble.Builder) aggregateBuilders[i]).add(valueOf(accumulator, aggregate));
             }
@@ -374,11 +367,11 @@ public class AggregationPlan
     {
         return switch (aggregate)
         {
-        case COUNT -> throw new IllegalArgumentException("COUNT is not a double aggregate");
-        case MIN -> accumulator.getMin();
-        case MAX -> accumulator.getMax();
-        case SUM -> accumulator.getSum();
-        case MEAN -> accumulator.getMean();
+            case COUNT -> throw new IllegalArgumentException("COUNT is not a double aggregate");
+            case MIN -> accumulator.getMin();
+            case MAX -> accumulator.getMax();
+            case SUM -> accumulator.getSum();
+            case MEAN -> accumulator.getMean();
         };
     }
 

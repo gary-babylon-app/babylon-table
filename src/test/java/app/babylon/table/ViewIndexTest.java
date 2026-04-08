@@ -23,11 +23,7 @@ public class ViewIndexTest
     @Test
     public void builderShouldSupportNullEntriesAndChooseCompactBacking()
     {
-        ViewIndex list = ViewIndex.builder()
-                .add(1)
-                .addNull()
-                .add(254)
-                .build();
+        ViewIndex list = ViewIndex.builder().add(1).addNull().add(254).build();
 
         assertEquals(3, list.size());
         assertFalse(list.isAllSet());
@@ -43,16 +39,13 @@ public class ViewIndexTest
     @Test
     public void toArrayAndCopyShouldBeDefensive()
     {
-        ViewIndex list = ViewIndex.builder()
-                .add(7)
-                .addNull()
-                .add(42)
-                .build();
+        ViewIndex list = ViewIndex.builder().add(7).addNull().add(42).build();
 
         int[] copy = list.toArray(null);
         copy[0] = 99;
 
-        assertArrayEquals(new int[] {7, ViewIndex.BYTE_NULL, 42}, list.toArray(null));
+        assertArrayEquals(new int[]
+        {7, ViewIndex.BYTE_NULL, 42}, list.toArray(null));
 
         ViewIndex copyList = list.copy();
         assertEquals(list.size(), copyList.size());

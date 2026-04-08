@@ -24,12 +24,12 @@ class ColumnObjectArray<T> implements ColumnObject<T>
 
     ColumnObjectArray(ColumnObjectBuilderArray<T> builder)
     {
-        this(builder.getName(), builder.getType(), builder.activeSize(), builder.activeIsConstant(), builder.activeIsAllSet(),
-                builder.activeIsNoneSet(), builder.detachValues());
+        this(builder.getName(), builder.getType(), builder.activeSize(), builder.activeIsConstant(),
+                builder.activeIsAllSet(), builder.activeIsNoneSet(), builder.detachValues());
     }
 
-    ColumnObjectArray(ColumnName name, Column.Type type, int size, boolean isConstant, boolean isAllSet, boolean isNoneSet,
-            Object[] values)
+    ColumnObjectArray(ColumnName name, Column.Type type, int size, boolean isConstant, boolean isAllSet,
+            boolean isNoneSet, Object[] values)
     {
         this.name = Objects.requireNonNull(name);
         this.type = Objects.requireNonNull(type);

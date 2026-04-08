@@ -32,11 +32,7 @@ abstract class TransformStringColumnsBase<T> extends TransformBase
     protected Column[] transformColumns(Column[] validColumns)
     {
         Function<CharSequence, T> parser = createParser(validColumns);
-        return transformStringColumns(
-                validColumns,
-                this.newColumnNames,
-                valueClass(),
-                s -> parseValue(parser, s));
+        return transformStringColumns(validColumns, this.newColumnNames, valueClass(), s -> parseValue(parser, s));
     }
 
     protected abstract Class<T> valueClass();
@@ -52,7 +48,8 @@ abstract class TransformStringColumnsBase<T> extends TransformBase
         return parser.apply(s);
     }
 
-    protected static <T> Function<CharSequence, T> resolveParser(Function<CharSequence, T> parser, Function<CharSequence, T> fallbackParser)
+    protected static <T> Function<CharSequence, T> resolveParser(Function<CharSequence, T> parser,
+            Function<CharSequence, T> fallbackParser)
     {
         return (parser != null) ? parser : ArgumentChecks.nonNull(fallbackParser);
     }

@@ -111,27 +111,21 @@ public class Tables
         return ret;
     }
 
-    public static TableColumnar leftOuterJoin(
-            TableColumnar left,
-            TableColumnar right,
-            ColumnName leftKey,
-            ColumnName rightKey,
-            ColumnName... rightColumnsToAdd)
+    public static TableColumnar leftOuterJoin(TableColumnar left, TableColumnar right, ColumnName leftKey,
+            ColumnName rightKey, ColumnName... rightColumnsToAdd)
     {
         ArgumentChecks.nonNull(left);
         ArgumentChecks.nonNull(right);
         ArgumentChecks.nonNull(leftKey);
         ArgumentChecks.nonNull(rightKey);
         ArgumentChecks.nonEmpty(rightColumnsToAdd);
-        return leftOuterJoin(left, right, new ColumnName[] {leftKey}, new ColumnName[] {rightKey}, rightColumnsToAdd);
+        return leftOuterJoin(left, right, new ColumnName[]
+        {leftKey}, new ColumnName[]
+        {rightKey}, rightColumnsToAdd);
     }
 
-    public static TableColumnar leftOuterJoin(
-            TableColumnar left,
-            TableColumnar right,
-            ColumnName[] leftKeys,
-            ColumnName[] rightKeys,
-            ColumnName... rightColumnsToAdd)
+    public static TableColumnar leftOuterJoin(TableColumnar left, TableColumnar right, ColumnName[] leftKeys,
+            ColumnName[] rightKeys, ColumnName... rightColumnsToAdd)
     {
         ArgumentChecks.nonNull(left);
         ArgumentChecks.nonNull(right);
@@ -167,10 +161,10 @@ public class Tables
                     if (column instanceof ColumnObject<?> co)
                     {
                         key[j] = co.get(i);
-                    }
-                    else
+                    } else
                     {
-                        throw new RuntimeException("column " + column.getName() + " not columnobject, cannot form a join key");
+                        throw new RuntimeException(
+                                "column " + column.getName() + " not columnobject, cannot form a join key");
                     }
                 }
 
@@ -178,13 +172,13 @@ public class Tables
                 if (matchIndex != null)
                 {
                     rowIndexBuilder.add(matchIndex.intValue());
-                }
-                else
+                } else
                 {
                     rowIndexBuilder.addNull();
                 }
             }
-            return new TableColumnarJoin(left.getName(), left.getDescription(), left, right, rowIndexBuilder.build(), rightColumnsToAdd);
+            return new TableColumnarJoin(left.getName(), left.getDescription(), left, right, rowIndexBuilder.build(),
+                    rightColumnsToAdd);
         }
 
         TableIndex rightIndex = new TableIndex(right, rightKeys);
@@ -205,10 +199,10 @@ public class Tables
                 if (column instanceof ColumnObject<?> co)
                 {
                     key[j] = co.get(i);
-                }
-                else
+                } else
                 {
-                    throw new RuntimeException("column " + column.getName() + " not columnobject, cannot form a join key");
+                    throw new RuntimeException(
+                            "column " + column.getName() + " not columnobject, cannot form a join key");
                 }
             }
 
@@ -234,54 +228,47 @@ public class Tables
         if (source instanceof ColumnObject<?> co && builder instanceof ColumnObject.Builder<?> coBuilder)
         {
             addJoinedObjectValue(coBuilder, co, matchIndex);
-        }
-        else if (source instanceof ColumnInt ci && builder instanceof ColumnInt.Builder ciBuilder)
+        } else if (source instanceof ColumnInt ci && builder instanceof ColumnInt.Builder ciBuilder)
         {
             if (matchIndex != null && ci.isSet(matchIndex.intValue()))
             {
                 ciBuilder.add(ci.get(matchIndex.intValue()));
-            }
-            else
+            } else
             {
                 ciBuilder.addNull();
             }
-        }
-        else if (source instanceof ColumnLong cl && builder instanceof ColumnLong.Builder clBuilder)
+        } else if (source instanceof ColumnLong cl && builder instanceof ColumnLong.Builder clBuilder)
         {
             if (matchIndex != null && cl.isSet(matchIndex.intValue()))
             {
                 clBuilder.add(cl.get(matchIndex.intValue()));
-            }
-            else
+            } else
             {
                 clBuilder.addNull();
             }
-        }
-        else if (source instanceof ColumnDouble cd && builder instanceof ColumnDouble.Builder cdBuilder)
+        } else if (source instanceof ColumnDouble cd && builder instanceof ColumnDouble.Builder cdBuilder)
         {
             if (matchIndex != null && cd.isSet(matchIndex.intValue()))
             {
                 cdBuilder.add(cd.get(matchIndex.intValue()));
-            }
-            else
+            } else
             {
                 cdBuilder.addNull();
             }
-        }
-        else
+        } else
         {
             throw new IllegalArgumentException("Unsupported joined column type " + source.getType());
         }
     }
 
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings(
+    {"rawtypes", "unchecked"})
     private static void addJoinedObjectValue(ColumnObject.Builder builder, ColumnObject source, Integer matchIndex)
     {
         if (matchIndex != null && source.isSet(matchIndex.intValue()))
         {
             builder.add(source.get(matchIndex.intValue()));
-        }
-        else
+        } else
         {
             builder.addNull();
         }

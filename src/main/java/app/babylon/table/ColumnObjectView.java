@@ -15,8 +15,7 @@ import java.util.Objects;
 import java.util.ArrayList;
 import java.util.Collection;
 
-
-abstract public class ColumnObjectView <T> implements ColumnObject<T>
+abstract public class ColumnObjectView<T> implements ColumnObject<T>
 {
     private final ColumnObject<T> original;
     private final ViewIndex rowIndex;
@@ -31,8 +30,7 @@ abstract public class ColumnObjectView <T> implements ColumnObject<T>
         if (this.original.isConstant())
         {
             this.isConstant = true;
-        }
-        else
+        } else
         {
             boolean b = true;
             for (int i = 1; i < rowIndex.size(); ++i)
@@ -64,13 +62,11 @@ abstract public class ColumnObjectView <T> implements ColumnObject<T>
         {
             this.isAllSet = false;
             this.isNoneSet = true;
-        }
-        else if (this.original.isAllSet() && this.rowIndex.isAllSet())
+        } else if (this.original.isAllSet() && this.rowIndex.isAllSet())
         {
             this.isAllSet = true;
             this.isNoneSet = false;
-        }
-        else
+        } else
         {
             boolean anySet = false;
             boolean anyUnset = false;
@@ -158,11 +154,11 @@ abstract public class ColumnObjectView <T> implements ColumnObject<T>
     @Override
     public Collection<T> getAll(Collection<T> x)
     {
-        if (x==null)
+        if (x == null)
         {
             x = new ArrayList<>();
         }
-        for(int i=0;i<this.size();++i)
+        for (int i = 0; i < this.size(); ++i)
         {
             if (isSet(i))
             {
@@ -171,7 +167,6 @@ abstract public class ColumnObjectView <T> implements ColumnObject<T>
         }
         return x;
     }
-
 
     @Override
     public String toString()

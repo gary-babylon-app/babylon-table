@@ -12,8 +12,6 @@ package app.babylon.table;
 
 import java.util.Objects;
 
-
-
 public class ColumnLongConstant implements ColumnLong
 {
     private final ColumnName name;
@@ -58,7 +56,7 @@ public class ColumnLongConstant implements ColumnLong
     }
 
     @Override
-   public int size()
+    public int size()
     {
         return this.size;
     }
@@ -77,8 +75,7 @@ public class ColumnLongConstant implements ColumnLong
             if (rowIndex.isSet(i) && this.isSet)
             {
                 builder.add(this.value);
-            }
-            else
+            } else
             {
                 builder.addNull();
             }
@@ -89,11 +86,11 @@ public class ColumnLongConstant implements ColumnLong
     @Override
     public long[] toArray(long[] x)
     {
-        if (x==null || x.length<size)
+        if (x == null || x.length < size)
         {
             x = new long[size];
         }
-        for(int i=0;i<size;++i)
+        for (int i = 0; i < size; ++i)
         {
             x[i] = value;
         }

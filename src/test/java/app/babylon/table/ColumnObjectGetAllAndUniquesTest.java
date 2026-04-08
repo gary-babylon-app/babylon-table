@@ -69,12 +69,7 @@ class ColumnObjectGetAllAndUniquesTest
         }
         ColumnObject<String> column = builder.build();
 
-        ViewIndex rowIndex = ViewIndex.builder()
-            .add(51)
-            .add(50)
-            .add(10)
-            .add(51)
-            .build();
+        ViewIndex rowIndex = ViewIndex.builder().add(51).add(50).add(10).add(51).build();
         ColumnObject<String> view = column.view(rowIndex);
 
         List<String> all = (List<String>) view.getAll(new ArrayList<>());
@@ -125,11 +120,7 @@ class ColumnObjectGetAllAndUniquesTest
         builder.add("A");
         ColumnCategorical<String> original = builder.build();
 
-        ViewIndex rowIndex = ViewIndex.builder()
-            .add(2)
-            .add(3)
-            .add(4)
-            .build();
+        ViewIndex rowIndex = ViewIndex.builder().add(2).add(3).add(4).build();
         ColumnCategorical<String> view = original.view(rowIndex);
 
         List<String> all = (List<String>) view.getAll(new ArrayList<>());

@@ -94,8 +94,7 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
         if (value == null)
         {
             this.hasAnyUnset = true;
-        }
-        else
+        } else
         {
             this.hasAnySet = true;
         }
@@ -143,8 +142,7 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
             if (i != 0)
             {
                 builder.append(", ");
-            }
-            else
+            } else
             {
                 builder.append("[");
             }

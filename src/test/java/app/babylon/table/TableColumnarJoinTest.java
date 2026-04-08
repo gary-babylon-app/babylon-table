@@ -45,18 +45,10 @@ public class TableColumnarJoinTest
 
         TableColumnar right = Tables.newTable(TableName.of("right"), rightKey.build(), rightValues.build());
 
-        ViewIndex rowIndex = ViewIndex.builder()
-                .add(0)
-                .addNull()
-                .build();
+        ViewIndex rowIndex = ViewIndex.builder().add(0).addNull().build();
 
-        TableColumnar joined = new TableColumnarJoin(
-                TableName.of("joined"),
-                new TableDescription(""),
-                left,
-                right,
-                rowIndex,
-                rightValue);
+        TableColumnar joined = new TableColumnarJoin(TableName.of("joined"), new TableDescription(""), left, right,
+                rowIndex, rightValue);
 
         assertEquals(2, joined.getRowCount());
         assertTrue(joined.contains(key));
@@ -90,18 +82,10 @@ public class TableColumnarJoinTest
         amounts.add(42.5d);
         TableColumnar right = Tables.newTable(TableName.of("right"), rightKey.build(), amounts.build());
 
-        ViewIndex rowIndex = ViewIndex.builder()
-                .add(0)
-                .addNull()
-                .build();
+        ViewIndex rowIndex = ViewIndex.builder().add(0).addNull().build();
 
-        TableColumnar joined = new TableColumnarJoin(
-                TableName.of("joined"),
-                new TableDescription(""),
-                left,
-                right,
-                rowIndex,
-                amount);
+        TableColumnar joined = new TableColumnarJoin(TableName.of("joined"), new TableDescription(""), left, right,
+                rowIndex, amount);
 
         ColumnDouble amountView = (ColumnDouble) joined.get(amount);
         assertEquals(42.5d, amountView.get(0));

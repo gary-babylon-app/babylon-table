@@ -18,7 +18,7 @@ public interface Column
 {
     public static interface Type
     {
-        public  static Type of(Class<?> valueClass)
+        public static Type of(Class<?> valueClass)
         {
             return ColumnTypes.of(valueClass);
         }
@@ -49,7 +49,7 @@ public interface Column
 
     default public String toString(int i, ToStringSettings settings)
     {
-    	return toString(i);
+        return toString(i);
     }
 
     public int compare(int i, int j);
@@ -57,7 +57,7 @@ public interface Column
     public Column view(ViewIndex rowIndex);
 
     public Column copy(ColumnName x);
-    
+
     /*
      * A a column with same column name with value of the ith row
      */

@@ -14,7 +14,6 @@ import java.util.Objects;
 
 import java.util.Comparator;
 
-
 public class ColumnsComparator implements Comparator<Integer>
 {
     private Column[] columns;
@@ -37,11 +36,11 @@ public class ColumnsComparator implements Comparator<Integer>
         }
         return result;
     }
-    
+
     @Override
     public int compare(Integer o1, Integer o2)
     {
         return compareRows(o1.intValue(), o2.intValue());
     }
-    
+
 }

@@ -10,6 +10,7 @@
 
 package app.babylon.table.io;
 
+import app.babylon.io.DataSource;
 /**
  * A row consumer that can build a final result once all input rows have been
  * processed.

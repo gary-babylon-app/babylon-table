@@ -6,13 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.ColumnCategorical;
-import app.babylon.table.ColumnName;
-import app.babylon.table.ColumnObject;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
-import app.babylon.table.Transform;
+import app.babylon.table.transform.Transform;
 
 public class TransformCleanWhitespaceTest
 {

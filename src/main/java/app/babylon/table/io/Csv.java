@@ -10,10 +10,11 @@
 
 package app.babylon.table.io;
 
+import app.babylon.io.DataSource;
 import java.io.IOException;
 
-import app.babylon.table.TableColumnar;
 import app.babylon.table.TableException;
+import app.babylon.table.TableColumnar;
 
 public class Csv
 {

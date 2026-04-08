@@ -10,13 +10,15 @@
 
 package app.babylon.table.io;
 
+import app.babylon.io.DataSource;
+import app.babylon.io.TestDataSources;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.ColumnName;
-import app.babylon.table.ColumnObject;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.TableColumnar;
 
 public class CsvTest

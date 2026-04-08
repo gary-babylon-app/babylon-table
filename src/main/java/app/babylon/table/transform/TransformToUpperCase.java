@@ -4,7 +4,7 @@ import app.babylon.text.Strings;
 
 import java.util.Locale;
 
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.ColumnName;
 import app.babylon.table.Is;
 
 public class TransformToUpperCase extends TransformStringToString

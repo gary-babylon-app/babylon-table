@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import app.babylon.table.Column;
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
 import app.babylon.table.TableName;
 

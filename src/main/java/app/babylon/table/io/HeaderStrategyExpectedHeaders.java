@@ -17,7 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.ColumnName;
 
 public class HeaderStrategyExpectedHeaders implements HeaderStrategy
 {

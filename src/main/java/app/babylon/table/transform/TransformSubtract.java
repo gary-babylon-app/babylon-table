@@ -1,6 +1,6 @@
 package app.babylon.table.transform;
 
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.ColumnName;
 
 public class TransformSubtract extends TransformDecimalBinaryOperator
 {

@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.io.DataSource;
+import app.babylon.io.DataSourceProbe;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;

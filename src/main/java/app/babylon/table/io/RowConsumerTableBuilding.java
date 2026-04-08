@@ -10,14 +10,13 @@
 
 package app.babylon.table.io;
 
-import app.babylon.text.Strings;
-
-import app.babylon.table.Column;
-import app.babylon.table.ColumnBuilder;
-import app.babylon.table.ColumnDouble;
-import app.babylon.table.ColumnName;
-import app.babylon.table.ColumnObject;
-import app.babylon.table.Columns;
+import app.babylon.io.DataSource;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBuilder;
+import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
@@ -151,7 +150,7 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         byte[] columnKinds = new byte[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
         {
-            app.babylon.table.Column.Type columnType = options.getColumnType(columnNames[i]);
+            app.babylon.table.column.Column.Type columnType = options.getColumnType(columnNames[i]);
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnKinds[i] = KIND_DOUBLE;
@@ -169,7 +168,7 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         for (int i = 0; i < columnNames.length; ++i)
         {
             ColumnName columnName = columnNames[i];
-            app.babylon.table.Column.Type columnType = options.getColumnType(columnName);
+            app.babylon.table.column.Column.Type columnType = options.getColumnType(columnName);
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnBuilders[i] = ColumnDouble.builder(columnName);

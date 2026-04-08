@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.function.Function;
 
 import app.babylon.table.ArgumentChecks;
-import app.babylon.table.Column;
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
 import app.babylon.table.Is;
 
 abstract class TransformStringColumnsBase<T> extends TransformBase

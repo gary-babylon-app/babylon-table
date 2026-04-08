@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import app.babylon.table.ColumnCategorical;
-import app.babylon.table.ColumnName;
-import app.babylon.table.ColumnObject;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;

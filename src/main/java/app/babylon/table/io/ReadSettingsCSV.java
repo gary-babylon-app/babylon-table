@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import app.babylon.table.Column;
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
 import app.babylon.table.Empties;
 import app.babylon.table.TableName;
 

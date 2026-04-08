@@ -5,9 +5,9 @@ import app.babylon.text.Strings;
 import java.util.Map;
 
 import app.babylon.table.ArgumentChecks;
-import app.babylon.table.Column;
-import app.babylon.table.ColumnName;
-import app.babylon.table.ColumnObject;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.Is;
 import app.babylon.text.Split;
 

@@ -8,10 +8,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import app.babylon.table.ArgumentChecks;
-import app.babylon.table.ColumnObject;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.Is;
 import app.babylon.table.TableColumnar;
-import app.babylon.table.Transform;
+import app.babylon.table.transform.Transform;
 
 public final class TransformRegistry
 {

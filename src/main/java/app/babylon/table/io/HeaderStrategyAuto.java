@@ -18,9 +18,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import app.babylon.table.Column;
-import app.babylon.table.ColumnName;
-import app.babylon.table.DateFormatInference;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.transform.DateFormatInference;
 
 public class HeaderStrategyAuto implements HeaderStrategy
 {

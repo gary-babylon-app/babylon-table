@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
 
 /**

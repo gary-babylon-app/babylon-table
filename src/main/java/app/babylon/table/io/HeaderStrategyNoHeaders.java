@@ -10,6 +10,7 @@
 
 package app.babylon.table.io;
 
+import app.babylon.table.column.Column;
 import java.io.IOException;
 
 public class HeaderStrategyNoHeaders implements HeaderStrategy

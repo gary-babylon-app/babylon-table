@@ -19,8 +19,10 @@ import java.util.Objects;
  */
 public interface ViewIndex
 {
-    int BYTE_NULL = CategoryCodeList.BYTE_MAX_VALUE;
-    int CHAR_NULL = CategoryCodeList.CHAR_MAX_VALUE;
+    int BYTE_MAX_VALUE = 0xFF;
+    int CHAR_MAX_VALUE = 0xFFFF;
+    int BYTE_NULL = BYTE_MAX_VALUE;
+    int CHAR_NULL = CHAR_MAX_VALUE;
     int INT_NULL = Integer.MAX_VALUE;
 
     static Builder builder()
@@ -156,10 +158,10 @@ public interface ViewIndex
         {
             ensureActive();
             ViewIndex out;
-            if (this.maxValue <= CategoryCodeList.BYTE_MAX_VALUE - 1)
+            if (this.maxValue <= BYTE_MAX_VALUE - 1)
             {
                 out = new ArrayByte(this.values, this.size);
-            } else if (this.maxValue <= CategoryCodeList.CHAR_MAX_VALUE - 1)
+            } else if (this.maxValue <= CHAR_MAX_VALUE - 1)
             {
                 out = new ArrayChar(this.values, this.size, this.hasNulls);
             } else
@@ -259,14 +261,14 @@ public interface ViewIndex
         public boolean isSet(int i)
         {
             checkBounds(i);
-            return (this.values[i] & CategoryCodeList.BYTE_MAX_VALUE) != BYTE_NULL;
+            return (this.values[i] & BYTE_MAX_VALUE) != BYTE_NULL;
         }
 
         @Override
         public int get(int i)
         {
             checkBounds(i);
-            return this.values[i] & CategoryCodeList.BYTE_MAX_VALUE;
+            return this.values[i] & BYTE_MAX_VALUE;
         }
 
         @Override
@@ -278,7 +280,7 @@ public interface ViewIndex
             }
             for (int i = 0; i < this.size; ++i)
             {
-                x[i] = this.values[i] & CategoryCodeList.BYTE_MAX_VALUE;
+                x[i] = this.values[i] & BYTE_MAX_VALUE;
             }
             return x;
         }

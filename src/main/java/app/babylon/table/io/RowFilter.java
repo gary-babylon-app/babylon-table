@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
 
 final class RowFilter

@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

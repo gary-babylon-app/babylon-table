@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;

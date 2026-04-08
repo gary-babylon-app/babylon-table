@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnsComparator;
 public class TableSort
 {
     public enum SortOrder

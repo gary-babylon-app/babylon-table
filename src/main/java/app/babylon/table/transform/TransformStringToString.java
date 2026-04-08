@@ -4,11 +4,11 @@ import java.util.Map;
 import java.util.function.Function;
 
 import app.babylon.table.ArgumentChecks;
-import app.babylon.table.Column;
-import app.babylon.table.ColumnName;
-import app.babylon.table.ColumnObject;
-import app.babylon.table.Columns;
-import app.babylon.table.Transformer;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.Columns;
+import app.babylon.table.column.Transformer;
 
 abstract class TransformStringToString extends TransformBase
 {

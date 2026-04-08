@@ -6,7 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import app.babylon.table.ArgumentChecks;
-import app.babylon.table.ColumnName;
+import app.babylon.table.column.ColumnName;
 import app.babylon.table.Is;
 
 public class TransformExtract extends TransformStringToString

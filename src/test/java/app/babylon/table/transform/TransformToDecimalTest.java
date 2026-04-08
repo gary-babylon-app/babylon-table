@@ -10,10 +10,10 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.Column;
-import app.babylon.table.ColumnCategorical;
-import app.babylon.table.ColumnName;
-import app.babylon.table.ColumnObject;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;

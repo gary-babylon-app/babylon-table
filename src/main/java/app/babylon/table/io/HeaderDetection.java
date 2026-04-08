@@ -10,7 +10,7 @@
 
 package app.babylon.table.io;
 
-import java.util.Objects;
+import app.babylon.lang.ArgumentCheck;
 
 public class HeaderDetection
 {
@@ -32,10 +32,10 @@ public class HeaderDetection
     public HeaderDetection(String[] headersFound, boolean syntheticHeaders, String[] selectedHeaders,
             int[] selectedPositions)
     {
-        this.headersFound = Objects.requireNonNull(headersFound);
+        this.headersFound = ArgumentCheck.nonNull(headersFound);
         this.syntheticHeaders = syntheticHeaders;
-        this.selectedHeaders = Objects.requireNonNull(selectedHeaders);
-        this.selectedPositions = Objects.requireNonNull(selectedPositions);
+        this.selectedHeaders = ArgumentCheck.nonNull(selectedHeaders);
+        this.selectedPositions = ArgumentCheck.nonNull(selectedPositions);
     }
 
     public String[] getHeadersFound()

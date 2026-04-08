@@ -10,7 +10,7 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.Selection;
+import app.babylon.table.selection.Selection;
 import java.util.function.DoublePredicate;
 
 /**

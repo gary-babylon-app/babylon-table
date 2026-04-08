@@ -13,7 +13,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.Objects;
 
 class DataSourceFile implements DataSource
 {
@@ -21,7 +20,7 @@ class DataSourceFile implements DataSource
 
     DataSourceFile(File file)
     {
-        this.file = Objects.requireNonNull(file, "file must not be null");
+        this.file = app.babylon.lang.ArgumentCheck.nonNull(file, "file must not be null");
     }
 
     @Override

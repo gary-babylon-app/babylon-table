@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table;
+package app.babylon.table.sorting;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 

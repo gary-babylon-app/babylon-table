@@ -11,7 +11,6 @@
 package app.babylon.table.grouping;
 
 import java.util.Arrays;
-import java.util.Objects;
 
 final class GroupCategoryCode
 {
@@ -42,7 +41,7 @@ final class GroupCategoryCode
 
     static GroupCategoryCode of(int[] values)
     {
-        return new GroupCategoryCode(Objects.requireNonNull(values));
+        return new GroupCategoryCode(app.babylon.lang.ArgumentCheck.nonNull(values));
     }
 
     @Override

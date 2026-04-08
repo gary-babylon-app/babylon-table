@@ -16,7 +16,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Objects;
 
 final class LineReaderCSVFixedWidth implements LineReader
 {
@@ -31,7 +30,7 @@ final class LineReaderCSVFixedWidth implements LineReader
     protected LineReaderCSVFixedWidth(BufferedInputStream instream, ReadSettingsCSV settings, Charset charset,
             int bomLength)
     {
-        Objects.requireNonNull(settings, "settings must not be null");
+        app.babylon.lang.ArgumentCheck.nonNull(settings, "settings must not be null");
         int[] configuredWidths = settings.getFixedWidths();
         if (configuredWidths == null || configuredWidths.length == 0)
         {

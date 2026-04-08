@@ -10,6 +10,17 @@
 
 package app.babylon.table;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
 import app.babylon.table.column.ColumnDouble;
@@ -18,21 +29,13 @@ import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import app.babylon.table.selection.Selection;
 
 public class Tables
 {
     public static TableColumnar removeDuplicates(TableColumnar table, ColumnName... indexColumns)
     {
-        ArgumentChecks.nonEmpty(indexColumns);
+        ArgumentCheck.nonEmpty(indexColumns);
         Set<RowValue> values = new LinkedHashSet<>();
         Column[] columns = table.getColumns(indexColumns);
         ViewIndex.Builder viewIndexBuilder = ViewIndex.builder();
@@ -122,11 +125,11 @@ public class Tables
     public static TableColumnar leftOuterJoin(TableColumnar left, TableColumnar right, ColumnName leftKey,
             ColumnName rightKey, ColumnName... rightColumnsToAdd)
     {
-        ArgumentChecks.nonNull(left);
-        ArgumentChecks.nonNull(right);
-        ArgumentChecks.nonNull(leftKey);
-        ArgumentChecks.nonNull(rightKey);
-        ArgumentChecks.nonEmpty(rightColumnsToAdd);
+        app.babylon.lang.ArgumentCheck.nonNull(left);
+        app.babylon.lang.ArgumentCheck.nonNull(right);
+        app.babylon.lang.ArgumentCheck.nonNull(leftKey);
+        app.babylon.lang.ArgumentCheck.nonNull(rightKey);
+        ArgumentCheck.nonEmpty(rightColumnsToAdd);
         return leftOuterJoin(left, right, new ColumnName[]
         {leftKey}, new ColumnName[]
         {rightKey}, rightColumnsToAdd);
@@ -135,11 +138,11 @@ public class Tables
     public static TableColumnar leftOuterJoin(TableColumnar left, TableColumnar right, ColumnName[] leftKeys,
             ColumnName[] rightKeys, ColumnName... rightColumnsToAdd)
     {
-        ArgumentChecks.nonNull(left);
-        ArgumentChecks.nonNull(right);
-        ArgumentChecks.nonEmpty(leftKeys);
-        ArgumentChecks.nonEmpty(rightKeys);
-        ArgumentChecks.nonEmpty(rightColumnsToAdd);
+        app.babylon.lang.ArgumentCheck.nonNull(left);
+        app.babylon.lang.ArgumentCheck.nonNull(right);
+        ArgumentCheck.nonEmpty(leftKeys);
+        ArgumentCheck.nonEmpty(rightKeys);
+        ArgumentCheck.nonEmpty(rightColumnsToAdd);
         if (leftKeys.length != rightKeys.length)
         {
             throw new IllegalArgumentException("leftKeys and rightKeys must have the same length");
@@ -185,8 +188,8 @@ public class Tables
                     rowIndexBuilder.addNull();
                 }
             }
-            return new TableColumnarJoin(left.getName(), left.getDescription(), left, right, rowIndexBuilder.build(),
-                    rightColumnsToAdd);
+            return new TableColumnarLeftOuterJoin(left.getName(), left.getDescription(), left, right,
+                    rowIndexBuilder.build(), rightColumnsToAdd);
         }
 
         TableIndex rightIndex = new TableIndex(right, rightKeys);
@@ -285,10 +288,10 @@ public class Tables
     public static TableColumnar newTable(TableName tableName, TableDescription desc, Column[] firstColumns,
             Column[] lastColumns)
     {
-        ArgumentChecks.nonEmpty(firstColumns);
+        ArgumentCheck.nonEmpty(firstColumns);
         List<Column> columns = new ArrayList<>();
         Collections.addAll(columns, firstColumns);
-        if (!Empties.isEmpty(lastColumns))
+        if (!Is.empty(lastColumns))
         {
             Collections.addAll(columns, lastColumns);
         }
@@ -298,7 +301,7 @@ public class Tables
     public static TableColumnar newTable(TableName tableName, TableDescription description,
             ColumnBuilder... columnBuilders)
     {
-        ArgumentChecks.nonEmpty(columnBuilders);
+        ArgumentCheck.nonEmpty(columnBuilders);
         Column[] columns = new Column[columnBuilders.length];
         for (int i = 0; i < columnBuilders.length; ++i)
         {
@@ -309,44 +312,44 @@ public class Tables
 
     public static TableColumnar newTable(TableName tableName, TableDescription description, Column... columns)
     {
-        ArgumentChecks.nonEmpty(columns);
+        ArgumentCheck.nonEmpty(columns);
         return new TableColumnarMap(tableName, description, columns);
     }
 
     public static TableColumnar newTable(TableName tableName, Column... columns)
     {
-        ArgumentChecks.nonEmpty(columns);
+        ArgumentCheck.nonEmpty(columns);
         return new TableColumnarMap(tableName, null, columns);
     }
 
     public static TableColumnar newTable(TableName tableName, ColumnBuilder... columnBuilders)
     {
-        ArgumentChecks.nonEmpty(columnBuilders);
+        ArgumentCheck.nonEmpty(columnBuilders);
         return newTable(tableName, null, columnBuilders);
     }
 
     public static TableColumnar newTable(TableName tableName, Collection<Column> columns)
     {
-        ArgumentChecks.nonEmpty(columns);
+        ArgumentCheck.nonEmpty(columns);
         return new TableColumnarMap(tableName, columns.toArray(new Column[columns.size()]));
     }
 
     public static TableColumnar newTable(TableName tableName, TableDescription description, Collection<Column> columns)
     {
-        ArgumentChecks.nonEmpty(columns);
+        ArgumentCheck.nonEmpty(columns);
         return new TableColumnarMap(tableName, description, columns.toArray(new Column[columns.size()]));
     }
 
     public static TableColumnar newTableView(TableName viewTableName, TableColumnar table, ViewIndex rowIndex)
     {
-        Objects.requireNonNull(table);
+        app.babylon.lang.ArgumentCheck.nonNull(table);
         return new TableColumnarView(viewTableName, table, rowIndex);
     }
 
     public static TableColumnar newTableView(TableName viewTableName, TableDescription viewTableDescription,
             TableColumnar table, ViewIndex rowIndex)
     {
-        Objects.requireNonNull(table);
+        app.babylon.lang.ArgumentCheck.nonNull(table);
         return new TableColumnarView(viewTableName, viewTableDescription, table, rowIndex);
     }
 

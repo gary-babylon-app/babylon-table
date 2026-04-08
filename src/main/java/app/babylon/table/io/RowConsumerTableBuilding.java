@@ -27,13 +27,13 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
     private static final byte KIND_STRING = 0;
     private static final byte KIND_DOUBLE = 1;
 
-    private final RowFilter rowFilter;
+    private final CsvRowFilter rowFilter;
     private final byte[] columnKinds;
     private final ColumnBuilder[] columnBuilders;
     private final String[] strippedValues;
     private final ReadSettingsCSV options;
 
-    RowConsumerTableBuilding(ReadSettingsCSV options, RowFilter rowFilter, byte[] columnKinds,
+    RowConsumerTableBuilding(ReadSettingsCSV options, CsvRowFilter rowFilter, byte[] columnKinds,
             ColumnBuilder[] columnBuilders, String[] strippedValues)
     {
         this.options = options;
@@ -124,7 +124,7 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         ColumnName[] columnNames = initialiseSelectedColumns(options, selectedHeaders);
         byte[] columnKinds = initialiseColumnKinds(options, columnNames);
         ColumnBuilder[] columnBuilders = initialiseColumnBuilders(options, columnNames);
-        RowFilter rowFilter = new RowFilter(options, columnNames);
+        CsvRowFilter rowFilter = new CsvRowFilter(options, columnNames);
         return new RowConsumerTableBuilding(options, rowFilter, columnKinds, columnBuilders,
                 new String[columnBuilders.length]);
     }

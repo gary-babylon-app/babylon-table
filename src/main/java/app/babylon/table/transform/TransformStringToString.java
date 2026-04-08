@@ -3,7 +3,6 @@ package app.babylon.table.transform;
 import java.util.Map;
 import java.util.function.Function;
 
-import app.babylon.table.ArgumentChecks;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -18,7 +17,7 @@ abstract class TransformStringToString extends TransformBase
     TransformStringToString(String name, ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(name);
-        this.existingColumnName = ArgumentChecks.nonNull(existingColumnName);
+        this.existingColumnName = app.babylon.lang.ArgumentCheck.nonNull(existingColumnName);
         this.newColumnName = newColumnName;
     }
 

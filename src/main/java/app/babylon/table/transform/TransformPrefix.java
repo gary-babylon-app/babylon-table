@@ -3,7 +3,7 @@ package app.babylon.table.transform;
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
+import app.babylon.lang.Is;
 
 public class TransformPrefix extends TransformStringToString
 {
@@ -19,7 +19,7 @@ public class TransformPrefix extends TransformStringToString
     public TransformPrefix(String prefix, ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME, existingColumnName, newColumnName);
-        this.prefix = app.babylon.table.ArgumentChecks.nonEmpty(prefix);
+        this.prefix = app.babylon.lang.ArgumentCheck.nonEmpty(prefix);
     }
 
     public static TransformPrefix of(String... params)

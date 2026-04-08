@@ -15,13 +15,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import app.babylon.table.Selection;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.selection.Selection;
 
 /**
  * A column that stores object values, including strings, dates, decimals, and
@@ -50,7 +49,7 @@ public interface ColumnObject<T> extends Column
 
     public static <T> Builder<T> builder(ColumnName name, Class<T> clazz, Mode mode)
     {
-        Class<T> valueClass = Objects.requireNonNull(clazz);
+        Class<T> valueClass = app.babylon.lang.ArgumentCheck.nonNull(clazz);
         if (valueClass.isPrimitive())
         {
             throw new IllegalArgumentException("Object builder requires non-primitive class: " + valueClass.getName());
@@ -158,7 +157,7 @@ public interface ColumnObject<T> extends Column
 
     default <S> ColumnObject<S> transform(Transformer<T, S> transformer)
     {
-        Transformer<T, S> xform = Objects.requireNonNull(transformer);
+        Transformer<T, S> xform = app.babylon.lang.ArgumentCheck.nonNull(transformer);
 
         Class<S> valueClass = xform.valueClass();
         ColumnName transformedName = xform.columnName() == null ? getName() : xform.columnName();

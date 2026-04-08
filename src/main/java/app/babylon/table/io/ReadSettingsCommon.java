@@ -16,7 +16,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import app.babylon.table.TableName;
@@ -51,7 +50,7 @@ public class ReadSettingsCommon implements ReadSettings
 
     protected ReadSettingsCommon(ReadSettingsCommon base)
     {
-        Objects.requireNonNull(base);
+        app.babylon.lang.ArgumentCheck.nonNull(base);
         this.renameHeaders = new HashMap<>(base.renameHeaders);
         this.columnTypes = new HashMap<>(base.columnTypes);
         this.requestedHeaders = new LinkedHashSet<>(base.requestedHeaders);
@@ -65,7 +64,7 @@ public class ReadSettingsCommon implements ReadSettings
     @Override
     public ReadSettingsCommon withHeaderStrategy(HeaderStrategy headerStrategy)
     {
-        Objects.requireNonNull(headerStrategy);
+        app.babylon.lang.ArgumentCheck.nonNull(headerStrategy);
         this.headerStrategy = headerStrategy;
         return this;
     }
@@ -119,8 +118,8 @@ public class ReadSettingsCommon implements ReadSettings
 
     public ReadSettingsCommon withColumnRename(ColumnName original, ColumnName newName)
     {
-        Objects.requireNonNull(original);
-        Objects.requireNonNull(newName);
+        app.babylon.lang.ArgumentCheck.nonNull(original);
+        app.babylon.lang.ArgumentCheck.nonNull(newName);
         if (renameHeaders.containsKey(original))
         {
             throw new RuntimeException("Rename failed, column " + original + " already renamed");
@@ -131,13 +130,14 @@ public class ReadSettingsCommon implements ReadSettings
 
     public ReadSettingsCommon withColumnType(ColumnName columnName, Column.Type columnType)
     {
-        this.columnTypes.put(Objects.requireNonNull(columnName), Objects.requireNonNull(columnType));
+        this.columnTypes.put(app.babylon.lang.ArgumentCheck.nonNull(columnName),
+                app.babylon.lang.ArgumentCheck.nonNull(columnType));
         return this;
     }
 
     public ReadSettingsCommon withColumnType(ColumnName columnName, Class<?> valueClass)
     {
-        return withColumnType(columnName, Column.Type.of(Objects.requireNonNull(valueClass)));
+        return withColumnType(columnName, Column.Type.of(app.babylon.lang.ArgumentCheck.nonNull(valueClass)));
     }
 
     @Override

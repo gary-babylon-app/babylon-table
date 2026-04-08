@@ -7,7 +7,7 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
-import app.babylon.table.Is;
+import app.babylon.lang.Is;
 
 public class TransformCreateConstant extends TransformBase
 {

@@ -10,7 +10,6 @@
 
 package app.babylon.table.column;
 
-import java.util.Objects;
 import java.util.function.Function;
 
 /**
@@ -34,8 +33,8 @@ public interface Transformer<T, S> extends Function<T, S>
     static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Class<S> valueClass,
             ColumnName columnName)
     {
-        Function<? super T, ? extends S> f = Objects.requireNonNull(function);
-        Class<S> cls = Objects.requireNonNull(valueClass);
+        Function<? super T, ? extends S> f = app.babylon.lang.ArgumentCheck.nonNull(function);
+        Class<S> cls = app.babylon.lang.ArgumentCheck.nonNull(valueClass);
         ColumnName name = columnName;
         return new Transformer<T, S>()
         {

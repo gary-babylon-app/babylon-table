@@ -11,7 +11,8 @@
 package app.babylon.table;
 
 import java.util.Arrays;
-import java.util.Objects;
+
+import app.babylon.lang.ArgumentCheck;
 
 /**
  * Maps logical row positions in a view to row positions in the underlying data,
@@ -32,7 +33,7 @@ public interface ViewIndex
 
     static ViewIndex of(ViewIndex viewIndex)
     {
-        Objects.requireNonNull(viewIndex);
+        app.babylon.lang.ArgumentCheck.nonNull(viewIndex);
         return viewIndex.copy();
     }
 
@@ -178,7 +179,7 @@ public interface ViewIndex
 
         private void validate(int x)
         {
-            ArgumentChecks.nonNegative(x);
+            ArgumentCheck.nonNegative(x);
             if (x == INT_NULL)
             {
                 throw new IllegalArgumentException("Ordinal value reserved for null sentinel.");
@@ -224,7 +225,7 @@ public interface ViewIndex
 
         private ArrayByte(int[] values, int size)
         {
-            this.size = ArgumentChecks.nonNegative(size);
+            this.size = ArgumentCheck.nonNegative(size);
             this.values = new byte[size];
             boolean hasNulls = false;
             for (int i = 0; i < size; ++i)
@@ -308,7 +309,7 @@ public interface ViewIndex
 
         private ArrayChar(int[] values, int size, boolean hasNulls)
         {
-            this.size = ArgumentChecks.nonNegative(size);
+            this.size = ArgumentCheck.nonNegative(size);
             this.values = new char[size];
             this.hasNulls = hasNulls;
             for (int i = 0; i < size; ++i)

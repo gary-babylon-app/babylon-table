@@ -9,11 +9,9 @@ import java.util.List;
 import java.util.Map;
 
 import app.babylon.io.DataSource;
-import app.babylon.table.ArgumentChecks;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
-import app.babylon.table.transform.Transform;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
 import app.babylon.table.column.ColumnDouble;
@@ -29,6 +27,7 @@ import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumerFactory;
 import app.babylon.table.io.RowConsumerResult;
 import app.babylon.table.io.RowKey;
+import app.babylon.table.transform.Transform;
 
 public class AggregationPlan
 {
@@ -109,9 +108,9 @@ public class AggregationPlan
 
         public AggregateSpec(ColumnName sourceColumnName, ColumnName outputColumnName, Aggregate aggregate)
         {
-            this.sourceColumnName = ArgumentChecks.nonNull(sourceColumnName);
-            this.outputColumnName = ArgumentChecks.nonNull(outputColumnName);
-            this.aggregate = ArgumentChecks.nonNull(aggregate);
+            this.sourceColumnName = app.babylon.lang.ArgumentCheck.nonNull(sourceColumnName);
+            this.outputColumnName = app.babylon.lang.ArgumentCheck.nonNull(outputColumnName);
+            this.aggregate = app.babylon.lang.ArgumentCheck.nonNull(aggregate);
         }
 
         public ColumnName getSourceColumnName()
@@ -184,13 +183,14 @@ public class AggregationPlan
 
     public AggregationPlan withColumnType(ColumnName columnName, Column.Type columnType)
     {
-        this.columnTypes.put(ArgumentChecks.nonNull(columnName), ArgumentChecks.nonNull(columnType));
+        this.columnTypes.put(app.babylon.lang.ArgumentCheck.nonNull(columnName),
+                app.babylon.lang.ArgumentCheck.nonNull(columnType));
         return this;
     }
 
     public AggregationPlan withColumnType(ColumnName columnName, Class<?> valueClass)
     {
-        return withColumnType(columnName, Column.Type.of(ArgumentChecks.nonNull(valueClass)));
+        return withColumnType(columnName, Column.Type.of(app.babylon.lang.ArgumentCheck.nonNull(valueClass)));
     }
 
     public Column.Type getColumnType(ColumnName columnName)
@@ -207,7 +207,7 @@ public class AggregationPlan
     {
         if (columnNames != null)
         {
-            this.groupByColumns.addAll(Arrays.asList(ArgumentChecks.nonNull(columnNames)));
+            this.groupByColumns.addAll(Arrays.asList(app.babylon.lang.ArgumentCheck.nonNull(columnNames)));
         }
         return this;
     }
@@ -236,7 +236,7 @@ public class AggregationPlan
     public TableColumnar execute(TableColumnar table)
     {
         validateForCurrentImplementation();
-        TableColumnar sourceTable = ArgumentChecks.nonNull(table);
+        TableColumnar sourceTable = app.babylon.lang.ArgumentCheck.nonNull(table);
         if (!this.transforms.isEmpty())
         {
             sourceTable = sourceTable.apply(this.transforms);

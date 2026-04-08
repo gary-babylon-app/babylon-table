@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.text.Strings;
@@ -92,7 +92,7 @@ public final class TransformRegistry
 
         public Builder register(String functionName, TransformFactory factory)
         {
-            factories.put(ArgumentChecks.nonEmpty(functionName), ArgumentChecks.nonNull(factory));
+            factories.put(ArgumentCheck.nonEmpty(functionName), app.babylon.lang.ArgumentCheck.nonNull(factory));
             return this;
         }
 

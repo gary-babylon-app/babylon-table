@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 public class DataSourceProbe
 {
@@ -25,8 +24,8 @@ public class DataSourceProbe
 
     private DataSourceProbe(byte[] bytes, String resourceName)
     {
-        this.bytes = Objects.requireNonNull(bytes, "bytes must not be null");
-        this.resourceName = Objects.requireNonNull(resourceName, "resourceName must not be null");
+        this.bytes = app.babylon.lang.ArgumentCheck.nonNull(bytes, "bytes must not be null");
+        this.resourceName = app.babylon.lang.ArgumentCheck.nonNull(resourceName, "resourceName must not be null");
         if (resourceName.isEmpty())
         {
             throw new IllegalArgumentException("resourceName must not be empty");
@@ -40,7 +39,7 @@ public class DataSourceProbe
 
     public static DataSourceProbe of(BufferedInputStream bstream, String resourceName) throws IOException
     {
-        Objects.requireNonNull(bstream, "bstream must not be null");
+        app.babylon.lang.ArgumentCheck.nonNull(bstream, "bstream must not be null");
         bstream.mark(BYTES_TO_SNIP);
         byte[] bytes = bstream.readNBytes(BYTES_TO_SNIP);
         bstream.reset();

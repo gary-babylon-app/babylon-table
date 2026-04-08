@@ -10,10 +10,9 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.ArgumentChecks;
-
 import java.util.Arrays;
-import java.util.Objects;
+
+import app.babylon.lang.ArgumentCheck;
 
 /**
  * Stores category codes as a compact immutable integer sequence for
@@ -145,7 +144,7 @@ public interface CategoryCodeList
 
         private void validate(int x)
         {
-            ArgumentChecks.nonNegative(x);
+            ArgumentCheck.nonNegative(x);
         }
 
         private void ensureCapacity(int requiredSize)
@@ -177,8 +176,8 @@ public interface CategoryCodeList
 
             private ArrayByte(int[] values, int size)
             {
-                Objects.requireNonNull(values);
-                this.size = ArgumentChecks.nonNegative(size);
+                app.babylon.lang.ArgumentCheck.nonNull(values);
+                this.size = ArgumentCheck.nonNegative(size);
                 if (this.size > values.length)
                 {
                     throw new IllegalArgumentException("Size exceeds backing array length.");
@@ -240,8 +239,8 @@ public interface CategoryCodeList
 
             private ArrayChar(int[] values, int size)
             {
-                Objects.requireNonNull(values);
-                this.size = ArgumentChecks.nonNegative(size);
+                app.babylon.lang.ArgumentCheck.nonNull(values);
+                this.size = ArgumentCheck.nonNegative(size);
                 if (this.size > values.length)
                 {
                     throw new IllegalArgumentException("Size exceeds backing array length.");
@@ -303,8 +302,8 @@ public interface CategoryCodeList
 
             private ArrayInt(int[] values, int size)
             {
-                Objects.requireNonNull(values);
-                this.size = ArgumentChecks.nonNegative(size);
+                app.babylon.lang.ArgumentCheck.nonNull(values);
+                this.size = ArgumentCheck.nonNegative(size);
                 if (this.size > values.length)
                 {
                     throw new IllegalArgumentException("Size exceeds backing array length.");

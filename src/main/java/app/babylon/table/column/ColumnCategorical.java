@@ -12,12 +12,11 @@ package app.babylon.table.column;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import app.babylon.table.Selection;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.selection.Selection;
 
 /**
  * An object column optimised for repeated values by storing dictionary-encoded
@@ -50,7 +49,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
 
     public static <T> Builder<T> builder(ColumnName name, Class<T> clazz)
     {
-        Class<T> valueClass = Objects.requireNonNull(clazz);
+        Class<T> valueClass = app.babylon.lang.ArgumentCheck.nonNull(clazz);
         if (valueClass.isPrimitive())
         {
             throw new IllegalArgumentException(

@@ -10,17 +10,16 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.ArgumentChecks;
-import app.babylon.table.ViewIndex;
-import java.util.Objects;
-
 import java.util.Arrays;
+
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.ViewIndex;
 
 class ColumnLongBuilderArray implements ColumnLong.Builder
 {
     private final ColumnName name;
     private long[] values;
-    private ListBit.Builder isSet;
+    private BitList.Builder isSet;
     private int size;
     private boolean hasAnySet;
     private boolean hasAnyUnset;
@@ -33,9 +32,9 @@ class ColumnLongBuilderArray implements ColumnLong.Builder
 
     ColumnLongBuilderArray(ColumnName cn, int initialSize)
     {
-        this.name = Objects.requireNonNull(cn);
-        this.values = new long[ArgumentChecks.nonNegative(initialSize)];
-        this.isSet = ListBit.builder();
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(cn);
+        this.values = new long[ArgumentCheck.nonNegative(initialSize)];
+        this.isSet = BitList.builder();
         this.size = 0;
         this.hasAnySet = false;
         this.hasAnyUnset = false;
@@ -93,7 +92,7 @@ class ColumnLongBuilderArray implements ColumnLong.Builder
     {
         boolean constant = isConstant();
         long[] transferredValues = detachValues();
-        ListBit transferredIsSet = detachIsSet();
+        BitList transferredIsSet = detachIsSet();
         return new ColumnLongArray(getName(), transferredValues, transferredIsSet, size, constant, !this.hasAnyUnset,
                 !this.hasAnySet);
     }
@@ -106,10 +105,10 @@ class ColumnLongBuilderArray implements ColumnLong.Builder
         return detached;
     }
 
-    private ListBit detachIsSet()
+    private BitList detachIsSet()
     {
         ensureActive();
-        ListBit detached = this.isSet.build();
+        BitList detached = this.isSet.build();
         this.isSet = null;
         this.built = true;
         return detached;
@@ -156,19 +155,19 @@ class ColumnLongBuilderArray implements ColumnLong.Builder
     {
         private final ColumnName name;
         private final long[] values;
-        private final ListBit isSet;
+        private final BitList isSet;
         private final int size;
         private final boolean isConstant;
         private final boolean isAllSet;
         private final boolean isNoneSet;
 
-        private ColumnLongArray(ColumnName name, long[] values, ListBit isSet, int size, boolean isConstant,
+        private ColumnLongArray(ColumnName name, long[] values, BitList isSet, int size, boolean isConstant,
                 boolean isAllSet, boolean isNoneSet)
         {
-            this.name = Objects.requireNonNull(name);
-            this.values = Objects.requireNonNull(values);
-            this.isSet = Objects.requireNonNull(isSet);
-            this.size = ArgumentChecks.nonNegative(size);
+            this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+            this.values = app.babylon.lang.ArgumentCheck.nonNull(values);
+            this.isSet = app.babylon.lang.ArgumentCheck.nonNull(isSet);
+            this.size = ArgumentCheck.nonNegative(size);
             if (size > values.length)
             {
                 throw new IllegalArgumentException("Size exceeds values length.");
@@ -249,8 +248,8 @@ class ColumnLongBuilderArray implements ColumnLong.Builder
 
         private ColumnLongView(ColumnLong original, ViewIndex rowIndex)
         {
-            this.original = Objects.requireNonNull(original);
-            this.rowIndex = Objects.requireNonNull(rowIndex);
+            this.original = app.babylon.lang.ArgumentCheck.nonNull(original);
+            this.rowIndex = app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
             if (original.isConstant())
             {
                 this.isConstant = true;

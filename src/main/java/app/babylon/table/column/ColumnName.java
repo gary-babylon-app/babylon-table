@@ -10,8 +10,8 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.ArgumentChecks;
-import app.babylon.table.Empties;
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
 import app.babylon.text.Strings;
 
 import java.text.Normalizer;
@@ -52,7 +52,7 @@ public final class ColumnName implements Comparable<ColumnName>
 
     public static ColumnName[] of(Collection<String> v)
     {
-        if (Empties.isEmpty(v))
+        if (Is.empty(v))
         {
             return new ColumnName[0];
         }
@@ -72,7 +72,7 @@ public final class ColumnName implements Comparable<ColumnName>
 
     public static ColumnName[] of(String[] v, int startIndex)
     {
-        if (Empties.isEmpty(v) || (v.length - startIndex) <= 0)
+        if (Is.empty(v) || (v.length - startIndex) <= 0)
         {
             return new ColumnName[0];
         }
@@ -87,8 +87,8 @@ public final class ColumnName implements Comparable<ColumnName>
     private ColumnName(String input)
     {
         String tokens = normalizeForTokens(input);
-        this.value = ArgumentChecks.nonEmpty(Strings.toCamelUpperPreserve(tokens));
-        this.canonical = ArgumentChecks.nonEmpty(buildCanonicalKey(input));
+        this.value = ArgumentCheck.nonEmpty(Strings.toCamelUpperPreserve(tokens));
+        this.canonical = ArgumentCheck.nonEmpty(buildCanonicalKey(input));
     }
 
     private static String normalizeForTokens(String s)

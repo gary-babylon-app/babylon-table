@@ -3,7 +3,7 @@ package app.babylon.table.transform;
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
+import app.babylon.lang.Is;
 
 public class TransformBefore extends TransformStringToString
 {
@@ -13,7 +13,7 @@ public class TransformBefore extends TransformStringToString
     public TransformBefore(ColumnName existingColumnName, ColumnName newColumnName, String delimiter)
     {
         super(FUNCTION_NAME, existingColumnName, newColumnName);
-        this.delimiter = app.babylon.table.ArgumentChecks.nonEmpty(delimiter);
+        this.delimiter = app.babylon.lang.ArgumentCheck.nonEmpty(delimiter);
     }
 
     public static TransformBefore of(String... params)

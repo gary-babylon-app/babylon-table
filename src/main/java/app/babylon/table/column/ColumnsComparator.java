@@ -10,10 +10,9 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.TableColumnar;
-import java.util.Objects;
-
 import java.util.Comparator;
+
+import app.babylon.table.TableColumnar;
 
 public class ColumnsComparator implements Comparator<Integer>
 {
@@ -21,7 +20,7 @@ public class ColumnsComparator implements Comparator<Integer>
 
     public ColumnsComparator(TableColumnar table, ColumnName... x)
     {
-        this.columns = Objects.requireNonNull(table.getColumns(x));
+        this.columns = app.babylon.lang.ArgumentCheck.nonNull(table.getColumns(x));
     }
 
     public int compareRows(int row1, int row2)

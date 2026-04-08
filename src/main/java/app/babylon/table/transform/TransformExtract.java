@@ -1,13 +1,11 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.Is;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
+import app.babylon.text.Strings;
 
 public class TransformExtract extends TransformStringToString
 {
@@ -23,7 +21,7 @@ public class TransformExtract extends TransformStringToString
     public TransformExtract(ColumnName extractColumnName, Pattern pattern, ColumnName newColumnName)
     {
         super(FUNCTION_NAME, extractColumnName, newColumnName == null ? extractColumnName : newColumnName);
-        this.pattern = ArgumentChecks.nonNull(pattern);
+        this.pattern = app.babylon.lang.ArgumentCheck.nonNull(pattern);
     }
 
     public static TransformExtract of(String[] params)

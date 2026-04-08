@@ -8,9 +8,15 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table.column;
+package app.babylon.table.selection;
 
 import app.babylon.table.TableColumnar;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import java.util.Objects;
 import java.util.function.DoublePredicate;
 import java.util.function.IntPredicate;
@@ -22,13 +28,13 @@ import java.util.function.Predicate;
  * index.
  */
 @FunctionalInterface
-public interface ColumnFilter
+public interface RowFilter
 {
     IntPredicate bind(TableColumnar table);
 
-    default ColumnFilter and(ColumnFilter other)
+    default RowFilter and(RowFilter other)
     {
-        ColumnFilter right = Objects.requireNonNull(other);
+        RowFilter right = app.babylon.lang.ArgumentCheck.nonNull(other);
         return table -> {
             IntPredicate leftPredicate = this.bind(table);
             IntPredicate rightPredicate = right.bind(table);
@@ -36,9 +42,9 @@ public interface ColumnFilter
         };
     }
 
-    default ColumnFilter or(ColumnFilter other)
+    default RowFilter or(RowFilter other)
     {
-        ColumnFilter right = Objects.requireNonNull(other);
+        RowFilter right = app.babylon.lang.ArgumentCheck.nonNull(other);
         return table -> {
             IntPredicate leftPredicate = this.bind(table);
             IntPredicate rightPredicate = right.bind(table);
@@ -46,7 +52,7 @@ public interface ColumnFilter
         };
     }
 
-    default ColumnFilter not()
+    default RowFilter not()
     {
         return table -> {
             IntPredicate predicate = this.bind(table);
@@ -54,10 +60,10 @@ public interface ColumnFilter
         };
     }
 
-    static ColumnFilter of(ColumnName columnName, Predicate<Object> predicate)
+    static RowFilter of(ColumnName columnName, Predicate<Object> predicate)
     {
-        ColumnName name = Objects.requireNonNull(columnName);
-        Predicate<Object> p = Objects.requireNonNull(predicate);
+        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
+        Predicate<Object> p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
         return table -> {
             Column column = table.get(name);
             if (!(column instanceof ColumnObject<?> co))
@@ -69,10 +75,10 @@ public interface ColumnFilter
         };
     }
 
-    static ColumnFilter of(ColumnName columnName, IntPredicate predicate)
+    static RowFilter of(ColumnName columnName, IntPredicate predicate)
     {
-        ColumnName name = Objects.requireNonNull(columnName);
-        IntPredicate p = Objects.requireNonNull(predicate);
+        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
+        IntPredicate p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
         return table -> {
             ColumnInt column = table.getInt(name);
             if (column == null)
@@ -84,10 +90,10 @@ public interface ColumnFilter
         };
     }
 
-    static ColumnFilter of(ColumnName columnName, LongPredicate predicate)
+    static RowFilter of(ColumnName columnName, LongPredicate predicate)
     {
-        ColumnName name = Objects.requireNonNull(columnName);
-        LongPredicate p = Objects.requireNonNull(predicate);
+        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
+        LongPredicate p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
         return table -> {
             ColumnLong column = table.getLong(name);
             if (column == null)
@@ -99,10 +105,10 @@ public interface ColumnFilter
         };
     }
 
-    static ColumnFilter of(ColumnName columnName, DoublePredicate predicate)
+    static RowFilter of(ColumnName columnName, DoublePredicate predicate)
     {
-        ColumnName name = Objects.requireNonNull(columnName);
-        DoublePredicate p = Objects.requireNonNull(predicate);
+        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
+        DoublePredicate p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
         return table -> {
             ColumnDouble column = table.getDouble(name);
             if (column == null)

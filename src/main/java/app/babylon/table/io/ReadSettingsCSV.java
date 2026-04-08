@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Empties;
+import app.babylon.lang.Is;
 import app.babylon.table.TableName;
 
 public class ReadSettingsCSV extends ReadSettingsCommon
@@ -105,7 +105,7 @@ public class ReadSettingsCSV extends ReadSettingsCommon
 
     public boolean isFixedWidths()
     {
-        return !Empties.isEmpty(this.fixedWidths);
+        return !Is.empty(this.fixedWidths);
     }
 
     public int[] getFixedWidths()

@@ -12,9 +12,8 @@ package app.babylon.table.column;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
 
 class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder<T>
@@ -30,8 +29,8 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
 
     ColumnCategoricalBuilderDictionary(ColumnName name, Column.Type type)
     {
-        this.name = Objects.requireNonNull(name);
-        this.type = Objects.requireNonNull(type);
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.type = app.babylon.lang.ArgumentCheck.nonNull(type);
         this.dictionaryEncoding = DictionaryEncoding.of();
         this.codes = CategoryCodeList.builder();
         this.isConstant = true;
@@ -185,14 +184,14 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
 
         private ColumnCategoricalDictionary(ColumnCategoricalBuilderDictionary<T> builder)
         {
-            this.name = Objects.requireNonNull(builder.name);
-            this.type = Objects.requireNonNull(builder.type);
-            this.size = ArgumentChecks.nonNegative(builder.getSize());
+            this.name = app.babylon.lang.ArgumentCheck.nonNull(builder.name);
+            this.type = app.babylon.lang.ArgumentCheck.nonNull(builder.type);
+            this.size = ArgumentCheck.nonNegative(builder.getSize());
             this.constant = builder.isConstant();
             this.allSet = builder.isAllSet();
             this.noneSet = builder.isNoneSet();
-            this.dictionary = Objects.requireNonNull(builder.detachDictionary());
-            this.categoricalList = Objects.requireNonNull(builder.detachCodes());
+            this.dictionary = app.babylon.lang.ArgumentCheck.nonNull(builder.detachDictionary());
+            this.categoricalList = app.babylon.lang.ArgumentCheck.nonNull(builder.detachCodes());
             this.activeCodes = buildDenseActiveCodes(this.dictionary.length);
             if (this.size > this.categoricalList.size())
             {
@@ -202,8 +201,8 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
 
         private <A> ColumnCategoricalDictionary(ColumnCategorical<A> source, Transformer<A, T> transformer)
         {
-            Transformer<A, T> xform = Objects.requireNonNull(transformer);
-            ColumnCategorical<A> original = Objects.requireNonNull(source);
+            Transformer<A, T> xform = app.babylon.lang.ArgumentCheck.nonNull(transformer);
+            ColumnCategorical<A> original = app.babylon.lang.ArgumentCheck.nonNull(source);
             this.name = xform.columnName() == null ? original.getName() : xform.columnName();
             this.size = original.size();
 

@@ -11,7 +11,6 @@
 package app.babylon.table.column;
 
 import app.babylon.table.ViewIndex;
-import java.util.Objects;
 
 public class ColumnLongConstant implements ColumnLong
 {
@@ -27,7 +26,7 @@ public class ColumnLongConstant implements ColumnLong
 
     ColumnLongConstant(ColumnName name, long value, int size, boolean isSet)
     {
-        this.name = Objects.requireNonNull(name);
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
         this.value = value;
         this.size = size;
         this.isSet = isSet;
@@ -65,7 +64,7 @@ public class ColumnLongConstant implements ColumnLong
     @Override
     public Column view(ViewIndex rowIndex)
     {
-        Objects.requireNonNull(rowIndex);
+        app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
             return new ColumnLongConstant(this.name, this.value, rowIndex.size(), this.isSet);

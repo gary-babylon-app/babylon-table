@@ -10,9 +10,8 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
-import java.util.Objects;
 
 class ColumnObjectArray<T> implements ColumnObject<T>
 {
@@ -33,10 +32,10 @@ class ColumnObjectArray<T> implements ColumnObject<T>
     ColumnObjectArray(ColumnName name, Column.Type type, int size, boolean isConstant, boolean isAllSet,
             boolean isNoneSet, Object[] values)
     {
-        this.name = Objects.requireNonNull(name);
-        this.type = Objects.requireNonNull(type);
-        this.values = Objects.requireNonNull(values);
-        this.size = ArgumentChecks.nonNegative(size);
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.type = app.babylon.lang.ArgumentCheck.nonNull(type);
+        this.values = app.babylon.lang.ArgumentCheck.nonNull(values);
+        this.size = ArgumentCheck.nonNegative(size);
         if (size > values.length)
         {
             throw new IllegalArgumentException("Size exceeds values length.");

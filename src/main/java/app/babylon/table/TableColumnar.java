@@ -10,17 +10,6 @@
 
 package app.babylon.table;
 
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnCategorical;
-import app.babylon.table.column.ColumnDouble;
-import app.babylon.table.column.ColumnFilter;
-import app.babylon.table.column.ColumnInt;
-import app.babylon.table.column.ColumnLong;
-import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.grouping.GroupBy;
-import app.babylon.table.grouping.GroupBys;
-import app.babylon.table.transform.Transform;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,10 +17,22 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
-import app.babylon.table.TableSort.SortOrder;
-
+import app.babylon.lang.Is;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
+import app.babylon.table.grouping.GroupBy;
+import app.babylon.table.grouping.GroupBys;
+import app.babylon.table.selection.RowFilter;
+import app.babylon.table.selection.Selection;
+import app.babylon.table.sorting.TableSort;
+import app.babylon.table.sorting.TableSort.SortOrder;
+import app.babylon.table.transform.Transform;
 /**
  * A column-oriented table whose data is exposed as named columns and can be
  * sliced, filtered, transformed, grouped, and sorted.
@@ -139,7 +140,7 @@ public interface TableColumnar extends Table
 
     default public TableColumnar select(ColumnName... x)
     {
-        if (!Empties.isEmpty(x))
+        if (!Is.empty(x))
         {
             return new TableColumnarMap(getName(), getDescription(), getColumns(x));
         } else
@@ -153,9 +154,9 @@ public interface TableColumnar extends Table
         return Tables.select(this, x);
     }
 
-    default public TableColumnar filter(ColumnFilter filter)
+    default public TableColumnar filter(RowFilter filter)
     {
-        ColumnFilter f = Objects.requireNonNull(filter);
+        RowFilter f = app.babylon.lang.ArgumentCheck.nonNull(filter);
         java.util.function.IntPredicate predicate = f.bind(this);
         Selection selection = new Selection("filtered");
         for (int i = 0; i < getRowCount(); ++i)

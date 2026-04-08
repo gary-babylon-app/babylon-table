@@ -8,9 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table;
-
-import java.util.Objects;
+package app.babylon.table.sorting;
 
 import java.util.Arrays;
 
@@ -22,8 +20,8 @@ public final class SortInt
 
     public static void stableSort(int[] values, ComparatorInt comparator)
     {
-        Objects.requireNonNull(values);
-        Objects.requireNonNull(comparator);
+        app.babylon.lang.ArgumentCheck.nonNull(values);
+        app.babylon.lang.ArgumentCheck.nonNull(comparator);
         if (values.length < 2)
         {
             return;

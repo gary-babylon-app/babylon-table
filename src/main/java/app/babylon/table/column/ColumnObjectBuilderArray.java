@@ -25,13 +25,13 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
 
     ColumnObjectBuilderArray(ColumnName name, Class<T> valueClass)
     {
-        this(name, Column.Type.of(Objects.requireNonNull(valueClass)));
+        this(name, Column.Type.of(app.babylon.lang.ArgumentCheck.nonNull(valueClass)));
     }
 
     ColumnObjectBuilderArray(ColumnName name, Column.Type type)
     {
-        this.name = Objects.requireNonNull(name);
-        this.type = Objects.requireNonNull(type);
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.type = app.babylon.lang.ArgumentCheck.nonNull(type);
         this.size = 0;
         this.values = new Object[16];
         this.isConstant = true;

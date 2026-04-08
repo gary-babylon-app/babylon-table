@@ -10,7 +10,7 @@
 
 package app.babylon.table.grouping;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
@@ -32,7 +32,7 @@ public final class GroupBys
 
     public static GroupBy groupBy(TableColumnar table, ColumnName... x)
     {
-        ArgumentChecks.nonEmpty(x);
+        ArgumentCheck.nonEmpty(x);
         GroupingSpec spec = categoricalGroupingSpec(table, x);
         int rowCount = table.getRowCount();
         Map<GroupKey, ViewIndex.Builder> groupedRowIndexes;

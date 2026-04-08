@@ -18,12 +18,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class ListBitTest
+public class BitListTest
 {
     @Test
     public void builderShouldAddAndReadValues()
     {
-        ListBit.Builder builder = ListBit.builder();
+        BitList.Builder builder = BitList.builder();
         builder.add(true).add(false).add(true);
 
         assertEquals(3, builder.size());
@@ -35,10 +35,10 @@ public class ListBitTest
     @Test
     public void getShouldRejectOutOfRangeAccess()
     {
-        ListBit.Builder builder = ListBit.builder();
+        BitList.Builder builder = BitList.builder();
         builder.add(true).add(false);
 
-        ListBit list = builder.build();
+        BitList list = builder.build();
         assertThrows(IndexOutOfBoundsException.class, () -> list.get(-1));
         assertThrows(IndexOutOfBoundsException.class, () -> list.get(2));
     }
@@ -46,10 +46,10 @@ public class ListBitTest
     @Test
     public void buildShouldCreateImmutableListAndCloseBuilder()
     {
-        ListBit.Builder builder = ListBit.builder();
+        BitList.Builder builder = BitList.builder();
         builder.add(true).add(false).add(true);
 
-        ListBit list = builder.build();
+        BitList list = builder.build();
         assertEquals(3, list.size());
         assertTrue(list.get(0));
         assertFalse(list.get(1));
@@ -62,11 +62,11 @@ public class ListBitTest
     @Test
     public void copyShouldCloneListBitValues()
     {
-        ListBit.Builder builder = ListBit.builder();
+        BitList.Builder builder = BitList.builder();
         builder.add(true).add(false).add(true).add(false);
-        ListBit original = builder.build();
+        BitList original = builder.build();
 
-        ListBit copy = original.copy();
+        BitList copy = original.copy();
 
         assertNotSame(original, copy);
         assertEquals(original.size(), copy.size());

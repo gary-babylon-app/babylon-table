@@ -3,7 +3,7 @@ package app.babylon.table.transform;
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
+import app.babylon.lang.Is;
 
 public class TransformSuffix extends TransformStringToString
 {
@@ -19,7 +19,7 @@ public class TransformSuffix extends TransformStringToString
     public TransformSuffix(String suffix, ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME, existingColumnName, newColumnName);
-        this.suffix = app.babylon.table.ArgumentChecks.nonEmpty(suffix);
+        this.suffix = app.babylon.lang.ArgumentCheck.nonEmpty(suffix);
     }
 
     public static TransformSuffix of(String... params)

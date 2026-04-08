@@ -11,7 +11,6 @@
 package app.babylon.table.column;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import app.babylon.table.column.Column.Type;
@@ -34,7 +33,7 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
     {
         this.arrayBuilder = new ColumnObjectBuilderArray<T>(columnName, valueClass);
         this.dictionaryBuilder = new ColumnCategoricalBuilderDictionary<T>(columnName, Type.of(valueClass));
-        this.name = Objects.requireNonNull(arrayBuilder.getName());
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(arrayBuilder.getName());
         if (!this.name.equals(dictionaryBuilder.getName()))
         {
             throw new IllegalArgumentException("Array and dictionary builders must share the same column name.");
@@ -156,8 +155,8 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
     {
         if (this.useDictionary)
         {
-            return Objects.requireNonNull(this.dictionaryBuilder);
+            return app.babylon.lang.ArgumentCheck.nonNull(this.dictionaryBuilder);
         }
-        return Objects.requireNonNull(this.arrayBuilder);
+        return app.babylon.lang.ArgumentCheck.nonNull(this.arrayBuilder);
     }
 }

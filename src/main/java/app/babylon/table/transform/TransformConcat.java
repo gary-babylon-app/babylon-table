@@ -5,7 +5,7 @@ import java.util.Map;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.table.Is;
+import app.babylon.lang.Is;
 import app.babylon.table.ToStringSettings;
 
 public class TransformConcat extends TransformBase

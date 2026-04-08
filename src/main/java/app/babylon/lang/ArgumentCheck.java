@@ -8,16 +8,15 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table;
+package app.babylon.lang;
 
 import java.util.Collection;
+import java.util.Objects;
 
-public final class ArgumentChecks
+import app.babylon.text.Strings;
+
+public final class ArgumentCheck
 {
-    private ArgumentChecks()
-    {
-    }
-
     public static int nonNegative(int i)
     {
         if (i < 0)
@@ -56,7 +55,7 @@ public final class ArgumentChecks
 
     public static String nonEmpty(String s)
     {
-        if (s == null || s.isEmpty())
+        if (Strings.isEmpty(s))
         {
             throw new RuntimeException("Require non-empty String.");
         }
@@ -65,7 +64,7 @@ public final class ArgumentChecks
 
     public static String nonEmptyAsString(CharSequence s)
     {
-        if (s == null || s.length() == 0)
+        if (Strings.isEmpty(s))
         {
             throw new RuntimeException("Require non-empty String.");
         }
@@ -74,10 +73,12 @@ public final class ArgumentChecks
 
     public static <T> T nonNull(T o)
     {
-        if (o == null)
-        {
-            throw new RuntimeException("Require non-null value.");
-        }
-        return o;
+        return Objects.requireNonNull(o);
     }
+
+    public static <T> T nonNull(T o, String message)
+    {
+        return Objects.requireNonNull(o, message);
+    }
+
 }

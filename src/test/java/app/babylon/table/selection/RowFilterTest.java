@@ -8,12 +8,15 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table.column;
+package app.babylon.table.selection;
 
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
+import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -22,7 +25,7 @@ import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 
-class ColumnFilterTest
+class RowFilterTest
 {
     @Test
     void filterShouldWorkForObjectColumns()
@@ -35,7 +38,7 @@ class ColumnFilterTest
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
         TableColumnar filtered = table
-                .filter(ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A")));
+                .filter(RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A")));
 
         assertEquals(2, filtered.getRowCount());
         assertEquals("Alice", filtered.getString(ColumnName.of("name")).get(0));
@@ -52,7 +55,7 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), ints.build());
 
-        TableColumnar filtered = table.filter(ColumnFilter.of(ColumnName.of("i"), (int x) -> x >= 2));
+        TableColumnar filtered = table.filter(RowFilter.of(ColumnName.of("i"), (int x) -> x >= 2));
 
         assertEquals(2, filtered.getRowCount());
     }
@@ -69,9 +72,8 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        ColumnFilter left = ColumnFilter.of(ColumnName.of("name"),
-                (Predicate<Object>) x -> ((String) x).startsWith("A"));
-        ColumnFilter right = ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> {
+        RowFilter left = RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A"));
+        RowFilter right = RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> {
             rightEvaluations.incrementAndGet();
             return ((String) x).length() > 3;
         });
@@ -92,9 +94,9 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        ColumnFilter startsWithA = ColumnFilter.of(ColumnName.of("name"),
+        RowFilter startsWithA = RowFilter.of(ColumnName.of("name"),
                 (Predicate<Object>) x -> ((String) x).startsWith("A"));
-        ColumnFilter startsWithB = ColumnFilter.of(ColumnName.of("name"),
+        RowFilter startsWithB = RowFilter.of(ColumnName.of("name"),
                 (Predicate<Object>) x -> ((String) x).startsWith("B"));
 
         TableColumnar filtered = table.filter(startsWithA.or(startsWithB));
@@ -112,7 +114,7 @@ class ColumnFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        ColumnFilter startsWithA = ColumnFilter.of(ColumnName.of("name"),
+        RowFilter startsWithA = RowFilter.of(ColumnName.of("name"),
                 (Predicate<Object>) x -> ((String) x).startsWith("A"));
 
         TableColumnar filtered = table.filter(startsWithA.not());
@@ -131,7 +133,7 @@ class ColumnFilterTest
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
         TableColumnar filtered = table
-                .filter(ColumnFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("Z")));
+                .filter(RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("Z")));
 
         assertNotNull(filtered);
         assertEquals(0, filtered.getRowCount());

@@ -1,16 +1,14 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.util.HashMap;
 import java.util.Map;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
-import app.babylon.table.Is;
+import app.babylon.text.Strings;
 
 public class TransformSubstitute extends TransformBase
 {
@@ -30,8 +28,8 @@ public class TransformSubstitute extends TransformBase
             String... x)
     {
         super(FUNCTION_NAME);
-        this.columnName = ArgumentChecks.nonNull(columnName);
-        this.newColumnName = ArgumentChecks.nonNull(newColumnName);
+        this.columnName = app.babylon.lang.ArgumentCheck.nonNull(columnName);
+        this.newColumnName = app.babylon.lang.ArgumentCheck.nonNull(newColumnName);
         this.defaultValueNewColumn = defaultValueNewColumn;
 
         this.replaces = new HashMap<>();
@@ -50,8 +48,8 @@ public class TransformSubstitute extends TransformBase
     public TransformSubstitute(ColumnName columnName, ColumnName newColumnName, Map<String, String> replaces)
     {
         super(FUNCTION_NAME);
-        this.columnName = ArgumentChecks.nonNull(columnName);
-        this.newColumnName = ArgumentChecks.nonNull(newColumnName);
+        this.columnName = app.babylon.lang.ArgumentCheck.nonNull(columnName);
+        this.newColumnName = app.babylon.lang.ArgumentCheck.nonNull(newColumnName);
         this.replaces = new HashMap<>(replaces);
         this.defaultValueNewColumn = null;
     }

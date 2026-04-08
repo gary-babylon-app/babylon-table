@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import app.babylon.table.column.Column.Type;
@@ -30,7 +29,7 @@ final class ColumnTypes
 
     static Column.Type of(Class<?> valueClass)
     {
-        Class<?> clazz = Objects.requireNonNull(valueClass);
+        Class<?> clazz = app.babylon.lang.ArgumentCheck.nonNull(valueClass);
         Column.Type builtin = builtinOf(clazz);
         if (builtin != null)
         {
@@ -71,7 +70,7 @@ final class ColumnTypes
 
         private ColumnTypeByClass(Class<?> valueClass)
         {
-            this.valueClass = Objects.requireNonNull(valueClass);
+            this.valueClass = app.babylon.lang.ArgumentCheck.nonNull(valueClass);
             String simpleName = valueClass.getSimpleName();
             String name = simpleName.isEmpty() ? valueClass.getName() : simpleName;
             this.id = name.toLowerCase(Locale.ROOT);

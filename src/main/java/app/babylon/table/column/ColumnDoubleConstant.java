@@ -11,7 +11,6 @@
 package app.babylon.table.column;
 
 import app.babylon.table.ViewIndex;
-import java.util.Objects;
 
 class ColumnDoubleConstant implements ColumnDouble
 {
@@ -27,7 +26,7 @@ class ColumnDoubleConstant implements ColumnDouble
 
     ColumnDoubleConstant(ColumnName name, double value, int size, boolean isSet)
     {
-        this.name = Objects.requireNonNull(name);
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
         this.value = value;
         this.size = size;
         this.isSet = isSet;
@@ -65,7 +64,7 @@ class ColumnDoubleConstant implements ColumnDouble
     @Override
     public Column view(ViewIndex rowIndex)
     {
-        Objects.requireNonNull(rowIndex);
+        app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
             return new ColumnDoubleConstant(this.name, this.value, rowIndex.size(), this.isSet);

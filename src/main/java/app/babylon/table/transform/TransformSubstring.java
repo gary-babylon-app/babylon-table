@@ -1,15 +1,13 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.util.Map;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
-import app.babylon.table.Is;
+import app.babylon.text.Strings;
 
 public class TransformSubstring extends TransformBase
 {
@@ -23,8 +21,8 @@ public class TransformSubstring extends TransformBase
     public TransformSubstring(ColumnName existingColumnName, ColumnName newColumnName, int first, int last)
     {
         super(FUNCTION_NAME);
-        this.existingColumnName = ArgumentChecks.nonNull(existingColumnName);
-        this.newColumnName = ArgumentChecks.nonNull(newColumnName);
+        this.existingColumnName = app.babylon.lang.ArgumentCheck.nonNull(existingColumnName);
+        this.newColumnName = app.babylon.lang.ArgumentCheck.nonNull(newColumnName);
         this.first = Math.max(0, first);
         this.last = Math.max(this.first + 1, last);
     }

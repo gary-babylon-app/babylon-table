@@ -15,7 +15,7 @@ import java.util.BitSet;
 /**
  * A compact immutable sequence of boolean values backed by a bit set.
  */
-public interface ListBit
+public interface BitList
 {
     static Builder builder()
     {
@@ -26,7 +26,7 @@ public interface ListBit
 
     int size();
 
-    ListBit copy();
+    BitList copy();
 
     final class Builder
     {
@@ -65,7 +65,7 @@ public interface ListBit
             return this.size;
         }
 
-        public ListBit build()
+        public BitList build()
         {
             ensureActive();
             return new ArrayBit(this);
@@ -75,11 +75,11 @@ public interface ListBit
         {
             if (this.bits == null)
             {
-                throw new IllegalStateException("ListBit.Builder has already transferred ownership.");
+                throw new IllegalStateException("BitList.Builder has already transferred ownership.");
             }
         }
 
-        private static final class ArrayBit implements ListBit
+        private static final class ArrayBit implements BitList
         {
             private final BitSet bits;
             private final int size;
@@ -115,7 +115,7 @@ public interface ListBit
             }
 
             @Override
-            public ListBit copy()
+            public BitList copy()
             {
                 return new ArrayBit((BitSet) this.bits.clone(), this.size);
             }

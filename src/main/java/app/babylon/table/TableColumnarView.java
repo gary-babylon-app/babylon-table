@@ -10,15 +10,16 @@
 
 package app.babylon.table;
 
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnName;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import app.babylon.lang.Is;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
 
 class TableColumnarView extends TableColumnarCommon
 {
@@ -43,10 +44,11 @@ class TableColumnarView extends TableColumnarCommon
             ViewIndex rowIndex, ColumnName[] activeColumnNames)
     {
         super(tableDescription);
-        this.name = Objects.requireNonNull(name);
-        this.original = Objects.requireNonNull(original);
-        this.rowIndex = Objects.requireNonNull(rowIndex);
-        this.activeColumnNames = Arrays.copyOf(Objects.requireNonNull(activeColumnNames), activeColumnNames.length);
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.original = app.babylon.lang.ArgumentCheck.nonNull(original);
+        this.rowIndex = app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
+        this.activeColumnNames = Arrays.copyOf(app.babylon.lang.ArgumentCheck.nonNull(activeColumnNames),
+                activeColumnNames.length);
         this.columnViews = new ConcurrentHashMap<>();
     }
 
@@ -137,7 +139,7 @@ class TableColumnarView extends TableColumnarCommon
     @Override
     public TableColumnar removeColumns(ColumnName... x)
     {
-        if (!Empties.isEmpty(x))
+        if (!Is.empty(x))
         {
             Set<ColumnName> columnsToRemove = new HashSet<>();
             for (ColumnName columnName : x)

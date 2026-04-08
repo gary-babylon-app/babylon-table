@@ -10,7 +10,7 @@
 
 package app.babylon.table.grouping;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import java.util.Arrays;
 
 /**
@@ -21,7 +21,7 @@ public interface GroupKey extends Comparable<GroupKey>
 {
     static GroupKey of(Object... elements)
     {
-        ArgumentChecks.nonEmpty(elements);
+        ArgumentCheck.nonEmpty(elements);
         return new ElementsGroupKey(elements);
     }
 

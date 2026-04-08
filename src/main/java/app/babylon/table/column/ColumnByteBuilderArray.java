@@ -10,17 +10,17 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.ArgumentChecks;
+import java.util.Arrays;
+
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 import app.babylon.table.ViewIndex;
-import java.util.Arrays;
-import java.util.Objects;
 
 class ColumnByteBuilderArray implements ColumnByte.Builder
 {
     private final ColumnName name;
     private byte[] bytes;
-    private ListBit.Builder isSet;
+    private BitList.Builder isSet;
     private int size;
     private boolean hasAnySet;
     private boolean hasAnyUnset;
@@ -33,9 +33,9 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
 
     ColumnByteBuilderArray(ColumnName name, int initialCapacity)
     {
-        this.name = Objects.requireNonNull(name);
-        this.bytes = new byte[ArgumentChecks.nonNegative(initialCapacity)];
-        this.isSet = ListBit.builder();
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.bytes = new byte[ArgumentCheck.nonNegative(initialCapacity)];
+        this.isSet = BitList.builder();
         this.size = 0;
         this.hasAnySet = false;
         this.hasAnyUnset = false;
@@ -77,7 +77,7 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
     {
         ensureActive();
         byte[] transferredBytes = this.bytes;
-        ListBit transferredIsSet = this.isSet.build();
+        BitList transferredIsSet = this.isSet.build();
         int transferredSize = this.size;
         this.bytes = null;
         this.isSet = null;
@@ -112,18 +112,18 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
     {
         private final ColumnName name;
         private final byte[] bytes;
-        private final ListBit isSet;
+        private final BitList isSet;
         private final int size;
         private final boolean isAllSet;
         private final boolean isNoneSet;
 
-        private ColumnByteStream(ColumnName name, byte[] bytes, ListBit isSet, int size, boolean isAllSet,
+        private ColumnByteStream(ColumnName name, byte[] bytes, BitList isSet, int size, boolean isAllSet,
                 boolean isNoneSet)
         {
-            this.name = Objects.requireNonNull(name);
-            this.bytes = Objects.requireNonNull(bytes);
-            this.isSet = Objects.requireNonNull(isSet);
-            this.size = ArgumentChecks.nonNegative(size);
+            this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+            this.bytes = app.babylon.lang.ArgumentCheck.nonNull(bytes);
+            this.isSet = app.babylon.lang.ArgumentCheck.nonNull(isSet);
+            this.size = ArgumentCheck.nonNegative(size);
             if (size > bytes.length)
             {
                 throw new IllegalArgumentException("Size exceeds byte array length.");

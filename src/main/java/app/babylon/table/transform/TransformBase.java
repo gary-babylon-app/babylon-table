@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -22,7 +22,7 @@ abstract class TransformBase implements Transform
 
     TransformBase(String name)
     {
-        this.name = ArgumentChecks.nonEmpty(name);
+        this.name = ArgumentCheck.nonEmpty(name);
     }
 
     public String getName()

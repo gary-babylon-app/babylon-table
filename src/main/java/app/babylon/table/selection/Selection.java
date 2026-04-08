@@ -8,10 +8,10 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table;
+package app.babylon.table.selection;
 
+import app.babylon.lang.ArgumentCheck;
 import java.util.Objects;
-
 import java.util.BitSet;
 
 public class Selection
@@ -22,7 +22,7 @@ public class Selection
 
     public Selection(String name)
     {
-        this.name = ArgumentChecks.nonEmpty(name);
+        this.name = ArgumentCheck.nonEmpty(name);
         bits = new BitSet(255);
         size = 0;
     }
@@ -36,8 +36,8 @@ public class Selection
      */
     private Selection(String name, BitSet bitSet, int size)
     {
-        this.name = ArgumentChecks.nonEmpty(name);
-        BitSet source = Objects.requireNonNull(bitSet);
+        this.name = ArgumentCheck.nonEmpty(name);
+        BitSet source = app.babylon.lang.ArgumentCheck.nonNull(bitSet);
         if (size < 0)
         {
             throw new IllegalArgumentException("size must be >= 0");
@@ -103,7 +103,7 @@ public class Selection
 
     private void requireCompatible(Selection x)
     {
-        Objects.requireNonNull(x);
+        app.babylon.lang.ArgumentCheck.nonNull(x);
         if (this.size != x.size)
         {
             throw new IllegalArgumentException("Selection sizes differ: " + this.size + " vs " + x.size);

@@ -2,10 +2,9 @@ package app.babylon.table.transform;
 
 import java.util.Map;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
 
 public class TransformCopy extends TransformBase
 {
@@ -17,8 +16,8 @@ public class TransformCopy extends TransformBase
     public TransformCopy(ColumnName columnToCopy, ColumnName newCopyName)
     {
         super(FUNCTION_NAME);
-        this.columnToCopy = ArgumentChecks.nonNull(columnToCopy);
-        this.newCopyName = ArgumentChecks.nonNull(newCopyName);
+        this.columnToCopy = app.babylon.lang.ArgumentCheck.nonNull(columnToCopy);
+        this.newCopyName = app.babylon.lang.ArgumentCheck.nonNull(newCopyName);
     }
 
     public static TransformCopy of(String[] params)

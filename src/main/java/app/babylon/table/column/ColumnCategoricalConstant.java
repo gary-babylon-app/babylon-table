@@ -12,7 +12,6 @@ package app.babylon.table.column;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
 
 import app.babylon.table.ViewIndex;
 
@@ -27,20 +26,20 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
 
     public ColumnCategoricalConstant(ColumnName colName, T value, int size, Column.Type type)
     {
-        this.columnName = Objects.requireNonNull(colName);
+        this.columnName = app.babylon.lang.ArgumentCheck.nonNull(colName);
         this.value = value;
         this.size = size;
-        this.type = Objects.requireNonNull(type);
+        this.type = app.babylon.lang.ArgumentCheck.nonNull(type);
         this.isAllSet = value != null;
         this.isNoneSet = value == null;
     }
 
     public ColumnCategoricalConstant(ColumnName colName, T value, int size, Class<T> valueClass)
     {
-        this.columnName = Objects.requireNonNull(colName);
+        this.columnName = app.babylon.lang.ArgumentCheck.nonNull(colName);
         this.value = value;
         this.size = size;
-        this.type = Type.of(Objects.requireNonNull(valueClass));
+        this.type = Type.of(app.babylon.lang.ArgumentCheck.nonNull(valueClass));
         this.isAllSet = value != null;
         this.isNoneSet = value == null;
     }
@@ -78,7 +77,7 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
     @Override
     public ColumnCategorical<T> view(ViewIndex rowIndex)
     {
-        Objects.requireNonNull(rowIndex);
+        app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
             return ColumnCategorical.constant(getName(), getValue(), rowIndex.size(), getType());
@@ -183,7 +182,7 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
     @Override
     public <S> ColumnCategorical<S> transform(Transformer<T, S> transformer)
     {
-        Transformer<T, S> xform = Objects.requireNonNull(transformer);
+        Transformer<T, S> xform = app.babylon.lang.ArgumentCheck.nonNull(transformer);
         ColumnName transformedName = xform.columnName() == null ? getName() : xform.columnName();
         S transformedValue = isSet(0) ? xform.apply(this.value) : null;
         return ColumnCategorical.constant(transformedName, transformedValue, this.size, xform.valueClass());

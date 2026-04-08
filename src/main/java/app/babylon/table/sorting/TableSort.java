@@ -8,10 +8,14 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table;
+package app.babylon.table.sorting;
 
+import app.babylon.table.TableColumnar;
+import app.babylon.table.Tables;
+import app.babylon.table.ViewIndex;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnsComparator;
+
 public class TableSort
 {
     public enum SortOrder

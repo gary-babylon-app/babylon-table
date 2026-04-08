@@ -3,7 +3,7 @@ package app.babylon.table.transform;
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
+import app.babylon.lang.Is;
 
 public class TransformCleanWhitespace extends TransformStringToString
 {

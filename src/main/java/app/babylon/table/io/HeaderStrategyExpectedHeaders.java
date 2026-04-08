@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 
 import app.babylon.table.column.ColumnName;
 
@@ -41,7 +40,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
             throw new IllegalArgumentException("Header scan limit must be at least 1.");
         }
         this.scanLimit = scanLimit;
-        this.expectedHeaders = new LinkedHashSet<>(Objects.requireNonNull(expectedHeaders));
+        this.expectedHeaders = new LinkedHashSet<>(app.babylon.lang.ArgumentCheck.nonNull(expectedHeaders));
     }
 
     public int getScanLimit()

@@ -10,6 +10,7 @@
 
 package app.babylon.table;
 
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnDouble;
@@ -273,7 +274,7 @@ abstract class TableColumnarCommon implements TableColumnar
         {
             x = new LinkedHashMap<>();
         }
-        Column[] columns = Empties.isEmpty(columnNames) ? getColumns() : getColumns(columnNames);
+        Column[] columns = Is.empty(columnNames) ? getColumns() : getColumns(columnNames);
         if (columns != null)
         {
             for (Column column : columns)
@@ -325,7 +326,7 @@ abstract class TableColumnarCommon implements TableColumnar
     @Override
     public TableColumnar addColumns(Column... x)
     {
-        if (!Empties.isEmpty(x))
+        if (!Is.empty(x))
         {
             for (int i = 0; i < x.length; ++i)
             {

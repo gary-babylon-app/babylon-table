@@ -10,14 +10,14 @@
 
 package app.babylon.table;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.grouping.GroupKey;
-import java.util.Objects;
-
-import java.util.HashMap;
-import java.util.Map;
 
 public class TableIndex
 {
@@ -26,8 +26,8 @@ public class TableIndex
 
     public TableIndex(TableColumnar table, ColumnName... columnNames)
     {
-        this.table = Objects.requireNonNull(table);
-        ArgumentChecks.nonEmpty(columnNames);
+        this.table = app.babylon.lang.ArgumentCheck.nonNull(table);
+        ArgumentCheck.nonEmpty(columnNames);
         Column[] columns = table.getColumns(columnNames);
         this.index = new HashMap<>();
 

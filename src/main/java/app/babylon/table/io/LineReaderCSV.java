@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.Objects;
 
 final class LineReaderCSV implements LineReader
 {
@@ -29,7 +28,7 @@ final class LineReaderCSV implements LineReader
 
     protected LineReaderCSV(BufferedInputStream instream, ReadSettingsCSV options, Charset charset, int bomLength)
     {
-        this.settings = Objects.requireNonNull(options, "options must not be null");
+        this.settings = app.babylon.lang.ArgumentCheck.nonNull(options, "options must not be null");
         this.reader = createReader(instream, charset, bomLength);
         this.current = new RowBuffer();
     }

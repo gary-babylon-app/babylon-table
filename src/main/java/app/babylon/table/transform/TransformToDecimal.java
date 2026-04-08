@@ -8,12 +8,12 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.text.BigDecimals;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.table.Is;
+import app.babylon.lang.Is;
 import app.babylon.text.Split;
 
 public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
@@ -28,13 +28,13 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
 
     public TransformToDecimal(Function<CharSequence, BigDecimal> parser, ColumnName... columnNames)
     {
-        super(FUNCTION_NAME, ArgumentChecks.nonEmpty(columnNames), null);
+        super(FUNCTION_NAME, ArgumentCheck.nonEmpty(columnNames), null);
         this.parser = resolveParser(parser, newTransformFunction(false));
     }
 
     public TransformToDecimal(boolean toAbsolute, ColumnName... columnNames)
     {
-        super(FUNCTION_NAME, ArgumentChecks.nonEmpty(columnNames), null);
+        super(FUNCTION_NAME, ArgumentCheck.nonEmpty(columnNames), null);
         this.parser = newTransformFunction(toAbsolute);
     }
 
@@ -126,8 +126,8 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
             Function<CharSequence, BigDecimal> parser, boolean toAbsolute)
     {
         super(FUNCTION_NAME, new ColumnName[]
-        {ArgumentChecks.nonNull(columnName)}, new ColumnName[]
-        {ArgumentChecks.nonNull(newColumnName)});
+        {app.babylon.lang.ArgumentCheck.nonNull(columnName)}, new ColumnName[]
+        {app.babylon.lang.ArgumentCheck.nonNull(newColumnName)});
         this.parser = resolveParser(parser, newTransformFunction(toAbsolute));
     }
     public static TransformToDecimal of(String s)

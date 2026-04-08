@@ -3,7 +3,7 @@ package app.babylon.table.transform;
 import java.util.HashMap;
 import java.util.Map;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -28,10 +28,10 @@ public class TransformStringReplaceAll extends TransformBase
             String replacement)
     {
         super(FUNCTION_NAME);
-        this.existingColumnName = ArgumentChecks.nonNull(existingColumnName);
-        this.newColumnName = ArgumentChecks.nonNull(newColumnName);
-        this.target = ArgumentChecks.nonEmpty(target);
-        this.replacement = ArgumentChecks.nonNull(replacement);
+        this.existingColumnName = app.babylon.lang.ArgumentCheck.nonNull(existingColumnName);
+        this.newColumnName = app.babylon.lang.ArgumentCheck.nonNull(newColumnName);
+        this.target = ArgumentCheck.nonEmpty(target);
+        this.replacement = app.babylon.lang.ArgumentCheck.nonNull(replacement);
     }
 
     @Override

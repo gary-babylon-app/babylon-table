@@ -10,15 +10,16 @@
 
 package app.babylon.table;
 
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnName;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-class TableColumnarJoin extends TableColumnarCommon
+import app.babylon.lang.Is;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
+
+class TableColumnarLeftOuterJoin extends TableColumnarCommon
 {
     private final TableName name;
     private final TableColumnar left;
@@ -28,15 +29,15 @@ class TableColumnarJoin extends TableColumnarCommon
     private final Set<ColumnName> rightColumnNames;
     private final ConcurrentMap<ColumnName, Column> rightColumnViews;
 
-    TableColumnarJoin(TableName name, TableDescription description, TableColumnar left, TableColumnar right,
+    TableColumnarLeftOuterJoin(TableName name, TableDescription description, TableColumnar left, TableColumnar right,
             ViewIndex rowIndex, ColumnName... rightColumnsToAdd)
     {
         super(description);
-        this.name = Objects.requireNonNull(name);
-        this.left = Objects.requireNonNull(left);
-        this.right = Objects.requireNonNull(right);
-        this.rowIndex = Objects.requireNonNull(rowIndex);
-        this.rightColumnsToAdd = Objects.requireNonNull(rightColumnsToAdd);
+        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.left = app.babylon.lang.ArgumentCheck.nonNull(left);
+        this.right = app.babylon.lang.ArgumentCheck.nonNull(right);
+        this.rowIndex = app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
+        this.rightColumnsToAdd = app.babylon.lang.ArgumentCheck.nonNull(rightColumnsToAdd);
         this.rightColumnNames = java.util.Set.of(rightColumnsToAdd);
         this.rightColumnViews = new ConcurrentHashMap<>();
     }
@@ -108,7 +109,7 @@ class TableColumnarJoin extends TableColumnarCommon
     @Override
     public TableColumnar removeColumns(ColumnName... x)
     {
-        if (!Empties.isEmpty(x))
+        if (!Is.empty(x))
         {
             throw new RuntimeException(getName() + ":Cannot add new columns to a join view on a table.");
         }

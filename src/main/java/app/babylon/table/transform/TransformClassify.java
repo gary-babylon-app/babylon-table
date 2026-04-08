@@ -1,12 +1,10 @@
 package app.babylon.table.transform;
 
-import app.babylon.text.Strings;
-
 import java.util.regex.Pattern;
 
-import app.babylon.table.ArgumentChecks;
+import app.babylon.lang.Is;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.Is;
+import app.babylon.text.Strings;
 
 public class TransformClassify extends TransformStringToString
 {
@@ -19,7 +17,7 @@ public class TransformClassify extends TransformStringToString
             String newColumnFoundValue, String newColumnNotFoundValue)
     {
         super(FUNCTION_NAME, existingColumnName, newColumnName == null ? existingColumnName : newColumnName);
-        this.pattern = ArgumentChecks.nonNull(pattern);
+        this.pattern = app.babylon.lang.ArgumentCheck.nonNull(pattern);
         this.newColumnFoundValue = newColumnFoundValue;
         this.newColumnNotFoundValue = newColumnNotFoundValue;
     }

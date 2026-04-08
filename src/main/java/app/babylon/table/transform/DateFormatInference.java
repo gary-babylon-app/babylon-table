@@ -10,15 +10,14 @@
 
 package app.babylon.table.transform;
 
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.column.DateValueFacts;
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
+
+import app.babylon.table.column.ColumnObject;
 
 public final class DateFormatInference
 {
@@ -36,7 +35,7 @@ public final class DateFormatInference
 
     public static DateFormat[] inferFormats(ColumnObject<String>[] columns)
     {
-        ColumnObject<String>[] cols = Objects.requireNonNull(columns, "columns must not be null");
+        ColumnObject<String>[] cols = app.babylon.lang.ArgumentCheck.nonNull(columns, "columns must not be null");
         DateFormat[] inferred = new DateFormat[cols.length];
         double[] confidence = new double[cols.length];
 

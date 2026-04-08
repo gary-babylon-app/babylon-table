@@ -18,7 +18,7 @@ import java.util.function.Predicate;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
 
-final class RowFilter
+final class CsvRowFilter
 {
     private static final int CACHE_LIMIT_PER_COLUMN = 512;
 
@@ -30,7 +30,7 @@ final class RowFilter
     final Set<String>[] excludeFail;
 
     @SuppressWarnings("unchecked")
-    RowFilter(ReadSettingsCSV settings, ColumnName[] selectedColumns)
+    CsvRowFilter(ReadSettingsCSV settings, ColumnName[] selectedColumns)
     {
         this.includeFilters = (settings.hasRowIncludeFilters()) ? new Predicate[selectedColumns.length] : null;
         this.excludeFilters = (settings.hasRowExcludeFilters()) ? new Predicate[selectedColumns.length] : null;

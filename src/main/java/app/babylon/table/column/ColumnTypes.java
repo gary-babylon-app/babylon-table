@@ -22,6 +22,17 @@ import app.babylon.table.column.Column.Type;
 
 public final class ColumnTypes
 {
+    public static final Type BYTE = new ColumnTypeByClass(byte.class, "byte");
+    public static final Type BYTE_OBJECT = new ColumnTypeByClass(Byte.class, "byte_object");
+    public static final Type INT = new ColumnTypeByClass(int.class, "int");
+    public static final Type INT_OBJECT = new ColumnTypeByClass(Integer.class, "int_object");
+    public static final Type LONG = new ColumnTypeByClass(long.class, "long");
+    public static final Type LONG_OBJECT = new ColumnTypeByClass(Long.class, "long_object");
+    public static final Type DOUBLE = new ColumnTypeByClass(double.class, "double");
+    public static final Type DOUBLE_OBJECT = new ColumnTypeByClass(Double.class, "double_object");
+    public static final Type STRING = new ColumnTypeByClass(String.class, "string");
+    public static final Type DECIMAL = new ColumnTypeByClass(BigDecimal.class, "bigdecimal");
+    public static final Type LOCALDATE = new ColumnTypeByClass(LocalDate.class, "localdate");
 
     private static final Map<Class<?>, Column.Type> CACHE = new ConcurrentHashMap<>();
 
@@ -40,27 +51,51 @@ public final class ColumnTypes
         return CACHE.computeIfAbsent(clazz, ColumnTypeByClass::new);
     }
 
-    public static final Type STRING = Type.of(String.class);
-    public static final Type DECIMAL = Type.of(BigDecimal.class);
-    public static final Type LOCALDATE = Type.of(LocalDate.class);
-
     private static Column.Type builtinOf(Class<?> clazz)
     {
         if (byte.class.equals(clazz))
         {
-            return ColumnByte.TYPE;
+            return BYTE;
+        }
+        if (Byte.class.equals(clazz))
+        {
+            return BYTE_OBJECT;
         }
         if (int.class.equals(clazz))
         {
-            return ColumnInt.TYPE;
+            return INT;
+        }
+        if (Integer.class.equals(clazz))
+        {
+            return INT_OBJECT;
         }
         if (long.class.equals(clazz))
         {
-            return ColumnLong.TYPE;
+            return LONG;
+        }
+        if (Long.class.equals(clazz))
+        {
+            return LONG_OBJECT;
         }
         if (double.class.equals(clazz))
         {
-            return ColumnDouble.TYPE;
+            return DOUBLE;
+        }
+        if (Double.class.equals(clazz))
+        {
+            return DOUBLE_OBJECT;
+        }
+        if (String.class.equals(clazz))
+        {
+            return STRING;
+        }
+        if (BigDecimal.class.equals(clazz))
+        {
+            return DECIMAL;
+        }
+        if (LocalDate.class.equals(clazz))
+        {
+            return LOCALDATE;
         }
         return null;
     }
@@ -72,10 +107,21 @@ public final class ColumnTypes
 
         private ColumnTypeByClass(Class<?> valueClass)
         {
+            this(valueClass, null);
+        }
+
+        private ColumnTypeByClass(Class<?> valueClass, String id)
+        {
             this.valueClass = ArgumentCheck.nonNull(valueClass);
-            String simpleName = valueClass.getSimpleName();
-            String name = simpleName.isEmpty() ? valueClass.getName() : simpleName;
-            this.id = name.toLowerCase(Locale.ROOT);
+            if (id == null)
+            {
+                String simpleName = valueClass.getSimpleName();
+                String name = simpleName.isEmpty() ? valueClass.getName() : simpleName;
+                this.id = name.toLowerCase(Locale.ROOT);
+            } else
+            {
+                this.id = id.toLowerCase(Locale.ROOT);
+            }
         }
 
         @Override

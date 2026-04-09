@@ -22,7 +22,7 @@ public interface ColumnDouble extends Column
     /**
      * Column type descriptor for primitive double columns.
      */
-    public static final Type TYPE = PrimitiveColumnType.DOUBLE;
+    public static final Type TYPE = ColumnTypes.DOUBLE;
 
     /**
      * Builder for nullable double columns.

@@ -19,7 +19,7 @@ public interface ColumnByte extends Column
     /**
      * Column type descriptor for primitive byte columns.
      */
-    public static final Type TYPE = PrimitiveColumnType.BYTE;
+    public static final Type TYPE = ColumnTypes.BYTE;
 
     /**
      * Builder for nullable byte columns.

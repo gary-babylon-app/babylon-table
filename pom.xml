@@ -160,7 +160,7 @@
                 <executions>
                     <execution>
                         <id>spotless-check</id>
-                        <phase>verify</phase>
+                        <phase>validate</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>
@@ -179,7 +179,7 @@
                 <executions>
                     <execution>
                         <id>checkstyle-no-star-imports</id>
-                        <phase>verify</phase>
+                        <phase>validate</phase>
                         <goals>
                             <goal>check</goal>
                         </goals>

@@ -22,7 +22,7 @@ public interface ColumnInt extends Column
     /**
      * Column type descriptor for primitive int columns.
      */
-    public static final Type TYPE = PrimitiveColumnType.INT;
+    public static final Type TYPE = ColumnTypes.INT;
 
     /**
      * Builder for nullable int columns.

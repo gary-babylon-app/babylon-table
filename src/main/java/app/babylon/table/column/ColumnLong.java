@@ -22,7 +22,7 @@ public interface ColumnLong extends Column
     /**
      * Column type descriptor for primitive long columns.
      */
-    public static final Type TYPE = PrimitiveColumnType.LONG;
+    public static final Type TYPE = ColumnTypes.LONG;
 
     /**
      * Builder for nullable long columns.

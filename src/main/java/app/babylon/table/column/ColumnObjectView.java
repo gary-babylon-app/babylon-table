@@ -17,7 +17,7 @@ import java.util.Collection;
 
 import app.babylon.table.ViewIndex;
 
-abstract public class ColumnObjectView<T> implements ColumnObject<T>
+abstract class ColumnObjectView<T> implements ColumnObject<T>
 {
     private final ColumnObject<T> original;
     private final ViewIndex rowIndex;

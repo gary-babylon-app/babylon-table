@@ -19,23 +19,53 @@ import java.util.function.LongPredicate;
  */
 public interface ColumnLong extends Column
 {
+    /**
+     * Column type descriptor for primitive long columns.
+     */
     public static final Type TYPE = PrimitiveColumnType.LONG;
 
+    /**
+     * Builder for nullable long columns.
+     */
     public static interface Builder extends ColumnBuilder
     {
+        /**
+         * Appends a long value.
+         *
+         * @param x the value to append
+         * @return this builder
+         */
         Builder add(long x);
 
+        /**
+         * Appends an unset row.
+         *
+         * @return this builder
+         */
         Builder addNull();
 
         @Override
         ColumnLong build();
     }
 
+    /**
+     * Creates a long column builder for the supplied column name.
+     *
+     * @param name the column name
+     * @return a new long column builder
+     */
     public static Builder builder(ColumnName name)
     {
         return new ColumnLongBuilderArray(name);
     }
 
+    /**
+     * Creates a long column builder with an initial capacity hint.
+     *
+     * @param name the column name
+     * @param initialSize the expected number of rows
+     * @return a new long column builder
+     */
     public static Builder builder(ColumnName name, int initialSize)
     {
         return new ColumnLongBuilderArray(name, initialSize);
@@ -47,11 +77,24 @@ public interface ColumnLong extends Column
         return TYPE;
     }
 
+    /**
+     * Returns the long value at the supplied row.
+     *
+     * @param i the zero-based row index
+     * @return the long value
+     */
     public long get(int i);
 
     @Override
     public boolean isSet(int i);
 
+    /**
+     * Copies the values into the provided array, allocating a new array when
+     * necessary.
+     *
+     * @param x the destination array, or {@code null}
+     * @return an array containing the column values
+     */
     public long[] toArray(long[] x);
 
     @Override
@@ -106,6 +149,12 @@ public interface ColumnLong extends Column
         return newBuilder.build();
     }
 
+    /**
+     * Selects rows whose values satisfy the supplied predicate.
+     *
+     * @param predicate the predicate to test against each set value
+     * @return a selection containing the predicate result for each row
+     */
     default Selection select(LongPredicate predicate)
     {
         LongPredicate p = predicate;
@@ -123,5 +172,10 @@ public interface ColumnLong extends Column
         return selection;
     }
 
+    /**
+     * Indicates whether the column represents the same value for every row.
+     *
+     * @return {@code true} when the column is constant
+     */
     public boolean isConstant();
 }

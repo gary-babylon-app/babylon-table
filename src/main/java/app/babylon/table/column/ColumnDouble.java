@@ -19,12 +19,31 @@ import java.util.function.DoublePredicate;
  */
 public interface ColumnDouble extends Column
 {
+    /**
+     * Column type descriptor for primitive double columns.
+     */
     public static final Type TYPE = PrimitiveColumnType.DOUBLE;
 
+    /**
+     * Builder for nullable double columns.
+     */
     public static interface Builder extends ColumnBuilder
     {
+        /**
+         * Appends a double value.
+         *
+         * @param x the value to append
+         * @return this builder
+         */
         Builder add(double x);
 
+        /**
+         * Parses and appends a double value, falling back to null when parsing
+         * fails.
+         *
+         * @param x the text to parse
+         * @return this builder
+         */
         default Builder add(CharSequence x)
         {
             if (x == null)
@@ -40,6 +59,15 @@ public interface ColumnDouble extends Column
             }
         }
 
+        /**
+         * Parses and appends a double value from a character buffer, falling
+         * back to null when parsing fails.
+         *
+         * @param chars the source characters
+         * @param start the start offset
+         * @param length the number of characters to parse
+         * @return this builder
+         */
         default Builder add(char[] chars, int start, int length)
         {
             if (chars == null)
@@ -55,12 +83,23 @@ public interface ColumnDouble extends Column
             }
         }
 
+        /**
+         * Appends an unset row.
+         *
+         * @return this builder
+         */
         Builder addNull();
 
         @Override
         ColumnDouble build();
     }
 
+    /**
+     * Creates a double column builder for the supplied column name.
+     *
+     * @param name the column name
+     * @return a new double column builder
+     */
     public static Builder builder(ColumnName name)
     {
         return new ColumnDoubleBuilderArray(name);
@@ -72,11 +111,24 @@ public interface ColumnDouble extends Column
         return TYPE;
     }
 
+    /**
+     * Returns the double value at the supplied row.
+     *
+     * @param i the zero-based row index
+     * @return the double value
+     */
     public double get(int i);
 
     @Override
     public boolean isSet(int i);
 
+    /**
+     * Copies the values into the provided array, allocating a new array when
+     * necessary.
+     *
+     * @param x the destination array, or {@code null}
+     * @return an array containing the column values
+     */
     public double[] toArray(double[] x);
 
     @Override
@@ -131,6 +183,12 @@ public interface ColumnDouble extends Column
         return newBuilder.build();
     }
 
+    /**
+     * Selects rows whose values satisfy the supplied predicate.
+     *
+     * @param predicate the predicate to test against each set value
+     * @return a selection containing the predicate result for each row
+     */
     default Selection select(DoublePredicate predicate)
     {
         DoublePredicate p = predicate;
@@ -148,5 +206,10 @@ public interface ColumnDouble extends Column
         return selection;
     }
 
+    /**
+     * Indicates whether the column represents the same value for every row.
+     *
+     * @return {@code true} when the column is constant
+     */
     public boolean isConstant();
 }

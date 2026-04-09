@@ -15,7 +15,17 @@ package app.babylon.table.column;
  */
 public interface ColumnBuilder
 {
+    /**
+     * Returns the name that will be assigned to the built column.
+     *
+     * @return the target column name
+     */
     public ColumnName getName();
 
+    /**
+     * Materialises the current builder contents as an immutable column.
+     *
+     * @return the built column
+     */
     public Column build();
 }

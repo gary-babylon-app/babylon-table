@@ -19,18 +19,41 @@ import java.util.function.IntPredicate;
  */
 public interface ColumnInt extends Column
 {
+    /**
+     * Column type descriptor for primitive int columns.
+     */
     public static final Type TYPE = PrimitiveColumnType.INT;
 
+    /**
+     * Builder for nullable int columns.
+     */
     public static interface Builder extends ColumnBuilder
     {
+        /**
+         * Appends an int value.
+         *
+         * @param x the value to append
+         * @return this builder
+         */
         Builder add(int x);
 
+        /**
+         * Appends an unset row.
+         *
+         * @return this builder
+         */
         Builder addNull();
 
         @Override
         ColumnInt build();
     }
 
+    /**
+     * Creates an int column builder for the supplied column name.
+     *
+     * @param name the column name
+     * @return a new int column builder
+     */
     public static Builder builder(ColumnName name)
     {
         return new ColumnIntBuilderArray(name);
@@ -42,11 +65,24 @@ public interface ColumnInt extends Column
         return TYPE;
     }
 
+    /**
+     * Returns the int value at the supplied row.
+     *
+     * @param i the zero-based row index
+     * @return the int value
+     */
     public int get(int i);
 
     @Override
     public boolean isSet(int i);
 
+    /**
+     * Copies the values into the provided array, allocating a new array when
+     * necessary.
+     *
+     * @param x the destination array, or {@code null}
+     * @return an array containing the column values
+     */
     public int[] toArray(int[] x);
 
     @Override
@@ -101,6 +137,12 @@ public interface ColumnInt extends Column
         return newBuilder.build();
     }
 
+    /**
+     * Selects rows whose values satisfy the supplied predicate.
+     *
+     * @param predicate the predicate to test against each set value
+     * @return a selection containing the predicate result for each row
+     */
     default Selection select(IntPredicate predicate)
     {
         IntPredicate p = predicate;
@@ -118,5 +160,10 @@ public interface ColumnInt extends Column
         return selection;
     }
 
+    /**
+     * Indicates whether the column represents the same value for every row.
+     *
+     * @return {@code true} when the column is constant
+     */
     public boolean isConstant();
 }

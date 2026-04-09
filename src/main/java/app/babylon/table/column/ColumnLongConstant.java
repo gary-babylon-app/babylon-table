@@ -14,7 +14,11 @@ import app.babylon.lang.ArgumentCheck;
 
 import app.babylon.table.ViewIndex;
 
-public class ColumnLongConstant implements ColumnLong
+/**
+ * Constant long column implementation used for single-value projections and
+ * repeated long-valued columns.
+ */
+class ColumnLongConstant implements ColumnLong
 {
     private final ColumnName name;
     private final long value;
@@ -52,6 +56,11 @@ public class ColumnLongConstant implements ColumnLong
         return this.name;
     }
 
+    /**
+     * Returns the repeated long value stored by this constant column.
+     *
+     * @return the repeated value
+     */
     public long getValue()
     {
         return value;

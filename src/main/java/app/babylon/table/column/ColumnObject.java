@@ -28,7 +28,8 @@ import app.babylon.table.selection.Selection;
  * A column that stores object values, including strings, dates, decimals, and
  * other reference types.
  *
- * @param <T> the runtime value type stored in the column
+ * @param <T>
+ *            the runtime value type stored in the column
  */
 public interface ColumnObject<T> extends Column
 {
@@ -40,10 +41,10 @@ public interface ColumnObject<T> extends Column
         AUTO, CATEGORICAL, ARRAY;
 
         /**
-         * Parses a mode name, defaulting to {@link #AUTO} when the text is
-         * blank.
+         * Parses a mode name, defaulting to {@link #AUTO} when the text is blank.
          *
-         * @param s the text to parse
+         * @param s
+         *            the text to parse
          * @return the resolved mode
          */
         public static Mode parse(String s)
@@ -59,9 +60,12 @@ public interface ColumnObject<T> extends Column
     /**
      * Creates an object column builder using the default storage mode.
      *
-     * @param <T> the value type
-     * @param name the column name
-     * @param clazz the runtime value class
+     * @param <T>
+     *            the value type
+     * @param name
+     *            the column name
+     * @param clazz
+     *            the runtime value class
      * @return a builder for the supplied object type
      */
     public static <T> Builder<T> builder(ColumnName name, Class<T> clazz)
@@ -72,10 +76,14 @@ public interface ColumnObject<T> extends Column
     /**
      * Creates an object column builder using the requested storage mode.
      *
-     * @param <T> the value type
-     * @param name the column name
-     * @param clazz the runtime value class
-     * @param mode the preferred storage strategy
+     * @param <T>
+     *            the value type
+     * @param name
+     *            the column name
+     * @param clazz
+     *            the runtime value class
+     * @param mode
+     *            the preferred storage strategy
      * @return a builder for the supplied object type
      */
     public static <T> Builder<T> builder(ColumnName name, Class<T> clazz, Mode mode)
@@ -97,7 +105,8 @@ public interface ColumnObject<T> extends Column
     /**
      * Creates a {@link BigDecimal} column builder.
      *
-     * @param name the column name
+     * @param name
+     *            the column name
      * @return a decimal column builder
      */
     public static Builder<BigDecimal> builderDecimal(ColumnName name)
@@ -108,7 +117,8 @@ public interface ColumnObject<T> extends Column
     /**
      * Builder for nullable object columns.
      *
-     * @param <T> the value type produced by the builder
+     * @param <T>
+     *            the value type produced by the builder
      */
     public static interface Builder<T> extends ColumnBuilder
     {
@@ -118,7 +128,8 @@ public interface ColumnObject<T> extends Column
         /**
          * Appends a value to the column.
          *
-         * @param x the value to append, which may be {@code null}
+         * @param x
+         *            the value to append, which may be {@code null}
          * @return this builder
          */
         public Builder<T> add(T x);
@@ -164,7 +175,8 @@ public interface ColumnObject<T> extends Column
     /**
      * Returns the value at the supplied row.
      *
-     * @param i the zero-based row index
+     * @param i
+     *            the zero-based row index
      * @return the row value, or {@code null} when unset
      */
     public T get(int i);
@@ -205,7 +217,8 @@ public interface ColumnObject<T> extends Column
     /**
      * Appends all set values to the supplied collection.
      *
-     * @param x the destination collection, or {@code null}
+     * @param x
+     *            the destination collection, or {@code null}
      * @return a collection containing all set values in row order
      */
     default public Collection<T> getAll(Collection<T> x)
@@ -227,7 +240,8 @@ public interface ColumnObject<T> extends Column
     /**
      * Collects the distinct set values from the column.
      *
-     * @param x the destination set, or {@code null}
+     * @param x
+     *            the destination set, or {@code null}
      * @return a set containing the unique values
      */
     default public Set<T> getUniques(Set<T> x)
@@ -242,7 +256,8 @@ public interface ColumnObject<T> extends Column
     /**
      * Selects rows whose values satisfy the supplied predicate.
      *
-     * @param f the predicate to test against each set value
+     * @param f
+     *            the predicate to test against each set value
      * @return a selection containing the predicate result for each row
      */
     default public Selection select(Predicate<T> f)
@@ -266,8 +281,10 @@ public interface ColumnObject<T> extends Column
      * Transforms this column into another object column using the supplied
      * transformer.
      *
-     * @param <S> the transformed value type
-     * @param transformer the row transformation to apply
+     * @param <S>
+     *            the transformed value type
+     * @param transformer
+     *            the row transformation to apply
      * @return a transformed column
      */
     default <S> ColumnObject<S> transform(Transformer<T, S> transformer)
@@ -334,9 +351,12 @@ public interface ColumnObject<T> extends Column
      * Compares a column object with another object using column name, size, and
      * row-by-row value equality.
      *
-     * @param <T> the column value type
-     * @param a the column to compare
-     * @param obj the comparison target
+     * @param <T>
+     *            the column value type
+     * @param a
+     *            the column to compare
+     * @param obj
+     *            the comparison target
      * @return {@code true} when the objects represent the same column contents
      */
     public static <T> boolean equals(ColumnObject<T> a, Object obj)

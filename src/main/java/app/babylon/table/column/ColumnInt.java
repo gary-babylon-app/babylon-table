@@ -32,7 +32,8 @@ public interface ColumnInt extends Column
         /**
          * Appends an int value.
          *
-         * @param x the value to append
+         * @param x
+         *            the value to append
          * @return this builder
          */
         Builder add(int x);
@@ -51,7 +52,8 @@ public interface ColumnInt extends Column
     /**
      * Creates an int column builder for the supplied column name.
      *
-     * @param name the column name
+     * @param name
+     *            the column name
      * @return a new int column builder
      */
     public static Builder builder(ColumnName name)
@@ -68,7 +70,8 @@ public interface ColumnInt extends Column
     /**
      * Returns the int value at the supplied row.
      *
-     * @param i the zero-based row index
+     * @param i
+     *            the zero-based row index
      * @return the int value
      */
     public int get(int i);
@@ -80,7 +83,8 @@ public interface ColumnInt extends Column
      * Copies the values into the provided array, allocating a new array when
      * necessary.
      *
-     * @param x the destination array, or {@code null}
+     * @param x
+     *            the destination array, or {@code null}
      * @return an array containing the column values
      */
     public int[] toArray(int[] x);
@@ -140,7 +144,8 @@ public interface ColumnInt extends Column
     /**
      * Selects rows whose values satisfy the supplied predicate.
      *
-     * @param predicate the predicate to test against each set value
+     * @param predicate
+     *            the predicate to test against each set value
      * @return a selection containing the predicate result for each row
      */
     default Selection select(IntPredicate predicate)

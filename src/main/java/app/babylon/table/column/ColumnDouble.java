@@ -32,16 +32,17 @@ public interface ColumnDouble extends Column
         /**
          * Appends a double value.
          *
-         * @param x the value to append
+         * @param x
+         *            the value to append
          * @return this builder
          */
         Builder add(double x);
 
         /**
-         * Parses and appends a double value, falling back to null when parsing
-         * fails.
+         * Parses and appends a double value, falling back to null when parsing fails.
          *
-         * @param x the text to parse
+         * @param x
+         *            the text to parse
          * @return this builder
          */
         default Builder add(CharSequence x)
@@ -60,12 +61,15 @@ public interface ColumnDouble extends Column
         }
 
         /**
-         * Parses and appends a double value from a character buffer, falling
-         * back to null when parsing fails.
+         * Parses and appends a double value from a character buffer, falling back to
+         * null when parsing fails.
          *
-         * @param chars the source characters
-         * @param start the start offset
-         * @param length the number of characters to parse
+         * @param chars
+         *            the source characters
+         * @param start
+         *            the start offset
+         * @param length
+         *            the number of characters to parse
          * @return this builder
          */
         default Builder add(char[] chars, int start, int length)
@@ -97,7 +101,8 @@ public interface ColumnDouble extends Column
     /**
      * Creates a double column builder for the supplied column name.
      *
-     * @param name the column name
+     * @param name
+     *            the column name
      * @return a new double column builder
      */
     public static Builder builder(ColumnName name)
@@ -114,7 +119,8 @@ public interface ColumnDouble extends Column
     /**
      * Returns the double value at the supplied row.
      *
-     * @param i the zero-based row index
+     * @param i
+     *            the zero-based row index
      * @return the double value
      */
     public double get(int i);
@@ -126,7 +132,8 @@ public interface ColumnDouble extends Column
      * Copies the values into the provided array, allocating a new array when
      * necessary.
      *
-     * @param x the destination array, or {@code null}
+     * @param x
+     *            the destination array, or {@code null}
      * @return an array containing the column values
      */
     public double[] toArray(double[] x);
@@ -186,7 +193,8 @@ public interface ColumnDouble extends Column
     /**
      * Selects rows whose values satisfy the supplied predicate.
      *
-     * @param predicate the predicate to test against each set value
+     * @param predicate
+     *            the predicate to test against each set value
      * @return a selection containing the predicate result for each row
      */
     default Selection select(DoublePredicate predicate)

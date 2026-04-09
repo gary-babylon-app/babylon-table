@@ -32,7 +32,8 @@ public interface ColumnLong extends Column
         /**
          * Appends a long value.
          *
-         * @param x the value to append
+         * @param x
+         *            the value to append
          * @return this builder
          */
         Builder add(long x);
@@ -51,7 +52,8 @@ public interface ColumnLong extends Column
     /**
      * Creates a long column builder for the supplied column name.
      *
-     * @param name the column name
+     * @param name
+     *            the column name
      * @return a new long column builder
      */
     public static Builder builder(ColumnName name)
@@ -62,8 +64,10 @@ public interface ColumnLong extends Column
     /**
      * Creates a long column builder with an initial capacity hint.
      *
-     * @param name the column name
-     * @param initialSize the expected number of rows
+     * @param name
+     *            the column name
+     * @param initialSize
+     *            the expected number of rows
      * @return a new long column builder
      */
     public static Builder builder(ColumnName name, int initialSize)
@@ -80,7 +84,8 @@ public interface ColumnLong extends Column
     /**
      * Returns the long value at the supplied row.
      *
-     * @param i the zero-based row index
+     * @param i
+     *            the zero-based row index
      * @return the long value
      */
     public long get(int i);
@@ -92,7 +97,8 @@ public interface ColumnLong extends Column
      * Copies the values into the provided array, allocating a new array when
      * necessary.
      *
-     * @param x the destination array, or {@code null}
+     * @param x
+     *            the destination array, or {@code null}
      * @return an array containing the column values
      */
     public long[] toArray(long[] x);
@@ -152,7 +158,8 @@ public interface ColumnLong extends Column
     /**
      * Selects rows whose values satisfy the supplied predicate.
      *
-     * @param predicate the predicate to test against each set value
+     * @param predicate
+     *            the predicate to test against each set value
      * @return a selection containing the predicate result for each row
      */
     default Selection select(LongPredicate predicate)

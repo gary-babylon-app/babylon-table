@@ -29,7 +29,8 @@ public interface ColumnByte extends Column
         /**
          * Appends a byte value.
          *
-         * @param x the value to append
+         * @param x
+         *            the value to append
          * @return this builder
          */
         public Builder add(byte x);
@@ -48,7 +49,8 @@ public interface ColumnByte extends Column
     /**
      * Creates a byte column builder for the supplied column name.
      *
-     * @param name the column name
+     * @param name
+     *            the column name
      * @return a new byte column builder
      */
     public static Builder builder(ColumnName name)
@@ -59,7 +61,8 @@ public interface ColumnByte extends Column
     /**
      * Returns the byte value at the supplied row.
      *
-     * @param i the zero-based row index
+     * @param i
+     *            the zero-based row index
      * @return the byte value
      */
     public byte get(int i);

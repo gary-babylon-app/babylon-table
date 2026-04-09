@@ -24,7 +24,8 @@ import app.babylon.table.selection.Selection;
  * An object column optimised for repeated values by storing dictionary-encoded
  * categories.
  *
- * @param <T> the runtime value type stored in the column
+ * @param <T>
+ *            the runtime value type stored in the column
  */
 public interface ColumnCategorical<T> extends ColumnObject<T>
 {
@@ -33,11 +34,16 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
      * Creates a constant categorical column with a type inferred from the value
      * class.
      *
-     * @param <T> the value type
-     * @param name the column name
-     * @param value the repeated value, or {@code null}
-     * @param size the number of rows
-     * @param valueClass the runtime value class
+     * @param <T>
+     *            the value type
+     * @param name
+     *            the column name
+     * @param value
+     *            the repeated value, or {@code null}
+     * @param size
+     *            the number of rows
+     * @param valueClass
+     *            the runtime value class
      * @return a constant categorical column
      */
     public static <T> ColumnCategorical<T> constant(ColumnName name, T value, int size, Class<T> valueClass)
@@ -48,11 +54,16 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Creates a constant categorical column using an explicit column type.
      *
-     * @param <T> the value type
-     * @param name the column name
-     * @param value the repeated value, or {@code null}
-     * @param size the number of rows
-     * @param type the column type
+     * @param <T>
+     *            the value type
+     * @param name
+     *            the column name
+     * @param value
+     *            the repeated value, or {@code null}
+     * @param size
+     *            the number of rows
+     * @param type
+     *            the column type
      * @return a constant categorical column
      */
     public static <T> ColumnCategorical<T> constant(ColumnName name, T value, int size, Type type)
@@ -63,7 +74,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Builder for dictionary-encoded categorical columns.
      *
-     * @param <T> the value type
+     * @param <T>
+     *            the value type
      */
     public static interface Builder<T> extends ColumnObject.Builder<T>
     {
@@ -80,9 +92,12 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Creates a categorical column builder for the supplied value class.
      *
-     * @param <T> the value type
-     * @param name the column name
-     * @param clazz the runtime value class
+     * @param <T>
+     *            the value type
+     * @param name
+     *            the column name
+     * @param clazz
+     *            the runtime value class
      * @return a categorical column builder
      */
     public static <T> Builder<T> builder(ColumnName name, Class<T> clazz)
@@ -103,7 +118,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Returns the dictionary code stored at the supplied row.
      *
-     * @param i the zero-based row index
+     * @param i
+     *            the zero-based row index
      * @return the category code for the row
      */
     public int getCategoryCode(int i);
@@ -111,7 +127,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Resolves a dictionary code to its categorical value.
      *
-     * @param categoryCode the dictionary code
+     * @param categoryCode
+     *            the dictionary code
      * @return the value for that code, or {@code null} for the null category
      */
     public T getCategoryValue(int categoryCode);
@@ -119,7 +136,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Returns the distinct category codes used by the column.
      *
-     * @param x the destination array, or {@code null}
+     * @param x
+     *            the destination array, or {@code null}
      * @return an array of category codes
      */
     public int[] getCategoryCodes(int[] x);
@@ -127,7 +145,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Appends the distinct categorical values to the supplied collection.
      *
-     * @param x the destination collection, or {@code null}
+     * @param x
+     *            the destination collection, or {@code null}
      * @return a collection containing the categorical values
      */
     public Collection<T> getCategoricalValues(Collection<T> x);
@@ -236,8 +255,10 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     /**
      * Transforms this categorical column into another categorical column.
      *
-     * @param <S> the transformed value type
-     * @param transformer the transformation to apply
+     * @param <S>
+     *            the transformed value type
+     * @param transformer
+     *            the transformation to apply
      * @return the transformed categorical column
      */
     @Override

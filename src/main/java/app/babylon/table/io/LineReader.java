@@ -23,5 +23,5 @@ public interface LineReader extends Closeable
 
     Row current();
 
-    ReadSettings getSettings();
+    Csv.Settings getSettings();
 }

@@ -31,7 +31,7 @@ public class HeaderStrategyExplicitRow implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, ReadSettings readSettings) throws IOException
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
     {
         int rowIndex = 0;
         while (rowStream.next())

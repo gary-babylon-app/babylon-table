@@ -1,11 +1,12 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.text.Strings;
 
 import java.util.Map;
 import java.util.function.Function;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
@@ -40,10 +41,10 @@ public class TransformToType<T> extends TransformBase
             Function<String, T> parser, ColumnName... columnNames)
     {
         super(FUNCTION_NAME);
-        this.parser = app.babylon.lang.ArgumentCheck.nonNull(parser);
+        this.parser = ArgumentCheck.nonNull(parser);
         this.columnNames = ArgumentCheck.nonEmpty(columnNames);
         this.newColumnNames = null;
-        this.valueClass = app.babylon.lang.ArgumentCheck.nonNull(valueClass);
+        this.valueClass = ArgumentCheck.nonNull(valueClass);
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
         this.parseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
     }
@@ -64,12 +65,12 @@ public class TransformToType<T> extends TransformBase
             ColumnName columnName, Function<String, T> parser, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.parser = app.babylon.lang.ArgumentCheck.nonNull(parser);
+        this.parser = ArgumentCheck.nonNull(parser);
         this.columnNames = new ColumnName[]
-        {app.babylon.lang.ArgumentCheck.nonNull(columnName)};
+        {ArgumentCheck.nonNull(columnName)};
         this.newColumnNames = new ColumnName[]
-        {app.babylon.lang.ArgumentCheck.nonNull(newColumnName)};
-        this.valueClass = app.babylon.lang.ArgumentCheck.nonNull(valueClass);
+        {ArgumentCheck.nonNull(newColumnName)};
+        this.valueClass = ArgumentCheck.nonNull(valueClass);
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
         this.parseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
     }

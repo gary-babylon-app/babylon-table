@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +23,7 @@ public class TransformExtract extends TransformStringToString
     public TransformExtract(ColumnName extractColumnName, Pattern pattern, ColumnName newColumnName)
     {
         super(FUNCTION_NAME, extractColumnName, newColumnName == null ? extractColumnName : newColumnName);
-        this.pattern = app.babylon.lang.ArgumentCheck.nonNull(pattern);
+        this.pattern = ArgumentCheck.nonNull(pattern);
     }
 
     public static TransformExtract of(String[] params)

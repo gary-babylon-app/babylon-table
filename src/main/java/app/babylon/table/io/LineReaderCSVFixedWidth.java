@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,13 +26,13 @@ final class LineReaderCSVFixedWidth implements LineReader
 
     private final BufferedCharReader reader;
     private final int[] fixedWidths;
-    private final ReadSettingsCSV settings;
+    private final Csv.Settings settings;
     private final RowFixedWidth current;
 
-    protected LineReaderCSVFixedWidth(BufferedInputStream instream, ReadSettingsCSV settings, Charset charset,
+    protected LineReaderCSVFixedWidth(BufferedInputStream instream, Csv.Settings settings, Charset charset,
             int bomLength)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(settings, "settings must not be null");
+        ArgumentCheck.nonNull(settings, "settings must not be null");
         int[] configuredWidths = settings.getFixedWidths();
         if (configuredWidths == null || configuredWidths.length == 0)
         {
@@ -144,7 +146,7 @@ final class LineReaderCSVFixedWidth implements LineReader
     }
 
     @Override
-    public ReadSettingsCSV getSettings()
+    public Csv.Settings getSettings()
     {
         return this.settings;
     }

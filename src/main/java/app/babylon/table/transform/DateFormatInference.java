@@ -10,6 +10,8 @@
 
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.EnumSet;
@@ -35,7 +37,7 @@ public final class DateFormatInference
 
     public static DateFormat[] inferFormats(ColumnObject<String>[] columns)
     {
-        ColumnObject<String>[] cols = app.babylon.lang.ArgumentCheck.nonNull(columns, "columns must not be null");
+        ColumnObject<String>[] cols = ArgumentCheck.nonNull(columns, "columns must not be null");
         DateFormat[] inferred = new DateFormat[cols.length];
         double[] confidence = new double[cols.length];
 
@@ -589,13 +591,16 @@ public final class DateFormatInference
         return (year % 400) == 0;
     }
 
-    private record ColumnInference(DateFormat format, double confidence) {
+    private record ColumnInference(DateFormat format, double confidence)
+    {
     }
 
-    private record CandidateRanking(DateFormat best, DateFormat second, double bestConfidence, double margin) {
+    private record CandidateRanking(DateFormat best, DateFormat second, double bestConfidence, double margin)
+    {
     }
 
-    private record Verification(int checked, int failed) {
+    private record Verification(int checked, int failed)
+    {
         double failureRate()
         {
             if (checked <= 0)

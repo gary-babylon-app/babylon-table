@@ -26,10 +26,10 @@ public interface HeaderStrategy
 {
     default int getScanLimit()
     {
-        return ReadSettingsCommon.DEFAULT_HEADER_SCAN_LIMIT;
+        return Csv.DEFAULT_HEADER_SCAN_LIMIT;
     }
 
-    default HeaderDetection detect(RowStreamMarkable rowStream, ReadSettings readSettings) throws IOException
+    default HeaderDetection detect(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
     {
         HeaderDetection foundDetection = detectFoundHeaders(rowStream, readSettings);
         if (foundDetection.isSyntheticHeaders())
@@ -63,7 +63,7 @@ public interface HeaderStrategy
                 toIntArray(selectedPositions));
     }
 
-    HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, ReadSettings readSettings) throws IOException;
+    HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException;
 
     private static int[] toIntArray(List<Integer> values)
     {

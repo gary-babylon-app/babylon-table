@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.table.ViewIndex;
 
 public class ColumnLongConstant implements ColumnLong
@@ -26,7 +28,7 @@ public class ColumnLongConstant implements ColumnLong
 
     ColumnLongConstant(ColumnName name, long value, int size, boolean isSet)
     {
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.name = ArgumentCheck.nonNull(name);
         this.value = value;
         this.size = size;
         this.isSet = isSet;
@@ -64,7 +66,7 @@ public class ColumnLongConstant implements ColumnLong
     @Override
     public Column view(ViewIndex rowIndex)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
+        ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
             return new ColumnLongConstant(this.name, this.value, rowIndex.size(), this.isSet);

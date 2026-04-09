@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,12 +25,12 @@ final class LineReaderCSV implements LineReader
     private static final char LF = '\n';
 
     private final BufferedCharReader reader;
-    private final ReadSettingsCSV settings;
+    private final Csv.Settings settings;
     private final RowBuffer current;
 
-    protected LineReaderCSV(BufferedInputStream instream, ReadSettingsCSV options, Charset charset, int bomLength)
+    protected LineReaderCSV(BufferedInputStream instream, Csv.Settings options, Charset charset, int bomLength)
     {
-        this.settings = app.babylon.lang.ArgumentCheck.nonNull(options, "options must not be null");
+        this.settings = ArgumentCheck.nonNull(options, "options must not be null");
         this.reader = createReader(instream, charset, bomLength);
         this.current = new RowBuffer();
     }
@@ -46,7 +48,7 @@ final class LineReaderCSV implements LineReader
     }
 
     @Override
-    public ReadSettingsCSV getSettings()
+    public Csv.Settings getSettings()
     {
         return this.settings;
     }

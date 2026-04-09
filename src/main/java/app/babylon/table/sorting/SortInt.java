@@ -10,6 +10,8 @@
 
 package app.babylon.table.sorting;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Arrays;
 
 public final class SortInt
@@ -20,8 +22,8 @@ public final class SortInt
 
     public static void stableSort(int[] values, ComparatorInt comparator)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(values);
-        app.babylon.lang.ArgumentCheck.nonNull(comparator);
+        ArgumentCheck.nonNull(values);
+        ArgumentCheck.nonNull(comparator);
         if (values.length < 2)
         {
             return;

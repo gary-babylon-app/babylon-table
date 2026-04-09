@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.lang.ArgumentCheck;
+
 final class ProjectedRow implements RowProjected
 {
     private final int[] projectedIndexes;
@@ -17,14 +19,13 @@ final class ProjectedRow implements RowProjected
 
     public ProjectedRow(int[] projectedIndexes)
     {
-        this.projectedIndexes = app.babylon.lang.ArgumentCheck.nonNull(projectedIndexes,
-                "projectedIndexes must not be null");
+        this.projectedIndexes = ArgumentCheck.nonNull(projectedIndexes, "projectedIndexes must not be null");
     }
 
     @Override
     public ProjectedRow with(Row source)
     {
-        this.source = app.babylon.lang.ArgumentCheck.nonNull(source, "source must not be null");
+        this.source = ArgumentCheck.nonNull(source, "source must not be null");
         return this;
     }
 
@@ -93,6 +94,6 @@ final class ProjectedRow implements RowProjected
 
     private Row source()
     {
-        return app.babylon.lang.ArgumentCheck.nonNull(this.source, "source row must be set before use");
+        return ArgumentCheck.nonNull(this.source, "source row must be set before use");
     }
 }

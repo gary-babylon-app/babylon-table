@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.regex.Pattern;
 
 import app.babylon.lang.Is;
@@ -17,7 +19,7 @@ public class TransformClassify extends TransformStringToString
             String newColumnFoundValue, String newColumnNotFoundValue)
     {
         super(FUNCTION_NAME, existingColumnName, newColumnName == null ? existingColumnName : newColumnName);
-        this.pattern = app.babylon.lang.ArgumentCheck.nonNull(pattern);
+        this.pattern = ArgumentCheck.nonNull(pattern);
         this.newColumnFoundValue = newColumnFoundValue;
         this.newColumnNotFoundValue = newColumnNotFoundValue;
     }

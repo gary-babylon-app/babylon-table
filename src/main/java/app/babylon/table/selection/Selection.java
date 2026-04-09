@@ -11,6 +11,7 @@
 package app.babylon.table.selection;
 
 import app.babylon.lang.ArgumentCheck;
+
 import java.util.Objects;
 import java.util.BitSet;
 
@@ -37,7 +38,7 @@ public class Selection
     private Selection(String name, BitSet bitSet, int size)
     {
         this.name = ArgumentCheck.nonEmpty(name);
-        BitSet source = app.babylon.lang.ArgumentCheck.nonNull(bitSet);
+        BitSet source = ArgumentCheck.nonNull(bitSet);
         if (size < 0)
         {
             throw new IllegalArgumentException("size must be >= 0");
@@ -103,7 +104,7 @@ public class Selection
 
     private void requireCompatible(Selection x)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(x);
+        ArgumentCheck.nonNull(x);
         if (this.size != x.size)
         {
             throw new IllegalArgumentException("Selection sizes differ: " + this.size + " vs " + x.size);

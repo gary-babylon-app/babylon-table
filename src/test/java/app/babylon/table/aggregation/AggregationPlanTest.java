@@ -2,31 +2,34 @@ package app.babylon.table.aggregation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnName;
+import app.babylon.io.DataSource;
+import app.babylon.io.DataSources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
-import app.babylon.io.DataSources;
-import app.babylon.table.io.ReadSettingsCSV;
-import app.babylon.table.transform.TransformToDouble;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.io.Csv;
+import app.babylon.table.io.HeaderStrategyAuto;
+import app.babylon.table.io.Csv.Settings;
 
 class AggregationPlanTest
 {
     @Test
-    void shouldCaptureTransformsGroupBysAndAggregatesInOrder()
+    void shouldCaptureOutputNameGroupBysAndAggregatesInOrder()
     {
         final ColumnName STATION = ColumnName.of("station");
         final ColumnName OBSERVATION = ColumnName.of("observation");
         final ColumnName MEAN_OBSERVATION = ColumnName.of("mean_observation");
 
-        AggregationPlan plan = new AggregationPlan().withOutputTableName(TableName.of("summary"))
-                .withTransform(new TransformToDouble(OBSERVATION)).withGroupBy(STATION)
+        AggregationPlan plan = new AggregationPlan().withOutputTableName(TableName.of("summary")).withGroupBy(STATION)
                 .withAggregate(OBSERVATION, MEAN_OBSERVATION, Aggregate.MEAN);
 
         assertEquals(TableName.of("summary"), plan.getOutputTableName());
-        assertEquals(1, plan.getTransforms().size());
         assertEquals(1, plan.getGroupByColumns().size());
         assertEquals(STATION, plan.getGroupByColumns().get(0));
         assertEquals(1, plan.getAggregateSpecs().size());
@@ -70,7 +73,7 @@ class AggregationPlanTest
                 .withAggregate(TEMPERATURE, TEMPERATURE_MEAN, Aggregate.MEAN)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MAX, Aggregate.MAX);
 
-        ReadSettingsCSV readSettings = new ReadSettingsCSV().withSeparator(';')
+        Csv.Settings readSettings = new Csv.Settings().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE);
 
@@ -111,7 +114,7 @@ class AggregationPlanTest
                 .withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
                 .withAggregate(HUMIDITY, MAX_HUMIDITY, Aggregate.MAX);
 
-        ReadSettingsCSV readSettings = new ReadSettingsCSV().withSeparator(';')
+        Csv.Settings readSettings = new Csv.Settings().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE)
                 .withColumnRename(COLUMN_3, HUMIDITY);
@@ -147,7 +150,7 @@ class AggregationPlanTest
                 .withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MEAN, Aggregate.MEAN);
 
-        ReadSettingsCSV readSettings = new ReadSettingsCSV().withSeparator(';')
+        Csv.Settings readSettings = new Csv.Settings().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, COUNTRY)
                 .withColumnRename(COLUMN_3, TEMPERATURE);
@@ -168,6 +171,97 @@ class AggregationPlanTest
         assertEquals("UK", table.getString(COUNTRY).get(2));
         assertEquals(1L, table.getLong(TEMPERATURE_COUNT).get(2));
         assertEquals(7.0d, table.getDouble(TEMPERATURE_MEAN).get(2));
+    }
+
+    @Test
+    void streamingAndInMemoryExecutionShouldProduceMatchingSummaries()
+    {
+        final ColumnName STATION = ColumnName.of("Station");
+        final ColumnName COUNTRY = ColumnName.of("Country");
+        final ColumnName TEMPERATURE = ColumnName.of("Temperature");
+        final ColumnName HUMIDITY = ColumnName.of("Humidity");
+        final ColumnName TEMPERATURE_COUNT = ColumnName.of("Count");
+        final ColumnName TEMPERATURE_SUM = ColumnName.of("Sum");
+        final ColumnName TEMPERATURE_MIN = ColumnName.of("Min");
+        final ColumnName TEMPERATURE_MEAN = ColumnName.of("Mean");
+        final ColumnName TEMPERATURE_MAX = ColumnName.of("Max");
+        final ColumnName HUMIDITY_MAX = ColumnName.of("HumidityMax");
+        final String csv = """
+                Station,Country,Temperature,Humidity
+                Amsterdam,NL,10.0,85.0
+                Amsterdam,NL,14.0,82.0
+                Amsterdam,US,30.0,65.0
+                London,UK,7.0,91.0
+                London,UK,9.0,87.0
+                Paris,FR,12.5,80.0
+                Paris,FR,11.5,83.0
+                """;
+
+        AggregationPlan plan = new AggregationPlan().withOutputTableName(TableName.of("StationCountrySummary"))
+                .withColumnType(STATION, String.class).withColumnType(COUNTRY, String.class)
+                .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class)
+                .withGroupBy(STATION, COUNTRY).withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
+                .withAggregate(TEMPERATURE, TEMPERATURE_SUM, Aggregate.SUM)
+                .withAggregate(TEMPERATURE, TEMPERATURE_MIN, Aggregate.MIN)
+                .withAggregate(TEMPERATURE, TEMPERATURE_MEAN, Aggregate.MEAN)
+                .withAggregate(TEMPERATURE, TEMPERATURE_MAX, Aggregate.MAX)
+                .withAggregate(HUMIDITY, HUMIDITY_MAX, Aggregate.MAX);
+
+        DataSource streamingSource = DataSources.fromString(csv, "summary.csv");
+        DataSource inMemorySource = DataSources.fromString(csv, "summary.csv");
+
+        TableColumnar streamingResult = plan.execute(streamingSource,
+                newReadSettings(STATION, COUNTRY, TEMPERATURE, HUMIDITY));
+        TableColumnar parsedTable = Csv.read(inMemorySource, newReadSettings(STATION, COUNTRY, TEMPERATURE, HUMIDITY));
+        TableColumnar inMemoryResult = plan.execute(parsedTable);
+
+        assertEquals(streamingResult.getName(), inMemoryResult.getName());
+        assertEquals(streamingResult.getRowCount(), inMemoryResult.getRowCount());
+
+        Map<String, SummaryRow> streamingRows = toSummaryRows(streamingResult, STATION, COUNTRY, TEMPERATURE_COUNT,
+                TEMPERATURE_SUM, TEMPERATURE_MIN, TEMPERATURE_MEAN, TEMPERATURE_MAX, HUMIDITY_MAX);
+        Map<String, SummaryRow> inMemoryRows = toSummaryRows(inMemoryResult, STATION, COUNTRY, TEMPERATURE_COUNT,
+                TEMPERATURE_SUM, TEMPERATURE_MIN, TEMPERATURE_MEAN, TEMPERATURE_MAX, HUMIDITY_MAX);
+
+        assertEquals(streamingRows.keySet(), inMemoryRows.keySet());
+        for (Map.Entry<String, SummaryRow> entry : streamingRows.entrySet())
+        {
+            SummaryRow expected = entry.getValue();
+            SummaryRow actual = inMemoryRows.get(entry.getKey());
+            assertEquals(expected.count, actual.count);
+            assertEquals(expected.sum, actual.sum, 1.0e-9);
+            assertEquals(expected.min, actual.min, 1.0e-9);
+            assertEquals(expected.mean, actual.mean, 1.0e-9);
+            assertEquals(expected.max, actual.max, 1.0e-9);
+            assertEquals(expected.humidityMax, actual.humidityMax, 1.0e-9);
+        }
+    }
+
+    private static Csv.Settings newReadSettings(ColumnName station, ColumnName country, ColumnName temperature,
+            ColumnName humidity)
+    {
+        return new Csv.Settings().withSeparator(',').withHeaderStrategy(new HeaderStrategyAuto())
+                .withColumnType(station, String.class).withColumnType(country, String.class)
+                .withColumnType(temperature, double.class).withColumnType(humidity, double.class);
+    }
+
+    private static Map<String, SummaryRow> toSummaryRows(TableColumnar table, ColumnName station, ColumnName country,
+            ColumnName count, ColumnName sum, ColumnName min, ColumnName mean, ColumnName max, ColumnName humidityMax)
+    {
+        Map<String, SummaryRow> rows = new LinkedHashMap<>();
+        for (int i = 0; i < table.getRowCount(); ++i)
+        {
+            String key = table.getString(station).get(i) + "|" + table.getString(country).get(i);
+            rows.put(key,
+                    new SummaryRow(table.getLong(count).get(i), table.getDouble(sum).get(i),
+                            table.getDouble(min).get(i), table.getDouble(mean).get(i), table.getDouble(max).get(i),
+                            table.getDouble(humidityMax).get(i)));
+        }
+        return rows;
+    }
+
+    private static record SummaryRow(long count, double sum, double min, double mean, double max, double humidityMax)
+    {
     }
 
 }

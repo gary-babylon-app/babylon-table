@@ -11,6 +11,7 @@
 package app.babylon.table.grouping;
 
 import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;

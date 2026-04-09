@@ -10,7 +10,13 @@
 
 package app.babylon.table.io;
 
+import java.util.Collections;
+import java.util.Map;
+
 import app.babylon.io.DataSource;
+import app.babylon.table.TableColumnar;
+import app.babylon.table.TableName;
+import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
 import app.babylon.table.column.ColumnDouble;
@@ -18,11 +24,8 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
-import app.babylon.table.TableColumnar;
-import app.babylon.table.TableName;
-import app.babylon.table.Tables;
 
-final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
+public final class RowConsumerTableCreator implements RowConsumerResult<TableColumnar>
 {
     private static final byte KIND_STRING = 0;
     private static final byte KIND_DOUBLE = 1;
@@ -31,9 +34,9 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
     private final byte[] columnKinds;
     private final ColumnBuilder[] columnBuilders;
     private final String[] strippedValues;
-    private final ReadSettingsCSV options;
+    private final Csv.Settings options;
 
-    RowConsumerTableBuilding(ReadSettingsCSV options, CsvRowFilter rowFilter, byte[] columnKinds,
+    RowConsumerTableCreator(Csv.Settings options, CsvRowFilter rowFilter, byte[] columnKinds,
             ColumnBuilder[] columnBuilders, String[] strippedValues)
     {
         this.options = options;
@@ -118,23 +121,34 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         return Tables.newTable(name, this.columnBuilders);
     }
 
-    static RowConsumerTableBuilding create(ReadSettingsCSV options, HeaderDetection headerDetection)
+    public static RowConsumerTableCreator create(Csv.Settings options, HeaderDetection headerDetection)
+    {
+        return create(options, headerDetection, Collections.emptyMap());
+    }
+
+    public static RowConsumerTableCreator create(Csv.Settings options, HeaderDetection headerDetection,
+            Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         String[] selectedHeaders = headerDetection.getSelectedHeaders();
         ColumnName[] columnNames = initialiseSelectedColumns(options, selectedHeaders);
-        byte[] columnKinds = initialiseColumnKinds(options, columnNames);
-        ColumnBuilder[] columnBuilders = initialiseColumnBuilders(options, columnNames);
+        byte[] columnKinds = initialiseColumnKinds(options, columnNames, explicitColumnTypes);
+        ColumnBuilder[] columnBuilders = initialiseColumnBuilders(options, columnNames, explicitColumnTypes);
         CsvRowFilter rowFilter = new CsvRowFilter(options, columnNames);
-        return new RowConsumerTableBuilding(options, rowFilter, columnKinds, columnBuilders,
+        return new RowConsumerTableCreator(options, rowFilter, columnKinds, columnBuilders,
                 new String[columnBuilders.length]);
     }
 
-    static RowConsumerFactory<TableColumnar> factory()
+    public static RowConsumerFactory<TableColumnar> factory()
     {
-        return RowConsumerTableBuilding::create;
+        return RowConsumerTableCreator::create;
     }
 
-    private static ColumnName[] initialiseSelectedColumns(ReadSettingsCSV options, String[] selectedHeadersFound)
+    public static RowConsumerFactory<TableColumnar> factory(Map<ColumnName, Column.Type> explicitColumnTypes)
+    {
+        return (options, headerDetection) -> create(options, headerDetection, explicitColumnTypes);
+    }
+
+    private static ColumnName[] initialiseSelectedColumns(Csv.Settings options, String[] selectedHeadersFound)
     {
         ColumnName[] columnNames = new ColumnName[selectedHeadersFound.length];
         for (int i = 0; i < selectedHeadersFound.length; ++i)
@@ -145,12 +159,14 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         return columnNames;
     }
 
-    private static byte[] initialiseColumnKinds(ReadSettingsCSV options, ColumnName[] columnNames)
+    private static byte[] initialiseColumnKinds(Csv.Settings options, ColumnName[] columnNames,
+            Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         byte[] columnKinds = new byte[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
         {
-            app.babylon.table.column.Column.Type columnType = options.getColumnType(columnNames[i]);
+            app.babylon.table.column.Column.Type columnType = getColumnType(options, explicitColumnTypes,
+                    columnNames[i]);
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnKinds[i] = KIND_DOUBLE;
@@ -162,13 +178,14 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
         return columnKinds;
     }
 
-    private static ColumnBuilder[] initialiseColumnBuilders(ReadSettingsCSV options, ColumnName[] columnNames)
+    private static ColumnBuilder[] initialiseColumnBuilders(Csv.Settings options, ColumnName[] columnNames,
+            Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         ColumnBuilder[] columnBuilders = new ColumnBuilder[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
         {
             ColumnName columnName = columnNames[i];
-            app.babylon.table.column.Column.Type columnType = options.getColumnType(columnName);
+            app.babylon.table.column.Column.Type columnType = getColumnType(options, explicitColumnTypes, columnName);
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnBuilders[i] = ColumnDouble.builder(columnName);
@@ -178,6 +195,17 @@ final class RowConsumerTableBuilding implements RowConsumerResult<TableColumnar>
             }
         }
         return columnBuilders;
+    }
+
+    private static Column.Type getColumnType(Csv.Settings options, Map<ColumnName, Column.Type> explicitColumnTypes,
+            ColumnName columnName)
+    {
+        Column.Type columnType = explicitColumnTypes.get(columnName);
+        if (columnType != null)
+        {
+            return columnType;
+        }
+        return options.getColumnType(columnName);
     }
 
     private static String extractLastPart(String s)

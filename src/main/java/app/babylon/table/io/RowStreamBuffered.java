@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +27,7 @@ final class RowStreamBuffered implements RowStreamMarkable
 
     RowStreamBuffered(LineReader lineReader)
     {
-        this.lineReader = app.babylon.lang.ArgumentCheck.nonNull(lineReader, "lineReader must not be null");
+        this.lineReader = ArgumentCheck.nonNull(lineReader, "lineReader must not be null");
         this.cachedRows = new ArrayList<>();
         this.current = null;
         this.recording = true;
@@ -71,7 +73,6 @@ final class RowStreamBuffered implements RowStreamMarkable
     @Override
     public Row current()
     {
-        return app.babylon.lang.ArgumentCheck.nonNull(this.current,
-                "current row is not available until next() succeeds");
+        return ArgumentCheck.nonNull(this.current, "current row is not available until next() succeeds");
     }
 }

@@ -11,6 +11,7 @@
 package app.babylon.table.grouping;
 
 import app.babylon.lang.ArgumentCheck;
+
 import java.util.Arrays;
 
 /**

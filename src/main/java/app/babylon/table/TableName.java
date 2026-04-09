@@ -11,6 +11,7 @@
 package app.babylon.table;
 
 import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.text.Strings;
 
 public final class TableName implements Comparable<TableName>

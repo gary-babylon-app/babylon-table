@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Map;
@@ -26,10 +28,10 @@ class TransformDecimalBinaryOperator extends TransformBase
             ColumnName newColumnName)
     {
         super(operator.toString());
-        this.leftColumnName = app.babylon.lang.ArgumentCheck.nonNull(leftColumnName);
-        this.operator = app.babylon.lang.ArgumentCheck.nonNull(operator);
-        this.rightColumnName = app.babylon.lang.ArgumentCheck.nonNull(rightColumnName);
-        this.newColumnName = app.babylon.lang.ArgumentCheck.nonNull(newColumnName);
+        this.leftColumnName = ArgumentCheck.nonNull(leftColumnName);
+        this.operator = ArgumentCheck.nonNull(operator);
+        this.rightColumnName = ArgumentCheck.nonNull(rightColumnName);
+        this.newColumnName = ArgumentCheck.nonNull(newColumnName);
     }
 
     @Override

@@ -10,9 +10,10 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Arrays;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
 
 class ColumnIntBuilderArray implements ColumnInt.Builder
@@ -27,7 +28,7 @@ class ColumnIntBuilderArray implements ColumnInt.Builder
 
     ColumnIntBuilderArray(ColumnName cn)
     {
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(cn);
+        this.name = ArgumentCheck.nonNull(cn);
         this.values = new int[16];
         this.isSet = BitList.builder();
         this.size = 0;
@@ -164,9 +165,9 @@ class ColumnIntBuilderArray implements ColumnInt.Builder
         private ColumnIntArray(ColumnName name, int[] values, BitList isSet, int size, boolean isConstant,
                 boolean isAllSet, boolean isNoneSet)
         {
-            this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
-            this.values = app.babylon.lang.ArgumentCheck.nonNull(values);
-            this.isSet = app.babylon.lang.ArgumentCheck.nonNull(isSet);
+            this.name = ArgumentCheck.nonNull(name);
+            this.values = ArgumentCheck.nonNull(values);
+            this.isSet = ArgumentCheck.nonNull(isSet);
             this.size = ArgumentCheck.nonNegative(size);
             if (size > values.length)
             {
@@ -248,8 +249,8 @@ class ColumnIntBuilderArray implements ColumnInt.Builder
 
         private ColumnIntView(ColumnInt original, ViewIndex rowIndex)
         {
-            this.original = app.babylon.lang.ArgumentCheck.nonNull(original);
-            this.rowIndex = app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
+            this.original = ArgumentCheck.nonNull(original);
+            this.rowIndex = ArgumentCheck.nonNull(rowIndex);
             if (original.isConstant())
             {
                 this.isConstant = true;

@@ -8,8 +8,12 @@
         <setting id="org.eclipse.jdt.core.formatter.indent_body_declarations_compare_to_enum_declaration_header" value="true"/>
         <setting id="org.eclipse.jdt.core.formatter.indent_statements_compare_to_block" value="true"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_type_declaration" value="next_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_record_declaration" value="next_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_record_declaration_on_one_line" value="one_line_never"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_method_declaration" value="next_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_constructor_declaration" value="next_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_record_constructor" value="next_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.keep_record_constructor_on_one_line" value="one_line_never"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block" value="next_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block_in_case" value="next_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_switch" value="next_line"/>

@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,10 +25,8 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
 
-public class ReadSettingsCommon implements ReadSettings
+abstract class CsvSettingsBase
 {
-    static final int DEFAULT_HEADER_SCAN_LIMIT = 25;
-
     Map<ColumnName, ColumnName> renameHeaders;
     Map<ColumnName, Column.Type> columnTypes;
     Set<ColumnName> requestedHeaders;
@@ -36,7 +36,7 @@ public class ReadSettingsCommon implements ReadSettings
     HeaderStrategy headerStrategy;
     boolean stripping;
 
-    public ReadSettingsCommon()
+    CsvSettingsBase()
     {
         this.renameHeaders = new HashMap<>();
         this.columnTypes = new HashMap<>();
@@ -44,13 +44,13 @@ public class ReadSettingsCommon implements ReadSettings
         this.lineReaderFactory = null;
         this.tableName = null;
         this.resourceName = null;
-        this.headerStrategy = new HeaderStrategyAuto(DEFAULT_HEADER_SCAN_LIMIT);
+        this.headerStrategy = new HeaderStrategyAuto(Csv.DEFAULT_HEADER_SCAN_LIMIT);
         this.stripping = true;
     }
 
-    protected ReadSettingsCommon(ReadSettingsCommon base)
+    CsvSettingsBase(CsvSettingsBase base)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(base);
+        ArgumentCheck.nonNull(base);
         this.renameHeaders = new HashMap<>(base.renameHeaders);
         this.columnTypes = new HashMap<>(base.columnTypes);
         this.requestedHeaders = new LinkedHashSet<>(base.requestedHeaders);
@@ -61,117 +61,36 @@ public class ReadSettingsCommon implements ReadSettings
         this.stripping = base.stripping;
     }
 
-    @Override
-    public ReadSettingsCommon withHeaderStrategy(HeaderStrategy headerStrategy)
-    {
-        app.babylon.lang.ArgumentCheck.nonNull(headerStrategy);
-        this.headerStrategy = headerStrategy;
-        return this;
-    }
-
-    @Override
     public HeaderStrategy getHeaderStrategy()
     {
         return this.headerStrategy;
     }
 
-    @Override
-    public ReadSettingsCommon withLineReaderFactory(LineReaderFactory lineReaderFactory)
-    {
-        this.lineReaderFactory = lineReaderFactory;
-        return this;
-    }
-
-    @Override
     public LineReaderFactory getLineReaderFactory()
     {
         return this.lineReaderFactory;
     }
 
-    public ReadSettingsCommon withIncludeResourceName(ColumnName x)
-    {
-        this.resourceName = x;
-        return this;
-    }
-
-    @Override
-    public ReadSettingsCommon withTableName(TableName tableName)
-    {
-        this.tableName = tableName;
-        return this;
-    }
-
-    public ReadSettingsCommon withSelectedHeader(ColumnName x)
-    {
-        this.requestedHeaders.add(x);
-        return this;
-    }
-
-    public ReadSettingsCommon withSelectedHeaders(ColumnName... x)
-    {
-        if (x != null)
-        {
-            Collections.addAll(this.requestedHeaders, x);
-        }
-        return this;
-    }
-
-    public ReadSettingsCommon withColumnRename(ColumnName original, ColumnName newName)
-    {
-        app.babylon.lang.ArgumentCheck.nonNull(original);
-        app.babylon.lang.ArgumentCheck.nonNull(newName);
-        if (renameHeaders.containsKey(original))
-        {
-            throw new RuntimeException("Rename failed, column " + original + " already renamed");
-        }
-        this.renameHeaders.put(original, newName);
-        return this;
-    }
-
-    public ReadSettingsCommon withColumnType(ColumnName columnName, Column.Type columnType)
-    {
-        this.columnTypes.put(app.babylon.lang.ArgumentCheck.nonNull(columnName),
-                app.babylon.lang.ArgumentCheck.nonNull(columnType));
-        return this;
-    }
-
-    public ReadSettingsCommon withColumnType(ColumnName columnName, Class<?> valueClass)
-    {
-        return withColumnType(columnName, Column.Type.of(app.babylon.lang.ArgumentCheck.nonNull(valueClass)));
-    }
-
-    @Override
     public boolean includeResourceName()
     {
         return this.resourceName != null;
     }
 
-    @Override
     public ColumnName getResourceName()
     {
         return this.resourceName;
     }
 
-    @Override
-    public ReadSettingsCommon withStripping(boolean stripping)
-    {
-        this.stripping = stripping;
-        return this;
-    }
-
-    @Override
     public boolean isStripping()
     {
         return this.stripping;
     }
 
-    @Override
     public TableName getTableName()
     {
         return this.tableName;
     }
 
-    @Override
     public ColumnName getRenameColumnName(String original)
     {
         if (Strings.isEmpty(original))
@@ -181,7 +100,6 @@ public class ReadSettingsCommon implements ReadSettings
         return getRenameColumnName(ColumnName.of(original));
     }
 
-    @Override
     public ColumnName getRenameColumnName(ColumnName original)
     {
         ColumnName r = this.renameHeaders.get(original);
@@ -192,13 +110,11 @@ public class ReadSettingsCommon implements ReadSettings
         return r;
     }
 
-    @Override
     public Column.Type getColumnType(ColumnName columnName)
     {
         return this.columnTypes.get(columnName);
     }
 
-    @Override
     public Collection<ColumnName> getRequestedHeaders(Collection<ColumnName> x)
     {
         if (x == null)

@@ -9,6 +9,8 @@
  */
 
 package app.babylon.io;
+
+import app.babylon.lang.ArgumentCheck;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +26,8 @@ public class DataSourceProbe
 
     private DataSourceProbe(byte[] bytes, String resourceName)
     {
-        this.bytes = app.babylon.lang.ArgumentCheck.nonNull(bytes, "bytes must not be null");
-        this.resourceName = app.babylon.lang.ArgumentCheck.nonNull(resourceName, "resourceName must not be null");
+        this.bytes = ArgumentCheck.nonNull(bytes, "bytes must not be null");
+        this.resourceName = ArgumentCheck.nonNull(resourceName, "resourceName must not be null");
         if (resourceName.isEmpty())
         {
             throw new IllegalArgumentException("resourceName must not be empty");
@@ -39,7 +41,7 @@ public class DataSourceProbe
 
     public static DataSourceProbe of(BufferedInputStream bstream, String resourceName) throws IOException
     {
-        app.babylon.lang.ArgumentCheck.nonNull(bstream, "bstream must not be null");
+        ArgumentCheck.nonNull(bstream, "bstream must not be null");
         bstream.mark(BYTES_TO_SNIP);
         byte[] bytes = bstream.readNBytes(BYTES_TO_SNIP);
         bstream.reset();

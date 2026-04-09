@@ -33,7 +33,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
 
     public HeaderStrategyAuto()
     {
-        this(ReadSettingsCommon.DEFAULT_HEADER_SCAN_LIMIT);
+        this(Csv.DEFAULT_HEADER_SCAN_LIMIT);
     }
     public HeaderStrategyAuto(int scanLimit)
     {
@@ -50,7 +50,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, ReadSettings readSettings) throws IOException
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
     {
         List<RowBuffer> scannedRows = new ArrayList<>();
         while (scannedRows.size() < this.scanLimit && rowStream.next())
@@ -127,7 +127,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return detectHeaderRowIndex(rows, null);
     }
 
-    static int detectHeaderRowIndex(List<RowBuffer> rows, ReadSettings readSettings)
+    static int detectHeaderRowIndex(List<RowBuffer> rows, Csv.Settings readSettings)
     {
         if (rows == null || rows.isEmpty())
         {
@@ -267,7 +267,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return 0.75 * rowMatchRatio + 0.50 * requestedMatchRatio;
     }
 
-    private static double nextRowTypeCompatibilityBonus(List<RowBuffer> rows, int rowIndex, ReadSettings readSettings)
+    private static double nextRowTypeCompatibilityBonus(List<RowBuffer> rows, int rowIndex, Csv.Settings readSettings)
     {
         if (readSettings == null || rowIndex + 1 >= rows.size())
         {
@@ -310,7 +310,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return 1.10 * (typedMatches / (double) typedChecks);
     }
 
-    private static Collection<ColumnName> requestedHeaders(ReadSettings readSettings)
+    private static Collection<ColumnName> requestedHeaders(Csv.Settings readSettings)
     {
         if (readSettings == null)
         {

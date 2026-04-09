@@ -9,6 +9,8 @@
  */
 
 package app.babylon.io;
+
+import app.babylon.lang.ArgumentCheck;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -20,7 +22,7 @@ class DataSourceFile implements DataSource
 
     DataSourceFile(File file)
     {
-        this.file = app.babylon.lang.ArgumentCheck.nonNull(file, "file must not be null");
+        this.file = ArgumentCheck.nonNull(file, "file must not be null");
     }
 
     @Override

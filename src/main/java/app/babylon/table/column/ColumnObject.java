@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -49,7 +51,7 @@ public interface ColumnObject<T> extends Column
 
     public static <T> Builder<T> builder(ColumnName name, Class<T> clazz, Mode mode)
     {
-        Class<T> valueClass = app.babylon.lang.ArgumentCheck.nonNull(clazz);
+        Class<T> valueClass = ArgumentCheck.nonNull(clazz);
         if (valueClass.isPrimitive())
         {
             throw new IllegalArgumentException("Object builder requires non-primitive class: " + valueClass.getName());
@@ -157,7 +159,7 @@ public interface ColumnObject<T> extends Column
 
     default <S> ColumnObject<S> transform(Transformer<T, S> transformer)
     {
-        Transformer<T, S> xform = app.babylon.lang.ArgumentCheck.nonNull(transformer);
+        Transformer<T, S> xform = ArgumentCheck.nonNull(transformer);
 
         Class<S> valueClass = xform.valueClass();
         ColumnName transformedName = xform.columnName() == null ? getName() : xform.columnName();

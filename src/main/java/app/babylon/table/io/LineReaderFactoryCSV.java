@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 public class LineReaderFactoryCSV implements LineReaderFactory
 {
     @Override
-    public LineReader create(DataSource dataSource, ReadSettings readSettings) throws IOException
+    public LineReader create(DataSource dataSource, Csv.Settings readSettings) throws IOException
     {
         BufferedInputStream bufferedStream = toBufferedStream(dataSource.openStream());
         DataSourceProbe probe = DataSourceProbe.of(bufferedStream, dataSource.getName());
@@ -31,7 +31,7 @@ public class LineReaderFactoryCSV implements LineReaderFactory
             throw new IllegalArgumentException();
         }
 
-        if (readSettings instanceof ReadSettingsCSV readSettingCSV)
+        if (readSettings instanceof Csv.Settings readSettingCSV)
         {
             Charset charset = resolveCharset(readSettingCSV, probe);
             int bomLength = resolveBomLength(readSettingCSV, probe);
@@ -55,7 +55,7 @@ public class LineReaderFactoryCSV implements LineReaderFactory
         return (BufferedInputStream) instream;
     }
 
-    protected static Charset resolveCharset(ReadSettingsCSV options, DataSourceProbe probe)
+    protected static Charset resolveCharset(Csv.Settings options, DataSourceProbe probe)
     {
         if (options == null || probe == null)
         {
@@ -69,7 +69,7 @@ public class LineReaderFactoryCSV implements LineReaderFactory
         return options.hasCharset() ? options.getCharset() : StandardCharsets.UTF_8;
     }
 
-    protected static int resolveBomLength(ReadSettingsCSV options, DataSourceProbe probe)
+    protected static int resolveBomLength(Csv.Settings options, DataSourceProbe probe)
     {
         if (options == null || probe == null)
         {

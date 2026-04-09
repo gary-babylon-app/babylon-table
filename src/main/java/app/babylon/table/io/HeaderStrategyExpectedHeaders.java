@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -40,7 +42,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
             throw new IllegalArgumentException("Header scan limit must be at least 1.");
         }
         this.scanLimit = scanLimit;
-        this.expectedHeaders = new LinkedHashSet<>(app.babylon.lang.ArgumentCheck.nonNull(expectedHeaders));
+        this.expectedHeaders = new LinkedHashSet<>(ArgumentCheck.nonNull(expectedHeaders));
     }
 
     public int getScanLimit()
@@ -56,7 +58,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, ReadSettings readSettings) throws IOException
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
     {
         if (this.expectedHeaders.isEmpty())
         {

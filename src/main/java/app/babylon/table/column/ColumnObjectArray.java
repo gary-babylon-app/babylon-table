@@ -11,6 +11,7 @@
 package app.babylon.table.column;
 
 import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.table.ViewIndex;
 
 class ColumnObjectArray<T> implements ColumnObject<T>
@@ -32,9 +33,9 @@ class ColumnObjectArray<T> implements ColumnObject<T>
     ColumnObjectArray(ColumnName name, Column.Type type, int size, boolean isConstant, boolean isAllSet,
             boolean isNoneSet, Object[] values)
     {
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
-        this.type = app.babylon.lang.ArgumentCheck.nonNull(type);
-        this.values = app.babylon.lang.ArgumentCheck.nonNull(values);
+        this.name = ArgumentCheck.nonNull(name);
+        this.type = ArgumentCheck.nonNull(type);
+        this.values = ArgumentCheck.nonNull(values);
         this.size = ArgumentCheck.nonNegative(size);
         if (size > values.length)
         {

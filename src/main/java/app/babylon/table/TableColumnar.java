@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -156,7 +158,7 @@ public interface TableColumnar extends Table
 
     default public TableColumnar filter(RowFilter filter)
     {
-        RowFilter f = app.babylon.lang.ArgumentCheck.nonNull(filter);
+        RowFilter f = ArgumentCheck.nonNull(filter);
         java.util.function.IntPredicate predicate = f.bind(this);
         Selection selection = new Selection("filtered");
         for (int i = 0; i < getRowCount(); ++i)

@@ -1,10 +1,11 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.text.Strings;
 
 import java.util.Map;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -22,9 +23,9 @@ public class TransformSplit extends TransformBase
     public TransformSplit(ColumnName columnToSplit, String splitOn, ColumnName... splitColumnNames)
     {
         super(FUNCTION_NAME);
-        this.columnToSplit = app.babylon.lang.ArgumentCheck.nonNull(columnToSplit);
+        this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
         this.splitOn = ArgumentCheck.nonEmpty(splitOn);
-        this.splitColumnNames = app.babylon.lang.ArgumentCheck.nonNull(splitColumnNames);
+        this.splitColumnNames = ArgumentCheck.nonNull(splitColumnNames);
     }
 
     public static TransformSplit of(String[] params)

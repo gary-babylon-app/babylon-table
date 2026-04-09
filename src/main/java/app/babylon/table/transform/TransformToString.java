@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Map;
 
 import app.babylon.lang.Is;
@@ -17,14 +19,14 @@ public class TransformToString extends TransformBase
     public TransformToString(ColumnName... columnNames)
     {
         super(FUNCTION_NAME);
-        this.columnNames = app.babylon.lang.ArgumentCheck.nonNull(columnNames);
+        this.columnNames = ArgumentCheck.nonNull(columnNames);
     }
 
     public TransformToString(ColumnName columnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
         this.columnNames = new ColumnName[]
-        {app.babylon.lang.ArgumentCheck.nonNull(columnName)};
+        {ArgumentCheck.nonNull(columnName)};
         this.newColumnNames = (newColumnName != null) ? Map.of(columnName, newColumnName) : Map.of();
     }
 

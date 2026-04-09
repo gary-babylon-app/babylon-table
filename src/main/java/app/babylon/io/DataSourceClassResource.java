@@ -9,6 +9,8 @@
  */
 
 package app.babylon.io;
+
+import app.babylon.lang.ArgumentCheck;
 import java.io.InputStream;
 
 class DataSourceClassResource implements DataSource
@@ -18,7 +20,7 @@ class DataSourceClassResource implements DataSource
 
     DataSourceClassResource(Class<?> clazz, String name)
     {
-        this.clazz = app.babylon.lang.ArgumentCheck.nonNull(clazz, "clazz must not be null");
+        this.clazz = ArgumentCheck.nonNull(clazz, "clazz must not be null");
         if (name == null || name.isEmpty())
         {
             throw new IllegalArgumentException("name must not be empty");

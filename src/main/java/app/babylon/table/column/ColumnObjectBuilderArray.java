@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Objects;
 
 final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
@@ -25,13 +27,13 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
 
     ColumnObjectBuilderArray(ColumnName name, Class<T> valueClass)
     {
-        this(name, Column.Type.of(app.babylon.lang.ArgumentCheck.nonNull(valueClass)));
+        this(name, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
     }
 
     ColumnObjectBuilderArray(ColumnName name, Column.Type type)
     {
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
-        this.type = app.babylon.lang.ArgumentCheck.nonNull(type);
+        this.name = ArgumentCheck.nonNull(name);
+        this.type = ArgumentCheck.nonNull(type);
         this.size = 0;
         this.values = new Object[16];
         this.isConstant = true;

@@ -1,9 +1,10 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Map;
 import java.util.function.Function;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
@@ -49,6 +50,6 @@ abstract class TransformStringColumnsBase<T> extends TransformBase
     protected static <T> Function<CharSequence, T> resolveParser(Function<CharSequence, T> parser,
             Function<CharSequence, T> fallbackParser)
     {
-        return (parser != null) ? parser : app.babylon.lang.ArgumentCheck.nonNull(fallbackParser);
+        return (parser != null) ? parser : ArgumentCheck.nonNull(fallbackParser);
     }
 }

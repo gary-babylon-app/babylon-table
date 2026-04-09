@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -25,8 +27,8 @@ abstract public class ColumnObjectView<T> implements ColumnObject<T>
 
     ColumnObjectView(ColumnObject<T> original, ViewIndex rowIndex)
     {
-        this.rowIndex = app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
-        this.original = app.babylon.lang.ArgumentCheck.nonNull(original);
+        this.rowIndex = ArgumentCheck.nonNull(rowIndex);
+        this.original = ArgumentCheck.nonNull(original);
         if (this.original.isConstant())
         {
             this.isConstant = true;

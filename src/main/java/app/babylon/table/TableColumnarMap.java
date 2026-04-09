@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
@@ -38,7 +39,7 @@ class TableColumnarMap extends TableColumnarCommon
     TableColumnarMap(TableName tableName, TableDescription description, Column... columns)
     {
         super(description);
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(tableName);
+        this.name = ArgumentCheck.nonNull(tableName);
         ArgumentCheck.nonEmpty(columns);
 
         this.columnOrder = new ColumnName[columns.length];

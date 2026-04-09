@@ -10,6 +10,8 @@
 
 package app.babylon.table.selection;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.table.TableColumnar;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
@@ -56,7 +58,7 @@ public class Selections
 
     public static <T> Selection eq(ColumnObject<T> column, T value)
     {
-        ColumnObject<T> c = app.babylon.lang.ArgumentCheck.nonNull(column);
+        ColumnObject<T> c = ArgumentCheck.nonNull(column);
         Selection selection = new Selection(c.getName() + " == " + value);
         for (int i = 0; i < c.size(); ++i)
         {
@@ -68,7 +70,7 @@ public class Selections
 
     public static <T> Selection ne(ColumnObject<T> column, T value)
     {
-        ColumnObject<T> c = app.babylon.lang.ArgumentCheck.nonNull(column);
+        ColumnObject<T> c = ArgumentCheck.nonNull(column);
         Selection selection = new Selection(c.getName() + " != " + value);
         for (int i = 0; i < c.size(); ++i)
         {
@@ -80,8 +82,8 @@ public class Selections
 
     public static <T> Selection in(ColumnObject<T> column, T[] values)
     {
-        ColumnObject<T> c = app.babylon.lang.ArgumentCheck.nonNull(column);
-        T[] v = app.babylon.lang.ArgumentCheck.nonNull(values);
+        ColumnObject<T> c = ArgumentCheck.nonNull(column);
+        T[] v = ArgumentCheck.nonNull(values);
         Selection selection = new Selection(c.getName() + " in " + v);
         for (int i = 0; i < c.size(); ++i)
         {
@@ -105,8 +107,8 @@ public class Selections
 
     public static <T> Selection nin(ColumnObject<T> column, T[] values)
     {
-        ColumnObject<T> c = app.babylon.lang.ArgumentCheck.nonNull(column);
-        T[] v = app.babylon.lang.ArgumentCheck.nonNull(values);
+        ColumnObject<T> c = ArgumentCheck.nonNull(column);
+        T[] v = ArgumentCheck.nonNull(values);
         Selection selection = new Selection(c.getName() + " not in " + v);
         for (int i = 0; i < c.size(); ++i)
         {

@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -44,11 +46,10 @@ class TableColumnarView extends TableColumnarCommon
             ViewIndex rowIndex, ColumnName[] activeColumnNames)
     {
         super(tableDescription);
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
-        this.original = app.babylon.lang.ArgumentCheck.nonNull(original);
-        this.rowIndex = app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
-        this.activeColumnNames = Arrays.copyOf(app.babylon.lang.ArgumentCheck.nonNull(activeColumnNames),
-                activeColumnNames.length);
+        this.name = ArgumentCheck.nonNull(name);
+        this.original = ArgumentCheck.nonNull(original);
+        this.rowIndex = ArgumentCheck.nonNull(rowIndex);
+        this.activeColumnNames = Arrays.copyOf(ArgumentCheck.nonNull(activeColumnNames), activeColumnNames.length);
         this.columnViews = new ConcurrentHashMap<>();
     }
 

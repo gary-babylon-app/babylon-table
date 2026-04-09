@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Map;
@@ -22,7 +24,7 @@ public class TransformAbs extends TransformBase
     public TransformAbs(ColumnName x, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.columnName = app.babylon.lang.ArgumentCheck.nonNull(x);
+        this.columnName = ArgumentCheck.nonNull(x);
         this.newColumnName = (newColumnName == null) ? x : newColumnName;
     }
 

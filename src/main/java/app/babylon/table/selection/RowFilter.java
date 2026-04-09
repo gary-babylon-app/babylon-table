@@ -10,6 +10,8 @@
 
 package app.babylon.table.selection;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.table.TableColumnar;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnDouble;
@@ -34,7 +36,7 @@ public interface RowFilter
 
     default RowFilter and(RowFilter other)
     {
-        RowFilter right = app.babylon.lang.ArgumentCheck.nonNull(other);
+        RowFilter right = ArgumentCheck.nonNull(other);
         return table -> {
             IntPredicate leftPredicate = this.bind(table);
             IntPredicate rightPredicate = right.bind(table);
@@ -44,7 +46,7 @@ public interface RowFilter
 
     default RowFilter or(RowFilter other)
     {
-        RowFilter right = app.babylon.lang.ArgumentCheck.nonNull(other);
+        RowFilter right = ArgumentCheck.nonNull(other);
         return table -> {
             IntPredicate leftPredicate = this.bind(table);
             IntPredicate rightPredicate = right.bind(table);
@@ -62,8 +64,8 @@ public interface RowFilter
 
     static RowFilter of(ColumnName columnName, Predicate<Object> predicate)
     {
-        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
-        Predicate<Object> p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
+        ColumnName name = ArgumentCheck.nonNull(columnName);
+        Predicate<Object> p = ArgumentCheck.nonNull(predicate);
         return table -> {
             Column column = table.get(name);
             if (!(column instanceof ColumnObject<?> co))
@@ -77,8 +79,8 @@ public interface RowFilter
 
     static RowFilter of(ColumnName columnName, IntPredicate predicate)
     {
-        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
-        IntPredicate p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
+        ColumnName name = ArgumentCheck.nonNull(columnName);
+        IntPredicate p = ArgumentCheck.nonNull(predicate);
         return table -> {
             ColumnInt column = table.getInt(name);
             if (column == null)
@@ -92,8 +94,8 @@ public interface RowFilter
 
     static RowFilter of(ColumnName columnName, LongPredicate predicate)
     {
-        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
-        LongPredicate p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
+        ColumnName name = ArgumentCheck.nonNull(columnName);
+        LongPredicate p = ArgumentCheck.nonNull(predicate);
         return table -> {
             ColumnLong column = table.getLong(name);
             if (column == null)
@@ -107,8 +109,8 @@ public interface RowFilter
 
     static RowFilter of(ColumnName columnName, DoublePredicate predicate)
     {
-        ColumnName name = app.babylon.lang.ArgumentCheck.nonNull(columnName);
-        DoublePredicate p = app.babylon.lang.ArgumentCheck.nonNull(predicate);
+        ColumnName name = ArgumentCheck.nonNull(columnName);
+        DoublePredicate p = ArgumentCheck.nonNull(predicate);
         return table -> {
             ColumnDouble column = table.getDouble(name);
             if (column == null)

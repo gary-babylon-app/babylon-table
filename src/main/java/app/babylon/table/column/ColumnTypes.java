@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Locale;
@@ -29,7 +31,7 @@ public final class ColumnTypes
 
     static Column.Type of(Class<?> valueClass)
     {
-        Class<?> clazz = app.babylon.lang.ArgumentCheck.nonNull(valueClass);
+        Class<?> clazz = ArgumentCheck.nonNull(valueClass);
         Column.Type builtin = builtinOf(clazz);
         if (builtin != null)
         {
@@ -70,7 +72,7 @@ public final class ColumnTypes
 
         private ColumnTypeByClass(Class<?> valueClass)
         {
-            this.valueClass = app.babylon.lang.ArgumentCheck.nonNull(valueClass);
+            this.valueClass = ArgumentCheck.nonNull(valueClass);
             String simpleName = valueClass.getSimpleName();
             String name = simpleName.isEmpty() ? valueClass.getName() : simpleName;
             this.id = name.toLowerCase(Locale.ROOT);

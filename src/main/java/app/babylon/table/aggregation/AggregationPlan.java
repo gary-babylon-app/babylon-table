@@ -1,5 +1,7 @@
 package app.babylon.table.aggregation;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,12 +24,11 @@ import app.babylon.table.column.Columns;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Csv;
-import app.babylon.table.io.ReadSettingsCSV;
+import app.babylon.table.io.Csv.Settings;
 import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumerFactory;
 import app.babylon.table.io.RowConsumerResult;
 import app.babylon.table.io.RowKey;
-import app.babylon.table.transform.Transform;
 
 public class AggregationPlan
 {
@@ -125,15 +126,16 @@ public class AggregationPlan
 
     }
 
-    public static record AggregateSpec(ColumnName sourceColumnName, ColumnName outputColumnName, Aggregate aggregate) {
-        public AggregateSpec {
-            sourceColumnName = app.babylon.lang.ArgumentCheck.nonNull(sourceColumnName);
-            outputColumnName = app.babylon.lang.ArgumentCheck.nonNull(outputColumnName);
-            aggregate = app.babylon.lang.ArgumentCheck.nonNull(aggregate);
+    public static record AggregateSpec(ColumnName sourceColumnName, ColumnName outputColumnName, Aggregate aggregate)
+    {
+        public AggregateSpec
+        {
+            sourceColumnName = ArgumentCheck.nonNull(sourceColumnName);
+            outputColumnName = ArgumentCheck.nonNull(outputColumnName);
+            aggregate = ArgumentCheck.nonNull(aggregate);
         }
     }
 
-    private final List<Transform> transforms;
     private final List<ColumnName> groupByColumns;
     private final List<AggregateSpec> aggregateSpecs;
     private final Map<ColumnName, Column.Type> columnTypes;
@@ -141,7 +143,6 @@ public class AggregationPlan
 
     public AggregationPlan()
     {
-        this.transforms = new ArrayList<>();
         this.groupByColumns = new ArrayList<>();
         this.aggregateSpecs = new ArrayList<>();
         this.columnTypes = new LinkedHashMap<>();
@@ -159,42 +160,15 @@ public class AggregationPlan
         return this.outputTableName;
     }
 
-    public AggregationPlan withTransform(Transform transform)
-    {
-        if (transform != null)
-        {
-            this.transforms.add(transform);
-        }
-        return this;
-    }
-
-    public AggregationPlan withTransforms(Transform... transforms)
-    {
-        if (transforms != null)
-        {
-            for (Transform transform : transforms)
-            {
-                withTransform(transform);
-            }
-        }
-        return this;
-    }
-
-    public List<Transform> getTransforms()
-    {
-        return Collections.unmodifiableList(this.transforms);
-    }
-
     public AggregationPlan withColumnType(ColumnName columnName, Column.Type columnType)
     {
-        this.columnTypes.put(app.babylon.lang.ArgumentCheck.nonNull(columnName),
-                app.babylon.lang.ArgumentCheck.nonNull(columnType));
+        this.columnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
         return this;
     }
 
     public AggregationPlan withColumnType(ColumnName columnName, Class<?> valueClass)
     {
-        return withColumnType(columnName, Column.Type.of(app.babylon.lang.ArgumentCheck.nonNull(valueClass)));
+        return withColumnType(columnName, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
     }
 
     public Column.Type getColumnType(ColumnName columnName)
@@ -211,7 +185,7 @@ public class AggregationPlan
     {
         if (columnNames != null)
         {
-            this.groupByColumns.addAll(Arrays.asList(app.babylon.lang.ArgumentCheck.nonNull(columnNames)));
+            this.groupByColumns.addAll(Arrays.asList(ArgumentCheck.nonNull(columnNames)));
         }
         return this;
     }
@@ -240,11 +214,7 @@ public class AggregationPlan
     public TableColumnar execute(TableColumnar table)
     {
         validateForCurrentImplementation();
-        TableColumnar sourceTable = app.babylon.lang.ArgumentCheck.nonNull(table);
-        if (!this.transforms.isEmpty())
-        {
-            sourceTable = sourceTable.apply(this.transforms);
-        }
+        TableColumnar sourceTable = ArgumentCheck.nonNull(table);
 
         GroupBy grouped = sourceTable.groupBy(this.groupByColumns.toArray(new ColumnName[this.groupByColumns.size()]));
         Map<GroupKey, TableColumnar> groupedTables = grouped.getGroupedTables(new LinkedHashMap<>());
@@ -283,10 +253,10 @@ public class AggregationPlan
         return Tables.newTable(tableName, columns);
     }
 
-    public TableColumnar execute(DataSource dataSource, ReadSettingsCSV readSettings)
+    public TableColumnar execute(DataSource dataSource, Csv.Settings readSettings)
     {
         validateForCurrentImplementation();
-        ReadSettingsCSV effectiveReadSettings = readSettings == null ? new ReadSettingsCSV() : readSettings;
+        Csv.Settings effectiveReadSettings = readSettings == null ? new Csv.Settings() : readSettings;
         for (Map.Entry<ColumnName, Column.Type> entry : this.columnTypes.entrySet())
         {
             effectiveReadSettings.withColumnType(entry.getKey(), entry.getValue());

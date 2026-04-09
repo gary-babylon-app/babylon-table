@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Map;
 
 import app.babylon.lang.Is;
@@ -21,11 +23,11 @@ public class TransformCoalesce extends TransformBase
             ColumnName secondColumnName, ColumnName thirdColumnName)
     {
         super(FUNCTION_NAME);
-        this.newColumnName = app.babylon.lang.ArgumentCheck.nonNull(newColumnName);
+        this.newColumnName = ArgumentCheck.nonNull(newColumnName);
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
-        this.firstColumnName = app.babylon.lang.ArgumentCheck.nonNull(firstColumnName);
-        this.secondColumnName = app.babylon.lang.ArgumentCheck.nonNull(secondColumnName);
-        this.thirdColumnName = app.babylon.lang.ArgumentCheck.nonNull(thirdColumnName);
+        this.firstColumnName = ArgumentCheck.nonNull(firstColumnName);
+        this.secondColumnName = ArgumentCheck.nonNull(secondColumnName);
+        this.thirdColumnName = ArgumentCheck.nonNull(thirdColumnName);
     }
 
     public static TransformCoalesce of(String... params)

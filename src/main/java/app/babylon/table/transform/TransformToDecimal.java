@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.text.Strings;
 
 import java.math.BigDecimal;
@@ -8,7 +10,6 @@ import java.util.Collection;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.text.BigDecimals;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
@@ -126,8 +127,8 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
             Function<CharSequence, BigDecimal> parser, boolean toAbsolute)
     {
         super(FUNCTION_NAME, new ColumnName[]
-        {app.babylon.lang.ArgumentCheck.nonNull(columnName)}, new ColumnName[]
-        {app.babylon.lang.ArgumentCheck.nonNull(newColumnName)});
+        {ArgumentCheck.nonNull(columnName)}, new ColumnName[]
+        {ArgumentCheck.nonNull(newColumnName)});
         this.parser = resolveParser(parser, newTransformFunction(toAbsolute));
     }
     public static TransformToDecimal of(String s)

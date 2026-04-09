@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Map;
 
 import app.babylon.lang.Is;
@@ -24,8 +26,8 @@ public class TransformToInt extends TransformBase
     public TransformToInt(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.existingColumnName = app.babylon.lang.ArgumentCheck.nonNull(existingColumnName);
-        this.newColumnName = app.babylon.lang.ArgumentCheck.nonNull(newColumnName);
+        this.existingColumnName = ArgumentCheck.nonNull(existingColumnName);
+        this.newColumnName = ArgumentCheck.nonNull(newColumnName);
     }
 
     public static TransformToInt of(String... params)

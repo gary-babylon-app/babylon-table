@@ -10,9 +10,9 @@
 
 package app.babylon.table;
 
-import java.util.Arrays;
-
 import app.babylon.lang.ArgumentCheck;
+
+import java.util.Arrays;
 
 /**
  * Maps logical row positions in a view to row positions in the underlying data,
@@ -33,7 +33,7 @@ public interface ViewIndex
 
     static ViewIndex of(ViewIndex viewIndex)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(viewIndex);
+        ArgumentCheck.nonNull(viewIndex);
         return viewIndex.copy();
     }
 

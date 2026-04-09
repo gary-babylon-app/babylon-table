@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -19,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
@@ -125,10 +126,10 @@ public class Tables
     public static TableColumnar leftOuterJoin(TableColumnar left, TableColumnar right, ColumnName leftKey,
             ColumnName rightKey, ColumnName... rightColumnsToAdd)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(left);
-        app.babylon.lang.ArgumentCheck.nonNull(right);
-        app.babylon.lang.ArgumentCheck.nonNull(leftKey);
-        app.babylon.lang.ArgumentCheck.nonNull(rightKey);
+        ArgumentCheck.nonNull(left);
+        ArgumentCheck.nonNull(right);
+        ArgumentCheck.nonNull(leftKey);
+        ArgumentCheck.nonNull(rightKey);
         ArgumentCheck.nonEmpty(rightColumnsToAdd);
         return leftOuterJoin(left, right, new ColumnName[]
         {leftKey}, new ColumnName[]
@@ -138,8 +139,8 @@ public class Tables
     public static TableColumnar leftOuterJoin(TableColumnar left, TableColumnar right, ColumnName[] leftKeys,
             ColumnName[] rightKeys, ColumnName... rightColumnsToAdd)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(left);
-        app.babylon.lang.ArgumentCheck.nonNull(right);
+        ArgumentCheck.nonNull(left);
+        ArgumentCheck.nonNull(right);
         ArgumentCheck.nonEmpty(leftKeys);
         ArgumentCheck.nonEmpty(rightKeys);
         ArgumentCheck.nonEmpty(rightColumnsToAdd);
@@ -342,14 +343,14 @@ public class Tables
 
     public static TableColumnar newTableView(TableName viewTableName, TableColumnar table, ViewIndex rowIndex)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(table);
+        ArgumentCheck.nonNull(table);
         return new TableColumnarView(viewTableName, table, rowIndex);
     }
 
     public static TableColumnar newTableView(TableName viewTableName, TableDescription viewTableDescription,
             TableColumnar table, ViewIndex rowIndex)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(table);
+        ArgumentCheck.nonNull(table);
         return new TableColumnarView(viewTableName, viewTableDescription, table, rowIndex);
     }
 

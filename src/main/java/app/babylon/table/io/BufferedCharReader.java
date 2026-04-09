@@ -10,6 +10,8 @@
 
 package app.babylon.table.io;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
@@ -30,7 +32,7 @@ final class BufferedCharReader implements Closeable
 
     BufferedCharReader(Reader reader, int bufferSize)
     {
-        this.reader = app.babylon.lang.ArgumentCheck.nonNull(reader, "reader must not be null");
+        this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
         this.buffer = new char[Math.max(1, bufferSize)];
         this.position = 0;
         this.limit = 0;

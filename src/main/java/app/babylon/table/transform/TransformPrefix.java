@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
@@ -19,7 +21,7 @@ public class TransformPrefix extends TransformStringToString
     public TransformPrefix(String prefix, ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME, existingColumnName, newColumnName);
-        this.prefix = app.babylon.lang.ArgumentCheck.nonEmpty(prefix);
+        this.prefix = ArgumentCheck.nonEmpty(prefix);
     }
 
     public static TransformPrefix of(String... params)

@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
@@ -31,7 +32,7 @@ public class TransformToLocalDate extends TransformBase
 
     public TransformToLocalDate(Collection<ColumnName> columnNames)
     {
-        this(null, app.babylon.lang.ArgumentCheck.nonNull(columnNames.toArray(new ColumnName[columnNames.size()])));
+        this(null, ArgumentCheck.nonNull(columnNames.toArray(new ColumnName[columnNames.size()])));
     }
 
     public TransformToLocalDate(DateFormat format, ColumnName... columnNames)
@@ -46,10 +47,10 @@ public class TransformToLocalDate extends TransformBase
     {
         super(FUNCTION_NAME);
         this.columnNames = new ColumnName[]
-        {app.babylon.lang.ArgumentCheck.nonNull(columnName)};
+        {ArgumentCheck.nonNull(columnName)};
         this.format = format;
         this.newColumnNames = new ColumnName[]
-        {app.babylon.lang.ArgumentCheck.nonNull(newColumnName)};
+        {ArgumentCheck.nonNull(newColumnName)};
     }
 
     public static TransformToLocalDate of(String... params)

@@ -10,9 +10,10 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Arrays;
 
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 import app.babylon.table.ViewIndex;
 
@@ -33,7 +34,7 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
 
     ColumnByteBuilderArray(ColumnName name, int initialCapacity)
     {
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.name = ArgumentCheck.nonNull(name);
         this.bytes = new byte[ArgumentCheck.nonNegative(initialCapacity)];
         this.isSet = BitList.builder();
         this.size = 0;
@@ -120,9 +121,9 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         private ColumnByteStream(ColumnName name, byte[] bytes, BitList isSet, int size, boolean isAllSet,
                 boolean isNoneSet)
         {
-            this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
-            this.bytes = app.babylon.lang.ArgumentCheck.nonNull(bytes);
-            this.isSet = app.babylon.lang.ArgumentCheck.nonNull(isSet);
+            this.name = ArgumentCheck.nonNull(name);
+            this.bytes = ArgumentCheck.nonNull(bytes);
+            this.isSet = ArgumentCheck.nonNull(isSet);
             this.size = ArgumentCheck.nonNegative(size);
             if (size > bytes.length)
             {

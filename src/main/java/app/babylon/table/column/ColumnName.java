@@ -11,6 +11,7 @@
 package app.babylon.table.column;
 
 import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.lang.Is;
 import app.babylon.text.Strings;
 

@@ -10,6 +10,8 @@
 
 package app.babylon.table.grouping;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Arrays;
 
 final class GroupCategoryCode
@@ -41,7 +43,7 @@ final class GroupCategoryCode
 
     static GroupCategoryCode of(int[] values)
     {
-        return new GroupCategoryCode(app.babylon.lang.ArgumentCheck.nonNull(values));
+        return new GroupCategoryCode(ArgumentCheck.nonNull(values));
     }
 
     @Override

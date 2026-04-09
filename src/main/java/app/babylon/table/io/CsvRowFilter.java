@@ -30,7 +30,7 @@ final class CsvRowFilter
     final Set<String>[] excludeFail;
 
     @SuppressWarnings("unchecked")
-    CsvRowFilter(ReadSettingsCSV settings, ColumnName[] selectedColumns)
+    CsvRowFilter(Csv.Settings settings, ColumnName[] selectedColumns)
     {
         this.includeFilters = (settings.hasRowIncludeFilters()) ? new Predicate[selectedColumns.length] : null;
         this.excludeFilters = (settings.hasRowExcludeFilters()) ? new Predicate[selectedColumns.length] : null;

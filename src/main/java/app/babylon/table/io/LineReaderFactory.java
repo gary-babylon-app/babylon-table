@@ -19,5 +19,5 @@ import java.io.IOException;
  */
 public interface LineReaderFactory
 {
-    LineReader create(DataSource dataSource, ReadSettings readSettings) throws IOException;
+    LineReader create(DataSource dataSource, Csv.Settings readSettings) throws IOException;
 }

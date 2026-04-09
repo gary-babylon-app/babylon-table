@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -49,7 +51,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
 
     public static <T> Builder<T> builder(ColumnName name, Class<T> clazz)
     {
-        Class<T> valueClass = app.babylon.lang.ArgumentCheck.nonNull(clazz);
+        Class<T> valueClass = ArgumentCheck.nonNull(clazz);
         if (valueClass.isPrimitive())
         {
             throw new IllegalArgumentException(

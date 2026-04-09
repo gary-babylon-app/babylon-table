@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
@@ -13,7 +15,7 @@ public class TransformAfter extends TransformStringToString
     public TransformAfter(ColumnName existingColumnName, ColumnName newColumnName, String delimiter)
     {
         super(FUNCTION_NAME, existingColumnName, newColumnName);
-        this.delimiter = app.babylon.lang.ArgumentCheck.nonEmpty(delimiter);
+        this.delimiter = ArgumentCheck.nonEmpty(delimiter);
     }
 
     public static TransformAfter of(String... params)

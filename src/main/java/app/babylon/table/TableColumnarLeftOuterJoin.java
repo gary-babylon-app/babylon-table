@@ -10,6 +10,8 @@
 
 package app.babylon.table;
 
+import app.babylon.lang.ArgumentCheck;
+
 import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,11 +35,11 @@ class TableColumnarLeftOuterJoin extends TableColumnarCommon
             ViewIndex rowIndex, ColumnName... rightColumnsToAdd)
     {
         super(description);
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
-        this.left = app.babylon.lang.ArgumentCheck.nonNull(left);
-        this.right = app.babylon.lang.ArgumentCheck.nonNull(right);
-        this.rowIndex = app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
-        this.rightColumnsToAdd = app.babylon.lang.ArgumentCheck.nonNull(rightColumnsToAdd);
+        this.name = ArgumentCheck.nonNull(name);
+        this.left = ArgumentCheck.nonNull(left);
+        this.right = ArgumentCheck.nonNull(right);
+        this.rowIndex = ArgumentCheck.nonNull(rowIndex);
+        this.rightColumnsToAdd = ArgumentCheck.nonNull(rightColumnsToAdd);
         this.rightColumnNames = java.util.Set.of(rightColumnsToAdd);
         this.rightColumnViews = new ConcurrentHashMap<>();
     }

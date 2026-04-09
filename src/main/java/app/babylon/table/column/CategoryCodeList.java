@@ -10,9 +10,9 @@
 
 package app.babylon.table.column;
 
-import java.util.Arrays;
-
 import app.babylon.lang.ArgumentCheck;
+
+import java.util.Arrays;
 
 /**
  * Stores category codes as a compact immutable integer sequence for
@@ -176,7 +176,7 @@ public interface CategoryCodeList
 
             private ArrayByte(int[] values, int size)
             {
-                app.babylon.lang.ArgumentCheck.nonNull(values);
+                ArgumentCheck.nonNull(values);
                 this.size = ArgumentCheck.nonNegative(size);
                 if (this.size > values.length)
                 {
@@ -239,7 +239,7 @@ public interface CategoryCodeList
 
             private ArrayChar(int[] values, int size)
             {
-                app.babylon.lang.ArgumentCheck.nonNull(values);
+                ArgumentCheck.nonNull(values);
                 this.size = ArgumentCheck.nonNegative(size);
                 if (this.size > values.length)
                 {
@@ -302,7 +302,7 @@ public interface CategoryCodeList
 
             private ArrayInt(int[] values, int size)
             {
-                app.babylon.lang.ArgumentCheck.nonNull(values);
+                ArgumentCheck.nonNull(values);
                 this.size = ArgumentCheck.nonNegative(size);
                 if (this.size > values.length)
                 {

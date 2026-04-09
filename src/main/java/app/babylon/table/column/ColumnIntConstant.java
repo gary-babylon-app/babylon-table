@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
+
 import app.babylon.table.ViewIndex;
 
 class ColumnIntConstant implements ColumnInt
@@ -26,7 +28,7 @@ class ColumnIntConstant implements ColumnInt
 
     ColumnIntConstant(ColumnName name, int value, int size, boolean isSet)
     {
-        this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        this.name = ArgumentCheck.nonNull(name);
         this.value = value;
         this.size = size;
         this.isSet = isSet;
@@ -73,7 +75,7 @@ class ColumnIntConstant implements ColumnInt
     @Override
     public Column view(ViewIndex rowIndex)
     {
-        app.babylon.lang.ArgumentCheck.nonNull(rowIndex);
+        ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
             return new ColumnIntConstant(this.name, this.value, rowIndex.size(), this.isSet);

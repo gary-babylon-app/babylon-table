@@ -5,11 +5,34 @@
 
     <groupId>app.babylon</groupId>
     <artifactId>babylon-table</artifactId>
-    <version>0.1.3</version>
+    <version>0.1.4-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>babylon-table</name>
     <description>Java columnar table library for typed data processing, table transforms, filtering, grouping, aggregation, and efficient CSV ingestion, with support for both in-memory workflows and streaming-style execution patterns.</description>
+    <url>https://github.com/gary-babylon-app/babylon-table</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>Gary Kennedy</name>
+            <email>gary@babylon.app</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <url>https://github.com/gary-babylon-app/babylon-table</url>
+        <connection>scm:git:https://github.com/gary-babylon-app/babylon-table.git</connection>
+        <developerConnection>scm:git:https://github.com/gary-babylon-app/babylon-table.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

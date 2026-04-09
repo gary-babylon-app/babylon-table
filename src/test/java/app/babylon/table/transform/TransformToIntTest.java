@@ -8,16 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.TableColumnar;
+import app.babylon.table.TableDescription;
+import app.babylon.table.TableName;
+import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.table.TableColumnar;
-import app.babylon.table.TableDescription;
-import app.babylon.table.TableName;
-import app.babylon.table.Tables;
-import app.babylon.table.transform.Transform;
 
 class TransformToIntTest
 {

@@ -25,10 +25,10 @@ final class LineReaderCSV implements LineReader
     private static final char LF = '\n';
 
     private final BufferedCharReader reader;
-    private final Csv.Settings settings;
+    private final Csv.ReadSettings settings;
     private final RowBuffer current;
 
-    protected LineReaderCSV(BufferedInputStream instream, Csv.Settings options, Charset charset, int bomLength)
+    protected LineReaderCSV(BufferedInputStream instream, Csv.ReadSettings options, Charset charset, int bomLength)
     {
         this.settings = ArgumentCheck.nonNull(options, "options must not be null");
         this.reader = createReader(instream, charset, bomLength);
@@ -48,7 +48,7 @@ final class LineReaderCSV implements LineReader
     }
 
     @Override
-    public Csv.Settings getSettings()
+    public Csv.ReadSettings getSettings()
     {
         return this.settings;
     }

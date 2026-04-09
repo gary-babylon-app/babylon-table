@@ -15,7 +15,7 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.Csv;
 import app.babylon.table.io.HeaderStrategyAuto;
-import app.babylon.table.io.Csv.Settings;
+import app.babylon.table.io.RowConsumerTableCreator;
 
 class AggregationPlanTest
 {
@@ -73,7 +73,7 @@ class AggregationPlanTest
                 .withAggregate(TEMPERATURE, TEMPERATURE_MEAN, Aggregate.MEAN)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MAX, Aggregate.MAX);
 
-        Csv.Settings readSettings = new Csv.Settings().withSeparator(';')
+        Csv.ReadSettings readSettings = new Csv.ReadSettings().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE);
 
@@ -94,7 +94,6 @@ class AggregationPlanTest
         assertEquals(7.0d, table.getDouble(TEMPERATURE_MIN).get(1));
         assertEquals(7.0d, table.getDouble(TEMPERATURE_MEAN).get(1));
         assertEquals(7.0d, table.getDouble(TEMPERATURE_MAX).get(1));
-        assertEquals(Column.Type.of(double.class), readSettings.getColumnType(TEMPERATURE));
     }
 
     @Test
@@ -114,7 +113,7 @@ class AggregationPlanTest
                 .withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
                 .withAggregate(HUMIDITY, MAX_HUMIDITY, Aggregate.MAX);
 
-        Csv.Settings readSettings = new Csv.Settings().withSeparator(';')
+        Csv.ReadSettings readSettings = new Csv.ReadSettings().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE)
                 .withColumnRename(COLUMN_3, HUMIDITY);
@@ -150,7 +149,7 @@ class AggregationPlanTest
                 .withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, TEMPERATURE_MEAN, Aggregate.MEAN);
 
-        Csv.Settings readSettings = new Csv.Settings().withSeparator(';')
+        Csv.ReadSettings readSettings = new Csv.ReadSettings().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, COUNTRY)
                 .withColumnRename(COLUMN_3, TEMPERATURE);
@@ -212,7 +211,8 @@ class AggregationPlanTest
 
         TableColumnar streamingResult = plan.execute(streamingSource,
                 newReadSettings(STATION, COUNTRY, TEMPERATURE, HUMIDITY));
-        TableColumnar parsedTable = Csv.read(inMemorySource, newReadSettings(STATION, COUNTRY, TEMPERATURE, HUMIDITY));
+        TableColumnar parsedTable = Csv.read(inMemorySource, newReadSettings(STATION, COUNTRY, TEMPERATURE, HUMIDITY),
+                RowConsumerTableCreator.factory(plan.getColumnTypes()));
         TableColumnar inMemoryResult = plan.execute(parsedTable);
 
         assertEquals(streamingResult.getName(), inMemoryResult.getName());
@@ -237,12 +237,10 @@ class AggregationPlanTest
         }
     }
 
-    private static Csv.Settings newReadSettings(ColumnName station, ColumnName country, ColumnName temperature,
+    private static Csv.ReadSettings newReadSettings(ColumnName station, ColumnName country, ColumnName temperature,
             ColumnName humidity)
     {
-        return new Csv.Settings().withSeparator(',').withHeaderStrategy(new HeaderStrategyAuto())
-                .withColumnType(station, String.class).withColumnType(country, String.class)
-                .withColumnType(temperature, double.class).withColumnType(humidity, double.class);
+        return new Csv.ReadSettings().withSeparator(',').withHeaderStrategy(new HeaderStrategyAuto());
     }
 
     private static Map<String, SummaryRow> toSummaryRows(TableColumnar table, ColumnName station, ColumnName country,

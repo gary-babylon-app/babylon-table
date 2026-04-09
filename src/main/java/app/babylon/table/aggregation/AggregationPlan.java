@@ -1,7 +1,5 @@
 package app.babylon.table.aggregation;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import app.babylon.io.DataSource;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
@@ -24,7 +23,6 @@ import app.babylon.table.column.Columns;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Csv;
-import app.babylon.table.io.Csv.Settings;
 import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumerFactory;
 import app.babylon.table.io.RowConsumerResult;
@@ -253,14 +251,10 @@ public class AggregationPlan
         return Tables.newTable(tableName, columns);
     }
 
-    public TableColumnar execute(DataSource dataSource, Csv.Settings readSettings)
+    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings readSettings)
     {
         validateForCurrentImplementation();
-        Csv.Settings effectiveReadSettings = readSettings == null ? new Csv.Settings() : readSettings;
-        for (Map.Entry<ColumnName, Column.Type> entry : this.columnTypes.entrySet())
-        {
-            effectiveReadSettings.withColumnType(entry.getKey(), entry.getValue());
-        }
+        Csv.ReadSettings effectiveReadSettings = readSettings == null ? new Csv.ReadSettings() : readSettings;
         RowConsumerFactory<TableColumnar> rowConsumerFactory = (options, headerDetection) -> {
             String[] selectedHeaders = headerDetection.getSelectedHeaders();
             int[] groupByPositions = new int[this.groupByColumns.size()];

@@ -40,7 +40,8 @@ public class HeaderStrategyWidestNonEmptyRow implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings)
+            throws IOException
     {
         List<RowBuffer> scannedRows = new ArrayList<>();
         int headerRowIndex = -1;

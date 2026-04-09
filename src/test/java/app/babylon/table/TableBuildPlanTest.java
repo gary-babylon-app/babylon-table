@@ -84,7 +84,8 @@ class TableBuildPlanTest
                 xyz,20.0
                 """;
 
-        Csv.Settings settings = new Csv.Settings().withSeparator(',').withHeaderStrategy(new HeaderStrategyAuto());
+        Csv.ReadSettings settings = new Csv.ReadSettings().withSeparator(',')
+                .withHeaderStrategy(new HeaderStrategyAuto());
         TableBuildPlan plan = new TableBuildPlan().withOutputTableName(TableName.of("BuiltFromCsv"))
                 .withColumnType(AMOUNT, double.class).withTransform(new TransformToUpperCase(CODE));
 
@@ -95,6 +96,5 @@ class TableBuildPlanTest
         assertEquals("XYZ", table.getString(CODE).get(1));
         assertEquals(10.5d, table.getDouble(AMOUNT).get(0));
         assertEquals(20.0d, table.getDouble(AMOUNT).get(1));
-        assertEquals(null, settings.getColumnType(AMOUNT));
     }
 }

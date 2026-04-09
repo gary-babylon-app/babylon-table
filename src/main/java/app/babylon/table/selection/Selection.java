@@ -10,10 +10,9 @@
 
 package app.babylon.table.selection;
 
-import app.babylon.lang.ArgumentCheck;
-
-import java.util.Objects;
 import java.util.BitSet;
+
+import app.babylon.lang.ArgumentCheck;
 
 public class Selection
 {

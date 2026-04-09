@@ -135,10 +135,10 @@ public class TableBuildPlan
         return apply(ArgumentCheck.nonNull(table));
     }
 
-    public TableColumnar execute(DataSource dataSource, Csv.Settings settings)
+    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings settings)
     {
         ArgumentCheck.nonNull(dataSource);
-        Csv.Settings effectiveSettings = settings == null ? new Csv.Settings() : settings;
+        Csv.ReadSettings effectiveSettings = settings == null ? new Csv.ReadSettings() : settings;
         TableColumnar parsed = Csv.read(dataSource, effectiveSettings,
                 RowConsumerTableCreator.factory(this.columnTypes));
         return apply(parsed);

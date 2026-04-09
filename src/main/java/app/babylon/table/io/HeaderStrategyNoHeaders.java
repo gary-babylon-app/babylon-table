@@ -47,7 +47,8 @@ public class HeaderStrategyNoHeaders implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings)
+            throws IOException
     {
         int maxWidth = 0;
         int rowsScanned = 0;

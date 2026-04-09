@@ -10,8 +10,12 @@
 
 package app.babylon.table.grouping;
 
-import app.babylon.lang.ArgumentCheck;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
@@ -20,10 +24,6 @@ import app.babylon.table.ViewIndex;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 
 public final class GroupBys
 {
@@ -179,7 +179,7 @@ public final class GroupBys
             TableColumnar groupTable = Tables.newTableView(name, desc, table, rowIndex);
             groupTables.put(e.getKey(), groupTable);
         }
-        return new GroupBy(groupTypes, groupNames, groupTables);
+        return new GroupBy(groupTables);
     }
 
     private static final class GroupingSpec

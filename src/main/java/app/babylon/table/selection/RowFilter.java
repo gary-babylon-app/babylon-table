@@ -10,8 +10,12 @@
 
 package app.babylon.table.selection;
 
-import app.babylon.lang.ArgumentCheck;
+import java.util.function.DoublePredicate;
+import java.util.function.IntPredicate;
+import java.util.function.LongPredicate;
+import java.util.function.Predicate;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnDouble;
@@ -19,11 +23,6 @@ import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import java.util.Objects;
-import java.util.function.DoublePredicate;
-import java.util.function.IntPredicate;
-import java.util.function.LongPredicate;
-import java.util.function.Predicate;
 
 /**
  * Defines a reusable row filter that binds to a table and evaluates rows by

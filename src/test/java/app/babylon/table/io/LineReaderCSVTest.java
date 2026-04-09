@@ -29,7 +29,7 @@ public class LineReaderCSVTest
         String csv = "A,B\r\n1,\"hello\r\nworld\"\r\n2,x\r\n";
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try (LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new Csv.Settings()))
+        try (LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new Csv.ReadSettings()))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -50,7 +50,7 @@ public class LineReaderCSVTest
         String csv = "A,B,C\n1,2,3\n4,5,6\n";
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try (LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new Csv.Settings()))
+        try (LineReader reader = factory.create(TestDataSources.fromString(csv, "Test"), new Csv.ReadSettings()))
         {
             assertTrue(reader.next());
             assertTrue(reader.next());
@@ -71,7 +71,7 @@ public class LineReaderCSVTest
         DataSource dataSource = TestDataSources.fromBytes(utf8BomCsv, "Test");
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try (LineReader reader = factory.create(dataSource, new Csv.Settings()))
+        try (LineReader reader = factory.create(dataSource, new Csv.ReadSettings()))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -96,7 +96,7 @@ public class LineReaderCSVTest
         DataSource dataSource = TestDataSources.fromBytes(out.toByteArray(), "Test");
 
         LineReaderFactory factory = new LineReaderFactoryCSV();
-        try (LineReader reader = factory.create(dataSource, new Csv.Settings()))
+        try (LineReader reader = factory.create(dataSource, new Csv.ReadSettings()))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -119,7 +119,7 @@ public class LineReaderCSVTest
         out.write(body);
 
         DataSource dataSource = TestDataSources.fromBytes(out.toByteArray(), "fixed-width.txt");
-        Csv.Settings settings = new Csv.Settings().withFixedWidths(new int[]
+        Csv.ReadSettings settings = new Csv.ReadSettings().withFixedWidths(new int[]
         {4, 4});
 
         LineReaderFactory factory = new LineReaderFactoryCSV();

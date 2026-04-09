@@ -29,7 +29,7 @@ public interface HeaderStrategy
         return Csv.DEFAULT_HEADER_SCAN_LIMIT;
     }
 
-    default HeaderDetection detect(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
+    default HeaderDetection detect(RowStreamMarkable rowStream, Csv.ReadSettings readSettings) throws IOException
     {
         HeaderDetection foundDetection = detectFoundHeaders(rowStream, readSettings);
         if (foundDetection.isSyntheticHeaders())
@@ -37,8 +37,8 @@ public interface HeaderStrategy
             return foundDetection;
         }
 
-        Collection<ColumnName> requestedHeaders = readSettings.getRequestedHeaders(new ArrayList<>());
-        if (requestedHeaders.isEmpty())
+        Collection<ColumnName> selectedColumns = readSettings.getSelectedColumns(new ArrayList<>());
+        if (selectedColumns.isEmpty())
         {
             return foundDetection;
         }
@@ -53,7 +53,7 @@ public interface HeaderStrategy
             {
                 continue;
             }
-            if (requestedHeaders.contains(ColumnName.of(headerFound)))
+            if (selectedColumns.contains(ColumnName.of(headerFound)))
             {
                 selectedHeaders.add(headerFound);
                 selectedPositions.add(i);
@@ -63,7 +63,7 @@ public interface HeaderStrategy
                 toIntArray(selectedPositions));
     }
 
-    HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException;
+    HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings) throws IOException;
 
     private static int[] toIntArray(List<Integer> values)
     {

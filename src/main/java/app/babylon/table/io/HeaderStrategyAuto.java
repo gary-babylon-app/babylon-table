@@ -11,14 +11,11 @@
 package app.babylon.table.io;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.transform.DateFormatInference;
 
@@ -50,7 +47,8 @@ public class HeaderStrategyAuto implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.Settings readSettings) throws IOException
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings)
+            throws IOException
     {
         List<RowBuffer> scannedRows = new ArrayList<>();
         while (scannedRows.size() < this.scanLimit && rowStream.next())
@@ -127,14 +125,14 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return detectHeaderRowIndex(rows, null);
     }
 
-    static int detectHeaderRowIndex(List<RowBuffer> rows, Csv.Settings readSettings)
+    static int detectHeaderRowIndex(List<RowBuffer> rows, Csv.ReadSettings readSettings)
     {
         if (rows == null || rows.isEmpty())
         {
             return -1;
         }
 
-        Collection<ColumnName> requestedHeaders = requestedHeaders(readSettings);
+        Collection<ColumnName> selectedColumns = selectedColumns(readSettings);
 
         int bestIndex = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -147,8 +145,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
             }
             double score = headerScore(row);
             score += uniquenessContrastBonus(rows, i);
-            score += requestedHeaderBonus(row, requestedHeaders);
-            score += nextRowTypeCompatibilityBonus(rows, i, readSettings);
+            score += selectedColumnBonus(row, selectedColumns);
             if (score > bestScore)
             {
                 bestScore = score;
@@ -234,9 +231,9 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return distinct.size() / (double) nonBlank;
     }
 
-    private static double requestedHeaderBonus(RowBuffer row, Collection<ColumnName> requestedHeaders)
+    private static double selectedColumnBonus(RowBuffer row, Collection<ColumnName> selectedColumns)
     {
-        if (row == null || row.fieldCount() == 0 || requestedHeaders == null || requestedHeaders.isEmpty())
+        if (row == null || row.fieldCount() == 0 || selectedColumns == null || selectedColumns.isEmpty())
         {
             return 0.0;
         }
@@ -252,7 +249,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
                 continue;
             }
             ++nonBlank;
-            if (requestedHeaders.contains(ColumnName.of(value)))
+            if (selectedColumns.contains(ColumnName.of(value)))
             {
                 ++matchedCount;
             }
@@ -263,97 +260,17 @@ public class HeaderStrategyAuto implements HeaderStrategy
         }
 
         double rowMatchRatio = matchedCount / (double) nonBlank;
-        double requestedMatchRatio = matchedCount / (double) Math.max(1, requestedHeaders.size());
-        return 0.75 * rowMatchRatio + 0.50 * requestedMatchRatio;
+        double selectedMatchRatio = matchedCount / (double) Math.max(1, selectedColumns.size());
+        return 0.75 * rowMatchRatio + 0.50 * selectedMatchRatio;
     }
 
-    private static double nextRowTypeCompatibilityBonus(List<RowBuffer> rows, int rowIndex, Csv.Settings readSettings)
-    {
-        if (readSettings == null || rowIndex + 1 >= rows.size())
-        {
-            return 0.0;
-        }
-
-        RowBuffer headerRow = rows.get(rowIndex);
-        RowBuffer nextRow = rows.get(rowIndex + 1);
-        if (headerRow == null || nextRow == null || headerRow.fieldCount() == 0 || nextRow.fieldCount() == 0)
-        {
-            return 0.0;
-        }
-
-        int typedChecks = 0;
-        int typedMatches = 0;
-        int width = Math.min(headerRow.fieldCount(), nextRow.fieldCount());
-        for (int i = 0; i < width; ++i)
-        {
-            String headerValue = strip(headerRow.getString(i));
-            if (headerValue.isEmpty())
-            {
-                continue;
-            }
-            Column.Type columnType = readSettings.getColumnType(ColumnName.of(headerValue));
-            if (columnType == null)
-            {
-                continue;
-            }
-            ++typedChecks;
-            String nextValue = strip(nextRow.getString(i));
-            if (matchesType(nextValue, columnType))
-            {
-                ++typedMatches;
-            }
-        }
-        if (typedChecks == 0)
-        {
-            return 0.0;
-        }
-        return 1.10 * (typedMatches / (double) typedChecks);
-    }
-
-    private static Collection<ColumnName> requestedHeaders(Csv.Settings readSettings)
+    private static Collection<ColumnName> selectedColumns(Csv.ReadSettings readSettings)
     {
         if (readSettings == null)
         {
             return List.of();
         }
-        return readSettings.getRequestedHeaders(new ArrayList<>());
+        return readSettings.getSelectedColumns(new ArrayList<>());
     }
 
-    private static boolean matchesType(String value, Column.Type columnType)
-    {
-        if (value == null || value.isEmpty())
-        {
-            return false;
-        }
-        if (Column.Type.of(String.class).equals(columnType))
-        {
-            return true;
-        }
-        if (Column.Type.of(double.class).equals(columnType) || Column.Type.of(Double.class).equals(columnType))
-        {
-            return DateFormatInference.isStrictInteger(value) || DateFormatInference.isStrictDecimal(value);
-        }
-        if (Column.Type.of(int.class).equals(columnType) || Column.Type.of(Integer.class).equals(columnType))
-        {
-            return DateFormatInference.isStrictInteger(value);
-        }
-        if (Column.Type.of(long.class).equals(columnType) || Column.Type.of(Long.class).equals(columnType))
-        {
-            return DateFormatInference.isStrictInteger(value);
-        }
-        if (Column.Type.of(BigDecimal.class).equals(columnType))
-        {
-            return DateFormatInference.isStrictInteger(value) || DateFormatInference.isStrictDecimal(value);
-        }
-        if (Column.Type.of(java.time.LocalDate.class).equals(columnType))
-        {
-            return DateFormatInference.isLikelyDate(value);
-        }
-        return false;
-    }
-
-    private static String strip(String value)
-    {
-        return value == null ? "" : value.strip();
-    }
 }

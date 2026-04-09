@@ -10,10 +10,8 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.column.Transformer;
-import app.babylon.table.ViewIndex;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+
+import app.babylon.table.ViewIndex;
 
 class ColumnCategoricalTransformTest
 {

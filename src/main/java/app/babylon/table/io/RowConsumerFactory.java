@@ -16,5 +16,5 @@ package app.babylon.table.io;
  */
 public interface RowConsumerFactory<T>
 {
-    RowConsumerResult<T> create(Csv.Settings options, HeaderDetection headerDetection);
+    RowConsumerResult<T> create(Csv.ReadSettings options, HeaderDetection headerDetection);
 }

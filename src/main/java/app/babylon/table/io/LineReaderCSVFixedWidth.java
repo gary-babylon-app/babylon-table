@@ -26,10 +26,10 @@ final class LineReaderCSVFixedWidth implements LineReader
 
     private final BufferedCharReader reader;
     private final int[] fixedWidths;
-    private final Csv.Settings settings;
+    private final Csv.ReadSettings settings;
     private final RowFixedWidth current;
 
-    protected LineReaderCSVFixedWidth(BufferedInputStream instream, Csv.Settings settings, Charset charset,
+    protected LineReaderCSVFixedWidth(BufferedInputStream instream, Csv.ReadSettings settings, Charset charset,
             int bomLength)
     {
         ArgumentCheck.nonNull(settings, "settings must not be null");
@@ -146,7 +146,7 @@ final class LineReaderCSVFixedWidth implements LineReader
     }
 
     @Override
-    public Csv.Settings getSettings()
+    public Csv.ReadSettings getSettings()
     {
         return this.settings;
     }

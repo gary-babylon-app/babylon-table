@@ -8,13 +8,12 @@ import java.math.BigDecimal;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.column.ColumnCategorical;
-import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
-import app.babylon.table.transform.Transform;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 
 public class TransformCoalesceTest
 {

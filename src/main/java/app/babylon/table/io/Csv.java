@@ -10,47 +10,39 @@
 
 package app.babylon.table.io;
 
-import app.babylon.lang.ArgumentCheck;
-
-import app.babylon.io.DataSource;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
-import app.babylon.table.TableException;
-import app.babylon.table.TableColumnar;
-import app.babylon.table.TableName;
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnName;
+import app.babylon.io.DataSource;
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
+import app.babylon.table.TableColumnar;
+import app.babylon.table.TableException;
+import app.babylon.table.TableName;
+import app.babylon.table.column.ColumnName;
+import app.babylon.text.Strings;
 
 public class Csv
 {
     static final int DEFAULT_HEADER_SCAN_LIMIT = 25;
 
-    public static class Settings extends CsvSettingsBase
+    public static class ReadSettings
     {
-        public static final Predicate<String> NON_EMPTY = s -> {
-            if (s == null)
-            {
-                return false;
-            }
-            for (int i = 0; i < s.length(); ++i)
-            {
-                if (!Character.isWhitespace(s.charAt(i)))
-                {
-                    return true;
-                }
-            }
-            return false;
-        };
-
-        public static final Predicate<String> ISIN = regex(Pattern.compile("(^[A-Z][A-Z][A-Z0-9]{10})"));
-
+        Map<ColumnName, ColumnName> renameHeaders;
+        Set<ColumnName> selectedColumns;
+        LineReaderFactory lineReaderFactory;
+        TableName tableName;
+        ColumnName resourceName;
+        HeaderStrategy headerStrategy;
+        boolean stripping;
         char separator;
         Map<ColumnName, Predicate<String>> rowIncludeFilters;
         Map<ColumnName, Predicate<String>> rowExcludeFilters;
@@ -58,9 +50,15 @@ public class Csv
         Charset charset;
         boolean autoDetectEncoding;
 
-        public Settings()
+        public ReadSettings()
         {
-            super();
+            this.renameHeaders = new HashMap<>();
+            this.selectedColumns = new LinkedHashSet<>();
+            this.lineReaderFactory = null;
+            this.tableName = null;
+            this.resourceName = null;
+            this.headerStrategy = new HeaderStrategyAuto(Csv.DEFAULT_HEADER_SCAN_LIMIT);
+            this.stripping = true;
             this.separator = ',';
             this.rowIncludeFilters = new HashMap<>();
             this.rowExcludeFilters = new HashMap<>();
@@ -69,38 +67,25 @@ public class Csv
             this.autoDetectEncoding = true;
         }
 
-        public Settings(Settings base)
-        {
-            super(base);
-            this.separator = base.separator;
-            this.rowIncludeFilters = new HashMap<>(base.rowIncludeFilters);
-            this.rowExcludeFilters = new HashMap<>(base.rowExcludeFilters);
-            this.fixedWidths = base.fixedWidths == null
-                    ? null
-                    : Arrays.copyOf(base.fixedWidths, base.fixedWidths.length);
-            this.charset = base.charset;
-            this.autoDetectEncoding = base.autoDetectEncoding;
-        }
-
-        public Settings withCharset(Charset charset)
+        public ReadSettings withCharset(Charset charset)
         {
             this.charset = charset;
             return this;
         }
 
-        public Settings withSeparator(char separator)
+        public ReadSettings withSeparator(char separator)
         {
             this.separator = separator;
             return this;
         }
 
-        public Settings withAutoDetectEncoding(boolean autoDetectEncoding)
+        public ReadSettings withAutoDetectEncoding(boolean autoDetectEncoding)
         {
             this.autoDetectEncoding = autoDetectEncoding;
             return this;
         }
 
-        public Settings withRowIncludeFilter(ColumnName x, Predicate<String> filter)
+        public ReadSettings withRowIncludeFilter(ColumnName x, Predicate<String> filter)
         {
             if (filter != null)
             {
@@ -109,7 +94,7 @@ public class Csv
             return this;
         }
 
-        public Settings withRowExcludeFilter(ColumnName x, Predicate<String> filter)
+        public ReadSettings withRowExcludeFilter(ColumnName x, Predicate<String> filter)
         {
             if (filter != null)
             {
@@ -118,7 +103,7 @@ public class Csv
             return this;
         }
 
-        public Settings withFixedWidths(int[] fixedWiths)
+        public ReadSettings withFixedWidths(int[] fixedWiths)
         {
             if (fixedWiths == null)
             {
@@ -129,53 +114,53 @@ public class Csv
             return this;
         }
 
-        public Settings withIncludeResourceName(ColumnName x)
+        public ReadSettings withIncludeResourceName(ColumnName x)
         {
             this.resourceName = x;
             return this;
         }
 
-        public Settings withStripping(boolean stripping)
+        public ReadSettings withStripping(boolean stripping)
         {
             this.stripping = stripping;
             return this;
         }
 
-        public Settings withTableName(TableName tableName)
+        public ReadSettings withTableName(TableName tableName)
         {
             this.tableName = tableName;
             return this;
         }
 
-        public Settings withHeaderStrategy(HeaderStrategy headerStrategy)
+        public ReadSettings withHeaderStrategy(HeaderStrategy headerStrategy)
         {
             ArgumentCheck.nonNull(headerStrategy);
             this.headerStrategy = headerStrategy;
             return this;
         }
 
-        public Settings withLineReaderFactory(LineReaderFactory lineReaderFactory)
+        public ReadSettings withLineReaderFactory(LineReaderFactory lineReaderFactory)
         {
             this.lineReaderFactory = lineReaderFactory;
             return this;
         }
 
-        public Settings withSelectedHeader(ColumnName x)
+        public ReadSettings withSelectedColumn(ColumnName x)
         {
-            this.requestedHeaders.add(x);
+            this.selectedColumns.add(x);
             return this;
         }
 
-        public Settings withSelectedHeaders(ColumnName... x)
+        public ReadSettings withSelectedColumns(ColumnName... x)
         {
             if (x != null)
             {
-                this.requestedHeaders.addAll(Arrays.asList(x));
+                this.selectedColumns.addAll(Arrays.asList(x));
             }
             return this;
         }
 
-        public Settings withColumnRename(ColumnName original, ColumnName newName)
+        public ReadSettings withColumnRename(ColumnName original, ColumnName newName)
         {
             ArgumentCheck.nonNull(original);
             ArgumentCheck.nonNull(newName);
@@ -187,15 +172,63 @@ public class Csv
             return this;
         }
 
-        public Settings withColumnType(ColumnName columnName, Column.Type columnType)
+        public HeaderStrategy getHeaderStrategy()
         {
-            this.columnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
-            return this;
+            return this.headerStrategy;
         }
 
-        public Settings withColumnType(ColumnName columnName, Class<?> valueClass)
+        public LineReaderFactory getLineReaderFactory()
         {
-            return withColumnType(columnName, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
+            return this.lineReaderFactory;
+        }
+
+        public boolean includeResourceName()
+        {
+            return this.resourceName != null;
+        }
+
+        public ColumnName getResourceName()
+        {
+            return this.resourceName;
+        }
+
+        public boolean isStripping()
+        {
+            return this.stripping;
+        }
+
+        public TableName getTableName()
+        {
+            return this.tableName;
+        }
+
+        public ColumnName getRenameColumnName(String original)
+        {
+            if (Strings.isEmpty(original))
+            {
+                return null;
+            }
+            return getRenameColumnName(ColumnName.of(original));
+        }
+
+        public ColumnName getRenameColumnName(ColumnName original)
+        {
+            ColumnName r = this.renameHeaders.get(original);
+            if (r == null)
+            {
+                return original;
+            }
+            return r;
+        }
+
+        public Collection<ColumnName> getSelectedColumns(Collection<ColumnName> x)
+        {
+            if (x == null)
+            {
+                x = new ArrayList<>();
+            }
+            x.addAll(this.selectedColumns);
+            return x;
         }
 
         public Charset getCharset()
@@ -252,39 +285,31 @@ public class Csv
             return this.rowExcludeFilters.get(x);
         }
 
-        public static Predicate<String> regex(Pattern pattern)
-        {
-            if (pattern == null)
-            {
-                return null;
-            }
-            return s -> s != null && pattern.matcher(s).find();
-        }
     }
 
-    public static TableColumnar read(DataSource ds, Settings options)
+    public static TableColumnar read(DataSource ds, ReadSettings options)
     {
         HeaderStrategy headerStrategy = options == null ? null : options.getHeaderStrategy();
         return read(ds, options, headerStrategy, RowConsumerTableCreator.factory());
     }
 
-    public static TableColumnar read(DataSource ds, Settings options, HeaderStrategy headerStrategy)
+    public static TableColumnar read(DataSource ds, ReadSettings options, HeaderStrategy headerStrategy)
     {
         return read(ds, options, headerStrategy, RowConsumerTableCreator.factory());
     }
 
-    public static <T> T read(DataSource ds, Settings options, RowConsumerFactory<T> rowConsumerFactory)
+    public static <T> T read(DataSource ds, ReadSettings options, RowConsumerFactory<T> rowConsumerFactory)
     {
         HeaderStrategy headerStrategy = options == null ? null : options.getHeaderStrategy();
         return read(ds, options, headerStrategy, rowConsumerFactory);
     }
 
-    public static <T> T read(DataSource ds, Settings options, HeaderStrategy headerStrategy,
+    public static <T> T read(DataSource ds, ReadSettings options, HeaderStrategy headerStrategy,
             RowConsumerFactory<T> rowConsumerFactory)
     {
         if (options == null)
         {
-            options = new Settings();
+            options = new ReadSettings();
         }
         if (headerStrategy == null)
         {
@@ -323,7 +348,7 @@ public class Csv
         }
     }
 
-    private static RowProjected createRowProjected(Settings options, HeaderDetection headerDetection)
+    private static RowProjected createRowProjected(ReadSettings options, HeaderDetection headerDetection)
     {
         RowProjected projectedRow = options.isStripping()
                 ? new RowProjectedStripped(headerDetection.getSelectedPositions())

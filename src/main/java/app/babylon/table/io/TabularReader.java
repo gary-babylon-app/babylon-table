@@ -13,21 +13,109 @@ package app.babylon.table.io;
 import java.util.Map;
 
 import app.babylon.io.DataSource;
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.TableColumnar;
 import app.babylon.table.column.ColumnName;
 
-public interface TabularReader<T>
+public interface TabularReader
 {
-    TabularReader<T> withSelectedColumn(ColumnName columnName);
+    TabularReader withSelectedColumn(ColumnName columnName);
 
-    TabularReader<T> withSelectedColumns(ColumnName... columnNames);
+    TabularReader withSelectedColumns(ColumnName... columnNames);
 
-    TabularReader<T> withColumnRename(ColumnName original, ColumnName newName);
+    TabularReader withColumnRename(ColumnName original, ColumnName newName);
 
-    TabularReader<T> withColumnRenames(Map<ColumnName, ColumnName> renames);
+    TabularReader withColumnRenames(Map<ColumnName, ColumnName> renames);
 
-    TabularReader<T> withRowFilter(RowFilter rowFilter);
+    TabularReader withRowFilter(RowFilter rowFilter);
 
-    TabularReader<T> withRowConsumer(RowConsumer<T> rowConsumer);
+    TabularReader withRowConsumer(RowConsumer<TableColumnar> rowConsumer);
 
-    TabularReadResult<T> read(DataSource dataSource);
+    Result read(DataSource dataSource);
+
+    enum Status
+    {
+        SUCCESS, WARNING, EMPTY, EXCEPTION;
+
+        public boolean isSuccessLike()
+        {
+            return this == SUCCESS || this == WARNING || this == EMPTY;
+        }
+
+        public boolean isFailure()
+        {
+            return this == EXCEPTION;
+        }
+    }
+
+    final class Result
+    {
+        private final Status status;
+        private final String message;
+        private final Throwable cause;
+        private final TableColumnar table;
+
+        public Result(Status status, String message, Throwable cause, TableColumnar table)
+        {
+            this.status = ArgumentCheck.nonNull(status);
+            this.message = message;
+            this.cause = cause;
+            this.table = table;
+        }
+
+        public static Result success(TableColumnar table)
+        {
+            return new Result(Status.SUCCESS, null, null, table);
+        }
+
+        public static Result success(TableColumnar table, String message)
+        {
+            return new Result(Status.SUCCESS, message, null, table);
+        }
+
+        public static Result warning(TableColumnar table, String message)
+        {
+            return new Result(Status.WARNING, message, null, table);
+        }
+
+        public static Result empty(String message)
+        {
+            return new Result(Status.EMPTY, message, null, null);
+        }
+
+        public static Result exception(String message, Throwable cause)
+        {
+            return new Result(Status.EXCEPTION, message, cause, null);
+        }
+
+        public Status getStatus()
+        {
+            return this.status;
+        }
+
+        public boolean isSuccessLike()
+        {
+            return this.status.isSuccessLike();
+        }
+
+        public String getMessage()
+        {
+            return this.message;
+        }
+
+        public Throwable getCause()
+        {
+            return this.cause;
+        }
+
+        public TableColumnar getTable()
+        {
+            return this.table;
+        }
+
+        public boolean hasTable()
+        {
+            return this.table != null;
+        }
+    }
 }

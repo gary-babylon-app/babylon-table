@@ -31,7 +31,8 @@ class DataSourceFile implements DataSource
         try
         {
             return new FileInputStream(file);
-        } catch (FileNotFoundException e)
+        }
+        catch (FileNotFoundException e)
         {
             throw new RuntimeException("Failed to open stream " + getName(), e);
         }

@@ -194,7 +194,8 @@ public final class BigDecimals
             }
 
             return new PreparedDecimal(normalized, cc.isPercent(), cc.isNegativeBracket());
-        } catch (Throwable t)
+        }
+        catch (Throwable t)
         {
             return null;
         }
@@ -219,7 +220,8 @@ public final class BigDecimals
                 bd = new BigDecimal(s).negate(MathContext.DECIMAL64);
             }
             return bd.stripTrailingZeros();
-        } catch (Throwable t)
+        }
+        catch (Throwable t)
         {
             return null;
         }
@@ -243,7 +245,8 @@ public final class BigDecimals
                 value = -value;
             }
             return value;
-        } catch (Throwable t)
+        }
+        catch (Throwable t)
         {
             return null;
         }

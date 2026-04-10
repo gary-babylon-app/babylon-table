@@ -24,9 +24,11 @@ import app.babylon.text.Strings;
  */
 public interface HeaderStrategy
 {
+    int DEFAULT_SCAN_LIMIT = 25;
+
     default int getScanLimit()
     {
-        return Csv.DEFAULT_HEADER_SCAN_LIMIT;
+        return DEFAULT_SCAN_LIMIT;
     }
 
     default HeaderDetection detect(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns) throws IOException

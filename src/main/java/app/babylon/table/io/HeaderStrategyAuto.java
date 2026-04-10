@@ -29,7 +29,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
 
     public HeaderStrategyAuto()
     {
-        this(Csv.DEFAULT_HEADER_SCAN_LIMIT);
+        this(HeaderStrategy.DEFAULT_SCAN_LIMIT);
     }
     public HeaderStrategyAuto(int scanLimit)
     {

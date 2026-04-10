@@ -72,7 +72,8 @@ public class TransformToInt extends TransformBase
             try
             {
                 builder.add(Integer.parseInt(s));
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 builder.addNull();
             }

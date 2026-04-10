@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import app.babylon.io.DataSources;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.table.io.Csv;
+import app.babylon.table.io.TabularReaderCsv;
 import app.babylon.table.transform.TransformAfter;
 import app.babylon.table.transform.TransformPrefix;
 import app.babylon.table.transform.TransformToUpperCase;
@@ -83,11 +83,11 @@ class TableBuildPlanTest
                 xyz,20.0
                 """;
 
-        Csv.ReadSettings settings = new Csv.ReadSettings().withSeparator(',');
+        TabularReaderCsv reader = new TabularReaderCsv().withSeparator(',');
         TableBuildPlan plan = new TableBuildPlan().withOutputTableName(TableName.of("BuiltFromCsv"))
                 .withColumnType(AMOUNT, double.class).withTransform(new TransformToUpperCase(CODE));
 
-        TableColumnar table = plan.execute(DataSources.fromString(csv, "values.csv"), settings);
+        TableColumnar table = plan.execute(DataSources.fromString(csv, "values.csv"), reader);
 
         assertEquals(TableName.of("BuiltFromCsv"), table.getName());
         assertEquals("ABC", table.getString(CODE).get(0));

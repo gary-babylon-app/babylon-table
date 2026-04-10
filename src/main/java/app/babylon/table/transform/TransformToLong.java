@@ -72,7 +72,8 @@ public class TransformToLong extends TransformBase
             try
             {
                 builder.add(Long.parseLong(s));
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 builder.addNull();
             }

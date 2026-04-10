@@ -15,7 +15,7 @@ class TabularReaderCommonTest
     void shouldRejectRenamingSameSourceColumnTwice()
     {
         ColumnName source = ColumnName.of("source");
-        TabularReaderCsv<Object> reader = new TabularReaderCsv<>();
+        TabularReaderCsv reader = new TabularReaderCsv();
 
         reader.withColumnRename(source, ColumnName.of("target1"));
 
@@ -29,7 +29,7 @@ class TabularReaderCommonTest
         renames.put(ColumnName.of("source1"), ColumnName.of("target"));
         renames.put(ColumnName.of("source2"), ColumnName.of("target"));
 
-        TabularReaderCsv<Object> reader = new TabularReaderCsv<>();
+        TabularReaderCsv reader = new TabularReaderCsv();
 
         assertThrows(IllegalArgumentException.class, () -> reader.withColumnRenames(renames));
     }

@@ -11,6 +11,7 @@ import java.util.Map;
 import app.babylon.io.DataSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
+import app.babylon.table.TableException;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
@@ -22,11 +23,10 @@ import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
-import app.babylon.table.io.Csv;
-import app.babylon.table.io.HeaderStrategyAuto;
 import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowKey;
+import app.babylon.table.io.TabularReader;
 
 public class AggregationPlan
 {
@@ -296,17 +296,26 @@ public class AggregationPlan
         return Tables.newTable(tableName, columns);
     }
 
-    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings readSettings)
-    {
-        return execute(dataSource, readSettings, new HeaderStrategyAuto());
-    }
-
-    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings readSettings,
-            app.babylon.table.io.HeaderStrategy headerStrategy)
+    public TableColumnar execute(DataSource dataSource, TabularReader reader)
     {
         validateForCurrentImplementation();
-        Csv.ReadSettings effectiveReadSettings = readSettings == null ? new Csv.ReadSettings() : readSettings;
-        return Csv.read(dataSource, effectiveReadSettings, headerStrategy, new RowConsumerGroupAggregatePlan(this));
+        ArgumentCheck.nonNull(dataSource);
+        TabularReader.Result readResult = ArgumentCheck.nonNull(reader)
+                .withRowConsumer(new RowConsumerGroupAggregatePlan(this)).read(dataSource);
+        return getTable(readResult);
+    }
+
+    private static TableColumnar getTable(TabularReader.Result readResult)
+    {
+        if (readResult.hasTable())
+        {
+            return readResult.getTable();
+        }
+        if (readResult.getCause() instanceof RuntimeException runtimeException)
+        {
+            throw runtimeException;
+        }
+        throw new TableException(readResult.getMessage());
     }
 
     private void validateForCurrentImplementation()

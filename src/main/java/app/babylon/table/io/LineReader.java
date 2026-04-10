@@ -15,13 +15,11 @@ import java.io.IOException;
 
 /**
  * Iterates through parsed rows from an input source while exposing the current
- * row and reader settings.
+ * row.
  */
 public interface LineReader extends Closeable
 {
     boolean next() throws IOException;
 
     Row current();
-
-    Csv.ReadSettings getSettings();
 }

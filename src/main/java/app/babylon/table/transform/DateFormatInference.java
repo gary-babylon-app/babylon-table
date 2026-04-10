@@ -546,7 +546,8 @@ public final class DateFormatInference
             BigDecimal bd = new BigDecimal(facts.text());
             double d = bd.doubleValue();
             return d >= EXCEL_MIN && d <= EXCEL_MAX;
-        } catch (NumberFormatException e)
+        }
+        catch (NumberFormatException e)
         {
             return false;
         }

@@ -18,18 +18,18 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import app.babylon.io.DataSource;
 import app.babylon.io.DataSourceProbe;
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.TableColumnar;
 import app.babylon.table.TableException;
 import app.babylon.table.TableName;
 import app.babylon.table.column.ColumnName;
 
-public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv<T>>
+public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
 {
     private HeaderStrategy headerStrategy;
     private boolean stripping;
@@ -42,7 +42,7 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
 
     public TabularReaderCsv()
     {
-        this.headerStrategy = new HeaderStrategyAuto(Csv.DEFAULT_HEADER_SCAN_LIMIT);
+        this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
         this.stripping = true;
         this.separator = ',';
         this.fixedWidths = null;
@@ -52,49 +52,49 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
         this.resourceName = null;
     }
 
-    public TabularReaderCsv<T> withHeaderStrategy(HeaderStrategy headerStrategy)
+    public TabularReaderCsv withHeaderStrategy(HeaderStrategy headerStrategy)
     {
         this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
         return this;
     }
 
-    public TabularReaderCsv<T> withStripping(boolean stripping)
+    public TabularReaderCsv withStripping(boolean stripping)
     {
         this.stripping = stripping;
         return this;
     }
 
-    public TabularReaderCsv<T> withSeparator(char separator)
+    public TabularReaderCsv withSeparator(char separator)
     {
         this.separator = separator;
         return this;
     }
 
-    public TabularReaderCsv<T> withFixedWidths(int[] fixedWidths)
+    public TabularReaderCsv withFixedWidths(int[] fixedWidths)
     {
         this.fixedWidths = fixedWidths == null ? null : fixedWidths.clone();
         return this;
     }
 
-    public TabularReaderCsv<T> withCharset(Charset charset)
+    public TabularReaderCsv withCharset(Charset charset)
     {
         this.charset = ArgumentCheck.nonNull(charset);
         return this;
     }
 
-    public TabularReaderCsv<T> withAutoDetectEncoding(boolean autoDetectEncoding)
+    public TabularReaderCsv withAutoDetectEncoding(boolean autoDetectEncoding)
     {
         this.autoDetectEncoding = autoDetectEncoding;
         return this;
     }
 
-    public TabularReaderCsv<T> withTableName(TableName tableName)
+    public TabularReaderCsv withTableName(TableName tableName)
     {
         this.tableName = ArgumentCheck.nonNull(tableName);
         return this;
     }
 
-    public TabularReaderCsv<T> withIncludeResourceName(ColumnName resourceName)
+    public TabularReaderCsv withIncludeResourceName(ColumnName resourceName)
     {
         this.resourceName = ArgumentCheck.nonNull(resourceName);
         return this;
@@ -141,13 +141,13 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
     }
 
     @Override
-    public TabularReadResult<T> read(DataSource dataSource)
+    public TabularReader.Result read(DataSource dataSource)
     {
         DataSource checkedDataSource = ArgumentCheck.nonNull(dataSource);
-        RowConsumer<T> rowConsumer = rowConsumer();
-        if (rowConsumer instanceof RowConsumerTableCreator)
+        RowConsumer<TableColumnar> rowConsumer = rowConsumer();
+        if (rowConsumer instanceof RowConsumerCreateTable)
         {
-            ((RowConsumerTableCreator) rowConsumer).setSourceName(checkedDataSource.getName());
+            ((RowConsumerCreateTable) rowConsumer).setSourceName(checkedDataSource.getName());
         }
         try (LineReader lineReader = createLineReader(checkedDataSource))
         {
@@ -173,20 +173,23 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
                 }
                 rowConsumer.accept(row);
             }
-            return TabularReadResult.success(rowConsumer.build());
+            return TabularReader.Result.success(rowConsumer.build());
 
-        } catch (TableException e)
+        }
+        catch (TableException e)
         {
-            return TabularReadResult
+            return TabularReader.Result
                     .exception("Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", e);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
-            return TabularReadResult.exception(
+            return TabularReader.Result.exception(
                     "Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", new TableException(
                             "Failed to read table from data source '" + checkedDataSource.getName() + "'.", e));
-        } catch (RuntimeException e)
+        }
+        catch (RuntimeException e)
         {
-            return TabularReadResult
+            return TabularReader.Result
                     .exception("Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", e);
         }
     }
@@ -198,38 +201,14 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
     }
 
     @Override
-    protected TabularReaderCsv<T> self()
+    protected TabularReaderCsv self()
     {
         return this;
     }
 
-    private Csv.ReadSettings createCsvReadSettings()
-    {
-        Csv.ReadSettings csvReadSettings = new Csv.ReadSettings().withStripping(this.stripping)
-                .withSeparator(this.separator).withFixedWidths(this.fixedWidths).withCharset(this.charset)
-                .withAutoDetectEncoding(this.autoDetectEncoding);
-        if (this.tableName != null)
-        {
-            csvReadSettings.withTableName(this.tableName);
-        }
-        if (this.resourceName != null)
-        {
-            csvReadSettings.withIncludeResourceName(this.resourceName);
-        }
-        for (ColumnName selectedColumn : getSelectedColumns())
-        {
-            csvReadSettings.withSelectedColumn(selectedColumn);
-        }
-        for (Map.Entry<ColumnName, ColumnName> entry : getColumnRenames().entrySet())
-        {
-            csvReadSettings.withColumnRename(entry.getKey(), entry.getValue());
-        }
-        return csvReadSettings;
-    }
-
     private LineReader createLineReader(DataSource dataSource) throws IOException
     {
-        BufferedInputStream bufferedStream = LineReaderFactoryCSV.toBufferedStream(dataSource.openStream());
+        BufferedInputStream bufferedStream = toBufferedStream(dataSource.openStream());
         DataSourceProbe probe = DataSourceProbe.of(bufferedStream, dataSource.getName());
         if (probe.isXlsx() || probe.isXls() || probe.isPdf() || probe.isZip())
         {
@@ -245,12 +224,22 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
         return new LineReaderCSV(reader, this);
     }
 
+    private static BufferedInputStream toBufferedStream(InputStream instream)
+    {
+        if (instream instanceof BufferedInputStream bufferedInputStream)
+        {
+            return bufferedInputStream;
+        }
+        return new BufferedInputStream(instream);
+    }
+
     private RowProjected createRowProjected(HeaderDetection headerDetection)
     {
         return this.stripping
                 ? new RowProjectedStripped(headerDetection.getSelectedPositions())
                 : new ProjectedRow(headerDetection.getSelectedPositions());
     }
+
     private ColumnName[] createProjectedColumnNames(HeaderDetection headerDetection)
     {
         String[] selectedHeaders = headerDetection.getSelectedHeaders();
@@ -261,6 +250,7 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
         }
         return columnNames;
     }
+
     private ColumnName getRenameColumnName(String original)
     {
         if (original == null)
@@ -310,7 +300,8 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
         try
         {
             skipBytes(instream, bomLength);
-        } catch (IOException e)
+        }
+        catch (IOException e)
         {
             throw new RuntimeException("Failed to skip CSV BOM bytes.", e);
         }
@@ -337,14 +328,13 @@ public class TabularReaderCsv<T> extends TabularReaderCommon<T, TabularReaderCsv
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private RowConsumer<T> rowConsumer()
+    private RowConsumer<TableColumnar> rowConsumer()
     {
-        RowConsumer<T> rowConsumer = getRowConsumer();
+        RowConsumer<TableColumnar> rowConsumer = getRowConsumer();
         if (rowConsumer != null)
         {
             return rowConsumer;
         }
-        return (RowConsumer<T>) RowConsumerTableCreator.create(createCsvReadSettings());
+        return RowConsumerCreateTable.create(this.tableName, this.resourceName);
     }
 }

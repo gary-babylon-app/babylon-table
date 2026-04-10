@@ -12,11 +12,7 @@ package app.babylon.table.io;
 
 import app.babylon.lang.ArgumentCheck;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 
 final class LineReaderCSV implements LineReader
 {
@@ -25,30 +21,11 @@ final class LineReaderCSV implements LineReader
     private static final char LF = '\n';
 
     private final BufferedCharReader reader;
-    private final Csv.ReadSettings settings;
     private final char separator;
     private final RowBuffer current;
 
-    protected LineReaderCSV(BufferedInputStream instream, Csv.ReadSettings options, Charset charset, int bomLength)
+    protected LineReaderCSV(BufferedCharReader reader, TabularReaderCsv options)
     {
-        this.settings = ArgumentCheck.nonNull(options, "options must not be null");
-        this.separator = options.getSeparator();
-        this.reader = createReader(instream, charset, bomLength);
-        this.current = new RowBuffer();
-    }
-
-    protected LineReaderCSV(BufferedInputStream instream, TabularReaderCsv<?> options, Charset charset, int bomLength)
-    {
-        ArgumentCheck.nonNull(options, "options must not be null");
-        this.settings = null;
-        this.separator = options.getSeparator();
-        this.reader = createReader(instream, charset, bomLength);
-        this.current = new RowBuffer();
-    }
-
-    protected LineReaderCSV(BufferedCharReader reader, TabularReaderCsv<?> options)
-    {
-        this.settings = null;
         this.separator = ArgumentCheck.nonNull(options, "options must not be null").getSeparator();
         this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
         this.current = new RowBuffer();
@@ -64,47 +41,6 @@ final class LineReaderCSV implements LineReader
     public Row current()
     {
         return this.current;
-    }
-
-    @Override
-    public Csv.ReadSettings getSettings()
-    {
-        return this.settings;
-    }
-
-    private static BufferedCharReader createReader(InputStream instream, Charset charset, int bomLength)
-    {
-        try
-        {
-            if (bomLength > 0)
-            {
-                skipBytes(instream, bomLength);
-            }
-        } catch (IOException e)
-        {
-            throw new RuntimeException("Failed to skip CSV BOM bytes.", e);
-        }
-        return new BufferedCharReader(new InputStreamReader(instream, charset));
-    }
-
-    private static void skipBytes(InputStream instream, int count) throws IOException
-    {
-        int remaining = count;
-        while (remaining > 0)
-        {
-            long skipped = instream.skip(remaining);
-            if (skipped > 0)
-            {
-                remaining -= (int) skipped;
-                continue;
-            }
-            int b = instream.read();
-            if (b == -1)
-            {
-                return;
-            }
-            --remaining;
-        }
     }
 
     private boolean readRowParsed(RowBuffer output) throws IOException

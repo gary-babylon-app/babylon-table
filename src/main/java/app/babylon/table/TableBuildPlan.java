@@ -21,9 +21,9 @@ import app.babylon.io.DataSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.io.Csv;
-import app.babylon.table.io.HeaderStrategyAuto;
-import app.babylon.table.io.RowConsumerTableCreator;
+import app.babylon.table.io.RowConsumerCreateTable;
+import app.babylon.table.io.TabularReader;
+import app.babylon.table.io.TabularReaderCsv;
 import app.babylon.table.transform.Transform;
 
 public class TableBuildPlan
@@ -136,19 +136,46 @@ public class TableBuildPlan
         return apply(ArgumentCheck.nonNull(table));
     }
 
-    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings settings)
-    {
-        return execute(dataSource, settings, new HeaderStrategyAuto());
-    }
-
-    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings settings,
-            app.babylon.table.io.HeaderStrategy headerStrategy)
+    public TableColumnar execute(DataSource dataSource, TabularReader reader)
     {
         ArgumentCheck.nonNull(dataSource);
-        Csv.ReadSettings effectiveSettings = settings == null ? new Csv.ReadSettings() : settings;
-        TableColumnar parsed = Csv.read(dataSource, effectiveSettings, headerStrategy,
-                RowConsumerTableCreator.create(effectiveSettings, this.columnTypes));
+        TabularReader checkedReader = ArgumentCheck.nonNull(reader);
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(tableName(checkedReader),
+                resourceName(checkedReader), this.columnTypes);
+        TabularReader.Result readResult = checkedReader.withRowConsumer(rowConsumer).read(dataSource);
+        TableColumnar parsed = getTable(readResult);
         return apply(parsed);
+    }
+
+    private static TableColumnar getTable(TabularReader.Result readResult)
+    {
+        if (readResult.hasTable())
+        {
+            return readResult.getTable();
+        }
+        if (readResult.getCause() instanceof RuntimeException runtimeException)
+        {
+            throw runtimeException;
+        }
+        throw new TableException(readResult.getMessage());
+    }
+
+    private static TableName tableName(TabularReader reader)
+    {
+        if (reader instanceof TabularReaderCsv csvReader)
+        {
+            return csvReader.getTableName();
+        }
+        return null;
+    }
+
+    private static ColumnName resourceName(TabularReader reader)
+    {
+        if (reader instanceof TabularReaderCsv csvReader)
+        {
+            return csvReader.getResourceName();
+        }
+        return null;
     }
 
     private TableColumnar apply(TableColumnar table)

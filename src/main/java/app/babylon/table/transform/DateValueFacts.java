@@ -429,7 +429,8 @@ public final class DateValueFacts
                     long dateValue = (long) bd.doubleValue();
                     return LocalDate.ofEpochDay(dateValue + (LocalDate.EPOCH.toEpochDay() - 25569L));
                 }
-            } catch (NumberFormatException e)
+            }
+            catch (NumberFormatException e)
             {
                 return null;
             }

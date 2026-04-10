@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import app.babylon.io.DataSource;
 import app.babylon.lang.ArgumentCheck;
@@ -42,8 +41,6 @@ public class Csv
         ColumnName resourceName;
         boolean stripping;
         char separator;
-        Map<ColumnName, Predicate<String>> rowIncludeFilters;
-        Map<ColumnName, Predicate<String>> rowExcludeFilters;
         int[] fixedWidths;
         Charset charset;
         boolean autoDetectEncoding;
@@ -56,8 +53,6 @@ public class Csv
             this.resourceName = null;
             this.stripping = true;
             this.separator = ',';
-            this.rowIncludeFilters = new HashMap<>();
-            this.rowExcludeFilters = new HashMap<>();
             this.fixedWidths = null;
             this.charset = null;
             this.autoDetectEncoding = true;
@@ -78,24 +73,6 @@ public class Csv
         public ReadSettings withAutoDetectEncoding(boolean autoDetectEncoding)
         {
             this.autoDetectEncoding = autoDetectEncoding;
-            return this;
-        }
-
-        public ReadSettings withRowIncludeFilter(ColumnName x, Predicate<String> filter)
-        {
-            if (filter != null)
-            {
-                this.rowIncludeFilters.put(x, filter);
-            }
-            return this;
-        }
-
-        public ReadSettings withRowExcludeFilter(ColumnName x, Predicate<String> filter)
-        {
-            if (filter != null)
-            {
-                this.rowExcludeFilters.put(x, filter);
-            }
             return this;
         }
 
@@ -204,6 +181,16 @@ public class Csv
             return x;
         }
 
+        public Set<ColumnName> getSelectedColumns()
+        {
+            return Set.copyOf(this.selectedColumns);
+        }
+
+        public Map<ColumnName, ColumnName> getColumnRenames()
+        {
+            return Map.copyOf(this.renameHeaders);
+        }
+
         public Charset getCharset()
         {
             return this.charset;
@@ -237,37 +224,17 @@ public class Csv
         {
             return this.separator;
         }
-
-        public boolean hasRowIncludeFilters()
-        {
-            return this.rowIncludeFilters.size() > 0;
-        }
-
-        public boolean hasRowExcludeFilters()
-        {
-            return this.rowExcludeFilters.size() > 0;
-        }
-
-        public Predicate<String> getRowIncludeFilter(ColumnName x)
-        {
-            return this.rowIncludeFilters.get(x);
-        }
-
-        public Predicate<String> getRowExcludeFilter(ColumnName x)
-        {
-            return this.rowExcludeFilters.get(x);
-        }
-
     }
 
     public static TableColumnar read(DataSource ds, ReadSettings options, HeaderStrategy headerStrategy)
     {
         ReadSettings effectiveOptions = options == null ? new ReadSettings() : options;
-        return read(ds, effectiveOptions, headerStrategy, RowConsumerTableCreator.create(effectiveOptions));
+        return read(ds, effectiveOptions, headerStrategy,
+                RowConsumerCreateTable.create(effectiveOptions.getTableName(), effectiveOptions.getResourceName()));
     }
 
-    public static <T> T read(DataSource ds, ReadSettings options, HeaderStrategy headerStrategy,
-            RowConsumer<T> rowConsumer)
+    public static TableColumnar read(DataSource ds, ReadSettings options, HeaderStrategy headerStrategy,
+            RowConsumer<TableColumnar> rowConsumer)
     {
         if (options == null)
         {
@@ -281,7 +248,7 @@ public class Csv
         {
             throw new IllegalArgumentException("rowConsumer must not be null");
         }
-        TabularReaderCsv<T> reader = new TabularReaderCsv<T>().withHeaderStrategy(headerStrategy)
+        TabularReaderCsv reader = new TabularReaderCsv().withHeaderStrategy(headerStrategy)
                 .withStripping(options.isStripping()).withSeparator(options.getSeparator())
                 .withFixedWidths(options.getFixedWidths()).withAutoDetectEncoding(options.isAutoDetectEncoding())
                 .withRowConsumer(rowConsumer);
@@ -305,8 +272,8 @@ public class Csv
         {
             reader.withColumnRename(entry.getKey(), entry.getValue());
         }
-        TabularReadResult<T> result = reader.read(ds);
-        if (result.getStatus() == TabularReadStatus.EXCEPTION)
+        TabularReader.Result result = reader.read(ds);
+        if (result.getStatus() == TabularReader.Status.EXCEPTION)
         {
             Throwable cause = result.getCause();
             if (cause instanceof TableException)
@@ -319,7 +286,7 @@ public class Csv
             }
             throw new TableException("Failed to read table from data source '" + ds.getName() + "'.", cause);
         }
-        return result.getValue();
+        return result.getTable();
     }
 
     private static RowProjected createRowProjected(ReadSettings options, HeaderDetection headerDetection)

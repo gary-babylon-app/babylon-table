@@ -12,11 +12,7 @@ package app.babylon.table.io;
 
 import app.babylon.lang.ArgumentCheck;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 final class LineReaderCSVFixedWidth implements LineReader
@@ -26,40 +22,9 @@ final class LineReaderCSVFixedWidth implements LineReader
 
     private final BufferedCharReader reader;
     private final int[] fixedWidths;
-    private final Csv.ReadSettings settings;
     private final RowFixedWidth current;
 
-    protected LineReaderCSVFixedWidth(BufferedInputStream instream, Csv.ReadSettings settings, Charset charset,
-            int bomLength)
-    {
-        ArgumentCheck.nonNull(settings, "settings must not be null");
-        int[] configuredWidths = settings.getFixedWidths();
-        if (configuredWidths == null || configuredWidths.length == 0)
-        {
-            throw new IllegalArgumentException("fixedWidths must not be empty");
-        }
-        this.reader = createReader(instream, charset, bomLength);
-        this.fixedWidths = Arrays.copyOf(configuredWidths, configuredWidths.length);
-        this.settings = settings;
-        this.current = new RowFixedWidth(this.fixedWidths);
-    }
-
-    protected LineReaderCSVFixedWidth(BufferedInputStream instream, TabularReaderCsv<?> options, Charset charset,
-            int bomLength)
-    {
-        ArgumentCheck.nonNull(options, "options must not be null");
-        int[] configuredWidths = options.getFixedWidths();
-        if (configuredWidths == null || configuredWidths.length == 0)
-        {
-            throw new IllegalArgumentException("fixedWidths must not be empty");
-        }
-        this.reader = createReader(instream, charset, bomLength);
-        this.fixedWidths = Arrays.copyOf(configuredWidths, configuredWidths.length);
-        this.settings = null;
-        this.current = new RowFixedWidth(this.fixedWidths);
-    }
-
-    protected LineReaderCSVFixedWidth(BufferedCharReader reader, TabularReaderCsv<?> options)
+    protected LineReaderCSVFixedWidth(BufferedCharReader reader, TabularReaderCsv options)
     {
         ArgumentCheck.nonNull(options, "options must not be null");
         int[] configuredWidths = options.getFixedWidths();
@@ -69,43 +34,7 @@ final class LineReaderCSVFixedWidth implements LineReader
         }
         this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
         this.fixedWidths = Arrays.copyOf(configuredWidths, configuredWidths.length);
-        this.settings = null;
         this.current = new RowFixedWidth(this.fixedWidths);
-    }
-
-    private static BufferedCharReader createReader(InputStream instream, Charset charset, int bomLength)
-    {
-        try
-        {
-            if (bomLength > 0)
-            {
-                skipBytes(instream, bomLength);
-            }
-        } catch (IOException e)
-        {
-            throw new RuntimeException("Failed to skip fixed-width BOM bytes.", e);
-        }
-        return new BufferedCharReader(new InputStreamReader(instream, charset));
-    }
-
-    private static void skipBytes(InputStream instream, int count) throws IOException
-    {
-        int remaining = count;
-        while (remaining > 0)
-        {
-            long skipped = instream.skip(remaining);
-            if (skipped > 0)
-            {
-                remaining -= (int) skipped;
-                continue;
-            }
-            int b = instream.read();
-            if (b == -1)
-            {
-                return;
-            }
-            --remaining;
-        }
     }
 
     @Override
@@ -172,12 +101,6 @@ final class LineReaderCSVFixedWidth implements LineReader
     public Row current()
     {
         return this.current;
-    }
-
-    @Override
-    public Csv.ReadSettings getSettings()
-    {
-        return this.settings;
     }
 
     @Override

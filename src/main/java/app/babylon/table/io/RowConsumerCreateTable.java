@@ -23,24 +23,25 @@ import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
-public final class RowConsumerTableCreator implements RowConsumer<TableColumnar>
+public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
 {
     private static final byte KIND_STRING = 0;
     private static final byte KIND_DOUBLE = 1;
 
-    private final Csv.ReadSettings options;
+    private final TableName tableName;
+    private final ColumnName resourceName;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private byte[] columnKinds;
     private ColumnBuilder[] columnBuilders;
     private String[] strippedValues;
-    private CsvRowFilter rowFilter;
     private String sourceName;
 
-    RowConsumerTableCreator(Csv.ReadSettings options, Map<ColumnName, Column.Type> explicitColumnTypes)
+    RowConsumerCreateTable(TableName tableName, ColumnName resourceName,
+            Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        this.options = options;
+        this.tableName = tableName;
+        this.resourceName = resourceName;
         this.explicitColumnTypes = explicitColumnTypes;
-        this.rowFilter = null;
         this.columnKinds = null;
         this.columnBuilders = null;
         this.strippedValues = null;
@@ -52,7 +53,6 @@ public final class RowConsumerTableCreator implements RowConsumer<TableColumnar>
     {
         this.columnKinds = initialiseColumnKinds(columnNames, this.explicitColumnTypes);
         this.columnBuilders = initialiseColumnBuilders(columnNames, this.explicitColumnTypes);
-        this.rowFilter = new CsvRowFilter(this.options, columnNames);
         this.strippedValues = new String[this.columnBuilders.length];
     }
 
@@ -76,12 +76,6 @@ public final class RowConsumerTableCreator implements RowConsumer<TableColumnar>
             }
         }
         if (isEmpty)
-        {
-            return;
-        }
-        boolean include = this.rowFilter.isInclude(this.strippedValues);
-        boolean exclude = this.rowFilter.isExclude(this.strippedValues);
-        if (exclude || !include)
         {
             return;
         }
@@ -112,12 +106,12 @@ public final class RowConsumerTableCreator implements RowConsumer<TableColumnar>
     @Override
     public TableColumnar build()
     {
-        TableName name = this.options.getTableName();
+        TableName name = this.tableName;
         if (name == null)
         {
             name = TableName.of(extractLastPart(this.sourceName));
         }
-        if (this.options.includeResourceName() && this.columnBuilders.length > 0)
+        if (this.resourceName != null && this.columnBuilders.length > 0)
         {
             Column[] builtColumns = new Column[this.columnBuilders.length + 1];
             for (int i = 0; i < this.columnBuilders.length; ++i)
@@ -125,7 +119,7 @@ public final class RowConsumerTableCreator implements RowConsumer<TableColumnar>
                 builtColumns[i + 1] = this.columnBuilders[i].build();
             }
             int rowCount = builtColumns.length > 1 ? builtColumns[1].size() : 0;
-            builtColumns[0] = Columns.newString(this.options.getResourceName(), this.sourceName, rowCount);
+            builtColumns[0] = Columns.newString(this.resourceName, this.sourceName, rowCount);
             return Tables.newTable(name, builtColumns);
         }
         return Tables.newTable(name, this.columnBuilders);
@@ -136,15 +130,15 @@ public final class RowConsumerTableCreator implements RowConsumer<TableColumnar>
         this.sourceName = sourceName;
     }
 
-    public static RowConsumerTableCreator create(Csv.ReadSettings options)
+    public static RowConsumerCreateTable create(TableName tableName, ColumnName resourceName)
     {
-        return create(options, Collections.emptyMap());
+        return create(tableName, resourceName, Collections.emptyMap());
     }
 
-    public static RowConsumerTableCreator create(Csv.ReadSettings options,
+    public static RowConsumerCreateTable create(TableName tableName, ColumnName resourceName,
             Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        return new RowConsumerTableCreator(options, explicitColumnTypes);
+        return new RowConsumerCreateTable(tableName, resourceName, explicitColumnTypes);
     }
 
     private static byte[] initialiseColumnKinds(ColumnName[] columnNames,

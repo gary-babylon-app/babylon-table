@@ -19,15 +19,16 @@ import java.util.Map;
 import java.util.Set;
 
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.TableColumnar;
 import app.babylon.table.column.ColumnName;
 
-public abstract class TabularReaderCommon<T, R extends TabularReaderCommon<T, R>> implements TabularReader<T>
+public abstract class TabularReaderCommon<R extends TabularReaderCommon<R>> implements TabularReader
 {
     private final Set<ColumnName> selectedColumns;
     private final Map<ColumnName, ColumnName> columnRenames;
     private final Set<ColumnName> renamedTargets;
     private RowFilter rowFilter;
-    private RowConsumer<T> rowConsumer;
+    private RowConsumer<TableColumnar> rowConsumer;
 
     protected TabularReaderCommon()
     {
@@ -103,7 +104,7 @@ public abstract class TabularReaderCommon<T, R extends TabularReaderCommon<T, R>
     }
 
     @Override
-    public R withRowConsumer(RowConsumer<T> rowConsumer)
+    public R withRowConsumer(RowConsumer<TableColumnar> rowConsumer)
     {
         this.rowConsumer = rowConsumer;
         return self();
@@ -124,7 +125,7 @@ public abstract class TabularReaderCommon<T, R extends TabularReaderCommon<T, R>
         return this.rowFilter;
     }
 
-    protected RowConsumer<T> getRowConsumer()
+    protected RowConsumer<TableColumnar> getRowConsumer()
     {
         return this.rowConsumer;
     }

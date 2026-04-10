@@ -10,10 +10,17 @@
 
 package app.babylon.table.io;
 
+import app.babylon.table.column.ColumnName;
+
 /**
- * Consumes parsed rows during a read operation.
+ * Consumes parsed rows during a read operation after being initialised with the
+ * projected column names that incoming rows will expose.
  */
-public interface RowConsumer
+public interface RowConsumer<T>
 {
+    void start(ColumnName[] columnNames);
+
     void accept(Row row);
+
+    T build();
 }

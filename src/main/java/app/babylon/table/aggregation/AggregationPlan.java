@@ -23,14 +23,14 @@ import app.babylon.table.column.Columns;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Csv;
+import app.babylon.table.io.HeaderStrategyAuto;
 import app.babylon.table.io.Row;
-import app.babylon.table.io.RowConsumerFactory;
-import app.babylon.table.io.RowConsumerResult;
+import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowKey;
 
 public class AggregationPlan
 {
-    private static final class RowConsumerGroupAggregatePlan implements RowConsumerResult<TableColumnar>
+    private static final class RowConsumerGroupAggregatePlan implements RowConsumer<TableColumnar>
     {
         private static final class GroupAccumulators
         {
@@ -47,20 +47,65 @@ public class AggregationPlan
         }
 
         private final AggregationPlan plan;
-        private final int[] groupByPositions;
-        private final int maxGroupByPosition;
-        private final int[] aggregatePositions;
-        private final int maxAggregatePosition;
+        private int[] groupByPositions;
+        private int maxGroupByPosition;
+        private int[] aggregatePositions;
+        private int maxAggregatePosition;
         private final Map<RowKey, GroupAccumulators> accumulatorsByGroup;
 
-        private RowConsumerGroupAggregatePlan(AggregationPlan plan, int[] groupByPositions, int[] aggregatePositions)
+        private RowConsumerGroupAggregatePlan(AggregationPlan plan)
         {
             this.plan = plan;
-            this.groupByPositions = Arrays.copyOf(groupByPositions, groupByPositions.length);
-            this.maxGroupByPosition = max(this.groupByPositions);
-            this.aggregatePositions = Arrays.copyOf(aggregatePositions, aggregatePositions.length);
-            this.maxAggregatePosition = max(this.aggregatePositions);
+            this.groupByPositions = null;
+            this.maxGroupByPosition = -1;
+            this.aggregatePositions = null;
+            this.maxAggregatePosition = -1;
             this.accumulatorsByGroup = new LinkedHashMap<>();
+        }
+
+        @Override
+        public void start(ColumnName[] columnNames)
+        {
+            this.groupByPositions = new int[this.plan.groupByColumns.size()];
+            Arrays.fill(this.groupByPositions, -1);
+            this.aggregatePositions = new int[this.plan.aggregateSpecs.size()];
+            Arrays.fill(this.aggregatePositions, -1);
+            for (int i = 0; i < columnNames.length; ++i)
+            {
+                ColumnName columnName = columnNames[i];
+                for (int j = 0; j < this.plan.groupByColumns.size(); ++j)
+                {
+                    if (this.plan.groupByColumns.get(j).equals(columnName))
+                    {
+                        this.groupByPositions[j] = i;
+                    }
+                }
+                for (int j = 0; j < this.plan.aggregateSpecs.size(); ++j)
+                {
+                    if (this.plan.aggregateSpecs.get(j).sourceColumnName().equals(columnName))
+                    {
+                        this.aggregatePositions[j] = i;
+                    }
+                }
+            }
+            for (int i = 0; i < this.groupByPositions.length; ++i)
+            {
+                if (this.groupByPositions[i] < 0)
+                {
+                    throw new IllegalArgumentException(
+                            "Group-by column not present in selected headers: " + this.plan.groupByColumns.get(i));
+                }
+            }
+            for (int i = 0; i < this.aggregatePositions.length; ++i)
+            {
+                if (this.aggregatePositions[i] < 0)
+                {
+                    throw new IllegalArgumentException("Aggregate source column not present in selected headers: "
+                            + this.plan.aggregateSpecs.get(i).sourceColumnName());
+                }
+            }
+            this.maxGroupByPosition = max(this.groupByPositions);
+            this.maxAggregatePosition = max(this.aggregatePositions);
         }
 
         @Override
@@ -88,7 +133,7 @@ public class AggregationPlan
         }
 
         @Override
-        public TableColumnar buildResult(DataSource dataSource)
+        public TableColumnar build()
         {
             @SuppressWarnings("unchecked")
             ColumnObject.Builder<String>[] groupByBuilders = new ColumnObject.Builder[this.plan.groupByColumns.size()];
@@ -253,51 +298,15 @@ public class AggregationPlan
 
     public TableColumnar execute(DataSource dataSource, Csv.ReadSettings readSettings)
     {
+        return execute(dataSource, readSettings, new HeaderStrategyAuto());
+    }
+
+    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings readSettings,
+            app.babylon.table.io.HeaderStrategy headerStrategy)
+    {
         validateForCurrentImplementation();
         Csv.ReadSettings effectiveReadSettings = readSettings == null ? new Csv.ReadSettings() : readSettings;
-        RowConsumerFactory<TableColumnar> rowConsumerFactory = (options, headerDetection) -> {
-            String[] selectedHeaders = headerDetection.getSelectedHeaders();
-            int[] groupByPositions = new int[this.groupByColumns.size()];
-            Arrays.fill(groupByPositions, -1);
-            int[] aggregatePositions = new int[this.aggregateSpecs.size()];
-            Arrays.fill(aggregatePositions, -1);
-            for (int i = 0; i < selectedHeaders.length; ++i)
-            {
-                ColumnName columnName = options.getRenameColumnName(selectedHeaders[i]);
-                for (int j = 0; j < this.groupByColumns.size(); ++j)
-                {
-                    if (this.groupByColumns.get(j).equals(columnName))
-                    {
-                        groupByPositions[j] = i;
-                    }
-                }
-                for (int j = 0; j < this.aggregateSpecs.size(); ++j)
-                {
-                    if (this.aggregateSpecs.get(j).sourceColumnName().equals(columnName))
-                    {
-                        aggregatePositions[j] = i;
-                    }
-                }
-            }
-            for (int i = 0; i < groupByPositions.length; ++i)
-            {
-                if (groupByPositions[i] < 0)
-                {
-                    throw new IllegalArgumentException(
-                            "Group-by column not present in selected headers: " + this.groupByColumns.get(i));
-                }
-            }
-            for (int i = 0; i < aggregatePositions.length; ++i)
-            {
-                if (aggregatePositions[i] < 0)
-                {
-                    throw new IllegalArgumentException("Aggregate source column not present in selected headers: "
-                            + this.aggregateSpecs.get(i).sourceColumnName());
-                }
-            }
-            return new RowConsumerGroupAggregatePlan(this, groupByPositions, aggregatePositions);
-        };
-        return Csv.read(dataSource, effectiveReadSettings, rowConsumerFactory);
+        return Csv.read(dataSource, effectiveReadSettings, headerStrategy, new RowConsumerGroupAggregatePlan(this));
     }
 
     private void validateForCurrentImplementation()

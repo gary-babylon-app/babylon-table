@@ -12,7 +12,6 @@ package app.babylon.table.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,7 +46,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings)
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns)
             throws IOException
     {
         List<RowBuffer> scannedRows = new ArrayList<>();
@@ -59,7 +58,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         {
             return new HeaderDetection(new String[0]);
         }
-        int headerRowIndex = detectHeaderRowIndex(scannedRows, readSettings);
+        int headerRowIndex = detectHeaderRowIndex(scannedRows, selectedColumns);
         rowStream.mark(headerRowIndex);
         return new HeaderDetection(scannedRows.get(headerRowIndex).toStringArray());
     }
@@ -125,14 +124,12 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return detectHeaderRowIndex(rows, null);
     }
 
-    static int detectHeaderRowIndex(List<RowBuffer> rows, Csv.ReadSettings readSettings)
+    static int detectHeaderRowIndex(List<RowBuffer> rows, Set<ColumnName> selectedColumns)
     {
         if (rows == null || rows.isEmpty())
         {
             return -1;
         }
-
-        Collection<ColumnName> selectedColumns = selectedColumns(readSettings);
 
         int bestIndex = -1;
         double bestScore = Double.NEGATIVE_INFINITY;
@@ -231,7 +228,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return distinct.size() / (double) nonBlank;
     }
 
-    private static double selectedColumnBonus(RowBuffer row, Collection<ColumnName> selectedColumns)
+    private static double selectedColumnBonus(RowBuffer row, Set<ColumnName> selectedColumns)
     {
         if (row == null || row.fieldCount() == 0 || selectedColumns == null || selectedColumns.isEmpty())
         {
@@ -263,14 +260,4 @@ public class HeaderStrategyAuto implements HeaderStrategy
         double selectedMatchRatio = matchedCount / (double) Math.max(1, selectedColumns.size());
         return 0.75 * rowMatchRatio + 0.50 * selectedMatchRatio;
     }
-
-    private static Collection<ColumnName> selectedColumns(Csv.ReadSettings readSettings)
-    {
-        if (readSettings == null)
-        {
-            return List.of();
-        }
-        return readSettings.getSelectedColumns(new ArrayList<>());
-    }
-
 }

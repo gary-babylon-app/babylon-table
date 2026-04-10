@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import app.babylon.table.column.ColumnName;
 
@@ -58,7 +59,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings)
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns)
             throws IOException
     {
         if (this.expectedHeaders.isEmpty())

@@ -11,6 +11,9 @@
 package app.babylon.table.io;
 
 import java.io.IOException;
+import java.util.Set;
+
+import app.babylon.table.column.ColumnName;
 
 public class HeaderStrategyExplicitRow implements HeaderStrategy
 {
@@ -31,7 +34,7 @@ public class HeaderStrategyExplicitRow implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings)
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns)
             throws IOException
     {
         int rowIndex = 0;

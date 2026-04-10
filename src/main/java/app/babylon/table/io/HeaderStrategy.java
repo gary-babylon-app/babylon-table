@@ -12,8 +12,8 @@ package app.babylon.table.io;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
@@ -29,16 +29,15 @@ public interface HeaderStrategy
         return Csv.DEFAULT_HEADER_SCAN_LIMIT;
     }
 
-    default HeaderDetection detect(RowStreamMarkable rowStream, Csv.ReadSettings readSettings) throws IOException
+    default HeaderDetection detect(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns) throws IOException
     {
-        HeaderDetection foundDetection = detectFoundHeaders(rowStream, readSettings);
+        HeaderDetection foundDetection = detectFoundHeaders(rowStream, selectedColumns);
         if (foundDetection.isSyntheticHeaders())
         {
             return foundDetection;
         }
 
-        Collection<ColumnName> selectedColumns = readSettings.getSelectedColumns(new ArrayList<>());
-        if (selectedColumns.isEmpty())
+        if (selectedColumns == null || selectedColumns.isEmpty())
         {
             return foundDetection;
         }
@@ -63,7 +62,7 @@ public interface HeaderStrategy
                 toIntArray(selectedPositions));
     }
 
-    HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings) throws IOException;
+    HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns) throws IOException;
 
     private static int[] toIntArray(List<Integer> values)
     {

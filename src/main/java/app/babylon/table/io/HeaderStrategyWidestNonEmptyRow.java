@@ -13,6 +13,9 @@ package app.babylon.table.io;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
+import app.babylon.table.column.ColumnName;
 
 public class HeaderStrategyWidestNonEmptyRow implements HeaderStrategy
 {
@@ -40,7 +43,7 @@ public class HeaderStrategyWidestNonEmptyRow implements HeaderStrategy
     }
 
     @Override
-    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Csv.ReadSettings readSettings)
+    public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns)
             throws IOException
     {
         List<RowBuffer> scannedRows = new ArrayList<>();

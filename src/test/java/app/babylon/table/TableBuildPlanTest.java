@@ -18,7 +18,6 @@ import app.babylon.io.DataSources;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.io.Csv;
-import app.babylon.table.io.HeaderStrategyAuto;
 import app.babylon.table.transform.TransformAfter;
 import app.babylon.table.transform.TransformPrefix;
 import app.babylon.table.transform.TransformToUpperCase;
@@ -84,8 +83,7 @@ class TableBuildPlanTest
                 xyz,20.0
                 """;
 
-        Csv.ReadSettings settings = new Csv.ReadSettings().withSeparator(',')
-                .withHeaderStrategy(new HeaderStrategyAuto());
+        Csv.ReadSettings settings = new Csv.ReadSettings().withSeparator(',');
         TableBuildPlan plan = new TableBuildPlan().withOutputTableName(TableName.of("BuiltFromCsv"))
                 .withColumnType(AMOUNT, double.class).withTransform(new TransformToUpperCase(CODE));
 

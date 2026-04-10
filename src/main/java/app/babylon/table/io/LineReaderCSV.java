@@ -26,12 +26,31 @@ final class LineReaderCSV implements LineReader
 
     private final BufferedCharReader reader;
     private final Csv.ReadSettings settings;
+    private final char separator;
     private final RowBuffer current;
 
     protected LineReaderCSV(BufferedInputStream instream, Csv.ReadSettings options, Charset charset, int bomLength)
     {
         this.settings = ArgumentCheck.nonNull(options, "options must not be null");
+        this.separator = options.getSeparator();
         this.reader = createReader(instream, charset, bomLength);
+        this.current = new RowBuffer();
+    }
+
+    protected LineReaderCSV(BufferedInputStream instream, TabularReaderCsv<?> options, Charset charset, int bomLength)
+    {
+        ArgumentCheck.nonNull(options, "options must not be null");
+        this.settings = null;
+        this.separator = options.getSeparator();
+        this.reader = createReader(instream, charset, bomLength);
+        this.current = new RowBuffer();
+    }
+
+    protected LineReaderCSV(BufferedCharReader reader, TabularReaderCsv<?> options)
+    {
+        this.settings = null;
+        this.separator = ArgumentCheck.nonNull(options, "options must not be null").getSeparator();
+        this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
         this.current = new RowBuffer();
     }
 
@@ -90,7 +109,7 @@ final class LineReaderCSV implements LineReader
 
     private boolean readRowParsed(RowBuffer output) throws IOException
     {
-        final char separator = this.settings.getSeparator();
+        final char separator = this.separator;
         output.clear();
         boolean inQuotes = false;
         boolean anyCharRead = false;

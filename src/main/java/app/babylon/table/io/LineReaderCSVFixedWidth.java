@@ -44,6 +44,35 @@ final class LineReaderCSVFixedWidth implements LineReader
         this.current = new RowFixedWidth(this.fixedWidths);
     }
 
+    protected LineReaderCSVFixedWidth(BufferedInputStream instream, TabularReaderCsv<?> options, Charset charset,
+            int bomLength)
+    {
+        ArgumentCheck.nonNull(options, "options must not be null");
+        int[] configuredWidths = options.getFixedWidths();
+        if (configuredWidths == null || configuredWidths.length == 0)
+        {
+            throw new IllegalArgumentException("fixedWidths must not be empty");
+        }
+        this.reader = createReader(instream, charset, bomLength);
+        this.fixedWidths = Arrays.copyOf(configuredWidths, configuredWidths.length);
+        this.settings = null;
+        this.current = new RowFixedWidth(this.fixedWidths);
+    }
+
+    protected LineReaderCSVFixedWidth(BufferedCharReader reader, TabularReaderCsv<?> options)
+    {
+        ArgumentCheck.nonNull(options, "options must not be null");
+        int[] configuredWidths = options.getFixedWidths();
+        if (configuredWidths == null || configuredWidths.length == 0)
+        {
+            throw new IllegalArgumentException("fixedWidths must not be empty");
+        }
+        this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
+        this.fixedWidths = Arrays.copyOf(configuredWidths, configuredWidths.length);
+        this.settings = null;
+        this.current = new RowFixedWidth(this.fixedWidths);
+    }
+
     private static BufferedCharReader createReader(InputStream instream, Charset charset, int bomLength)
     {
         try

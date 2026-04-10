@@ -32,7 +32,7 @@ public class CsvTest
         DataSource ds = TestDataSources.fromString(csv, "auto-default.csv");
         Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyAuto());
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -48,9 +48,9 @@ public class CsvTest
         String csv = "" + "A,1\n" + "B,2\n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n";
 
         DataSource ds = TestDataSources.fromString(csv, "explicit-header-row.csv");
-        Csv.ReadSettings settings = new Csv.ReadSettings().withHeaderStrategy(new HeaderStrategyExplicitRow(2));
+        Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyExplicitRow(2));
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(1, table.getRowCount());
@@ -63,10 +63,10 @@ public class CsvTest
         String csv = "" + "Meta,Value\n" + "Account,123\n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n";
 
         DataSource ds = TestDataSources.fromString(csv, "expected-header.csv");
-        Csv.ReadSettings settings = new Csv.ReadSettings().withHeaderStrategy(new HeaderStrategyExpectedHeaders(10,
-                ColumnName.of("Date"), ColumnName.of("Description"), ColumnName.of("Amount")));
+        Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyExpectedHeaders(10, ColumnName.of("Date"),
+                ColumnName.of("Description"), ColumnName.of("Amount")));
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(1, table.getRowCount());
@@ -78,9 +78,9 @@ public class CsvTest
         String csv = "" + "john smith,london,uk\n" + "mary jones,paris\n";
 
         DataSource ds = TestDataSources.fromString(csv, "no-headers.csv");
-        Csv.ReadSettings settings = new Csv.ReadSettings().withHeaderStrategy(new HeaderStrategyNoHeaders(10));
+        Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyNoHeaders(10));
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -99,10 +99,10 @@ public class CsvTest
         String csv = "" + "john smith,london,uk\n" + "mary jones,paris,fr\n";
 
         DataSource ds = TestDataSources.fromString(csv, "no-headers-selected.csv");
-        Csv.ReadSettings settings = new Csv.ReadSettings().withHeaderStrategy(new HeaderStrategyNoHeaders(100))
-                .withSelectedColumn(ColumnName.of("Date")).withSelectedColumn(ColumnName.of("Amount"));
+        Csv.ReadSettings settings = new Csv.ReadSettings().withSelectedColumn(ColumnName.of("Date"))
+                .withSelectedColumn(ColumnName.of("Amount"));
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyNoHeaders(100));
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -118,9 +118,9 @@ public class CsvTest
                 + "2026-01-01,Coffee,3.50\n" + "2026-01-02,Salary,1000.00\n";
 
         DataSource ds = TestDataSources.fromString(csv, "widest-row.csv");
-        Csv.ReadSettings settings = new Csv.ReadSettings().withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
+        Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyWidestNonEmptyRow(10));
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -139,9 +139,9 @@ public class CsvTest
         csv.append("2026-01-01,Coffee,3.50\n");
 
         DataSource ds = TestDataSources.fromString(csv.toString(), "widest-row-limit.csv");
-        Csv.ReadSettings settings = new Csv.ReadSettings().withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(50));
+        Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyWidestNonEmptyRow(50));
         assertNotNull(table);
         assertEquals(1, table.getColumnCount());
         assertEquals(51, table.getRowCount());
@@ -155,9 +155,9 @@ public class CsvTest
         String csv = "" + "  n/a  ,  N/A  \n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n";
 
         DataSource ds = TestDataSources.fromString(csv, "widest-row-na.csv");
-        Csv.ReadSettings settings = new Csv.ReadSettings().withHeaderStrategy(new HeaderStrategyWidestNonEmptyRow(10));
+        Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyWidestNonEmptyRow(10));
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(1, table.getRowCount());
@@ -172,7 +172,7 @@ public class CsvTest
         DataSource ds = TestDataSources.fromString(csv, "resource-name.csv");
         Csv.ReadSettings settings = new Csv.ReadSettings().withIncludeResourceName(ColumnName.of("ResourceName"));
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyAuto());
         assertNotNull(table);
         assertEquals(4, table.getColumnCount());
         assertEquals(2, table.getRowCount());
@@ -193,7 +193,7 @@ public class CsvTest
         DataSource ds = TestDataSources.fromString(csv, "bank-statement-malformed.csv");
         Csv.ReadSettings settings = new Csv.ReadSettings();
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyAuto());
         assertNotNull(table);
         assertEquals(3, table.getColumnCount());
         assertEquals(5, table.getRowCount());
@@ -227,7 +227,7 @@ public class CsvTest
         DataSource ds = TestDataSources.fromString(csv, "no-strip.csv");
         Csv.ReadSettings settings = new Csv.ReadSettings().withStripping(false);
 
-        TableColumnar table = Csv.read(ds, settings);
+        TableColumnar table = Csv.read(ds, settings, new HeaderStrategyAuto());
         assertNotNull(table);
         assertEquals(1, table.getRowCount());
         assertEquals(" 2026-01-01 ", table.getString(ColumnName.of("Date")).get(0));

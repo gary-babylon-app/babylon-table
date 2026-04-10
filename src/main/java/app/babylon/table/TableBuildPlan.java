@@ -22,6 +22,7 @@ import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.Csv;
+import app.babylon.table.io.HeaderStrategyAuto;
 import app.babylon.table.io.RowConsumerTableCreator;
 import app.babylon.table.transform.Transform;
 
@@ -137,10 +138,16 @@ public class TableBuildPlan
 
     public TableColumnar execute(DataSource dataSource, Csv.ReadSettings settings)
     {
+        return execute(dataSource, settings, new HeaderStrategyAuto());
+    }
+
+    public TableColumnar execute(DataSource dataSource, Csv.ReadSettings settings,
+            app.babylon.table.io.HeaderStrategy headerStrategy)
+    {
         ArgumentCheck.nonNull(dataSource);
         Csv.ReadSettings effectiveSettings = settings == null ? new Csv.ReadSettings() : settings;
-        TableColumnar parsed = Csv.read(dataSource, effectiveSettings,
-                RowConsumerTableCreator.factory(this.columnTypes));
+        TableColumnar parsed = Csv.read(dataSource, effectiveSettings, headerStrategy,
+                RowConsumerTableCreator.create(effectiveSettings, this.columnTypes));
         return apply(parsed);
     }
 

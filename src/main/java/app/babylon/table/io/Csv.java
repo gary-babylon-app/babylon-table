@@ -38,10 +38,8 @@ public class Csv
     {
         Map<ColumnName, ColumnName> renameHeaders;
         Set<ColumnName> selectedColumns;
-        LineReaderFactory lineReaderFactory;
         TableName tableName;
         ColumnName resourceName;
-        HeaderStrategy headerStrategy;
         boolean stripping;
         char separator;
         Map<ColumnName, Predicate<String>> rowIncludeFilters;
@@ -54,10 +52,8 @@ public class Csv
         {
             this.renameHeaders = new HashMap<>();
             this.selectedColumns = new LinkedHashSet<>();
-            this.lineReaderFactory = null;
             this.tableName = null;
             this.resourceName = null;
-            this.headerStrategy = new HeaderStrategyAuto(Csv.DEFAULT_HEADER_SCAN_LIMIT);
             this.stripping = true;
             this.separator = ',';
             this.rowIncludeFilters = new HashMap<>();
@@ -132,19 +128,6 @@ public class Csv
             return this;
         }
 
-        public ReadSettings withHeaderStrategy(HeaderStrategy headerStrategy)
-        {
-            ArgumentCheck.nonNull(headerStrategy);
-            this.headerStrategy = headerStrategy;
-            return this;
-        }
-
-        public ReadSettings withLineReaderFactory(LineReaderFactory lineReaderFactory)
-        {
-            this.lineReaderFactory = lineReaderFactory;
-            return this;
-        }
-
         public ReadSettings withSelectedColumn(ColumnName x)
         {
             this.selectedColumns.add(x);
@@ -170,16 +153,6 @@ public class Csv
             }
             this.renameHeaders.put(original, newName);
             return this;
-        }
-
-        public HeaderStrategy getHeaderStrategy()
-        {
-            return this.headerStrategy;
-        }
-
-        public LineReaderFactory getLineReaderFactory()
-        {
-            return this.lineReaderFactory;
         }
 
         public boolean includeResourceName()
@@ -287,25 +260,14 @@ public class Csv
 
     }
 
-    public static TableColumnar read(DataSource ds, ReadSettings options)
-    {
-        HeaderStrategy headerStrategy = options == null ? null : options.getHeaderStrategy();
-        return read(ds, options, headerStrategy, RowConsumerTableCreator.factory());
-    }
-
     public static TableColumnar read(DataSource ds, ReadSettings options, HeaderStrategy headerStrategy)
     {
-        return read(ds, options, headerStrategy, RowConsumerTableCreator.factory());
-    }
-
-    public static <T> T read(DataSource ds, ReadSettings options, RowConsumerFactory<T> rowConsumerFactory)
-    {
-        HeaderStrategy headerStrategy = options == null ? null : options.getHeaderStrategy();
-        return read(ds, options, headerStrategy, rowConsumerFactory);
+        ReadSettings effectiveOptions = options == null ? new ReadSettings() : options;
+        return read(ds, effectiveOptions, headerStrategy, RowConsumerTableCreator.create(effectiveOptions));
     }
 
     public static <T> T read(DataSource ds, ReadSettings options, HeaderStrategy headerStrategy,
-            RowConsumerFactory<T> rowConsumerFactory)
+            RowConsumer<T> rowConsumer)
     {
         if (options == null)
         {
@@ -315,37 +277,49 @@ public class Csv
         {
             headerStrategy = new HeaderStrategyAuto();
         }
-        if (rowConsumerFactory == null)
+        if (rowConsumer == null)
         {
-            throw new IllegalArgumentException("rowConsumerFactory must not be null");
+            throw new IllegalArgumentException("rowConsumer must not be null");
         }
-        LineReaderFactory lineReaderFactory = options.getLineReaderFactory();
-        if (lineReaderFactory == null)
+        TabularReaderCsv<T> reader = new TabularReaderCsv<T>().withHeaderStrategy(headerStrategy)
+                .withStripping(options.isStripping()).withSeparator(options.getSeparator())
+                .withFixedWidths(options.getFixedWidths()).withAutoDetectEncoding(options.isAutoDetectEncoding())
+                .withRowConsumer(rowConsumer);
+        if (options.hasCharset())
         {
-            lineReaderFactory = new LineReaderFactoryCSV();
+            reader.withCharset(options.getCharset());
         }
-        try (LineReader lineReader = lineReaderFactory.create(ds, options))
+        if (options.getTableName() != null)
         {
-            RowStreamMarkable parsedRowStream = new RowStreamBuffered(lineReader);
-
-            HeaderDetection headerDetection = headerStrategy.detect(parsedRowStream, options);
-
-            RowConsumerResult<T> rowConsumer = rowConsumerFactory.create(options, headerDetection);
-            RowProjected projectedRow = createRowProjected(options, headerDetection);
-
-            parsedRowStream.reset();
-            while (parsedRowStream.next())
+            reader.withTableName(options.getTableName());
+        }
+        if (options.includeResourceName())
+        {
+            reader.withIncludeResourceName(options.getResourceName());
+        }
+        for (ColumnName selectedColumn : options.getSelectedColumns(new ArrayList<>()))
+        {
+            reader.withSelectedColumn(selectedColumn);
+        }
+        for (Map.Entry<ColumnName, ColumnName> entry : options.renameHeaders.entrySet())
+        {
+            reader.withColumnRename(entry.getKey(), entry.getValue());
+        }
+        TabularReadResult<T> result = reader.read(ds);
+        if (result.getStatus() == TabularReadStatus.EXCEPTION)
+        {
+            Throwable cause = result.getCause();
+            if (cause instanceof TableException)
             {
-                rowConsumer.accept(projectedRow.with(parsedRowStream.current()));
+                throw (TableException) cause;
             }
-            return rowConsumer.buildResult(ds);
-        } catch (TableException e)
-        {
-            throw e;
-        } catch (IOException e)
-        {
-            throw new TableException("Failed to read table from data source '" + ds.getName() + "'.", e);
+            if (cause instanceof RuntimeException)
+            {
+                throw (RuntimeException) cause;
+            }
+            throw new TableException("Failed to read table from data source '" + ds.getName() + "'.", cause);
         }
+        return result.getValue();
     }
 
     private static RowProjected createRowProjected(ReadSettings options, HeaderDetection headerDetection)
@@ -354,5 +328,25 @@ public class Csv
                 ? new RowProjectedStripped(headerDetection.getSelectedPositions())
                 : new ProjectedRow(headerDetection.getSelectedPositions());
         return projectedRow;
+    }
+
+    private static ColumnName[] createProjectedColumnNames(ReadSettings options, HeaderDetection headerDetection)
+    {
+        String[] selectedHeaders = headerDetection.getSelectedHeaders();
+        ColumnName[] columnNames = new ColumnName[selectedHeaders.length];
+        for (int i = 0; i < selectedHeaders.length; ++i)
+        {
+            columnNames[i] = options.getRenameColumnName(selectedHeaders[i]);
+        }
+        return columnNames;
+    }
+
+    private static Set<ColumnName> selectedColumns(ReadSettings options)
+    {
+        if (options == null)
+        {
+            return Set.of();
+        }
+        return new LinkedHashSet<>(options.getSelectedColumns(new ArrayList<>()));
     }
 }

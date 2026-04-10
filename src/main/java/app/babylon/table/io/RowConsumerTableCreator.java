@@ -12,8 +12,6 @@ package app.babylon.table.io;
 
 import java.util.Collections;
 import java.util.Map;
-
-import app.babylon.io.DataSource;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
@@ -25,25 +23,37 @@ import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
-public final class RowConsumerTableCreator implements RowConsumerResult<TableColumnar>
+public final class RowConsumerTableCreator implements RowConsumer<TableColumnar>
 {
     private static final byte KIND_STRING = 0;
     private static final byte KIND_DOUBLE = 1;
 
-    private final CsvRowFilter rowFilter;
-    private final byte[] columnKinds;
-    private final ColumnBuilder[] columnBuilders;
-    private final String[] strippedValues;
     private final Csv.ReadSettings options;
+    private final Map<ColumnName, Column.Type> explicitColumnTypes;
+    private byte[] columnKinds;
+    private ColumnBuilder[] columnBuilders;
+    private String[] strippedValues;
+    private CsvRowFilter rowFilter;
+    private String sourceName;
 
-    RowConsumerTableCreator(Csv.ReadSettings options, CsvRowFilter rowFilter, byte[] columnKinds,
-            ColumnBuilder[] columnBuilders, String[] strippedValues)
+    RowConsumerTableCreator(Csv.ReadSettings options, Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         this.options = options;
-        this.rowFilter = rowFilter;
-        this.columnKinds = columnKinds;
-        this.columnBuilders = columnBuilders;
-        this.strippedValues = strippedValues;
+        this.explicitColumnTypes = explicitColumnTypes;
+        this.rowFilter = null;
+        this.columnKinds = null;
+        this.columnBuilders = null;
+        this.strippedValues = null;
+        this.sourceName = null;
+    }
+
+    @Override
+    public void start(ColumnName[] columnNames)
+    {
+        this.columnKinds = initialiseColumnKinds(columnNames, this.explicitColumnTypes);
+        this.columnBuilders = initialiseColumnBuilders(columnNames, this.explicitColumnTypes);
+        this.rowFilter = new CsvRowFilter(this.options, columnNames);
+        this.strippedValues = new String[this.columnBuilders.length];
     }
 
     @Override
@@ -100,12 +110,12 @@ public final class RowConsumerTableCreator implements RowConsumerResult<TableCol
     }
 
     @Override
-    public TableColumnar buildResult(DataSource dataSource)
+    public TableColumnar build()
     {
         TableName name = this.options.getTableName();
         if (name == null)
         {
-            name = TableName.of(extractLastPart(dataSource.getName()));
+            name = TableName.of(extractLastPart(this.sourceName));
         }
         if (this.options.includeResourceName() && this.columnBuilders.length > 0)
         {
@@ -115,51 +125,29 @@ public final class RowConsumerTableCreator implements RowConsumerResult<TableCol
                 builtColumns[i + 1] = this.columnBuilders[i].build();
             }
             int rowCount = builtColumns.length > 1 ? builtColumns[1].size() : 0;
-            builtColumns[0] = Columns.newString(this.options.getResourceName(), dataSource.getName(), rowCount);
+            builtColumns[0] = Columns.newString(this.options.getResourceName(), this.sourceName, rowCount);
             return Tables.newTable(name, builtColumns);
         }
         return Tables.newTable(name, this.columnBuilders);
     }
 
-    public static RowConsumerTableCreator create(Csv.ReadSettings options, HeaderDetection headerDetection)
+    void setSourceName(String sourceName)
     {
-        return create(options, headerDetection, Collections.emptyMap());
+        this.sourceName = sourceName;
     }
 
-    public static RowConsumerTableCreator create(Csv.ReadSettings options, HeaderDetection headerDetection,
+    public static RowConsumerTableCreator create(Csv.ReadSettings options)
+    {
+        return create(options, Collections.emptyMap());
+    }
+
+    public static RowConsumerTableCreator create(Csv.ReadSettings options,
             Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        String[] selectedHeaders = headerDetection.getSelectedHeaders();
-        ColumnName[] columnNames = initialiseSelectedColumns(options, selectedHeaders);
-        byte[] columnKinds = initialiseColumnKinds(options, columnNames, explicitColumnTypes);
-        ColumnBuilder[] columnBuilders = initialiseColumnBuilders(options, columnNames, explicitColumnTypes);
-        CsvRowFilter rowFilter = new CsvRowFilter(options, columnNames);
-        return new RowConsumerTableCreator(options, rowFilter, columnKinds, columnBuilders,
-                new String[columnBuilders.length]);
+        return new RowConsumerTableCreator(options, explicitColumnTypes);
     }
 
-    public static RowConsumerFactory<TableColumnar> factory()
-    {
-        return RowConsumerTableCreator::create;
-    }
-
-    public static RowConsumerFactory<TableColumnar> factory(Map<ColumnName, Column.Type> explicitColumnTypes)
-    {
-        return (options, headerDetection) -> create(options, headerDetection, explicitColumnTypes);
-    }
-
-    private static ColumnName[] initialiseSelectedColumns(Csv.ReadSettings options, String[] selectedHeadersFound)
-    {
-        ColumnName[] columnNames = new ColumnName[selectedHeadersFound.length];
-        for (int i = 0; i < selectedHeadersFound.length; ++i)
-        {
-            String selectedHeader = selectedHeadersFound[i];
-            columnNames[i] = options.getRenameColumnName(selectedHeader);
-        }
-        return columnNames;
-    }
-
-    private static byte[] initialiseColumnKinds(Csv.ReadSettings options, ColumnName[] columnNames,
+    private static byte[] initialiseColumnKinds(ColumnName[] columnNames,
             Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         byte[] columnKinds = new byte[columnNames.length];
@@ -177,7 +165,7 @@ public final class RowConsumerTableCreator implements RowConsumerResult<TableCol
         return columnKinds;
     }
 
-    private static ColumnBuilder[] initialiseColumnBuilders(Csv.ReadSettings options, ColumnName[] columnNames,
+    private static ColumnBuilder[] initialiseColumnBuilders(ColumnName[] columnNames,
             Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         ColumnBuilder[] columnBuilders = new ColumnBuilder[columnNames.length];

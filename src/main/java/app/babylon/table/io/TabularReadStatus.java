@@ -10,11 +10,17 @@
 
 package app.babylon.table.io;
 
-/**
- * Creates row consumers after header detection has established how incoming
- * rows should be interpreted.
- */
-public interface RowConsumerFactory<T>
+public enum TabularReadStatus
 {
-    RowConsumerResult<T> create(Csv.ReadSettings options, HeaderDetection headerDetection);
+    SUCCESS, WARNING, EMPTY, EXCEPTION;
+
+    public boolean isSuccessLike()
+    {
+        return this == SUCCESS || this == WARNING || this == EMPTY;
+    }
+
+    public boolean isFailure()
+    {
+        return this == EXCEPTION;
+    }
 }

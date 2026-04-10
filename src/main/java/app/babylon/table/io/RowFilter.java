@@ -10,12 +10,12 @@
 
 package app.babylon.table.io;
 
-import app.babylon.io.DataSource;
-/**
- * A row consumer that can build a final result once all input rows have been
- * processed.
- */
-public interface RowConsumerResult<T> extends RowConsumer
+import java.util.function.Predicate;
+
+import app.babylon.table.column.ColumnName;
+
+@FunctionalInterface
+public interface RowFilter
 {
-    T buildResult(DataSource dataSource);
+    Predicate<Row> bind(ColumnName[] columnNames);
 }

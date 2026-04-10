@@ -155,12 +155,11 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
             HeaderDetection headerDetection = getHeaderStrategy().detect(parsedRowStream, selectedColumns());
 
             final ColumnName[] projectedColumnNames = createProjectedColumnNames(headerDetection);
+            RowProjected projectedRow = createRowProjected(headerDetection);
 
             rowConsumer.start(projectedColumnNames);
 
             Predicate<Row> boundRowFilter = getBoundRowFilter(projectedColumnNames);
-
-            RowProjected projectedRow = createRowProjected(headerDetection);
 
             parsedRowStream.reset();
 

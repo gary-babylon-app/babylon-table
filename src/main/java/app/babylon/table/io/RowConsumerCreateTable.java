@@ -87,7 +87,8 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
                     if (Strings.isEmpty(this.strippedValues[i]))
                     {
                         ((ColumnDouble.Builder) this.columnBuilders[i]).addNull();
-                    } else
+                    }
+                    else
                     {
                         ((ColumnDouble.Builder) this.columnBuilders[i]).add(chars, rowValues.start(i),
                                 rowValues.length(i));
@@ -151,7 +152,8 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnKinds[i] = KIND_DOUBLE;
-            } else
+            }
+            else
             {
                 columnKinds[i] = KIND_STRING;
             }
@@ -170,7 +172,8 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
             if (ColumnDouble.TYPE.equals(columnType))
             {
                 columnBuilders[i] = ColumnDouble.builder(columnName);
-            } else
+            }
+            else
             {
                 columnBuilders[i] = ColumnObject.builder(columnName, String.class);
             }

@@ -56,18 +56,21 @@ public class TransformStringReplace extends TransformBase
                     String r = s.replace(target, replacement);
                     old2New.put(s, r);
                     s = r;
-                } else
+                }
+                else
                 {
                     s = old2New.get(s);
                 }
                 if (!Strings.isEmpty(s))
                 {
                     newColumn.add(s);
-                } else
+                }
+                else
                 {
                     newColumn.addNull();
                 }
-            } else
+            }
+            else
             {
                 newColumn.addNull();
             }

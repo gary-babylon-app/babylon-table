@@ -98,7 +98,8 @@ abstract class TableColumnarCommon implements TableColumnar
             if (this.contains(column.getName()))
             {
                 replaces.add(column);
-            } else
+            }
+            else
             {
                 adds.add(column);
             }
@@ -348,7 +349,8 @@ abstract class TableColumnarCommon implements TableColumnar
             }
 
             return new TableColumnarMap(getName(), getDescription(), allColumns);
-        } else
+        }
+        else
         {
             return this;
         }

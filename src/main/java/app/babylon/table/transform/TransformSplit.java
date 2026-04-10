@@ -74,7 +74,8 @@ public class TransformSplit extends TransformBase
                 {
                     newColumns[j].addNull();
                 }
-            } else
+            }
+            else
             {
                 for (int j = 0; j < newColumns.length; ++j)
                 {

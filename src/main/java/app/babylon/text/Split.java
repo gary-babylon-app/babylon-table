@@ -40,7 +40,8 @@ public final class Split
                     words.add(s.substring(start, i));
                     start = -1;
                 }
-            } else if (start < 0)
+            }
+            else if (start < 0)
             {
                 start = i;
             }

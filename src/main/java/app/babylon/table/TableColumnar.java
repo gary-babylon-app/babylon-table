@@ -145,7 +145,8 @@ public interface TableColumnar extends Table
         if (!Is.empty(x))
         {
             return new TableColumnarMap(getName(), getDescription(), getColumns(x));
-        } else
+        }
+        else
         {
             return this;
         }

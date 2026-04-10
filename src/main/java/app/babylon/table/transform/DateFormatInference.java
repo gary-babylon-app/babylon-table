@@ -627,7 +627,8 @@ public final class DateFormatInference
                 secondVotes = bestVotes;
                 best = entry.getKey();
                 bestVotes = v;
-            } else if (v > secondVotes)
+            }
+            else if (v > secondVotes)
             {
                 second = entry.getKey();
                 secondVotes = v;

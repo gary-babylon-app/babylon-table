@@ -118,7 +118,8 @@ public final class ColumnTypes
                 String simpleName = valueClass.getSimpleName();
                 String name = simpleName.isEmpty() ? valueClass.getName() : simpleName;
                 this.id = name.toLowerCase(Locale.ROOT);
-            } else
+            }
+            else
             {
                 this.id = id.toLowerCase(Locale.ROOT);
             }

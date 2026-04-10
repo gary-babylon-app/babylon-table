@@ -56,7 +56,8 @@ public class TransformSubstring extends TransformBase
             {
                 s = s.substring(this.first, this.last);
                 newColumnBuilder.add(s);
-            } else
+            }
+            else
             {
                 newColumnBuilder.addNull();
             }

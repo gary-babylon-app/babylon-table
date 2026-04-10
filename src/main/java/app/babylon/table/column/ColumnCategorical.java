@@ -188,7 +188,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
             if (isSet(i))
             {
                 newBuilder.add(get(i));
-            } else
+            }
+            else
             {
                 newBuilder.addNull();
             }
@@ -219,11 +220,13 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
             if (b != null)
             {
                 return a.toString().compareTo(b.toString());
-            } else
+            }
+            else
             {
                 return 1;
             }
-        } else
+        }
+        else
         {
             if (b != null)
             {
@@ -244,7 +247,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
             {
                 T t = this.get(i);
                 selection.add(f.test(t));
-            } else
+            }
+            else
             {
                 selection.add(false);
             }

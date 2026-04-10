@@ -108,7 +108,8 @@ public class TransformSubstitute extends TransformBase
                     replaceValue = s;
                 }
                 newColumn.add(replaceValue);
-            } else
+            }
+            else
             {
                 newColumn.add(this.defaultValueNewColumn);
             }

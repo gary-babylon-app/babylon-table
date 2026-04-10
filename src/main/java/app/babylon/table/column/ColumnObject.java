@@ -269,7 +269,8 @@ public interface ColumnObject<T> extends Column
             {
                 T t = this.get(i);
                 selection.add(f.test(t));
-            } else
+            }
+            else
             {
                 selection.add(false);
             }
@@ -300,7 +301,8 @@ public interface ColumnObject<T> extends Column
             {
                 S value = xform.apply(get(i));
                 transformed.add(value);
-            } else
+            }
+            else
             {
                 transformed.addNull();
             }

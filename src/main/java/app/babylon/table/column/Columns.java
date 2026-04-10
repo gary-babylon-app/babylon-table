@@ -113,13 +113,16 @@ public class Columns
             if (!valueClass.isPrimitive())
             {
                 return ColumnObject.builder(colName, valueClass);
-            } else if (int.class.equals(valueClass))
+            }
+            else if (int.class.equals(valueClass))
             {
                 return ColumnInt.builder(colName);
-            } else if (double.class.equals(valueClass))
+            }
+            else if (double.class.equals(valueClass))
             {
                 return ColumnDouble.builder(colName);
-            } else if (long.class.equals(valueClass))
+            }
+            else if (long.class.equals(valueClass))
             {
                 return ColumnLong.builder(colName);
             }
@@ -283,7 +286,8 @@ public class Columns
                 if (max == null)
                 {
                     max = v;
-                } else if (max.compareTo(v) < 0)
+                }
+                else if (max.compareTo(v) < 0)
                 {
                     max = v;
                 }
@@ -330,7 +334,8 @@ public class Columns
                 if (min == null)
                 {
                     min = v;
-                } else if (min.compareTo(v) > 0)
+                }
+                else if (min.compareTo(v) > 0)
                 {
                     min = v;
                 }
@@ -414,7 +419,8 @@ public class Columns
                     if (cc.isSet(j))
                     {
                         newColumn.add(cc.get(j));
-                    } else
+                    }
+                    else
                     {
                         newColumn.addNull();
                     }
@@ -446,7 +452,8 @@ public class Columns
                     if (co.isSet(j))
                     {
                         newColumn.add(co.get(j));
-                    } else
+                    }
+                    else
                     {
                         newColumn.addNull();
                     }
@@ -466,7 +473,8 @@ public class Columns
                     if (ci.isSet(j))
                     {
                         newColumn.add(ci.get(j));
-                    } else
+                    }
+                    else
                     {
                         newColumn.addNull();
                     }
@@ -485,7 +493,8 @@ public class Columns
                     if (cl.isSet(j))
                     {
                         newColumn.add(cl.get(j));
-                    } else
+                    }
+                    else
                     {
                         newColumn.addNull();
                     }
@@ -504,7 +513,8 @@ public class Columns
                     if (cd.isSet(j))
                     {
                         newColumn.add(cd.get(j));
-                    } else
+                    }
+                    else
                     {
                         newColumn.addNull();
                     }
@@ -523,7 +533,8 @@ public class Columns
                     if (cb.isSet(j))
                     {
                         newColumn.add(cb.get(j));
-                    } else
+                    }
+                    else
                     {
                         newColumn.addNull();
                     }
@@ -562,7 +573,8 @@ public class Columns
             if (i != 0)
             {
                 builder.append(", ");
-            } else
+            }
+            else
             {
                 builder.append("[");
             }

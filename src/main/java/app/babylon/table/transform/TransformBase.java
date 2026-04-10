@@ -75,10 +75,12 @@ abstract class TransformBase implements Transform
                 ColumnName newColumnName = (newColumnNames == null) ? c.getName() : newColumnNames[i];
                 Transformer<String, T> transformer = Transformer.of(actualConversion::get, valueClass, newColumnName);
                 transformedColumns[i] = stringColumn.transform(transformer);
-            } else if (valueClass.equals(c.getType().getValueClass()))
+            }
+            else if (valueClass.equals(c.getType().getValueClass()))
             {
                 transformedColumns[i] = c;
-            } else
+            }
+            else
             {
                 throw new RuntimeException("Cannot convert from " + c.getName());
             }

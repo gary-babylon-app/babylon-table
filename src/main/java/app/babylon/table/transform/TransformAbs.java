@@ -46,7 +46,8 @@ public class TransformAbs extends TransformBase
             if (bd != null)
             {
                 newColumn.add(bd.abs(MathContext.DECIMAL64));
-            } else
+            }
+            else
             {
                 newColumn.addNull();
             }

@@ -90,7 +90,8 @@ public final class BigDecimals
             if (isSupportedDecimalChar(c))
             {
                 clean[countCleanChars++] = c;
-            } else
+            }
+            else
             {
                 return s;
             }
@@ -288,7 +289,8 @@ public final class BigDecimals
                 if (hasExponent)
                 {
                     hasExponentDigit = true;
-                } else
+                }
+                else
                 {
                     hasDigitBeforeExponent = true;
                 }
@@ -415,7 +417,8 @@ public final class BigDecimals
                         if (c >= '0' && c <= '9')
                         {
                             ++digit;
-                        } else
+                        }
+                        else
                         {
                             ++invalid;
                         }

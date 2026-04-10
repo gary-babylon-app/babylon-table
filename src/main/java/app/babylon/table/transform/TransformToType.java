@@ -112,13 +112,15 @@ public class TransformToType<T> extends TransformBase
                 if (mode == ColumnObject.Mode.AUTO)
                 {
                     transformedColumns[i] = rebuild(stringColumn, newColumnName, mode, this::parseValue);
-                } else
+                }
+                else
                 {
                     transformedColumns[i] = sourceMatchesMode(stringColumn, mode)
                             ? stringColumn.transform(transformer(newColumnName))
                             : rebuild(stringColumn, newColumnName, mode, this::parseValue);
                 }
-            } else if (valueClass.equals(column.getType().getValueClass()))
+            }
+            else if (valueClass.equals(column.getType().getValueClass()))
             {
                 @SuppressWarnings("unchecked")
                 ColumnObject<T> typedColumn = (ColumnObject<T>) column;
@@ -127,14 +129,17 @@ public class TransformToType<T> extends TransformBase
                         && (mode == ColumnObject.Mode.AUTO || sourceMatchesMode(typedColumn, mode)))
                 {
                     transformedColumns[i] = column;
-                } else if (sourceMatchesMode(typedColumn, mode))
+                }
+                else if (sourceMatchesMode(typedColumn, mode))
                 {
                     transformedColumns[i] = column.copy(newColumnName);
-                } else
+                }
+                else
                 {
                     transformedColumns[i] = rebuild(typedColumn, newColumnName, mode, Function.identity());
                 }
-            } else
+            }
+            else
             {
                 throw new RuntimeException(
                         "Cannot convert to " + valueClass.getSimpleName() + " from " + column.getName());
@@ -163,7 +168,8 @@ public class TransformToType<T> extends TransformBase
             {
                 S s = input.get(j);
                 transformed.add(s == null ? null : mapper.apply(s));
-            } else
+            }
+            else
             {
                 transformed.addNull();
             }

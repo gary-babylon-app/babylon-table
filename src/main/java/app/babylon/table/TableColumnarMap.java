@@ -55,7 +55,8 @@ class TableColumnarMap extends TableColumnarCommon
             if (index > 0)
             {
                 mcl = Math.min(mcl, column.size());
-            } else
+            }
+            else
             {
                 mcl = column.size();
             }
@@ -166,7 +167,8 @@ class TableColumnarMap extends TableColumnarCommon
                 }
             }
             return new TableColumnarMap(getName(), getDescription(), allColumns);
-        } else
+        }
+        else
         {
             return this;
         }

@@ -77,7 +77,8 @@ class TransformDecimalBinaryOperator extends TransformBase
                         throw new RuntimeException("Unknown operator. " + this.operator);
                 }
                 newColumn.add(newValue);
-            } else
+            }
+            else
             {
                 newColumn.addNull();
             }

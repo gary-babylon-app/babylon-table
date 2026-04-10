@@ -46,7 +46,8 @@ public class Selections
             if (!Strings.isEmpty(s) && matched.contains(s))
             {
                 selection.add(true);
-            } else
+            }
+            else
             {
                 selection.add(false);
             }

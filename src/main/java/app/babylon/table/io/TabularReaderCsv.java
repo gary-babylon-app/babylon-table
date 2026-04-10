@@ -164,14 +164,24 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
 
             parsedRowStream.reset();
 
-            while (parsedRowStream.next())
+            if (boundRowFilter == null)
             {
-                Row row = projectedRow.with(parsedRowStream.current());
-                if (boundRowFilter != null && !boundRowFilter.test(row))
+                while (parsedRowStream.next())
                 {
-                    continue;
+                    rowConsumer.accept(projectedRow.with(parsedRowStream.current()));
                 }
-                rowConsumer.accept(row);
+            }
+            else
+            {
+                while (parsedRowStream.next())
+                {
+                    Row row = projectedRow.with(parsedRowStream.current());
+                    if (!boundRowFilter.test(row))
+                    {
+                        continue;
+                    }
+                    rowConsumer.accept(row);
+                }
             }
             return TabularReader.Result.success(rowConsumer.build());
 

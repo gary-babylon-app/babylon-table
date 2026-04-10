@@ -73,7 +73,8 @@ final class LineReaderCSV implements LineReader
                     anyNonRowTerminator = true;
                     continue;
                 }
-            } else
+            }
+            else
             {
                 int specialIndex = this.reader.nextSpecial(separator, QUOTE);
                 if (specialIndex == -1)
@@ -137,11 +138,13 @@ final class LineReaderCSV implements LineReader
                         output.append(QUOTE);
                         fieldHasContent = true;
                         anyNonRowTerminator = true;
-                    } else
+                    }
+                    else
                     {
                         inQuotes = false;
                     }
-                } else
+                }
+                else
                 {
                     output.append(ch);
                     fieldHasContent = true;
@@ -155,7 +158,8 @@ final class LineReaderCSV implements LineReader
                 if (!fieldHasContent)
                 {
                     inQuotes = true;
-                } else
+                }
+                else
                 {
                     output.append(ch);
                     fieldHasContent = true;

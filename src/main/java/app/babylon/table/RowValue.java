@@ -63,7 +63,8 @@ final class RowValue
                     rowValue.objects[j] = value;
                     rowValue.isSet[j] = true;
                 }
-            } else if (column instanceof ColumnInt ints)
+            }
+            else if (column instanceof ColumnInt ints)
             {
                 rowValue.valueCategories[j] = ValueCategory.INT;
                 if (ints.isSet(rowIndex))
@@ -71,7 +72,8 @@ final class RowValue
                     rowValue.ints[j] = ints.get(rowIndex);
                     rowValue.isSet[j] = true;
                 }
-            } else if (column instanceof ColumnLong longs)
+            }
+            else if (column instanceof ColumnLong longs)
             {
                 rowValue.valueCategories[j] = ValueCategory.LONG;
                 if (longs.isSet(rowIndex))
@@ -79,7 +81,8 @@ final class RowValue
                     rowValue.longs[j] = longs.get(rowIndex);
                     rowValue.isSet[j] = true;
                 }
-            } else
+            }
+            else
             {
                 throw new IllegalArgumentException("removeDuplicates does not support key column type "
                         + column.getClass().getSimpleName() + " for column " + column.getName());

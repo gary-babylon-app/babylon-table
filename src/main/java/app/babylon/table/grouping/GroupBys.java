@@ -40,7 +40,8 @@ public final class GroupBys
         if (spec.columns.length == 1)
         {
             groupedRowIndexes = groupBySingleCategorical(spec.columns[0], rowCount);
-        } else
+        }
+        else
         {
             groupedRowIndexes = groupByMultipleCategorical(spec.columns, rowCount);
         }

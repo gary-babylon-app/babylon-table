@@ -58,7 +58,8 @@ public final class SortInt
             if (comparator.compare(temp[left], temp[right]) <= 0)
             {
                 values[out++] = temp[left++];
-            } else
+            }
+            else
             {
                 values[out++] = temp[right++];
             }

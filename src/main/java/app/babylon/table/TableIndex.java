@@ -40,7 +40,8 @@ public class TableIndex
                 if (columns[j] instanceof ColumnObject co)
                 {
                     key[j] = co.get(i);
-                } else
+                }
+                else
                 {
                     throw new RuntimeException(
                             "column " + columns[j].getName() + " not columnobject, cannot form an index");

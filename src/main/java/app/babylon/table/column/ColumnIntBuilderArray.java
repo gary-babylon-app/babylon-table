@@ -208,7 +208,8 @@ class ColumnIntBuilderArray implements ColumnInt.Builder
             if (x == null || x.length < this.size)
             {
                 x = Arrays.copyOf(this.values, this.size);
-            } else
+            }
+            else
             {
                 System.arraycopy(this.values, 0, x, 0, this.size);
             }
@@ -254,7 +255,8 @@ class ColumnIntBuilderArray implements ColumnInt.Builder
             if (original.isConstant())
             {
                 this.isConstant = true;
-            } else
+            }
+            else
             {
                 boolean constant = true;
                 for (int i = 1; i < rowIndex.size(); ++i)
@@ -278,11 +280,13 @@ class ColumnIntBuilderArray implements ColumnInt.Builder
             {
                 this.isAllSet = false;
                 this.isNoneSet = true;
-            } else if (original.isAllSet() && rowIndex.isAllSet())
+            }
+            else if (original.isAllSet() && rowIndex.isAllSet())
             {
                 this.isAllSet = true;
                 this.isNoneSet = false;
-            } else
+            }
+            else
             {
                 boolean anySet = false;
                 boolean anyUnset = false;

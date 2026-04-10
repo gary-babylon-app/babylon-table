@@ -55,14 +55,16 @@ public class TransformStringReplaceAll extends TransformBase
 
                 old2New.put(s, r);
                 s = r;
-            } else
+            }
+            else
             {
                 s = old2New.get(s);
             }
             if (!Strings.isEmpty(s))
             {
                 newColumn.add(s);
-            } else
+            }
+            else
             {
                 newColumn.addNull();
             }

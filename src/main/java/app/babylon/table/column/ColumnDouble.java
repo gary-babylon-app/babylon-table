@@ -184,7 +184,8 @@ public interface ColumnDouble extends Column
             if (isSet(i))
             {
                 newBuilder.add(get(i));
-            } else
+            }
+            else
             {
                 newBuilder.addNull();
             }
@@ -208,7 +209,8 @@ public interface ColumnDouble extends Column
             if (isSet(i))
             {
                 selection.add(p.test(get(i)));
-            } else
+            }
+            else
             {
                 selection.add(false);
             }

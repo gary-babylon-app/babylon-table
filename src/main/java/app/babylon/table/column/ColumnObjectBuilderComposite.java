@@ -61,7 +61,8 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
         {
             activeBuilder().add(x);
             ++this.size;
-        } else
+        }
+        else
         {
             this.arrayBuilder.add(x);
             this.dictionaryBuilder.add(x);
@@ -131,7 +132,8 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
         if (distinctRatio >= MOSTLY_UNIQUE_THRESHOLD)
         {
             selectArray();
-        } else
+        }
+        else
         {
             selectDictionary();
         }

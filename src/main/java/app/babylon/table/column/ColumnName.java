@@ -183,10 +183,12 @@ public final class ColumnName implements Comparable<ColumnName>
                     result.append('_');
                 }
                 result.append(Character.toLowerCase(c));
-            } else if (letterToDigitBoundary)
+            }
+            else if (letterToDigitBoundary)
             {
                 result.append('_').append(c);
-            } else
+            }
+            else
             {
                 result.append(c);
             }
@@ -215,7 +217,8 @@ public final class ColumnName implements Comparable<ColumnName>
                     result.setLength(0);
                 }
                 result.append(c);
-            } else
+            }
+            else
             {
                 result.append(c);
             }

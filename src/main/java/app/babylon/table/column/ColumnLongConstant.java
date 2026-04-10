@@ -86,7 +86,8 @@ class ColumnLongConstant implements ColumnLong
             if (rowIndex.isSet(i) && this.isSet)
             {
                 builder.add(this.value);
-            } else
+            }
+            else
             {
                 builder.addNull();
             }

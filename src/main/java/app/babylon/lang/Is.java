@@ -71,14 +71,16 @@ public class Is
             if (c >= '0' && c <= '9')
             {
                 hasDigit = true;
-            } else if (c == '.')
+            }
+            else if (c == '.')
             {
                 if (hasDot)
                 {
                     return false; // second dot → invalid
                 }
                 hasDot = true;
-            } else
+            }
+            else
             {
                 return false; // invalid char
             }
@@ -109,7 +111,8 @@ public class Is
             if (c >= '0' && c <= '9')
             {
                 hasDigit = true;
-            } else
+            }
+            else
             {
                 return false; // invalid char
             }

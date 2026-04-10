@@ -88,13 +88,16 @@ public class TransformCoalesce extends TransformBase
             if (first.isSet(i))
             {
                 builder.add(first.get(i));
-            } else if (second.isSet(i))
+            }
+            else if (second.isSet(i))
             {
                 builder.add(second.get(i));
-            } else if (third.isSet(i))
+            }
+            else if (third.isSet(i))
             {
                 builder.add(third.get(i));
-            } else
+            }
+            else
             {
                 builder.addNull();
             }

@@ -45,7 +45,8 @@ public interface BitList
             if (value)
             {
                 this.bits.set(this.size);
-            } else
+            }
+            else
             {
                 this.bits.clear(this.size);
             }

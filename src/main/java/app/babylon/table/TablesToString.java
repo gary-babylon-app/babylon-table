@@ -179,7 +179,8 @@ public class TablesToString
         if (columnIndex == 0)
         {
             return Strings.rightPad(v, width, SPACE);
-        } else
+        }
+        else
         {
             return Strings.leftPad(v, width, SPACE);
         }
@@ -221,7 +222,8 @@ public class TablesToString
             if (i == 0)
             {
                 builder.append("|").append(Strings.rightPad(columnName.getValue(), widths[i], SPACE));
-            } else
+            }
+            else
             {
                 builder.append("|").append(Strings.leftPad(columnName.getValue(), widths[i], SPACE));
             }
@@ -243,7 +245,8 @@ public class TablesToString
                 if (i == 0)
                 {
                     builder.append("|").append(Strings.rightPad(column.toString(j, settings), widths[i], SPACE));
-                } else
+                }
+                else
                 {
                     builder.append("|").append(Strings.leftPad(column.toString(j, settings), widths[i], SPACE));
                 }

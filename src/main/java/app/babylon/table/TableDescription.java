@@ -71,7 +71,8 @@ public record TableDescription(String value) implements CharSequence
                     cleaned.append(' ');
                     lastWasSpace = true;
                 }
-            } else
+            }
+            else
             {
                 cleaned.append(c);
                 lastWasSpace = false;

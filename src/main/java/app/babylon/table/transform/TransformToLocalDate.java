@@ -105,7 +105,8 @@ public class TransformToLocalDate extends TransformBase
                     Transformer<String, LocalDate> transformer = Transformer.of(values::get, LocalDate.class,
                             newColumnName);
                     transformedColumns.add(cs.transform(transformer));
-                } else if (!(c instanceof ColumnObject<?> && LocalDate.class.equals(c.getType().getValueClass())))
+                }
+                else if (!(c instanceof ColumnObject<?> && LocalDate.class.equals(c.getType().getValueClass())))
                 {
                     throw new RuntimeException("Cannot convert to LocalDate from " + c.getName());
                 }

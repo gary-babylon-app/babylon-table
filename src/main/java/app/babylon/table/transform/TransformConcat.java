@@ -69,10 +69,12 @@ public class TransformConcat extends TransformBase
             if (columns.length > 1)
             {
                 newColumn.add(String.join(this.separator, values));
-            } else if (columns.length == 1)
+            }
+            else if (columns.length == 1)
             {
                 newColumn.add(values[0]);
-            } else
+            }
+            else
             {
                 newColumn.addNull();
             }

@@ -49,7 +49,8 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         if (code == 0)
         {
             this.hasAnyUnset = true;
-        } else
+        }
+        else
         {
             this.hasAnySet = true;
         }
@@ -251,7 +252,8 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
                     }
                     int remappedCode = this.dictionary[oldCode] == null ? 0 : oldCode;
                     remappedCodes.add(remappedCode);
-                } else
+                }
+                else
                 {
                     remappedCodes.add(0);
                 }

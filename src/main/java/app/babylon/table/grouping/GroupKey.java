@@ -73,7 +73,8 @@ public interface GroupKey extends Comparable<GroupKey>
                 {
                     return c;
                 }
-            } else
+            }
+            else
             {
                 throw new RuntimeException("GroupKey element " + o1 + " is not comparable");
             }

@@ -49,11 +49,13 @@ public final class Strings
                 {
                     result.append(Character.toUpperCase(currentChar));
                     newWord = false;
-                } else
+                }
+                else
                 {
                     result.append(Character.toLowerCase(currentChar));
                 }
-            } else
+            }
+            else
             {
                 newWord = true;
             }

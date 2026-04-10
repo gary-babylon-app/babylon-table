@@ -216,7 +216,8 @@ public class ColumnDoubleSemanticsTest
             if ("A".equals(station))
             {
                 assertEquals(12.0, means.get(i), 1e-12);
-            } else if ("B".equals(station))
+            }
+            else if ("B".equals(station))
             {
                 assertEquals(1.0, means.get(i), 1e-12);
             }

@@ -355,7 +355,8 @@ public class AggregationPlan
             if (aggregateSpec.aggregate() == Aggregate.COUNT)
             {
                 aggregateBuilders[i] = ColumnLong.builder(aggregateSpec.outputColumnName());
-            } else
+            }
+            else
             {
                 aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.outputColumnName());
             }
@@ -379,11 +380,13 @@ public class AggregationPlan
             if (sourceColumn instanceof ColumnDouble)
             {
                 aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.outputColumnName());
-            } else if (sourceColumn instanceof ColumnObject<?>
+            }
+            else if (sourceColumn instanceof ColumnObject<?>
                     && BigDecimal.class.equals(sourceColumn.getType().getValueClass()))
             {
                 aggregateBuilders[i] = ColumnObject.builderDecimal(aggregateSpec.outputColumnName());
-            } else
+            }
+            else
             {
                 throw new IllegalArgumentException(
                         "Unsupported aggregate source column type for " + aggregateSpec.sourceColumnName() + ": "
@@ -402,7 +405,8 @@ public class AggregationPlan
             if (aggregate == Aggregate.COUNT)
             {
                 ((ColumnLong.Builder) aggregateBuilders[i]).add(accumulators[i].getCount());
-            } else
+            }
+            else
             {
                 ((ColumnDouble.Builder) aggregateBuilders[i]).add(valueOf(accumulators[i], aggregate));
             }

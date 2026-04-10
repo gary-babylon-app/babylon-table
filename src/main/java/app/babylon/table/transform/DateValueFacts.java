@@ -182,7 +182,8 @@ public final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            } else
+            }
+            else
             {
                 break;
             }
@@ -193,7 +194,8 @@ public final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            } else
+            }
+            else
             {
                 break;
             }
@@ -207,12 +209,14 @@ public final class DateValueFacts
                 if (i < s.length())
                 {
                     c = s.charAt(i++);
-                } else
+                }
+                else
                 {
                     break;
                 }
             }
-        } else
+        }
+        else
         {
             while (isDigit(c))
             {
@@ -220,7 +224,8 @@ public final class DateValueFacts
                 if (i < s.length())
                 {
                     c = s.charAt(i++);
-                } else
+                }
+                else
                 {
                     break;
                 }
@@ -232,7 +237,8 @@ public final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            } else
+            }
+            else
             {
                 break;
             }
@@ -245,7 +251,8 @@ public final class DateValueFacts
             if (i < s.length())
             {
                 c = s.charAt(i++);
-            } else
+            }
+            else
             {
                 break;
             }
@@ -364,7 +371,8 @@ public final class DateValueFacts
             chronoFields = new String[]
             {this.text().substring(0, 4), this.text().substring(4, 6), this.text().substring(6, 8)};
             effectiveFormat = DateFormat.YMD;
-        } else
+        }
+        else
         {
             if (effectiveFormat == null)
             {
@@ -554,7 +562,8 @@ public final class DateValueFacts
             {
                 c1 = Integer.valueOf(month);
             }
-        } else
+        }
+        else
         {
             c1 = parseInt(chronoFields[1]);
         }

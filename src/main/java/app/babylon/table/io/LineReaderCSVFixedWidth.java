@@ -50,10 +50,12 @@ final class LineReaderCSVFixedWidth implements LineReader
             if (nextRowEnd == -1)
             {
                 nextTerminator = nextLf;
-            } else if (nextLf == -1)
+            }
+            else if (nextLf == -1)
             {
                 nextTerminator = nextRowEnd;
-            } else
+            }
+            else
             {
                 nextTerminator = Math.min(nextRowEnd, nextLf);
             }

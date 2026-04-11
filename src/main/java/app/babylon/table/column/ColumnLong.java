@@ -27,7 +27,7 @@ public interface ColumnLong extends Column
     /**
      * Builder for nullable long columns.
      */
-    public static interface Builder extends ColumnBuilder
+    public static interface Builder extends ColumnBuilder, CharSliceBuilder
     {
         /**
          * Appends a long value.
@@ -37,6 +37,22 @@ public interface ColumnLong extends Column
          * @return this builder
          */
         Builder add(long x);
+
+        default Builder add(char[] chars, int start, int length)
+        {
+            if (chars == null || length == 0)
+            {
+                return addNull();
+            }
+            try
+            {
+                return add(Long.parseLong(new String(chars, start, length)));
+            }
+            catch (RuntimeException e)
+            {
+                return addNull();
+            }
+        }
 
         /**
          * Appends an unset row.

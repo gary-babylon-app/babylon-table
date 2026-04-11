@@ -8,7 +8,7 @@
  *     http://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table;
+package app.babylon.table.plans;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +19,11 @@ import java.util.Map;
 
 import app.babylon.io.DataSource;
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.TableColumnar;
+import app.babylon.table.TableDescription;
+import app.babylon.table.TableException;
+import app.babylon.table.TableName;
+import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.RowConsumerCreateTable;
@@ -26,14 +31,14 @@ import app.babylon.table.io.TabularReader;
 import app.babylon.table.io.TabularReaderCsv;
 import app.babylon.table.transform.Transform;
 
-public class TableBuildPlan
+public class TablePlanBuild implements TablePlan
 {
     private final List<Transform> transforms;
     private final Map<ColumnName, Column.Type> columnTypes;
     private TableName outputTableName;
     private TableDescription outputTableDescription;
 
-    public TableBuildPlan()
+    public TablePlanBuild()
     {
         this.transforms = new ArrayList<>();
         this.columnTypes = new LinkedHashMap<>();
@@ -41,7 +46,7 @@ public class TableBuildPlan
         this.outputTableDescription = null;
     }
 
-    public TableBuildPlan withOutputTableName(TableName outputTableName)
+    public TablePlanBuild withOutputTableName(TableName outputTableName)
     {
         this.outputTableName = outputTableName;
         return this;
@@ -52,7 +57,7 @@ public class TableBuildPlan
         return this.outputTableName;
     }
 
-    public TableBuildPlan withOutputTableDescription(TableDescription outputTableDescription)
+    public TablePlanBuild withOutputTableDescription(TableDescription outputTableDescription)
     {
         this.outputTableDescription = outputTableDescription;
         return this;
@@ -63,7 +68,7 @@ public class TableBuildPlan
         return this.outputTableDescription;
     }
 
-    public TableBuildPlan withTransform(Transform transform)
+    public TablePlanBuild withTransform(Transform transform)
     {
         if (transform != null)
         {
@@ -72,7 +77,7 @@ public class TableBuildPlan
         return this;
     }
 
-    public TableBuildPlan withTransforms(Transform... transforms)
+    public TablePlanBuild withTransforms(Transform... transforms)
     {
         if (transforms != null)
         {
@@ -89,13 +94,13 @@ public class TableBuildPlan
         return Collections.unmodifiableList(this.transforms);
     }
 
-    public TableBuildPlan withColumnType(ColumnName columnName, Column.Type columnType)
+    public TablePlanBuild withColumnType(ColumnName columnName, Column.Type columnType)
     {
         this.columnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
         return this;
     }
 
-    public TableBuildPlan withColumnType(ColumnName columnName, Class<?> valueClass)
+    public TablePlanBuild withColumnType(ColumnName columnName, Class<?> valueClass)
     {
         return withColumnType(columnName, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
     }
@@ -121,7 +126,7 @@ public class TableBuildPlan
         TableName effectiveName = tableName == null ? this.outputTableName : tableName;
         if (effectiveName == null)
         {
-            throw new IllegalArgumentException("TableBuildPlan.execute requires a table name.");
+            throw new IllegalArgumentException("TablePlanBuild.execute requires a table name.");
         }
         TableDescription effectiveDescription = tableDescription == null
                 ? this.outputTableDescription
@@ -136,6 +141,7 @@ public class TableBuildPlan
         return apply(ArgumentCheck.nonNull(table));
     }
 
+    @Override
     public TableColumnar execute(DataSource dataSource, TabularReader reader)
     {
         ArgumentCheck.nonNull(dataSource);

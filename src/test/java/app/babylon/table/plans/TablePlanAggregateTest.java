@@ -1,4 +1,4 @@
-package app.babylon.table.aggregation;
+package app.babylon.table.plans;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -11,12 +11,13 @@ import app.babylon.io.DataSource;
 import app.babylon.io.DataSources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
+import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.RowConsumerCreateTable;
 import app.babylon.table.io.TabularReaderCsv;
 
-class AggregationPlanTest
+class TablePlanAggregateTest
 {
     @Test
     void shouldCaptureOutputNameGroupBysAndAggregatesInOrder()
@@ -25,8 +26,8 @@ class AggregationPlanTest
         final ColumnName OBSERVATION = ColumnName.of("observation");
         final ColumnName MEAN_OBSERVATION = ColumnName.of("mean_observation");
 
-        AggregationPlan plan = new AggregationPlan().withOutputTableName(TableName.of("summary")).withGroupBy(STATION)
-                .withAggregate(OBSERVATION, MEAN_OBSERVATION, Aggregate.MEAN);
+        TablePlanAggregate plan = new TablePlanAggregate().withOutputTableName(TableName.of("summary"))
+                .withGroupBy(STATION).withAggregate(OBSERVATION, MEAN_OBSERVATION, Aggregate.MEAN);
 
         assertEquals(TableName.of("summary"), plan.getOutputTableName());
         assertEquals(1, plan.getGroupByColumns().size());
@@ -43,8 +44,8 @@ class AggregationPlanTest
         final ColumnName STATION = ColumnName.of("station");
         final ColumnName OBSERVATION = ColumnName.of("observation");
 
-        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class).withColumnType(OBSERVATION,
-                double.class);
+        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
+                .withColumnType(OBSERVATION, double.class);
 
         assertEquals(Column.Type.of(String.class), plan.getColumnType(STATION));
         assertEquals(Column.Type.of(double.class), plan.getColumnType(OBSERVATION));
@@ -64,7 +65,7 @@ class AggregationPlanTest
         final ColumnName TEMPERATURE_MEAN = ColumnName.of("Mean");
         final ColumnName TEMPERATURE_MAX = ColumnName.of("Max");
 
-        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class)
+        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
                 .withColumnType(TEMPERATURE, double.class).withOutputTableName(TableName.of("StationSummary"))
                 .withGroupBy(STATION).withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, TEMPERATURE_SUM, Aggregate.SUM)
@@ -107,7 +108,7 @@ class AggregationPlanTest
         final ColumnName MIN_TEMPERATURE = ColumnName.of("MinTemperature");
         final ColumnName MAX_HUMIDITY = ColumnName.of("MaxHumidity");
 
-        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class)
+        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
                 .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class).withGroupBy(STATION)
                 .withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
                 .withAggregate(HUMIDITY, MAX_HUMIDITY, Aggregate.MAX);
@@ -142,7 +143,7 @@ class AggregationPlanTest
         final ColumnName TEMPERATURE_COUNT = ColumnName.of("Count");
         final ColumnName TEMPERATURE_MEAN = ColumnName.of("Mean");
 
-        AggregationPlan plan = new AggregationPlan().withColumnType(STATION, String.class)
+        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
                 .withColumnType(COUNTRY, String.class).withColumnType(TEMPERATURE, double.class)
                 .withOutputTableName(TableName.of("StationCountrySummary")).withGroupBy(STATION, COUNTRY)
                 .withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)
@@ -195,7 +196,7 @@ class AggregationPlanTest
                 Paris,FR,11.5,83.0
                 """;
 
-        AggregationPlan plan = new AggregationPlan().withOutputTableName(TableName.of("StationCountrySummary"))
+        TablePlanAggregate plan = new TablePlanAggregate().withOutputTableName(TableName.of("StationCountrySummary"))
                 .withColumnType(STATION, String.class).withColumnType(COUNTRY, String.class)
                 .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class)
                 .withGroupBy(STATION, COUNTRY).withAggregate(TEMPERATURE, TEMPERATURE_COUNT, Aggregate.COUNT)

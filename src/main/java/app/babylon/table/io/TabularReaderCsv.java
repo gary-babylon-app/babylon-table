@@ -72,7 +72,7 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
 
     public TabularReaderCsv withFixedWidths(int[] fixedWidths)
     {
-        this.fixedWidths = fixedWidths == null ? null : fixedWidths.clone();
+        this.fixedWidths = fixedWidths == null ? null : Arrays.copyOf(fixedWidths, fixedWidths.length);
         return this;
     }
 

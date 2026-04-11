@@ -1,4 +1,4 @@
-package app.babylon.table.aggregation;
+package app.babylon.table.plans;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -14,6 +14,8 @@ import app.babylon.table.TableColumnar;
 import app.babylon.table.TableException;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
+import app.babylon.table.aggregation.AccumulatorDouble;
+import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
 import app.babylon.table.column.ColumnDouble;
@@ -28,7 +30,7 @@ import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowKey;
 import app.babylon.table.io.TabularReader;
 
-public class AggregationPlan
+public class TablePlanAggregate implements TablePlan
 {
     private static final class RowConsumerGroupAggregatePlan implements RowConsumer<TableColumnar>
     {
@@ -46,14 +48,14 @@ public class AggregationPlan
             }
         }
 
-        private final AggregationPlan plan;
+        private final TablePlanAggregate plan;
         private int[] groupByPositions;
         private int maxGroupByPosition;
         private int[] aggregatePositions;
         private int maxAggregatePosition;
         private final Map<RowKey, GroupAccumulators> accumulatorsByGroup;
 
-        private RowConsumerGroupAggregatePlan(AggregationPlan plan)
+        private RowConsumerGroupAggregatePlan(TablePlanAggregate plan)
         {
             this.plan = plan;
             this.groupByPositions = null;
@@ -184,7 +186,7 @@ public class AggregationPlan
     private final Map<ColumnName, Column.Type> columnTypes;
     private TableName outputTableName;
 
-    public AggregationPlan()
+    public TablePlanAggregate()
     {
         this.groupByColumns = new ArrayList<>();
         this.aggregateSpecs = new ArrayList<>();
@@ -192,7 +194,7 @@ public class AggregationPlan
         this.outputTableName = null;
     }
 
-    public AggregationPlan withOutputTableName(TableName outputTableName)
+    public TablePlanAggregate withOutputTableName(TableName outputTableName)
     {
         this.outputTableName = outputTableName;
         return this;
@@ -203,13 +205,13 @@ public class AggregationPlan
         return this.outputTableName;
     }
 
-    public AggregationPlan withColumnType(ColumnName columnName, Column.Type columnType)
+    public TablePlanAggregate withColumnType(ColumnName columnName, Column.Type columnType)
     {
         this.columnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
         return this;
     }
 
-    public AggregationPlan withColumnType(ColumnName columnName, Class<?> valueClass)
+    public TablePlanAggregate withColumnType(ColumnName columnName, Class<?> valueClass)
     {
         return withColumnType(columnName, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
     }
@@ -224,7 +226,7 @@ public class AggregationPlan
         return Collections.unmodifiableMap(this.columnTypes);
     }
 
-    public AggregationPlan withGroupBy(ColumnName... columnNames)
+    public TablePlanAggregate withGroupBy(ColumnName... columnNames)
     {
         if (columnNames != null)
         {
@@ -238,12 +240,13 @@ public class AggregationPlan
         return Collections.unmodifiableList(this.groupByColumns);
     }
 
-    public AggregationPlan withAggregate(ColumnName sourceColumnName, Aggregate aggregate)
+    public TablePlanAggregate withAggregate(ColumnName sourceColumnName, Aggregate aggregate)
     {
         return withAggregate(sourceColumnName, sourceColumnName, aggregate);
     }
 
-    public AggregationPlan withAggregate(ColumnName sourceColumnName, ColumnName outputColumnName, Aggregate aggregate)
+    public TablePlanAggregate withAggregate(ColumnName sourceColumnName, ColumnName outputColumnName,
+            Aggregate aggregate)
     {
         this.aggregateSpecs.add(new AggregateSpec(sourceColumnName, outputColumnName, aggregate));
         return this;
@@ -254,6 +257,7 @@ public class AggregationPlan
         return Collections.unmodifiableList(this.aggregateSpecs);
     }
 
+    @SuppressWarnings("unchecked")
     public TableColumnar execute(TableColumnar table)
     {
         validateForCurrentImplementation();
@@ -262,7 +266,6 @@ public class AggregationPlan
         GroupBy grouped = sourceTable.groupBy(this.groupByColumns.toArray(new ColumnName[this.groupByColumns.size()]));
         Map<GroupKey, TableColumnar> groupedTables = grouped.getGroupedTables(new LinkedHashMap<>());
 
-        @SuppressWarnings("unchecked")
         ColumnObject.Builder<Object>[] groupByBuilders = new ColumnObject.Builder[this.groupByColumns.size()];
         for (int i = 0; i < groupByBuilders.length; ++i)
         {
@@ -296,6 +299,7 @@ public class AggregationPlan
         return Tables.newTable(tableName, columns);
     }
 
+    @Override
     public TableColumnar execute(DataSource dataSource, TabularReader reader)
     {
         validateForCurrentImplementation();
@@ -323,11 +327,11 @@ public class AggregationPlan
         if (this.groupByColumns.isEmpty())
         {
             throw new IllegalArgumentException(
-                    "Current AggregationPlan.execute requires at least one group-by column.");
+                    "Current TablePlanAggregate.execute requires at least one group-by column.");
         }
         if (this.aggregateSpecs.isEmpty())
         {
-            throw new IllegalArgumentException("Current AggregationPlan.execute requires at least one aggregate.");
+            throw new IllegalArgumentException("Current TablePlanAggregate.execute requires at least one aggregate.");
         }
 
         for (AggregateSpec aggregateSpec : this.aggregateSpecs)
@@ -335,7 +339,7 @@ public class AggregationPlan
             if (!isSupportedAggregate(aggregateSpec.aggregate()))
             {
                 throw new IllegalArgumentException(
-                        "Unsupported aggregate for current AggregationPlan.execute: " + aggregateSpec.aggregate());
+                        "Unsupported aggregate for current TablePlanAggregate.execute: " + aggregateSpec.aggregate());
             }
         }
     }
@@ -346,7 +350,7 @@ public class AggregationPlan
                 || aggregate == Aggregate.SUM || aggregate == Aggregate.MEAN;
     }
 
-    private static ColumnBuilder[] newAggregateBuilders(AggregationPlan plan)
+    private static ColumnBuilder[] newAggregateBuilders(TablePlanAggregate plan)
     {
         ColumnBuilder[] aggregateBuilders = new ColumnBuilder[plan.aggregateSpecs.size()];
         for (int i = 0; i < aggregateBuilders.length; ++i)
@@ -364,7 +368,7 @@ public class AggregationPlan
         return aggregateBuilders;
     }
 
-    private static ColumnBuilder[] newAggregateBuilders(TableColumnar table, AggregationPlan plan)
+    private static ColumnBuilder[] newAggregateBuilders(TableColumnar table, TablePlanAggregate plan)
     {
         ColumnBuilder[] aggregateBuilders = new ColumnBuilder[plan.aggregateSpecs.size()];
         for (int i = 0; i < aggregateBuilders.length; ++i)
@@ -396,7 +400,7 @@ public class AggregationPlan
         return aggregateBuilders;
     }
 
-    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, AggregationPlan plan,
+    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, TablePlanAggregate plan,
             AccumulatorDouble[] accumulators)
     {
         for (int i = 0; i < aggregateBuilders.length; ++i)
@@ -413,7 +417,8 @@ public class AggregationPlan
         }
     }
 
-    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, AggregationPlan plan, TableColumnar table)
+    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, TablePlanAggregate plan,
+            TableColumnar table)
     {
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {

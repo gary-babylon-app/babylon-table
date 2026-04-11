@@ -27,6 +27,42 @@ import app.babylon.text.Strings;
 
 public class Columns
 {
+    private static final class CharSliceBuilderByDelegate implements CharSliceBuilder
+    {
+        private final ColumnObject.Builder<String> delegate;
+
+        private CharSliceBuilderByDelegate(ColumnObject.Builder<String> delegate)
+        {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public ColumnName getName()
+        {
+            return this.delegate.getName();
+        }
+
+        @Override
+        public CharSliceBuilder add(char[] chars, int start, int length)
+        {
+            if (chars == null || length == 0)
+            {
+                this.delegate.addNull();
+            }
+            else
+            {
+                this.delegate.add(new String(chars, start, length));
+            }
+            return this;
+        }
+
+        @Override
+        public ColumnObject<String> build()
+        {
+            return this.delegate.build();
+        }
+    }
+
     public static boolean isStringColumn(Column column)
     {
         return column instanceof ColumnObject<?> && String.class.equals(column.getType().getValueClass());
@@ -129,6 +165,38 @@ public class Columns
         }
         throw new IllegalArgumentException("Unsupported value class " + valueClass);
     }
+
+    public static CharSliceBuilder newCharSliceBuilder(ColumnName colName, Column.Type type)
+    {
+        if (type == null)
+        {
+            throw new RuntimeException("Unsupported type null");
+        }
+
+        if (ColumnTypes.STRING.equals(type))
+        {
+            return new CharSliceBuilderByDelegate(ColumnObject.builder(colName, String.class));
+        }
+        if (ColumnDouble.TYPE.equals(type))
+        {
+            return ColumnDouble.builder(colName);
+        }
+        if (ColumnInt.TYPE.equals(type))
+        {
+            return ColumnInt.builder(colName);
+        }
+        if (ColumnLong.TYPE.equals(type))
+        {
+            return ColumnLong.builder(colName);
+        }
+        if (ColumnByte.TYPE.equals(type))
+        {
+            return ColumnByte.builder(colName);
+        }
+        Class<?> valueClass = type.getValueClass();
+        throw new IllegalArgumentException("Unsupported char-slice builder type " + valueClass);
+    }
+
     public static ColumnObject<BigDecimal> newDecimal(ColumnName colName, BigDecimal value, int size)
     {
         return ColumnCategorical.constant(colName, value, size, BigDecimal.class);

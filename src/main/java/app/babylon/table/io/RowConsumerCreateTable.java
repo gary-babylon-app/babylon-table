@@ -15,25 +15,20 @@ import java.util.Map;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
+import app.babylon.table.column.CharSliceBuilder;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
-import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
 public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
 {
-    private static final byte KIND_STRING = 0;
-    private static final byte KIND_DOUBLE = 1;
-
     private final TableName tableName;
     private final ColumnName resourceName;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
-    private byte[] columnKinds;
     private ColumnBuilder[] columnBuilders;
-    private String[] strippedValues;
+    private CharSliceBuilder[] charSliceBuilders;
     private String sourceName;
 
     RowConsumerCreateTable(TableName tableName, ColumnName resourceName,
@@ -42,18 +37,23 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
         this.tableName = tableName;
         this.resourceName = resourceName;
         this.explicitColumnTypes = explicitColumnTypes;
-        this.columnKinds = null;
         this.columnBuilders = null;
-        this.strippedValues = null;
+        this.charSliceBuilders = null;
         this.sourceName = null;
     }
 
     @Override
     public void start(ColumnName[] columnNames)
     {
-        this.columnKinds = initialiseColumnKinds(columnNames, this.explicitColumnTypes);
-        this.columnBuilders = initialiseColumnBuilders(columnNames, this.explicitColumnTypes);
-        this.strippedValues = new String[this.columnBuilders.length];
+        this.columnBuilders = new ColumnBuilder[columnNames.length];
+        this.charSliceBuilders = new CharSliceBuilder[columnNames.length];
+        for (int i = 0; i < columnNames.length; ++i)
+        {
+            Column.Type columnType = effectiveColumnType(columnNames[i], this.explicitColumnTypes);
+            CharSliceBuilder builder = Columns.newCharSliceBuilder(columnNames[i], columnType);
+            this.columnBuilders[i] = builder;
+            this.charSliceBuilders[i] = builder;
+        }
     }
 
     @Override
@@ -68,11 +68,10 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
         char[] chars = rowValues.chars();
         for (int i = 0; i < columnCount; ++i)
         {
-            String s = new String(chars, rowValues.start(i), rowValues.length(i));
-            this.strippedValues[i] = s;
-            if (!Strings.isEmpty(s))
+            if (rowValues.length(i) > 0)
             {
                 isEmpty = false;
+                break;
             }
         }
         if (isEmpty)
@@ -81,26 +80,7 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
         }
         for (int i = 0; i < columnCount; ++i)
         {
-            switch (this.columnKinds[i])
-            {
-                case KIND_DOUBLE :
-                    if (Strings.isEmpty(this.strippedValues[i]))
-                    {
-                        ((ColumnDouble.Builder) this.columnBuilders[i]).addNull();
-                    }
-                    else
-                    {
-                        ((ColumnDouble.Builder) this.columnBuilders[i]).add(chars, rowValues.start(i),
-                                rowValues.length(i));
-                    }
-                    break;
-                case KIND_STRING :
-                default :
-                    @SuppressWarnings("unchecked")
-                    ColumnObject.Builder<String> builder = (ColumnObject.Builder<String>) this.columnBuilders[i];
-                    builder.add(this.strippedValues[i]);
-                    break;
-            }
+            this.charSliceBuilders[i].add(chars, rowValues.start(i), rowValues.length(i));
         }
     }
 
@@ -142,43 +122,15 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
         return new RowConsumerCreateTable(tableName, resourceName, explicitColumnTypes);
     }
 
-    private static byte[] initialiseColumnKinds(ColumnName[] columnNames,
+    private static Column.Type effectiveColumnType(ColumnName columnName,
             Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        byte[] columnKinds = new byte[columnNames.length];
-        for (int i = 0; i < columnNames.length; ++i)
+        Column.Type columnType = explicitColumnTypes.get(columnName);
+        if (columnType == null)
         {
-            app.babylon.table.column.Column.Type columnType = explicitColumnTypes.get(columnNames[i]);
-            if (ColumnDouble.TYPE.equals(columnType))
-            {
-                columnKinds[i] = KIND_DOUBLE;
-            }
-            else
-            {
-                columnKinds[i] = KIND_STRING;
-            }
+            return Column.Type.of(String.class);
         }
-        return columnKinds;
-    }
-
-    private static ColumnBuilder[] initialiseColumnBuilders(ColumnName[] columnNames,
-            Map<ColumnName, Column.Type> explicitColumnTypes)
-    {
-        ColumnBuilder[] columnBuilders = new ColumnBuilder[columnNames.length];
-        for (int i = 0; i < columnNames.length; ++i)
-        {
-            ColumnName columnName = columnNames[i];
-            app.babylon.table.column.Column.Type columnType = explicitColumnTypes.get(columnName);
-            if (ColumnDouble.TYPE.equals(columnType))
-            {
-                columnBuilders[i] = ColumnDouble.builder(columnName);
-            }
-            else
-            {
-                columnBuilders[i] = ColumnObject.builder(columnName, String.class);
-            }
-        }
-        return columnBuilders;
+        return columnType;
     }
 
     private static String extractLastPart(String s)

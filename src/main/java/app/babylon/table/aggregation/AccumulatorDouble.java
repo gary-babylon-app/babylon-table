@@ -12,7 +12,7 @@ package app.babylon.table.aggregation;
 
 import java.util.function.DoubleConsumer;
 
-class AccumulatorDouble implements DoubleConsumer
+public class AccumulatorDouble implements DoubleConsumer
 {
     private long count;
     private double min;

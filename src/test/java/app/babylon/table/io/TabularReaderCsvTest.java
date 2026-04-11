@@ -103,7 +103,8 @@ class TabularReaderCsvTest
         assertEquals(2, result.getTable().getRowCount());
         assertEquals("john smith", result.getTable().getString(ColumnName.of("Column1")).get(0));
         assertEquals("uk", result.getTable().getString(ColumnName.of("Column3")).get(0));
-        assertEquals("", result.getTable().getString(ColumnName.of("Column3")).get(1));
+        assertTrue(result.getTable().getString(ColumnName.of("Column3")).isSet(0));
+        assertTrue(!result.getTable().getString(ColumnName.of("Column3")).isSet(1));
     }
 
     @Test
@@ -215,11 +216,11 @@ class TabularReaderCsvTest
 
         assertEquals("2026-01-03", result.getTable().getString(ColumnName.of("Date")).get(2));
         assertEquals("Card Payment", result.getTable().getString(ColumnName.of("Description")).get(2));
-        assertEquals("", result.getTable().getString(ColumnName.of("Amount")).get(2));
+        assertTrue(!result.getTable().getString(ColumnName.of("Amount")).isSet(2));
 
         assertEquals("2026-01-05 Only Date Present", result.getTable().getString(ColumnName.of("Date")).get(4));
-        assertEquals("", result.getTable().getString(ColumnName.of("Description")).get(4));
-        assertEquals("", result.getTable().getString(ColumnName.of("Amount")).get(4));
+        assertTrue(!result.getTable().getString(ColumnName.of("Description")).isSet(4));
+        assertTrue(!result.getTable().getString(ColumnName.of("Amount")).isSet(4));
     }
 
     @Test

@@ -10,7 +10,7 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.aggregation.AggregationPlan;
+import app.babylon.table.plans.TablePlanAggregate;
 import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
@@ -203,7 +203,7 @@ public class ColumnDoubleSemanticsTest
         TableColumnar table = Tables.newTable(TableName.of("measurements"), new TableDescription(""),
                 stationBuilder.build(), temperatureBuilder.build());
 
-        TableColumnar summary = new AggregationPlan().withOutputTableName(TableName.of("summary"))
+        TableColumnar summary = new TablePlanAggregate().withOutputTableName(TableName.of("summary"))
                 .withGroupBy(ColumnName.of("station")).withAggregate(ColumnName.of("temperature"), Aggregate.MEAN)
                 .execute(table);
 

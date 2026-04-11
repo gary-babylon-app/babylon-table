@@ -24,7 +24,7 @@ public interface ColumnByte extends Column
     /**
      * Builder for nullable byte columns.
      */
-    public static interface Builder extends ColumnBuilder
+    public static interface Builder extends ColumnBuilder, CharSliceBuilder
     {
         /**
          * Appends a byte value.
@@ -34,6 +34,22 @@ public interface ColumnByte extends Column
          * @return this builder
          */
         public Builder add(byte x);
+
+        default Builder add(char[] chars, int start, int length)
+        {
+            if (chars == null || length == 0)
+            {
+                return addNull();
+            }
+            try
+            {
+                return add(Byte.parseByte(new String(chars, start, length)));
+            }
+            catch (RuntimeException e)
+            {
+                return addNull();
+            }
+        }
 
         /**
          * Appends an unset row.

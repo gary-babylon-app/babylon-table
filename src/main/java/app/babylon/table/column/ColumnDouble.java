@@ -27,7 +27,7 @@ public interface ColumnDouble extends Column
     /**
      * Builder for nullable double columns.
      */
-    public static interface Builder extends ColumnBuilder
+    public static interface Builder extends ColumnBuilder, CharSliceBuilder
     {
         /**
          * Appends a double value.
@@ -75,7 +75,7 @@ public interface ColumnDouble extends Column
          */
         default Builder add(char[] chars, int start, int length)
         {
-            if (chars == null)
+            if (chars == null || length == 0)
             {
                 return addNull();
             }

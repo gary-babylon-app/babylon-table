@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.ColumnName;
@@ -23,6 +24,21 @@ public final class RowFilters
 {
     private RowFilters()
     {
+    }
+
+    public static RowFilter includeMatched(ColumnName columnName, Pattern pattern)
+    {
+        ColumnName requiredColumn = ArgumentCheck.nonNull(columnName);
+        Pattern requiredPattern = ArgumentCheck.nonNull(pattern);
+        return availableColumns -> {
+            BoundPredicate boundPredicate = new BoundPredicate(positionOf(availableColumns, requiredColumn),
+                    fieldValue -> requiredPattern.matcher(fieldValue).find());
+            FieldCharSequence fieldValue = new FieldCharSequence();
+            return row -> {
+                fieldValue.with(row, boundPredicate.position());
+                return boundPredicate.predicate().test(fieldValue);
+            };
+        };
     }
 
     public static RowFilter excludeEmpty(ColumnName... columnNames)

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
@@ -347,6 +348,25 @@ class TabularRowReaderCsvTest
                 .exclude(Map.of(TYPE, value -> "Sell".contentEquals(value), ISIN, value -> value.length() == 0)));
 
         TableRead read = readTable(reader, csv, "exclude-map.csv");
+        TabularRowReader.Result result = read.result;
+        TableColumnar table = read.table;
+
+        assertEquals(TabularRowReader.Status.SUCCESS, result.getStatus());
+        assertEquals(2, table.getRowCount());
+        assertEquals("London", table.getString(CITY).get(0));
+        assertEquals("Madrid", table.getString(CITY).get(1));
+    }
+
+    @Test
+    void shouldIncludeRowsWhenPatternMatchesConfiguredColumn()
+    {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName ISIN = ColumnName.of("Isin");
+        String csv = "" + "City,Isin\n" + "London,GB0001\n" + "Paris,FR0001\n" + "Madrid,GB9999\n";
+        TabularRowReaderCsv reader = new TabularRowReaderCsv()
+                .withRowFilter(RowFilters.includeMatched(ISIN, Pattern.compile("^GB")));
+
+        TableRead read = readTable(reader, csv, "match-pattern.csv");
         TabularRowReader.Result result = read.result;
         TableColumnar table = read.table;
 

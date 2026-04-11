@@ -28,6 +28,8 @@ public interface TabularRowReader
 
     TabularRowReader withRowFilter(RowFilter rowFilter);
 
+    ColumnName getColumnReName(ColumnName original);
+
     Result read(DataSource dataSource, RowConsumer rowConsumer);
 
     enum Status

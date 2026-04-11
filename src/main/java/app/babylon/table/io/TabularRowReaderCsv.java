@@ -17,8 +17,6 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.function.Predicate;
 
 import app.babylon.io.DataSource;
@@ -120,7 +118,7 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         try (LineReader lineReader = createLineReader(checkedDataSource))
         {
             RowStreamMarkable parsedRowStream = new RowStreamBuffered(lineReader);
-            HeaderDetection headerDetection = getHeaderStrategy().detect(parsedRowStream, selectedColumns());
+            HeaderDetection headerDetection = getHeaderStrategy().detect(parsedRowStream, getSelectedColumns(null));
 
             final ColumnName[] projectedColumnNames = createProjectedColumnNames(headerDetection);
             RowProjected projectedRow = createRowProjected(headerDetection);
@@ -235,13 +233,8 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
             return null;
         }
         ColumnName originalColumnName = ColumnName.of(original);
-        ColumnName renamed = getColumnRenames().get(originalColumnName);
-        return renamed == null ? originalColumnName : renamed;
-    }
-
-    private Set<ColumnName> selectedColumns()
-    {
-        return new LinkedHashSet<>(getSelectedColumns());
+        ColumnName renamed = getColumnReName(originalColumnName);
+        return renamed;
     }
 
     private boolean isFixedWidths()

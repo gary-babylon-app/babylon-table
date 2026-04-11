@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
 import app.babylon.table.column.ColumnName;
 
 public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>> implements TabularRowReader
@@ -46,7 +47,7 @@ public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>
     @Override
     public R withSelectedColumns(ColumnName... columnNames)
     {
-        if (columnNames != null)
+        if (!Is.empty(columnNames))
         {
             this.selectedColumns.addAll(Arrays.asList(columnNames));
         }
@@ -55,7 +56,7 @@ public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>
 
     public R withSelectedColumns(Collection<ColumnName> columnNames)
     {
-        if (columnNames != null)
+        if (!Is.empty(columnNames))
         {
             this.selectedColumns.addAll(columnNames);
         }
@@ -83,8 +84,9 @@ public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>
     @Override
     public R withColumnRenames(Map<ColumnName, ColumnName> renames)
     {
-        if (renames != null)
+        if (!Is.empty(renames))
         {
+            // loop because we want the validation checking
             for (Map.Entry<ColumnName, ColumnName> entry : renames.entrySet())
             {
                 withColumnRename(entry.getKey(), entry.getValue());
@@ -100,19 +102,34 @@ public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>
         return self();
     }
 
-    protected Set<ColumnName> getSelectedColumns()
+    protected Set<ColumnName> getSelectedColumns(Set<ColumnName> x)
     {
-        return this.selectedColumns;
+        if (x == null)
+        {
+            x = new LinkedHashSet<ColumnName>(this.selectedColumns.size());
+        }
+        x.addAll(this.selectedColumns);
+        return x;
     }
 
-    protected Map<ColumnName, ColumnName> getColumnRenames()
+    protected Map<ColumnName, ColumnName> getColumnRenames(Map<ColumnName, ColumnName> x)
     {
+        if (x == null)
+        {
+            x = new LinkedHashMap<ColumnName, ColumnName>(this.columnRenames.size());
+        }
         return this.columnRenames;
     }
 
     protected RowFilter getRowFilter()
     {
         return this.rowFilter;
+    }
+
+    @Override
+    public ColumnName getColumnReName(ColumnName original)
+    {
+        return this.columnRenames.getOrDefault(original, original);
     }
 
     protected abstract R self();

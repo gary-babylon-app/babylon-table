@@ -29,11 +29,11 @@ public class ColumnNameTest
 
         assertEquals(expected, actual, s);
 
-        ColumnName col1 = ColumnName.of(s);
-        ColumnName col2 = ColumnName.of(expected);
+        final ColumnName COL_1 = ColumnName.of(s);
+        final ColumnName COL_2 = ColumnName.of(expected);
 
-        assertEquals(col1, col2);
-        assertEquals(0, col1.compareTo(col2));
+        assertEquals(COL_1, COL_2);
+        assertEquals(0, COL_1.compareTo(COL_2));
 
     }
 
@@ -43,8 +43,8 @@ public class ColumnNameTest
         String s = "GaryKennedy20";
         String expected = "gary_kennedy_20";
 
-        ColumnName cn = ColumnName.of(s);
-        assertEquals(expected, cn.toSnake());
+        final ColumnName CN = ColumnName.of(s);
+        assertEquals(expected, CN.toSnake());
 
     }
 
@@ -54,8 +54,8 @@ public class ColumnNameTest
         String s = "garyKennedy20";
         String expected = "GaryKennedy20";
 
-        ColumnName cn = ColumnName.of(s);
-        assertEquals(expected, cn.getValue());
+        final ColumnName CN = ColumnName.of(s);
+        assertEquals(expected, CN.getValue());
 
     }
 
@@ -64,8 +64,8 @@ public class ColumnNameTest
     {
         String s = "garyKennedy20";
 
-        ColumnName cn = ColumnName.of(s);
-        Collection<String> words = cn.toWords(null);
+        final ColumnName CN = ColumnName.of(s);
+        Collection<String> words = CN.toWords(null);
 
         assertTrue(words.contains("Gary"));
         assertTrue(words.contains("Kennedy20"));
@@ -75,53 +75,53 @@ public class ColumnNameTest
     @Test
     public void testCleanupForSeparatorAndCaseVariants()
     {
-        ColumnName a = ColumnName.of("trade-date");
-        ColumnName b = ColumnName.of("TRADE_DATE");
-        ColumnName c = ColumnName.of("trade date");
-        ColumnName d = ColumnName.of("trade.date");
+        final ColumnName TRADE_DATE = ColumnName.of("trade-date");
+        final ColumnName TRADE_DATE_2 = ColumnName.of("TRADE_DATE");
+        final ColumnName TRADE_DATE_3 = ColumnName.of("trade date");
+        final ColumnName TRADE_DATE_4 = ColumnName.of("trade.date");
 
-        assertEquals("TradeDate", a.getValue());
-        assertEquals("TradeDate", b.getValue());
-        assertEquals("TradeDate", c.getValue());
-        assertEquals("TradeDate", d.getValue());
+        assertEquals("TradeDate", TRADE_DATE.getValue());
+        assertEquals("TradeDate", TRADE_DATE_2.getValue());
+        assertEquals("TradeDate", TRADE_DATE_3.getValue());
+        assertEquals("TradeDate", TRADE_DATE_4.getValue());
 
-        assertEquals(a, b);
-        assertEquals(a, c);
-        assertEquals(a, d);
-        assertEquals("tradedate", a.getCanonical());
+        assertEquals(TRADE_DATE, TRADE_DATE_2);
+        assertEquals(TRADE_DATE, TRADE_DATE_3);
+        assertEquals(TRADE_DATE, TRADE_DATE_4);
+        assertEquals("tradedate", TRADE_DATE.getCanonical());
     }
 
     @Test
     public void testLeadingAndTrailingSpacesAreIgnored()
     {
-        ColumnName a = ColumnName.of("  Trade Date  ");
-        ColumnName b = ColumnName.of("Trade Date");
+        final ColumnName TRADE_DATE = ColumnName.of("  Trade Date  ");
+        final ColumnName TRADE_DATE_2 = ColumnName.of("Trade Date");
 
-        assertEquals("TradeDate", a.getValue());
-        assertEquals(a, b);
-        assertEquals("tradedate", a.getCanonical());
+        assertEquals("TradeDate", TRADE_DATE.getValue());
+        assertEquals(TRADE_DATE, TRADE_DATE_2);
+        assertEquals("tradedate", TRADE_DATE.getCanonical());
     }
 
     @Test
     public void testNonLatinLettersAreRetainedInCanonical()
     {
-        ColumnName cyrillic = ColumnName.of("Журнал 2026");
-        assertEquals("журнал2026", cyrillic.getCanonical());
+        final ColumnName COLUMN_2026 = ColumnName.of("Журнал 2026");
+        assertEquals("журнал2026", COLUMN_2026.getCanonical());
 
-        ColumnName greek = ColumnName.of("Δοκιμή 7");
-        assertEquals("δοκιμη7", greek.getCanonical());
+        final ColumnName COLUMN_7 = ColumnName.of("Δοκιμή 7");
+        assertEquals("δοκιμη7", COLUMN_7.getCanonical());
     }
 
     @Test
     public void testLatinDiacriticsAreRemoved()
     {
-        ColumnName cafe = ColumnName.of("Café");
-        assertEquals("cafe", cafe.getCanonical());
-        assertEquals("Cafe", cafe.getValue());
+        final ColumnName CAF = ColumnName.of("Café");
+        assertEquals("cafe", CAF.getCanonical());
+        assertEquals("Cafe", CAF.getValue());
 
-        ColumnName angstrom = ColumnName.of("Ångström");
-        assertEquals("angstrom", angstrom.getCanonical());
-        assertEquals("Angstrom", angstrom.getValue());
+        final ColumnName NGSTR_M = ColumnName.of("Ångström");
+        assertEquals("angstrom", NGSTR_M.getCanonical());
+        assertEquals("Angstrom", NGSTR_M.getValue());
     }
 
     @Test
@@ -135,9 +135,9 @@ public class ColumnNameTest
 
         for (String variant : variants)
         {
-            ColumnName cn = ColumnName.of(variant);
-            assertEquals("TradeDate", cn.getValue(), variant);
-            assertEquals("tradedate", cn.getCanonical(), variant);
+            final ColumnName CN = ColumnName.of(variant);
+            assertEquals("TradeDate", CN.getValue(), variant);
+            assertEquals("tradedate", CN.getCanonical(), variant);
         }
     }
 }

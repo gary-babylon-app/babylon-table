@@ -23,7 +23,8 @@ public class ColumnDecimalViewTest
     @Test
     public void test1()
     {
-        ColumnObject.Builder<BigDecimal> originalBuilder = ColumnObject.builderDecimal(ColumnName.of("Test"));
+        final ColumnName TEST = ColumnName.of("TEST");
+        ColumnObject.Builder<BigDecimal> originalBuilder = ColumnObject.builderDecimal(TEST);
         originalBuilder.add(BigDecimals.parse("1.42"));
         originalBuilder.add(BigDecimals.parse("100,100.32"));
         originalBuilder.add(BigDecimals.parse(""));

@@ -17,19 +17,19 @@ public class TransformLeftTest
     @Test
     public void shouldTakeLeftCharacters()
     {
-        ColumnName from = ColumnName.of("Code");
-        ColumnName to = ColumnName.of("Left");
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName LEFT = ColumnName.of("Left");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
         strings.add("ABC123");
         strings.add("XY");
         strings.addNull();
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformLeft(from, to, 3));
+        TableColumnar transformed = table.apply(new TransformLeft(CODE, LEFT, 3));
 
-        ColumnObject<String> left = transformed.getString(to);
+        ColumnObject<String> left = transformed.getString(LEFT);
         assertEquals("ABC", left.get(0));
         assertEquals("XY", left.get(1));
         assertFalse(left.isSet(2));

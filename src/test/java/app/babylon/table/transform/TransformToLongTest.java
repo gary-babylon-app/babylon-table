@@ -23,7 +23,8 @@ class TransformToLongTest
     @Test
     void applyShouldConvertPlainStringColumnAndLeaveUnparseableValuesUnset()
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("amount"), String.class);
+        final ColumnName AMOUNT = ColumnName.of("AMOUNT");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, String.class);
         builder.add("1");
         builder.add("2147483648");
         builder.add("1 2");
@@ -33,7 +34,7 @@ class TransformToLongTest
         builder.add("999999999999999999999999");
         ColumnObject<String> source = builder.build();
 
-        ColumnLong transformed = new TransformToLong(ColumnName.of("amount")).apply((Column) source);
+        ColumnLong transformed = new TransformToLong(AMOUNT).apply((Column) source);
 
         assertEquals(7, transformed.size());
         assertEquals(1L, transformed.get(0));
@@ -48,14 +49,15 @@ class TransformToLongTest
     @Test
     void applyShouldConvertCategoricalStringColumnToPrimitiveLongColumn()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("amount"), String.class);
+        final ColumnName AMOUNT = ColumnName.of("AMOUNT");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, String.class);
         builder.add("10");
         builder.add("bad");
         builder.add("10");
         builder.addNull();
         ColumnObject<String> source = builder.build();
 
-        ColumnLong transformed = new TransformToLong(ColumnName.of("amount")).apply((Column) source);
+        ColumnLong transformed = new TransformToLong(AMOUNT).apply((Column) source);
 
         assertEquals(4, transformed.size());
         assertEquals(10L, transformed.get(0));
@@ -68,15 +70,19 @@ class TransformToLongTest
     @Test
     void applyTableShouldAddParsedLongColumnAndKeepExistingLongColumnsAsIs()
     {
-        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(ColumnName.of("amount"), String.class);
+        final ColumnName AMOUNT = ColumnName.of("AMOUNT");
+        final ColumnName OTHER = ColumnName.of("OTHER");
+        final ColumnName EXISTING = ColumnName.of("EXISTING");
+        final ColumnName PARSED = ColumnName.of("PARSED");
+        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT, String.class);
         amountBuilder.add("1");
         amountBuilder.add("2147483648");
 
-        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(ColumnName.of("other"), String.class);
+        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER, String.class);
         otherBuilder.add("x");
         otherBuilder.add("y");
 
-        ColumnLong.Builder existingLongBuilder = ColumnLong.builder(ColumnName.of("existing"));
+        ColumnLong.Builder existingLongBuilder = ColumnLong.builder(EXISTING);
         existingLongBuilder.add(3L);
         existingLongBuilder.add(4L);
         ColumnLong existingLong = existingLongBuilder.build();
@@ -84,30 +90,31 @@ class TransformToLongTest
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amountBuilder.build(),
                 otherBuilder.build(), existingLong);
 
-        TableColumnar transformed = table.apply(new TransformToLong(ColumnName.of("amount"), ColumnName.of("parsed")));
+        TableColumnar transformed = table.apply(new TransformToLong(AMOUNT, PARSED));
 
-        ColumnLong parsed = transformed.getLong(ColumnName.of("parsed"));
+        ColumnLong parsed = transformed.getLong(PARSED);
         assertEquals(1L, parsed.get(0));
         assertEquals(2147483648L, parsed.get(1));
 
-        assertEquals("x", transformed.getString(ColumnName.of("other")).get(0));
-        assertSame(existingLong, transformed.getLong(ColumnName.of("existing")));
+        assertEquals("x", transformed.getString(OTHER).get(0));
+        assertSame(existingLong, transformed.getLong(EXISTING));
     }
 
     @Test
     void applyShouldCopyExistingLongColumnWhenAppliedDirectly()
     {
-        ColumnLong.Builder builder = ColumnLong.builder(ColumnName.of("amount"));
+        final ColumnName AMOUNT = ColumnName.of("AMOUNT");
+        final ColumnName RENAMED = ColumnName.of("RENAMED");
+        ColumnLong.Builder builder = ColumnLong.builder(AMOUNT);
         builder.add(1L);
         builder.addNull();
         builder.add(3L);
         ColumnLong source = builder.build();
 
-        ColumnLong transformed = new TransformToLong(ColumnName.of("amount"), ColumnName.of("renamed"))
-                .apply((Column) source);
+        ColumnLong transformed = new TransformToLong(AMOUNT, RENAMED).apply((Column) source);
 
         assertNotSame(source, transformed);
-        assertEquals(ColumnName.of("renamed"), transformed.getName());
+        assertEquals(RENAMED, transformed.getName());
         assertEquals(1L, transformed.get(0));
         assertFalse(transformed.isSet(1));
         assertEquals(3L, transformed.get(2));

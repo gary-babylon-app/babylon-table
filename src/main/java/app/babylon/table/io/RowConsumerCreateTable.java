@@ -11,40 +11,48 @@
 package app.babylon.table.io;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
+
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
+import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.CharSliceBuilder;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
-public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
+public final class RowConsumerCreateTable implements RowConsumer
 {
     private final TableName tableName;
+    private final TableDescription tableDescription;
     private final ColumnName resourceName;
+    private final String sourceName;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private ColumnBuilder[] columnBuilders;
     private CharSliceBuilder[] charSliceBuilders;
-    private String sourceName;
 
-    RowConsumerCreateTable(TableName tableName, ColumnName resourceName,
-            Map<ColumnName, Column.Type> explicitColumnTypes)
+    RowConsumerCreateTable(TableName tableName, TableDescription tableDescription, ColumnName resourceName,
+            String sourceName, Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         this.tableName = tableName;
+        this.tableDescription = tableDescription;
         this.resourceName = resourceName;
-        this.explicitColumnTypes = explicitColumnTypes;
+        this.sourceName = sourceName;
+        this.explicitColumnTypes = new LinkedHashMap<>(explicitColumnTypes);
         this.columnBuilders = null;
         this.charSliceBuilders = null;
-        this.sourceName = null;
     }
 
     @Override
     public void start(ColumnName[] columnNames)
     {
+        ArgumentCheck.nonEmpty(columnNames);
         this.columnBuilders = new ColumnBuilder[columnNames.length];
         this.charSliceBuilders = new CharSliceBuilder[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
@@ -84,13 +92,14 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
         }
     }
 
-    @Override
     public TableColumnar build()
     {
         TableName name = this.tableName;
+        TableDescription description = this.tableDescription;
+        String sourceName = this.sourceName;
         if (name == null)
         {
-            name = TableName.of(extractLastPart(this.sourceName));
+            name = TableName.of(extractLastPart(sourceName));
         }
         if (this.resourceName != null && this.columnBuilders.length > 0)
         {
@@ -100,26 +109,21 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
                 builtColumns[i + 1] = this.columnBuilders[i].build();
             }
             int rowCount = builtColumns.length > 1 ? builtColumns[1].size() : 0;
-            builtColumns[0] = Columns.newString(this.resourceName, this.sourceName, rowCount);
-            return Tables.newTable(name, builtColumns);
+            builtColumns[0] = Columns.newString(this.resourceName, sourceName, rowCount);
+            return Tables.newTable(name, description, builtColumns);
         }
-        return Tables.newTable(name, this.columnBuilders);
-    }
-
-    void setSourceName(String sourceName)
-    {
-        this.sourceName = sourceName;
+        return Tables.newTable(name, description, this.columnBuilders);
     }
 
     public static RowConsumerCreateTable create(TableName tableName, ColumnName resourceName)
     {
-        return create(tableName, resourceName, Collections.emptyMap());
+        return create(tableName, null, resourceName, null, Collections.emptyMap());
     }
 
-    public static RowConsumerCreateTable create(TableName tableName, ColumnName resourceName,
-            Map<ColumnName, Column.Type> explicitColumnTypes)
+    public static RowConsumerCreateTable create(TableName tableName, TableDescription tableDescription,
+            ColumnName resourceName, String sourceName, Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        return new RowConsumerCreateTable(tableName, resourceName, explicitColumnTypes);
+        return new RowConsumerCreateTable(tableName, tableDescription, resourceName, sourceName, explicitColumnTypes);
     }
 
     private static Column.Type effectiveColumnType(ColumnName columnName,
@@ -128,7 +132,7 @@ public final class RowConsumerCreateTable implements RowConsumer<TableColumnar>
         Column.Type columnType = explicitColumnTypes.get(columnName);
         if (columnType == null)
         {
-            return Column.Type.of(String.class);
+            return ColumnTypes.STRING;
         }
         return columnType;
     }

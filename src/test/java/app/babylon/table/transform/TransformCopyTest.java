@@ -17,25 +17,25 @@ public class TransformCopyTest
     @Test
     public void shouldCopyColumnToNewName()
     {
-        ColumnName from = ColumnName.of("Symbol");
-        ColumnName to = ColumnName.of("SymbolCopy");
+        final ColumnName SYMBOL = ColumnName.of("Symbol");
+        final ColumnName SYMBOL_COPY = ColumnName.of("SymbolCopy");
 
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(from, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(SYMBOL, String.class);
         builder.add("VEVE");
         builder.add("SGLN");
         builder.add("VEVE");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), builder.build());
 
-        TableColumnar transformed = table.apply(new TransformCopy(from, to));
+        TableColumnar transformed = table.apply(new TransformCopy(SYMBOL, SYMBOL_COPY));
 
-        assertTrue(transformed.get(to) instanceof ColumnCategorical<?>);
-        ColumnCategorical<String> copied = transformed.getCategorical(to);
+        assertTrue(transformed.get(SYMBOL_COPY) instanceof ColumnCategorical<?>);
+        ColumnCategorical<String> copied = transformed.getCategorical(SYMBOL_COPY);
         assertEquals("VEVE", copied.get(0));
         assertEquals("SGLN", copied.get(1));
         assertEquals("VEVE", copied.get(2));
         assertEquals(copied.getCategoryCode(0), copied.getCategoryCode(2));
-        assertNotSame(transformed.get(from), copied);
+        assertNotSame(transformed.get(SYMBOL), copied);
     }
 
     @Test

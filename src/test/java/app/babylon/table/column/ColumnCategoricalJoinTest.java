@@ -27,7 +27,8 @@ public class ColumnCategoricalJoinTest
     @Test
     public void categoricalJoinShouldRespectNullRowsAndCategoryMapping()
     {
-        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(ColumnName.of("e"), E.class);
+        final ColumnName E_2 = ColumnName.of("E");
+        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(E_2, E.class);
         builder.add(E.A);
         builder.add(E.B);
         builder.add(E.A);

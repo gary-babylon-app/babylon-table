@@ -21,11 +21,13 @@ public class TablesTest
     @Test
     public void pruneShouldRemoveColumnsThatAreNoneSet()
     {
-        ColumnObject.Builder<String> a = ColumnObject.builder(ColumnName.of("A"), String.class);
+        final ColumnName A_2 = ColumnName.of("A");
+        final ColumnName EMPTY = ColumnName.of("EMPTY");
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, String.class);
         a.add("a0");
         a.add("a1");
 
-        ColumnObject.Builder<String> empty = ColumnObject.builder(ColumnName.of("Empty"), String.class);
+        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, String.class);
         empty.addNull();
         empty.addNull();
 
@@ -35,7 +37,7 @@ public class TablesTest
 
         assertEquals(2, table.getColumnCount());
         assertEquals(1, pruned.getColumnCount());
-        assertEquals(ColumnName.of("A"), pruned.getColumnNames()[0]);
-        assertEquals("a0", pruned.getString(ColumnName.of("A")).get(0));
+        assertEquals(A_2, pruned.getColumnNames()[0]);
+        assertEquals("a0", pruned.getString(A_2).get(0));
     }
 }

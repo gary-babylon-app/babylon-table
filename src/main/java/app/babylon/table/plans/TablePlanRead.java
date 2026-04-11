@@ -27,48 +27,34 @@ import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.RowConsumerCreateTable;
-import app.babylon.table.io.TabularReader;
-import app.babylon.table.io.TabularReaderCsv;
+import app.babylon.table.io.TabularRowReader;
 import app.babylon.table.transform.Transform;
 
-public class TablePlanBuild implements TablePlan
+public class TablePlanRead extends TablePlanCommon<TablePlanRead>
 {
     private final List<Transform> transforms;
     private final Map<ColumnName, Column.Type> columnTypes;
-    private TableName outputTableName;
-    private TableDescription outputTableDescription;
+    private ColumnName dataSourceNameColumnName;
 
-    public TablePlanBuild()
+    public TablePlanRead()
     {
         this.transforms = new ArrayList<>();
         this.columnTypes = new LinkedHashMap<>();
-        this.outputTableName = null;
-        this.outputTableDescription = null;
+        this.dataSourceNameColumnName = null;
     }
 
-    public TablePlanBuild withOutputTableName(TableName outputTableName)
+    public TablePlanRead withIncludeResourceName(ColumnName resourceName)
     {
-        this.outputTableName = outputTableName;
+        this.dataSourceNameColumnName = ArgumentCheck.nonNull(resourceName);
         return this;
     }
 
-    public TableName getOutputTableName()
+    public ColumnName getResourceName()
     {
-        return this.outputTableName;
+        return this.dataSourceNameColumnName;
     }
 
-    public TablePlanBuild withOutputTableDescription(TableDescription outputTableDescription)
-    {
-        this.outputTableDescription = outputTableDescription;
-        return this;
-    }
-
-    public TableDescription getOutputTableDescription()
-    {
-        return this.outputTableDescription;
-    }
-
-    public TablePlanBuild withTransform(Transform transform)
+    public TablePlanRead withTransform(Transform transform)
     {
         if (transform != null)
         {
@@ -77,7 +63,7 @@ public class TablePlanBuild implements TablePlan
         return this;
     }
 
-    public TablePlanBuild withTransforms(Transform... transforms)
+    public TablePlanRead withTransforms(Transform... transforms)
     {
         if (transforms != null)
         {
@@ -94,13 +80,13 @@ public class TablePlanBuild implements TablePlan
         return Collections.unmodifiableList(this.transforms);
     }
 
-    public TablePlanBuild withColumnType(ColumnName columnName, Column.Type columnType)
+    public TablePlanRead withColumnType(ColumnName columnName, Column.Type columnType)
     {
         this.columnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
         return this;
     }
 
-    public TablePlanBuild withColumnType(ColumnName columnName, Class<?> valueClass)
+    public TablePlanRead withColumnType(ColumnName columnName, Class<?> valueClass)
     {
         return withColumnType(columnName, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
     }
@@ -123,14 +109,12 @@ public class TablePlanBuild implements TablePlan
     public TableColumnar execute(TableName tableName, TableDescription tableDescription, Column... columns)
     {
         ArgumentCheck.nonEmpty(columns);
-        TableName effectiveName = tableName == null ? this.outputTableName : tableName;
+        TableName effectiveName = tableName == null ? getTableName() : tableName;
         if (effectiveName == null)
         {
-            throw new IllegalArgumentException("TablePlanBuild.execute requires a table name.");
+            throw new IllegalArgumentException("TablePlanRead.execute requires a table name.");
         }
-        TableDescription effectiveDescription = tableDescription == null
-                ? this.outputTableDescription
-                : tableDescription;
+        TableDescription effectiveDescription = tableDescription == null ? getTableDescription() : tableDescription;
         TableColumnar table = Tables.newTable(effectiveName, effectiveDescription,
                 Arrays.copyOf(columns, columns.length));
         return apply(table);
@@ -142,46 +126,29 @@ public class TablePlanBuild implements TablePlan
     }
 
     @Override
-    public TableColumnar execute(DataSource dataSource, TabularReader reader)
+    public TableColumnar execute(DataSource dataSource, TabularRowReader reader)
     {
-        ArgumentCheck.nonNull(dataSource);
-        TabularReader checkedReader = ArgumentCheck.nonNull(reader);
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(tableName(checkedReader),
-                resourceName(checkedReader), this.columnTypes);
-        TabularReader.Result readResult = checkedReader.withRowConsumer(rowConsumer).read(dataSource);
-        TableColumnar parsed = getTable(readResult);
+        DataSource checkedDataSource = ArgumentCheck.nonNull(dataSource);
+        TabularRowReader checkedReader = ArgumentCheck.nonNull(reader);
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(getTableName(), getTableDescription(),
+                this.dataSourceNameColumnName, checkedDataSource.getName(), this.columnTypes);
+        TabularRowReader.Result readResult = checkedReader.read(checkedDataSource, rowConsumer);
+        ensureSuccess(readResult);
+        TableColumnar parsed = rowConsumer.build();
         return apply(parsed);
     }
 
-    private static TableColumnar getTable(TabularReader.Result readResult)
+    private static void ensureSuccess(TabularRowReader.Result readResult)
     {
-        if (readResult.hasTable())
+        if (readResult.isSuccessLike())
         {
-            return readResult.getTable();
+            return;
         }
         if (readResult.getCause() instanceof RuntimeException runtimeException)
         {
             throw runtimeException;
         }
         throw new TableException(readResult.getMessage());
-    }
-
-    private static TableName tableName(TabularReader reader)
-    {
-        if (reader instanceof TabularReaderCsv csvReader)
-        {
-            return csvReader.getTableName();
-        }
-        return null;
-    }
-
-    private static ColumnName resourceName(TabularReader reader)
-    {
-        if (reader instanceof TabularReaderCsv csvReader)
-        {
-            return csvReader.getResourceName();
-        }
-        return null;
     }
 
     private TableColumnar apply(TableColumnar table)
@@ -192,14 +159,20 @@ public class TablePlanBuild implements TablePlan
             result = result.apply(this.transforms);
         }
 
-        TableName effectiveName = this.outputTableName == null ? result.getName() : this.outputTableName;
-        TableDescription effectiveDescription = this.outputTableDescription == null
+        TableName effectiveName = getTableName() == null ? result.getName() : getTableName();
+        TableDescription effectiveDescription = getTableDescription() == null
                 ? result.getDescription()
-                : this.outputTableDescription;
+                : getTableDescription();
         if (effectiveName.equals(result.getName()) && effectiveDescription.equals(result.getDescription()))
         {
             return result;
         }
         return Tables.newTable(effectiveName, effectiveDescription, result.getColumns());
+    }
+
+    @Override
+    protected TablePlanRead self()
+    {
+        return this;
     }
 }

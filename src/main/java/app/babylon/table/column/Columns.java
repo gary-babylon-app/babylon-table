@@ -27,11 +27,11 @@ import app.babylon.text.Strings;
 
 public class Columns
 {
-    private static final class CharSliceBuilderByDelegate implements CharSliceBuilder
+    private static final class CharSliceBuilderStringByDelegate implements CharSliceBuilder
     {
         private final ColumnObject.Builder<String> delegate;
 
-        private CharSliceBuilderByDelegate(ColumnObject.Builder<String> delegate)
+        private CharSliceBuilderStringByDelegate(ColumnObject.Builder<String> delegate)
         {
             this.delegate = delegate;
         }
@@ -58,6 +58,42 @@ public class Columns
 
         @Override
         public ColumnObject<String> build()
+        {
+            return this.delegate.build();
+        }
+    }
+
+    private static final class CharSliceBuilderDecimalByDelegate implements CharSliceBuilder
+    {
+        private final ColumnObject.Builder<BigDecimal> delegate;
+
+        private CharSliceBuilderDecimalByDelegate(ColumnObject.Builder<BigDecimal> delegate)
+        {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public ColumnName getName()
+        {
+            return this.delegate.getName();
+        }
+
+        @Override
+        public CharSliceBuilder add(char[] chars, int start, int length)
+        {
+            if (chars == null || length == 0)
+            {
+                this.delegate.addNull();
+            }
+            else
+            {
+                this.delegate.add(BigDecimals.parse(new String(chars, start, length)));
+            }
+            return this;
+        }
+
+        @Override
+        public ColumnObject<BigDecimal> build()
         {
             return this.delegate.build();
         }
@@ -175,7 +211,11 @@ public class Columns
 
         if (ColumnTypes.STRING.equals(type))
         {
-            return new CharSliceBuilderByDelegate(ColumnObject.builder(colName, String.class));
+            return new CharSliceBuilderStringByDelegate(ColumnObject.builder(colName, String.class));
+        }
+        if (ColumnTypes.DECIMAL.equals(type))
+        {
+            return new CharSliceBuilderDecimalByDelegate(ColumnObject.builderDecimal(colName));
         }
         if (ColumnDouble.TYPE.equals(type))
         {

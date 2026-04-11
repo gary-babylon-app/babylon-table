@@ -22,7 +22,8 @@ public class ColumnLongSemanticsTest
     @Test
     public void mutableColumnTracksNullsAndSupportsRegularValues()
     {
-        ColumnLong.Builder columnBuilder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("values"));
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnLong.Builder columnBuilder = (ColumnLong.Builder) ColumnLong.builder(VALUES);
         columnBuilder.add(42L);
         columnBuilder.addNull();
         columnBuilder.add(-123L);
@@ -40,7 +41,8 @@ public class ColumnLongSemanticsTest
     @Test
     public void mutableCopyPreservesValuesAndNullMarkers()
     {
-        ColumnLong.Builder builder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("original"));
+        final ColumnName ORIGINAL = ColumnName.of("original");
+        ColumnLong.Builder builder = (ColumnLong.Builder) ColumnLong.builder(ORIGINAL);
         builder.add(10L);
         builder.addNull();
         builder.add(-3L);
@@ -61,16 +63,18 @@ public class ColumnLongSemanticsTest
     @Test
     public void copyWithNewNamePreservesData()
     {
-        ColumnLong.Builder builder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("source"));
+        final ColumnName SOURCE = ColumnName.of("source");
+        final ColumnName TARGET = ColumnName.of("target");
+        ColumnLong.Builder builder = (ColumnLong.Builder) ColumnLong.builder(SOURCE);
         builder.add(7L);
         builder.addNull();
         ColumnLong original = builder.build();
 
-        Column renamed = original.copy(ColumnName.of("target"));
+        Column renamed = original.copy(TARGET);
         assertTrue(renamed instanceof ColumnLong);
         ColumnLong renamedLong = (ColumnLong) renamed;
 
-        assertEquals(ColumnName.of("target"), renamedLong.getName());
+        assertEquals(TARGET, renamedLong.getName());
         assertEquals(2, renamedLong.size());
         assertTrue(renamedLong.isSet(0));
         assertFalse(renamedLong.isSet(1));
@@ -79,7 +83,8 @@ public class ColumnLongSemanticsTest
     @Test
     public void getAsColumnReturnsSingleRowConstantColumn()
     {
-        ColumnLong.Builder sourceBuilder = (ColumnLong.Builder) ColumnLong.builder(ColumnName.of("source"));
+        final ColumnName SOURCE = ColumnName.of("source");
+        ColumnLong.Builder sourceBuilder = (ColumnLong.Builder) ColumnLong.builder(SOURCE);
         sourceBuilder.add(11L);
         sourceBuilder.add(22L);
         ColumnLong source = sourceBuilder.build();
@@ -87,7 +92,7 @@ public class ColumnLongSemanticsTest
         Column single = source.getAsColumn(1);
         assertTrue(single instanceof ColumnLong);
         assertEquals(1, single.size());
-        assertEquals(ColumnName.of("source"), single.getName());
+        assertEquals(SOURCE, single.getName());
         assertEquals("22", single.toString(0));
         assertTrue(single.isSet(0));
     }
@@ -95,7 +100,8 @@ public class ColumnLongSemanticsTest
     @Test
     public void constantColumnWithSentinelValueRepresentsNulls()
     {
-        ColumnLong constantNull = new ColumnLongConstant(ColumnName.of("constantNull"), 0L, 3, false);
+        final ColumnName CONSTANT_NULL = ColumnName.of("constantNull");
+        ColumnLong constantNull = new ColumnLongConstant(CONSTANT_NULL, 0L, 3, false);
 
         assertEquals(3, constantNull.size());
         assertFalse(constantNull.isSet(0));
@@ -107,7 +113,8 @@ public class ColumnLongSemanticsTest
     @Test
     public void constantViewReturnsResizedConstant()
     {
-        ColumnLong constant = new ColumnLongConstant(ColumnName.of("c"), 7L, 10, true);
+        final ColumnName C = ColumnName.of("c");
+        ColumnLong constant = new ColumnLongConstant(C, 7L, 10, true);
         ViewIndex.Builder indexBuilder = ViewIndex.builder();
         indexBuilder.add(8);
         indexBuilder.add(4);
@@ -116,7 +123,7 @@ public class ColumnLongSemanticsTest
         ColumnLong view = (ColumnLong) constant.view(indexBuilder.build());
 
         assertEquals(3, view.size());
-        assertEquals(ColumnName.of("c"), view.getName());
+        assertEquals(C, view.getName());
         assertTrue(view.isSet(0));
         assertTrue(view.isSet(1));
         assertTrue(view.isSet(2));

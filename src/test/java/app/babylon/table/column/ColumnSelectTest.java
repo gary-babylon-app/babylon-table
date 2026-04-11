@@ -27,7 +27,8 @@ public class ColumnSelectTest
     @Test
     public void select_onColumnObject_usesPredicateAndTreatsNullAsFalse()
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("obj"), String.class);
+        final ColumnName OBJ = ColumnName.of("OBJ");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(OBJ, String.class);
         builder.add("a");
         builder.addNull();
         builder.add("bb");
@@ -41,7 +42,8 @@ public class ColumnSelectTest
     @Test
     public void select_onColumnCategorical_usesPredicateAndTreatsNullAsFalse()
     {
-        ColumnCategorical.Builder<Sample> builder = ColumnCategorical.builder(ColumnName.of("cat"), Sample.class);
+        final ColumnName CAT = ColumnName.of("CAT");
+        ColumnCategorical.Builder<Sample> builder = ColumnCategorical.builder(CAT, Sample.class);
         builder.add(Sample.A);
         builder.addNull();
         builder.add(Sample.B);
@@ -56,7 +58,8 @@ public class ColumnSelectTest
     @Test
     public void select_onColumnInt_usesIntPredicateAndTreatsNullAsFalse()
     {
-        ColumnInt.Builder builder = ColumnInt.builder(ColumnName.of("i"));
+        final ColumnName I = ColumnName.of("I");
+        ColumnInt.Builder builder = ColumnInt.builder(I);
         builder.add(1);
         builder.addNull();
         builder.add(3);
@@ -70,7 +73,8 @@ public class ColumnSelectTest
     @Test
     public void select_onColumnLong_usesLongPredicateAndTreatsNullAsFalse()
     {
-        ColumnLong.Builder builder = ColumnLong.builder(ColumnName.of("l"));
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L);
         builder.add(2L);
         builder.addNull();
         builder.add(5L);
@@ -84,7 +88,8 @@ public class ColumnSelectTest
     @Test
     public void select_onColumnDouble_usesDoublePredicateAndTreatsNullAsFalse()
     {
-        ColumnDouble.Builder builder = ColumnDouble.builder(ColumnName.of("d"));
+        final ColumnName D = ColumnName.of("D");
+        ColumnDouble.Builder builder = ColumnDouble.builder(D);
         builder.add(1.25d);
         builder.addNull();
         builder.add(2.50d);

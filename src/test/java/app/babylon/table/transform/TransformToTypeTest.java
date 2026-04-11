@@ -17,20 +17,20 @@ public class TransformToTypeTest
     @Test
     public void shouldCreateCategoricalColumnFromPlainStringInput()
     {
-        ColumnName from = ColumnName.of("From");
-        ColumnName to = ColumnName.of("To");
+        final ColumnName FROM = ColumnName.of("From");
+        final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
         strings.add("1");
         strings.add("2");
         strings.add("1");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(Integer.class, from, Integer::parseInt, to));
+        TableColumnar transformed = table.apply(new TransformToType<>(Integer.class, FROM, Integer::parseInt, TO));
 
-        assertTrue(transformed.get(to) instanceof ColumnCategorical<?>);
-        ColumnCategorical<Integer> ints = transformed.getCategorical(to, Integer.class);
+        assertTrue(transformed.get(TO) instanceof ColumnCategorical<?>);
+        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Integer.class);
         assertEquals(Integer.valueOf(1), ints.get(0));
         assertEquals(Integer.valueOf(2), ints.get(1));
         assertEquals(Integer.valueOf(1), ints.get(2));
@@ -39,10 +39,10 @@ public class TransformToTypeTest
     @Test
     public void shouldUseFirstInParseModeWhenRequested()
     {
-        ColumnName from = ColumnName.of("From");
-        ColumnName to = ColumnName.of("To");
+        final ColumnName FROM = ColumnName.of("From");
+        final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
         strings.add("ignore one here");
         strings.add("missing");
 
@@ -51,7 +51,7 @@ public class TransformToTypeTest
         TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
                 "From", "To", "CATEGORICAL", "FIRST_IN"));
 
-        ColumnCategorical<Integer> ints = transformed.getCategorical(to, Integer.class);
+        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Integer.class);
         assertEquals(Integer.valueOf(1), ints.get(0));
         assertFalse(ints.isSet(1));
     }
@@ -59,10 +59,10 @@ public class TransformToTypeTest
     @Test
     public void shouldUseLastInParseModeWithExplicitArrayMode()
     {
-        ColumnName from = ColumnName.of("From");
-        ColumnName to = ColumnName.of("To");
+        final ColumnName FROM = ColumnName.of("From");
+        final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
         strings.add("one ignore two");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
@@ -70,17 +70,17 @@ public class TransformToTypeTest
         TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
                 "From", "To", "ARRAY", "LAST_IN"));
 
-        ColumnObject<Integer> ints = transformed.getTyped(to, Integer.class);
+        ColumnObject<Integer> ints = transformed.getTyped(TO, Integer.class);
         assertEquals(Integer.valueOf(2), ints.get(0));
     }
 
     @Test
     public void shouldUseOnlyOneInParseMode()
     {
-        ColumnName from = ColumnName.of("From");
-        ColumnName to = ColumnName.of("To");
+        final ColumnName FROM = ColumnName.of("From");
+        final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
         strings.add("ignore one here");
         strings.add("one and two");
 
@@ -89,7 +89,7 @@ public class TransformToTypeTest
         TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
                 "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
 
-        ColumnCategorical<Integer> ints = transformed.getCategorical(to, Integer.class);
+        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Integer.class);
         assertEquals(Integer.valueOf(1), ints.get(0));
         assertFalse(ints.isSet(1));
     }

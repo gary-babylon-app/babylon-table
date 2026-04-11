@@ -28,7 +28,8 @@ class ColumnObjectGetAllAndUniquesTest
     @Test
     void objectColumnGetAllAndUniquesShouldSkipNullsWithoutBecomingCategorical()
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
         for (int i = 0; i < 260; ++i)
         {
             if (i == 120)
@@ -59,7 +60,8 @@ class ColumnObjectGetAllAndUniquesTest
     @Test
     void objectViewGetAllAndUniquesShouldRespectViewOrderAndSkipNulls()
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
         for (int i = 0; i < 260; ++i)
         {
             if (i == 50)
@@ -83,7 +85,8 @@ class ColumnObjectGetAllAndUniquesTest
     @Test
     void categoricalGetAllShouldKeepDuplicatesButUniquesShouldUseCategories()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
         builder.add("A");
         builder.addNull();
         builder.add("B");
@@ -101,7 +104,8 @@ class ColumnObjectGetAllAndUniquesTest
     @Test
     void categoricalConstantShouldReturnRepeatedValuesForGetAllAndSingleValueForUniques()
     {
-        ColumnCategorical<String> constant = ColumnCategorical.constant(ColumnName.of("s"), "X", 4, String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical<String> constant = ColumnCategorical.constant(S, "X", 4, String.class);
 
         List<String> all = (List<String>) constant.getAll(new ArrayList<>());
         Set<String> uniques = constant.getUniques(null);
@@ -113,7 +117,8 @@ class ColumnObjectGetAllAndUniquesTest
     @Test
     void categoricalViewUniquesShouldOnlyContainCategoriesUsedByTheView()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
         builder.add("A");
         builder.add("B");
         builder.add("C");

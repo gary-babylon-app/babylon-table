@@ -24,7 +24,9 @@ class ColumnObjectTransformTest
     @Test
     void transformShouldUseTransformerColumnNameAndPreserveNullnessOnView()
     {
-        ColumnObject.Builder<BigDecimal> builder = ColumnObject.builderDecimal(ColumnName.of("amount"));
+        final ColumnName AMOUNT = ColumnName.of("AMOUNT");
+        final ColumnName AMOUNT_TEXT = ColumnName.of("AMOUNT_TEXT");
+        ColumnObject.Builder<BigDecimal> builder = ColumnObject.builderDecimal(AMOUNT);
         builder.add(new BigDecimal("10.5"));
         builder.addNull();
         builder.add(new BigDecimal("3.0"));
@@ -34,9 +36,9 @@ class ColumnObjectTransformTest
         ColumnObject<BigDecimal> view = (ColumnObject<BigDecimal>) column.view(rowIndex);
 
         ColumnObject<String> transformed = view
-                .transform(Transformer.of(BigDecimal::toPlainString, String.class, ColumnName.of("amount_text")));
+                .transform(Transformer.of(BigDecimal::toPlainString, String.class, AMOUNT_TEXT));
 
-        assertEquals(ColumnName.of("amount_text"), transformed.getName());
+        assertEquals(AMOUNT_TEXT, transformed.getName());
         assertEquals("3.0", transformed.get(0));
         assertFalse(transformed.isSet(1));
         assertEquals(2, transformed.size());

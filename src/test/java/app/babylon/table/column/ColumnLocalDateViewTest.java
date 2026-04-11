@@ -26,7 +26,9 @@ public class ColumnLocalDateViewTest
     public void test1()
     {
 
-        ColumnObject.Builder<LocalDate> original = ColumnObject.builder(ColumnName.of("Test"), LocalDate.class);
+        final ColumnName TEST = ColumnName.of("TEST");
+
+        ColumnObject.Builder<LocalDate> original = ColumnObject.builder(TEST, LocalDate.class);
         original.add(ColumnLocalDates.stringToDate("2024-08-20", DateFormat.YMD));
         original.add(ColumnLocalDates.stringToDate("2023/08/20", DateFormat.YMD));
         original.add(ColumnLocalDates.stringToDate("20230220", DateFormat.YMD));

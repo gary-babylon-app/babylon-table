@@ -12,9 +12,19 @@ package app.babylon.table.plans;
 
 import app.babylon.io.DataSource;
 import app.babylon.table.TableColumnar;
-import app.babylon.table.io.TabularReader;
+import app.babylon.table.TableDescription;
+import app.babylon.table.TableName;
+import app.babylon.table.io.TabularRowReader;
 
 public interface TablePlan
 {
-    TableColumnar execute(DataSource dataSource, TabularReader reader);
+    TablePlan withTableName(TableName tableName);
+
+    TableName getTableName();
+
+    TablePlan withTableDescription(TableDescription tableDescription);
+
+    TableDescription getTableDescription();
+
+    TableColumnar execute(DataSource dataSource, TabularRowReader reader);
 }

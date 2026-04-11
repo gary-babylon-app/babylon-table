@@ -21,7 +21,8 @@ public class ColumnStringTest
     @Test
     public void testSmallMutable()
     {
-        ColumnObject.Builder<String> cs = ColumnObject.builder(ColumnName.of("Test"), String.class);
+        final ColumnName TEST = ColumnName.of("Test");
+        ColumnObject.Builder<String> cs = ColumnObject.builder(TEST, String.class);
         cs.add(BigDecimal.ZERO.toPlainString());
         cs.add(BigDecimal.ONE.toPlainString());
         cs.add(BigDecimal.TEN.toPlainString());

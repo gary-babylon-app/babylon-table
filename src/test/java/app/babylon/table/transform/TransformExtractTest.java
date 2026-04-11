@@ -20,19 +20,20 @@ public class TransformExtractTest
     @Test
     public void shouldExtractFirstGroupFromStringColumn()
     {
-        ColumnName from = ColumnName.of("Description");
-        ColumnName to = ColumnName.of("Symbol");
+        final ColumnName DESCRIPTION = ColumnName.of("Description");
+        final ColumnName SYMBOL = ColumnName.of("Symbol");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION, String.class);
         strings.add("ABC (VEVE)");
         strings.add("No match");
         strings.addNull();
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformExtract(from, Pattern.compile(".*\\(([^)]+)\\)"), to));
+        TableColumnar transformed = table
+                .apply(new TransformExtract(DESCRIPTION, Pattern.compile(".*\\(([^)]+)\\)"), SYMBOL));
 
-        ColumnObject<String> extracted = transformed.getString(to);
+        ColumnObject<String> extracted = transformed.getString(SYMBOL);
         assertEquals("VEVE", extracted.get(0));
         assertFalse(extracted.isSet(1));
         assertFalse(extracted.isSet(2));
@@ -41,20 +42,21 @@ public class TransformExtractTest
     @Test
     public void shouldPreserveCategoricalShape()
     {
-        ColumnName from = ColumnName.of("Description");
-        ColumnName to = ColumnName.of("Symbol");
+        final ColumnName DESCRIPTION = ColumnName.of("Description");
+        final ColumnName SYMBOL = ColumnName.of("Symbol");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(from, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(DESCRIPTION, String.class);
         strings.add("ABC (VEVE)");
         strings.add("ABC (VEVE)");
         strings.add("XYZ (SGLN)");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformExtract(from, Pattern.compile(".*\\(([^)]+)\\)"), to));
+        TableColumnar transformed = table
+                .apply(new TransformExtract(DESCRIPTION, Pattern.compile(".*\\(([^)]+)\\)"), SYMBOL));
 
-        assertTrue(transformed.get(to) instanceof ColumnCategorical<?>);
-        ColumnCategorical<String> extracted = transformed.getCategorical(to);
+        assertTrue(transformed.get(SYMBOL) instanceof ColumnCategorical<?>);
+        ColumnCategorical<String> extracted = transformed.getCategorical(SYMBOL);
         assertEquals("VEVE", extracted.get(0));
         assertEquals("VEVE", extracted.get(1));
         assertEquals("SGLN", extracted.get(2));

@@ -26,13 +26,13 @@ public class ColumnDecimalTest
     @Test
     public void testEquals()
     {
-        ColumnName cn = ColumnName.of("test");
-        ColumnObject.Builder<BigDecimal> cd1Builder = ColumnObject.builderDecimal(cn);
+        final ColumnName TEST = ColumnName.of("test");
+        ColumnObject.Builder<BigDecimal> cd1Builder = ColumnObject.builderDecimal(TEST);
         cd1Builder.add(BigDecimals.parse("0.01"));
         cd1Builder.add(BigDecimals.parse("0.02"));
         ColumnObject<BigDecimal> cd1 = cd1Builder.build();
 
-        ColumnObject.Builder<BigDecimal> cd2Builder = ColumnObject.builderDecimal(cn);
+        ColumnObject.Builder<BigDecimal> cd2Builder = ColumnObject.builderDecimal(TEST);
         cd2Builder.add(BigDecimals.parse("0.010"));
         cd2Builder.add(BigDecimals.parse("0.020"));
         ColumnObject<BigDecimal> cd2 = cd2Builder.build();
@@ -40,8 +40,8 @@ public class ColumnDecimalTest
         assertEquals(cd1, cd1);
         assertEquals(cd1, cd2);
 
-        ColumnObject<BigDecimal> constant = Columns.newDecimal(cn, BigDecimal.TEN, 3);
-        ColumnObject<BigDecimal> constant2 = Columns.newDecimal(cn, BigDecimal.TEN, 3);
+        ColumnObject<BigDecimal> constant = Columns.newDecimal(TEST, BigDecimal.TEN, 3);
+        ColumnObject<BigDecimal> constant2 = Columns.newDecimal(TEST, BigDecimal.TEN, 3);
 
         assertEquals(constant, constant);
         assertEquals(constant, constant2);
@@ -109,7 +109,8 @@ public class ColumnDecimalTest
     @Test
     public void testSmallMutable()
     {
-        ColumnObject.Builder<BigDecimal> cdBuilder = ColumnObject.builderDecimal(ColumnName.of("Test"));
+        final ColumnName TEST = ColumnName.of("Test");
+        ColumnObject.Builder<BigDecimal> cdBuilder = ColumnObject.builderDecimal(TEST);
         cdBuilder.add(BigDecimal.ZERO);
         cdBuilder.add(BigDecimal.ONE);
 
@@ -122,7 +123,8 @@ public class ColumnDecimalTest
     @Test
     public void testAggregate()
     {
-        ColumnObject.Builder<BigDecimal> cdBuilder = ColumnObject.builderDecimal(ColumnName.of("Test"));
+        final ColumnName TEST = ColumnName.of("Test");
+        ColumnObject.Builder<BigDecimal> cdBuilder = ColumnObject.builderDecimal(TEST);
         cdBuilder.add(BigDecimal.ZERO);
         cdBuilder.add(BigDecimal.ONE);
         cdBuilder.add(BigDecimal.TEN);

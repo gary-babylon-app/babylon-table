@@ -17,19 +17,19 @@ public class TransformAfterTest
     @Test
     public void shouldTakeTextAfterDelimiter()
     {
-        ColumnName from = ColumnName.of("Code");
-        ColumnName to = ColumnName.of("After");
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AFTER = ColumnName.of("After");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
         strings.add("ABC-123");
         strings.add("NoDash");
         strings.addNull();
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformAfter(from, to, "-"));
+        TableColumnar transformed = table.apply(new TransformAfter(CODE, AFTER, "-"));
 
-        ColumnObject<String> after = transformed.getString(to);
+        ColumnObject<String> after = transformed.getString(AFTER);
         assertEquals("123", after.get(0));
         assertFalse(after.isSet(1));
         assertFalse(after.isSet(2));

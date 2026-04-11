@@ -28,23 +28,23 @@ public class ColumnEnumImmutableTest
     @Test
     public void mutableIsConstantShouldTrackEqualAndUnequalSequences()
     {
-        ColumnCategorical.Builder<TestEnum> sameBuilder = ColumnCategorical.builder(ColumnName.of("same"),
-                TestEnum.class);
+        final ColumnName SAME = ColumnName.of("SAME");
+        final ColumnName MIXED = ColumnName.of("MIXED");
+        final ColumnName NULLS = ColumnName.of("NULLS");
+        ColumnCategorical.Builder<TestEnum> sameBuilder = ColumnCategorical.builder(SAME, TestEnum.class);
         sameBuilder.add(TestEnum.A);
         sameBuilder.add(TestEnum.A);
         sameBuilder.add(TestEnum.A);
         ColumnCategorical<TestEnum> same = sameBuilder.build();
         assertTrue(same.isConstant());
 
-        ColumnCategorical.Builder<TestEnum> mixedBuilder = ColumnCategorical.builder(ColumnName.of("mixed"),
-                TestEnum.class);
+        ColumnCategorical.Builder<TestEnum> mixedBuilder = ColumnCategorical.builder(MIXED, TestEnum.class);
         mixedBuilder.add(TestEnum.A);
         mixedBuilder.add(TestEnum.B);
         ColumnCategorical<TestEnum> mixed = mixedBuilder.build();
         assertFalse(mixed.isConstant());
 
-        ColumnCategorical.Builder<TestEnum> nullsBuilder = ColumnCategorical.builder(ColumnName.of("nulls"),
-                TestEnum.class);
+        ColumnCategorical.Builder<TestEnum> nullsBuilder = ColumnCategorical.builder(NULLS, TestEnum.class);
         nullsBuilder.add(null);
         nullsBuilder.add(null);
         ColumnCategorical<TestEnum> nulls = nullsBuilder.build();
@@ -54,7 +54,8 @@ public class ColumnEnumImmutableTest
     @Test
     public void immutableShouldPreserveMixedNullAndSetValues()
     {
-        ColumnCategorical.Builder<TestEnum> mutable = ColumnCategorical.builder(ColumnName.of("e"), TestEnum.class);
+        final ColumnName E = ColumnName.of("E");
+        ColumnCategorical.Builder<TestEnum> mutable = ColumnCategorical.builder(E, TestEnum.class);
         mutable.add(TestEnum.A);
         mutable.add(null);
         mutable.add(TestEnum.C);
@@ -74,7 +75,8 @@ public class ColumnEnumImmutableTest
     @Test
     public void immutableShouldHandleAllNullValues()
     {
-        ColumnCategorical.Builder<TestEnum> mutable = ColumnCategorical.builder(ColumnName.of("e"), TestEnum.class);
+        final ColumnName E = ColumnName.of("E");
+        ColumnCategorical.Builder<TestEnum> mutable = ColumnCategorical.builder(E, TestEnum.class);
         mutable.add(null);
         mutable.add(null);
 

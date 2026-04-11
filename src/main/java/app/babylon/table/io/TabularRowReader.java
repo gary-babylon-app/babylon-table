@@ -14,24 +14,21 @@ import java.util.Map;
 
 import app.babylon.io.DataSource;
 import app.babylon.lang.ArgumentCheck;
-import app.babylon.table.TableColumnar;
 import app.babylon.table.column.ColumnName;
 
-public interface TabularReader
+public interface TabularRowReader
 {
-    TabularReader withSelectedColumn(ColumnName columnName);
+    TabularRowReader withSelectedColumn(ColumnName columnName);
 
-    TabularReader withSelectedColumns(ColumnName... columnNames);
+    TabularRowReader withSelectedColumns(ColumnName... columnNames);
 
-    TabularReader withColumnRename(ColumnName original, ColumnName newName);
+    TabularRowReader withColumnRename(ColumnName original, ColumnName newName);
 
-    TabularReader withColumnRenames(Map<ColumnName, ColumnName> renames);
+    TabularRowReader withColumnRenames(Map<ColumnName, ColumnName> renames);
 
-    TabularReader withRowFilter(RowFilter rowFilter);
+    TabularRowReader withRowFilter(RowFilter rowFilter);
 
-    TabularReader withRowConsumer(RowConsumer<TableColumnar> rowConsumer);
-
-    Result read(DataSource dataSource);
+    Result read(DataSource dataSource, RowConsumer rowConsumer);
 
     enum Status
     {
@@ -53,39 +50,37 @@ public interface TabularReader
         private final Status status;
         private final String message;
         private final Throwable cause;
-        private final TableColumnar table;
 
-        public Result(Status status, String message, Throwable cause, TableColumnar table)
+        public Result(Status status, String message, Throwable cause)
         {
             this.status = ArgumentCheck.nonNull(status);
             this.message = message;
             this.cause = cause;
-            this.table = table;
         }
 
-        public static Result success(TableColumnar table)
+        public static Result success()
         {
-            return new Result(Status.SUCCESS, null, null, table);
+            return new Result(Status.SUCCESS, null, null);
         }
 
-        public static Result success(TableColumnar table, String message)
+        public static Result success(String message)
         {
-            return new Result(Status.SUCCESS, message, null, table);
+            return new Result(Status.SUCCESS, message, null);
         }
 
-        public static Result warning(TableColumnar table, String message)
+        public static Result warning(String message)
         {
-            return new Result(Status.WARNING, message, null, table);
+            return new Result(Status.WARNING, message, null);
         }
 
         public static Result empty(String message)
         {
-            return new Result(Status.EMPTY, message, null, null);
+            return new Result(Status.EMPTY, message, null);
         }
 
         public static Result exception(String message, Throwable cause)
         {
-            return new Result(Status.EXCEPTION, message, cause, null);
+            return new Result(Status.EXCEPTION, message, cause);
         }
 
         public Status getStatus()
@@ -106,16 +101,6 @@ public interface TabularReader
         public Throwable getCause()
         {
             return this.cause;
-        }
-
-        public TableColumnar getTable()
-        {
-            return this.table;
-        }
-
-        public boolean hasTable()
-        {
-            return this.table != null;
         }
     }
 }

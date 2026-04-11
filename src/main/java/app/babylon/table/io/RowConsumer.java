@@ -16,11 +16,9 @@ import app.babylon.table.column.ColumnName;
  * Consumes parsed rows during a read operation after being initialised with the
  * projected column names that incoming rows will expose.
  */
-public interface RowConsumer<T>
+public interface RowConsumer
 {
     void start(ColumnName[] columnNames);
 
     void accept(Row row);
-
-    T build();
 }

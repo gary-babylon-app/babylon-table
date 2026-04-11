@@ -19,24 +19,21 @@ import java.util.Map;
 import java.util.Set;
 
 import app.babylon.lang.ArgumentCheck;
-import app.babylon.table.TableColumnar;
 import app.babylon.table.column.ColumnName;
 
-public abstract class TabularReaderCommon<R extends TabularReaderCommon<R>> implements TabularReader
+public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>> implements TabularRowReader
 {
     private final Set<ColumnName> selectedColumns;
     private final Map<ColumnName, ColumnName> columnRenames;
     private final Set<ColumnName> renamedTargets;
     private RowFilter rowFilter;
-    private RowConsumer<TableColumnar> rowConsumer;
 
-    protected TabularReaderCommon()
+    protected TabularRowReaderCommon()
     {
         this.selectedColumns = new LinkedHashSet<>();
         this.columnRenames = new LinkedHashMap<>();
         this.renamedTargets = new HashSet<>();
         this.rowFilter = null;
-        this.rowConsumer = null;
     }
 
     @Override
@@ -103,13 +100,6 @@ public abstract class TabularReaderCommon<R extends TabularReaderCommon<R>> impl
         return self();
     }
 
-    @Override
-    public R withRowConsumer(RowConsumer<TableColumnar> rowConsumer)
-    {
-        this.rowConsumer = rowConsumer;
-        return self();
-    }
-
     protected Set<ColumnName> getSelectedColumns()
     {
         return this.selectedColumns;
@@ -123,11 +113,6 @@ public abstract class TabularReaderCommon<R extends TabularReaderCommon<R>> impl
     protected RowFilter getRowFilter()
     {
         return this.rowFilter;
-    }
-
-    protected RowConsumer<TableColumnar> getRowConsumer()
-    {
-        return this.rowConsumer;
     }
 
     protected abstract R self();

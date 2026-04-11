@@ -18,9 +18,9 @@ public class TransformStripTest
     @Test
     public void shouldStripStringColumnInPlace()
     {
-        ColumnName columnName = ColumnName.of("Name");
+        final ColumnName NAME = ColumnName.of("Name");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(columnName, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, String.class);
         strings.add("  Alice  ");
         strings.add("\tBob\n");
         strings.add("   ");
@@ -28,9 +28,9 @@ public class TransformStripTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformStrip(columnName));
+        TableColumnar transformed = table.apply(new TransformStrip(NAME));
 
-        ColumnObject<String> stripped = transformed.getString(columnName);
+        ColumnObject<String> stripped = transformed.getString(NAME);
         assertEquals("Alice", stripped.get(0));
         assertEquals("Bob", stripped.get(1));
         assertEquals("", stripped.get(2));
@@ -40,20 +40,20 @@ public class TransformStripTest
     @Test
     public void shouldPreserveCategoricalShapeWhenWritingToNewColumn()
     {
-        ColumnName from = ColumnName.of("Name");
-        ColumnName to = ColumnName.of("Stripped");
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName STRIPPED = ColumnName.of("Stripped");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(from, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME, String.class);
         strings.add("  Alice  ");
         strings.add("  Alice  ");
         strings.add(" Bob ");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformStrip(from, to));
+        TableColumnar transformed = table.apply(new TransformStrip(NAME, STRIPPED));
 
-        assertTrue(transformed.get(to) instanceof ColumnCategorical<?>);
-        ColumnCategorical<String> stripped = transformed.getCategorical(to);
+        assertTrue(transformed.get(STRIPPED) instanceof ColumnCategorical<?>);
+        ColumnCategorical<String> stripped = transformed.getCategorical(STRIPPED);
         assertEquals("Alice", stripped.get(0));
         assertEquals("Alice", stripped.get(1));
         assertEquals("Bob", stripped.get(2));

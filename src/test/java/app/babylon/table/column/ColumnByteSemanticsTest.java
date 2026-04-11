@@ -23,7 +23,8 @@ public class ColumnByteSemanticsTest
     @Test
     public void byteColumnTracksNullsAndValues()
     {
-        ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("bytes.bin"));
+        final ColumnName BYTES_BIN = ColumnName.of("BYTES_BIN");
+        ColumnByte.Builder builder = ColumnByte.builder(BYTES_BIN);
         builder.add((byte) 42);
         builder.addNull();
         builder.add((byte) -5);
@@ -42,7 +43,8 @@ public class ColumnByteSemanticsTest
     @Test
     public void detectsXlsHeader()
     {
-        ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("sample.xls"));
+        final ColumnName SAMPLE_XLS = ColumnName.of("SAMPLE_XLS");
+        ColumnByte.Builder builder = ColumnByte.builder(SAMPLE_XLS);
         builder.add((byte) 0xD0);
         builder.add((byte) 0xCF);
         builder.add((byte) 0x11);
@@ -60,7 +62,9 @@ public class ColumnByteSemanticsTest
     @Test
     public void detectsXlsxZipHeaderUnlessNamedZip()
     {
-        ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("sample.xlsx"));
+        final ColumnName SAMPLE_XLSX = ColumnName.of("SAMPLE_XLSX");
+        final ColumnName SAMPLE_ZIP = ColumnName.of("SAMPLE_ZIP");
+        ColumnByte.Builder builder = ColumnByte.builder(SAMPLE_XLSX);
         builder.add((byte) 0x50);
         builder.add((byte) 0x4B);
         builder.add((byte) 0x03);
@@ -70,7 +74,7 @@ public class ColumnByteSemanticsTest
         assertTrue(xlsx.isXlsx());
         assertFalse(xlsx.isXls());
 
-        ColumnByte.Builder zipBuilder = ColumnByte.builder(ColumnName.of("sample.zip"));
+        ColumnByte.Builder zipBuilder = ColumnByte.builder(SAMPLE_ZIP);
         zipBuilder.add((byte) 0x50);
         zipBuilder.add((byte) 0x4B);
         zipBuilder.add((byte) 0x03);
@@ -83,7 +87,8 @@ public class ColumnByteSemanticsTest
     @Test
     public void viewAndGetAsColumnRemainUnsupportedForNow()
     {
-        ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("bytes.bin"));
+        final ColumnName BYTES_BIN = ColumnName.of("BYTES_BIN");
+        ColumnByte.Builder builder = ColumnByte.builder(BYTES_BIN);
         builder.add((byte) 1);
         ColumnByte column = builder.build();
 

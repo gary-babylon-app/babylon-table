@@ -18,16 +18,16 @@ public class TransformSuffixTest
     @Test
     public void shouldAppendSuffix()
     {
-        ColumnName columnName = ColumnName.of("Code");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(columnName, String.class);
+        final ColumnName CODE = ColumnName.of("Code");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
         strings.add("ABC");
         strings.add("");
         strings.addNull();
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
-        TableColumnar transformed = table.apply(new TransformSuffix("-X", columnName));
+        TableColumnar transformed = table.apply(new TransformSuffix("-X", CODE));
 
-        ColumnObject<String> values = transformed.getString(columnName);
+        ColumnObject<String> values = transformed.getString(CODE);
         assertEquals("ABC-X", values.get(0));
         assertFalse(values.isSet(1));
         assertFalse(values.isSet(2));
@@ -36,16 +36,16 @@ public class TransformSuffixTest
     @Test
     public void shouldPreserveCategoricalShape()
     {
-        ColumnName columnName = ColumnName.of("Code");
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(columnName, String.class);
+        final ColumnName CODE = ColumnName.of("Code");
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(CODE, String.class);
         strings.add("ABC");
         strings.add("ABC");
         strings.add("XYZ");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
-        TableColumnar transformed = table.apply(new TransformSuffix("-X", columnName));
+        TableColumnar transformed = table.apply(new TransformSuffix("-X", CODE));
 
-        assertTrue(transformed.get(columnName) instanceof ColumnCategorical<?>);
+        assertTrue(transformed.get(CODE) instanceof ColumnCategorical<?>);
     }
 
     @Test

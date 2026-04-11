@@ -20,7 +20,8 @@ class ColumnObjectBuilderCompositeTest
     @Test
     void builderShouldChooseArrayForMostlyUniqueObjectValues()
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
         for (int i = 0; i < 230; ++i)
         {
             builder.add("value-" + i);
@@ -39,7 +40,8 @@ class ColumnObjectBuilderCompositeTest
     @Test
     void builderShouldChooseCategoricalForRepeatedObjectValues()
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
         for (int i = 0; i < 229; ++i)
         {
             builder.add("value-" + i);

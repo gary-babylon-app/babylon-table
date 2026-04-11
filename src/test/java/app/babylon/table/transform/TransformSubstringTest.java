@@ -17,10 +17,10 @@ public class TransformSubstringTest
     @Test
     public void shouldExtractSubstringIntoNewColumn()
     {
-        ColumnName from = ColumnName.of("Code");
-        ColumnName to = ColumnName.of("Prefix");
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName PREFIX = ColumnName.of("Prefix");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
         strings.add("ABC123");
         strings.add("XY");
         strings.add("");
@@ -28,9 +28,9 @@ public class TransformSubstringTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformSubstring(from, to, 0, 3));
+        TableColumnar transformed = table.apply(new TransformSubstring(CODE, PREFIX, 0, 3));
 
-        ColumnObject<String> prefixes = transformed.getString(to);
+        ColumnObject<String> prefixes = transformed.getString(PREFIX);
         assertEquals("ABC", prefixes.get(0));
         assertFalse(prefixes.isSet(1));
         assertFalse(prefixes.isSet(2));

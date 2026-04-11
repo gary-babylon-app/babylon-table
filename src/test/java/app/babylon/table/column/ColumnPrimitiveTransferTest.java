@@ -23,7 +23,8 @@ public class ColumnPrimitiveTransferTest
     @Test
     public void intBuilderTransfersValuesAndNullsToImmutable()
     {
-        ColumnInt.Builder builder = ColumnInt.builder(ColumnName.of("i"));
+        final ColumnName I = ColumnName.of("I");
+        ColumnInt.Builder builder = ColumnInt.builder(I);
         builder.add(7);
         builder.addNull();
         builder.add(-1);
@@ -43,7 +44,8 @@ public class ColumnPrimitiveTransferTest
     @Test
     public void longBuilderTransfersValuesAndNullsToImmutable()
     {
-        ColumnLong.Builder builder = ColumnLong.builder(ColumnName.of("l"));
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L);
         builder.add(42L);
         builder.addNull();
         builder.add(-9L);
@@ -63,7 +65,8 @@ public class ColumnPrimitiveTransferTest
     @Test
     public void doubleBuilderTransfersValuesAndNullsToImmutable()
     {
-        ColumnDouble.Builder builder = ColumnDouble.builder(ColumnName.of("d"));
+        final ColumnName D = ColumnName.of("D");
+        ColumnDouble.Builder builder = ColumnDouble.builder(D);
         builder.add(1.5);
         builder.addNull();
         builder.add(-3.25);
@@ -83,17 +86,20 @@ public class ColumnPrimitiveTransferTest
     @Test
     public void primitiveColumnsShouldSupportViews()
     {
-        ColumnInt.Builder ints = ColumnInt.builder(ColumnName.of("i"));
+        final ColumnName I = ColumnName.of("I");
+        final ColumnName L = ColumnName.of("L");
+        final ColumnName D = ColumnName.of("D");
+        ColumnInt.Builder ints = ColumnInt.builder(I);
         ints.add(7);
         ints.addNull();
         ints.add(-1);
 
-        ColumnLong.Builder longs = ColumnLong.builder(ColumnName.of("l"));
+        ColumnLong.Builder longs = ColumnLong.builder(L);
         longs.add(42L);
         longs.addNull();
         longs.add(-9L);
 
-        ColumnDouble.Builder doubles = ColumnDouble.builder(ColumnName.of("d"));
+        ColumnDouble.Builder doubles = ColumnDouble.builder(D);
         doubles.add(1.5);
         doubles.addNull();
         doubles.add(-3.25);

@@ -24,7 +24,7 @@ final class LineReaderCSV implements LineReader
     private final char separator;
     private final RowBuffer current;
 
-    protected LineReaderCSV(BufferedCharReader reader, TabularReaderCsv options)
+    protected LineReaderCSV(BufferedCharReader reader, TabularRowReaderCsv options)
     {
         this.separator = ArgumentCheck.nonNull(options, "options must not be null").getSeparator();
         this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");

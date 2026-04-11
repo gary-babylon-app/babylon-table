@@ -27,24 +27,24 @@ public class TableColumnarJoinTest
     @Test
     public void joinTableShouldExposeLeftColumnsAndJoinAwareRightColumns()
     {
-        ColumnName key = ColumnName.of("Key");
-        ColumnName leftValue = ColumnName.of("LeftValue");
-        ColumnName rightValue = ColumnName.of("RightValue");
+        final ColumnName KEY = ColumnName.of("Key");
+        final ColumnName LEFT_VALUE = ColumnName.of("LeftValue");
+        final ColumnName RIGHT_VALUE = ColumnName.of("RightValue");
 
-        ColumnObject.Builder<String> leftKey = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, String.class);
         leftKey.add("A");
         leftKey.add("B");
 
-        ColumnObject.Builder<String> leftValues = ColumnObject.builder(leftValue, String.class);
+        ColumnObject.Builder<String> leftValues = ColumnObject.builder(LEFT_VALUE, String.class);
         leftValues.add("left-a");
         leftValues.add("left-b");
 
         TableColumnar left = Tables.newTable(TableName.of("left"), leftKey.build(), leftValues.build());
 
-        ColumnObject.Builder<String> rightKey = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> rightKey = ColumnObject.builder(KEY, String.class);
         rightKey.add("A");
 
-        ColumnObject.Builder<String> rightValues = ColumnObject.builder(rightValue, String.class);
+        ColumnObject.Builder<String> rightValues = ColumnObject.builder(RIGHT_VALUE, String.class);
         rightValues.add("right-a");
 
         TableColumnar right = Tables.newTable(TableName.of("right"), rightKey.build(), rightValues.build());
@@ -52,46 +52,46 @@ public class TableColumnarJoinTest
         ViewIndex rowIndex = ViewIndex.builder().add(0).addNull().build();
 
         TableColumnar joined = new TableColumnarLeftOuterJoin(TableName.of("joined"), new TableDescription(""), left,
-                right, rowIndex, rightValue);
+                right, rowIndex, RIGHT_VALUE);
 
         assertEquals(2, joined.getRowCount());
-        assertTrue(joined.contains(key));
-        assertTrue(joined.contains(leftValue));
-        assertTrue(joined.contains(rightValue));
-        assertEquals("left-a", joined.getString(leftValue).get(0));
-        assertEquals("left-b", joined.getString(leftValue).get(1));
-        assertEquals("right-a", joined.getString(rightValue).get(0));
-        assertNull(joined.getString(rightValue).get(1));
-        assertFalse(joined.getString(rightValue).isSet(1));
+        assertTrue(joined.contains(KEY));
+        assertTrue(joined.contains(LEFT_VALUE));
+        assertTrue(joined.contains(RIGHT_VALUE));
+        assertEquals("left-a", joined.getString(LEFT_VALUE).get(0));
+        assertEquals("left-b", joined.getString(LEFT_VALUE).get(1));
+        assertEquals("right-a", joined.getString(RIGHT_VALUE).get(0));
+        assertNull(joined.getString(RIGHT_VALUE).get(1));
+        assertFalse(joined.getString(RIGHT_VALUE).isSet(1));
 
-        Column first = joined.get(rightValue);
-        Column second = joined.get(rightValue);
+        Column first = joined.get(RIGHT_VALUE);
+        Column second = joined.get(RIGHT_VALUE);
         assertSame(first, second);
     }
 
     @Test
     public void joinTableShouldUseNullableViewSemanticsForPrimitiveRightColumns()
     {
-        ColumnName key = ColumnName.of("Key");
-        ColumnName amount = ColumnName.of("Amount");
+        final ColumnName KEY = ColumnName.of("Key");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
 
-        ColumnObject.Builder<String> leftKey = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, String.class);
         leftKey.add("A");
         leftKey.add("B");
         TableColumnar left = Tables.newTable(TableName.of("left"), leftKey.build());
 
-        ColumnObject.Builder<String> rightKey = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> rightKey = ColumnObject.builder(KEY, String.class);
         rightKey.add("A");
-        ColumnDouble.Builder amounts = ColumnDouble.builder(amount);
+        ColumnDouble.Builder amounts = ColumnDouble.builder(AMOUNT);
         amounts.add(42.5d);
         TableColumnar right = Tables.newTable(TableName.of("right"), rightKey.build(), amounts.build());
 
         ViewIndex rowIndex = ViewIndex.builder().add(0).addNull().build();
 
         TableColumnar joined = new TableColumnarLeftOuterJoin(TableName.of("joined"), new TableDescription(""), left,
-                right, rowIndex, amount);
+                right, rowIndex, AMOUNT);
 
-        ColumnDouble amountView = (ColumnDouble) joined.get(amount);
+        ColumnDouble amountView = (ColumnDouble) joined.get(AMOUNT);
         assertEquals(42.5d, amountView.get(0));
         assertTrue(amountView.isSet(0));
         assertEquals(0.0d, amountView.get(1));

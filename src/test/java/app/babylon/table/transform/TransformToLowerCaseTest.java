@@ -18,9 +18,9 @@ public class TransformToLowerCaseTest
     @Test
     public void shouldConvertStringsToLowerCase()
     {
-        ColumnName columnName = ColumnName.of("Name");
+        final ColumnName NAME = ColumnName.of("Name");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(columnName, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, String.class);
         strings.add("ALICE");
         strings.add("Bob");
         strings.add("");
@@ -28,9 +28,9 @@ public class TransformToLowerCaseTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToLowerCase(columnName));
+        TableColumnar transformed = table.apply(new TransformToLowerCase(NAME));
 
-        ColumnObject<String> lower = transformed.getString(columnName);
+        ColumnObject<String> lower = transformed.getString(NAME);
         assertEquals("alice", lower.get(0));
         assertEquals("bob", lower.get(1));
         assertEquals("", lower.get(2));
@@ -40,20 +40,20 @@ public class TransformToLowerCaseTest
     @Test
     public void shouldPreserveCategoricalShapeWhenWritingToNewColumn()
     {
-        ColumnName from = ColumnName.of("Name");
-        ColumnName to = ColumnName.of("Lower");
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName LOWER = ColumnName.of("Lower");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(from, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME, String.class);
         strings.add("ALICE");
         strings.add("ALICE");
         strings.add("Bob");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToLowerCase(from, to));
+        TableColumnar transformed = table.apply(new TransformToLowerCase(NAME, LOWER));
 
-        assertTrue(transformed.get(to) instanceof ColumnCategorical<?>);
-        ColumnCategorical<String> lower = transformed.getCategorical(to);
+        assertTrue(transformed.get(LOWER) instanceof ColumnCategorical<?>);
+        ColumnCategorical<String> lower = transformed.getCategorical(LOWER);
         assertEquals("alice", lower.get(0));
         assertEquals("alice", lower.get(1));
         assertEquals("bob", lower.get(2));

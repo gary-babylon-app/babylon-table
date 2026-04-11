@@ -24,46 +24,46 @@ public class TablesLeftOuterJoinTest
     @Test
     public void leftOuterJoinShouldKeepAllLeftRowsAndAppendMatchedRightColumns()
     {
-        ColumnName key = ColumnName.of("Key");
-        ColumnName leftValue = ColumnName.of("LeftValue");
-        ColumnName rightValue = ColumnName.of("RightValue");
-        ColumnName rightScore = ColumnName.of("RightScore");
+        final ColumnName KEY = ColumnName.of("Key");
+        final ColumnName LEFT_VALUE = ColumnName.of("LeftValue");
+        final ColumnName RIGHT_VALUE = ColumnName.of("RightValue");
+        final ColumnName RIGHT_SCORE = ColumnName.of("RightScore");
 
-        ColumnObject.Builder<String> leftKey = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, String.class);
         leftKey.add("A");
         leftKey.add("B");
 
-        ColumnObject.Builder<String> leftValues = ColumnObject.builder(leftValue, String.class);
+        ColumnObject.Builder<String> leftValues = ColumnObject.builder(LEFT_VALUE, String.class);
         leftValues.add("left-a");
         leftValues.add("left-b");
 
         TableColumnar left = Tables.newTable(TableName.of("left"), leftKey.build(), leftValues.build());
 
-        ColumnObject.Builder<String> rightKeyBuilder = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> rightKeyBuilder = ColumnObject.builder(KEY, String.class);
         rightKeyBuilder.add("A");
 
-        ColumnObject.Builder<String> rightValues = ColumnObject.builder(rightValue, String.class);
+        ColumnObject.Builder<String> rightValues = ColumnObject.builder(RIGHT_VALUE, String.class);
         rightValues.add("right-a");
 
-        ColumnInt.Builder rightScores = ColumnInt.builder(rightScore);
+        ColumnInt.Builder rightScores = ColumnInt.builder(RIGHT_SCORE);
         rightScores.add(7);
 
         TableColumnar right = Tables.newTable(TableName.of("right"), rightKeyBuilder.build(), rightValues.build(),
                 rightScores.build());
 
-        TableColumnar joined = Tables.leftOuterJoin(left, right, key, key, rightValue, rightScore);
+        TableColumnar joined = Tables.leftOuterJoin(left, right, KEY, KEY, RIGHT_VALUE, RIGHT_SCORE);
 
         assertEquals(2, joined.getRowCount());
-        assertTrue(joined.contains(key));
-        assertTrue(joined.contains(leftValue));
-        assertTrue(joined.contains(rightValue));
-        assertTrue(joined.contains(rightScore));
+        assertTrue(joined.contains(KEY));
+        assertTrue(joined.contains(LEFT_VALUE));
+        assertTrue(joined.contains(RIGHT_VALUE));
+        assertTrue(joined.contains(RIGHT_SCORE));
 
-        ColumnObject<String> joinedRightValues = joined.getString(rightValue);
+        ColumnObject<String> joinedRightValues = joined.getString(RIGHT_VALUE);
         assertEquals("right-a", joinedRightValues.get(0));
         assertEquals(null, joinedRightValues.get(1));
 
-        ColumnInt joinedRightScores = joined.getInt(rightScore);
+        ColumnInt joinedRightScores = joined.getInt(RIGHT_SCORE);
         assertTrue(joinedRightScores.isSet(0));
         assertEquals(7, joinedRightScores.get(0));
         assertFalse(joinedRightScores.isSet(1));
@@ -72,26 +72,26 @@ public class TablesLeftOuterJoinTest
     @Test
     public void leftOuterJoinShouldSupportRepeatedObjectMatchesAndNullMisses()
     {
-        ColumnName key = ColumnName.of("Key");
-        ColumnName rightValue = ColumnName.of("RightValue");
+        final ColumnName KEY = ColumnName.of("Key");
+        final ColumnName RIGHT_VALUE = ColumnName.of("RightValue");
 
-        ColumnObject.Builder<String> leftKey = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, String.class);
         leftKey.add("A");
         leftKey.add("A");
         leftKey.add("B");
 
         TableColumnar left = Tables.newTable(TableName.of("left"), leftKey.build());
 
-        ColumnObject.Builder<String> rightKey = ColumnObject.builder(key, String.class);
+        ColumnObject.Builder<String> rightKey = ColumnObject.builder(KEY, String.class);
         rightKey.add("A");
 
-        ColumnObject.Builder<String> rightValues = ColumnObject.builder(rightValue, String.class);
+        ColumnObject.Builder<String> rightValues = ColumnObject.builder(RIGHT_VALUE, String.class);
         rightValues.add("right-a");
 
         TableColumnar right = Tables.newTable(TableName.of("right"), rightKey.build(), rightValues.build());
 
-        TableColumnar joined = Tables.leftOuterJoin(left, right, key, key, rightValue);
-        ColumnObject<String> values = joined.getString(rightValue);
+        TableColumnar joined = Tables.leftOuterJoin(left, right, KEY, KEY, RIGHT_VALUE);
+        ColumnObject<String> values = joined.getString(RIGHT_VALUE);
 
         assertEquals("right-a", values.get(0));
         assertEquals("right-a", values.get(1));

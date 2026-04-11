@@ -24,12 +24,10 @@ import java.util.function.Predicate;
 import app.babylon.io.DataSource;
 import app.babylon.io.DataSourceProbe;
 import app.babylon.lang.ArgumentCheck;
-import app.babylon.table.TableColumnar;
 import app.babylon.table.TableException;
-import app.babylon.table.TableName;
 import app.babylon.table.column.ColumnName;
 
-public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
+public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReaderCsv>
 {
     private HeaderStrategy headerStrategy;
     private boolean stripping;
@@ -37,10 +35,8 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
     private int[] fixedWidths;
     private Charset charset;
     private boolean autoDetectEncoding;
-    private TableName tableName;
-    private ColumnName resourceName;
 
-    public TabularReaderCsv()
+    public TabularRowReaderCsv()
     {
         this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
         this.stripping = true;
@@ -48,55 +44,41 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
         this.fixedWidths = null;
         this.charset = StandardCharsets.UTF_8;
         this.autoDetectEncoding = true;
-        this.tableName = null;
-        this.resourceName = null;
     }
 
-    public TabularReaderCsv withHeaderStrategy(HeaderStrategy headerStrategy)
+    public TabularRowReaderCsv withHeaderStrategy(HeaderStrategy headerStrategy)
     {
         this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
         return this;
     }
 
-    public TabularReaderCsv withStripping(boolean stripping)
+    public TabularRowReaderCsv withStripping(boolean stripping)
     {
         this.stripping = stripping;
         return this;
     }
 
-    public TabularReaderCsv withSeparator(char separator)
+    public TabularRowReaderCsv withSeparator(char separator)
     {
         this.separator = separator;
         return this;
     }
 
-    public TabularReaderCsv withFixedWidths(int[] fixedWidths)
+    public TabularRowReaderCsv withFixedWidths(int[] fixedWidths)
     {
         this.fixedWidths = fixedWidths == null ? null : Arrays.copyOf(fixedWidths, fixedWidths.length);
         return this;
     }
 
-    public TabularReaderCsv withCharset(Charset charset)
+    public TabularRowReaderCsv withCharset(Charset charset)
     {
         this.charset = ArgumentCheck.nonNull(charset);
         return this;
     }
 
-    public TabularReaderCsv withAutoDetectEncoding(boolean autoDetectEncoding)
+    public TabularRowReaderCsv withAutoDetectEncoding(boolean autoDetectEncoding)
     {
         this.autoDetectEncoding = autoDetectEncoding;
-        return this;
-    }
-
-    public TabularReaderCsv withTableName(TableName tableName)
-    {
-        this.tableName = ArgumentCheck.nonNull(tableName);
-        return this;
-    }
-
-    public TabularReaderCsv withIncludeResourceName(ColumnName resourceName)
-    {
-        this.resourceName = ArgumentCheck.nonNull(resourceName);
         return this;
     }
 
@@ -130,25 +112,11 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
         return this.autoDetectEncoding;
     }
 
-    public TableName getTableName()
-    {
-        return this.tableName;
-    }
-
-    public ColumnName getResourceName()
-    {
-        return this.resourceName;
-    }
-
     @Override
-    public TabularReader.Result read(DataSource dataSource)
+    public TabularRowReader.Result read(DataSource dataSource, RowConsumer rowConsumer)
     {
         DataSource checkedDataSource = ArgumentCheck.nonNull(dataSource);
-        RowConsumer<TableColumnar> rowConsumer = rowConsumer();
-        if (rowConsumer instanceof RowConsumerCreateTable)
-        {
-            ((RowConsumerCreateTable) rowConsumer).setSourceName(checkedDataSource.getName());
-        }
+        RowConsumer checkedRowConsumer = ArgumentCheck.nonNull(rowConsumer);
         try (LineReader lineReader = createLineReader(checkedDataSource))
         {
             RowStreamMarkable parsedRowStream = new RowStreamBuffered(lineReader);
@@ -157,7 +125,7 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
             final ColumnName[] projectedColumnNames = createProjectedColumnNames(headerDetection);
             RowProjected projectedRow = createRowProjected(headerDetection);
 
-            rowConsumer.start(projectedColumnNames);
+            checkedRowConsumer.start(projectedColumnNames);
 
             Predicate<Row> boundRowFilter = getBoundRowFilter(projectedColumnNames);
 
@@ -167,7 +135,7 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
             {
                 while (parsedRowStream.next())
                 {
-                    rowConsumer.accept(projectedRow.with(parsedRowStream.current()));
+                    checkedRowConsumer.accept(projectedRow.with(parsedRowStream.current()));
                 }
             }
             else
@@ -179,26 +147,26 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
                     {
                         continue;
                     }
-                    rowConsumer.accept(row);
+                    checkedRowConsumer.accept(row);
                 }
             }
-            return TabularReader.Result.success(rowConsumer.build());
+            return TabularRowReader.Result.success();
 
         }
         catch (TableException e)
         {
-            return TabularReader.Result
+            return TabularRowReader.Result
                     .exception("Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", e);
         }
         catch (IOException e)
         {
-            return TabularReader.Result.exception(
+            return TabularRowReader.Result.exception(
                     "Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", new TableException(
                             "Failed to read table from data source '" + checkedDataSource.getName() + "'.", e));
         }
         catch (RuntimeException e)
         {
-            return TabularReader.Result
+            return TabularRowReader.Result
                     .exception("Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", e);
         }
     }
@@ -210,7 +178,7 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
     }
 
     @Override
-    protected TabularReaderCsv self()
+    protected TabularRowReaderCsv self()
     {
         return this;
     }
@@ -337,13 +305,4 @@ public class TabularReaderCsv extends TabularReaderCommon<TabularReaderCsv>
         }
     }
 
-    private RowConsumer<TableColumnar> rowConsumer()
-    {
-        RowConsumer<TableColumnar> rowConsumer = getRowConsumer();
-        if (rowConsumer != null)
-        {
-            return rowConsumer;
-        }
-        return RowConsumerCreateTable.create(this.tableName, this.resourceName);
-    }
 }

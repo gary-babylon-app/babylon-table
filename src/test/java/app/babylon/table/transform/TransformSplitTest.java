@@ -17,12 +17,12 @@ public class TransformSplitTest
     @Test
     public void shouldSplitOneColumnIntoManyColumns()
     {
-        ColumnName from = ColumnName.of("Pair");
-        ColumnName left = ColumnName.of("Left");
-        ColumnName middle = ColumnName.of("Middle");
-        ColumnName right = ColumnName.of("Right");
+        final ColumnName PAIR = ColumnName.of("Pair");
+        final ColumnName LEFT = ColumnName.of("Left");
+        final ColumnName MIDDLE = ColumnName.of("Middle");
+        final ColumnName RIGHT = ColumnName.of("Right");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(PAIR, String.class);
         strings.add("A|B|C");
         strings.add("D||F");
         strings.add("G|H");
@@ -30,11 +30,11 @@ public class TransformSplitTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformSplit(from, "|", left, middle, right));
+        TableColumnar transformed = table.apply(new TransformSplit(PAIR, "|", LEFT, MIDDLE, RIGHT));
 
-        ColumnObject<String> lefts = transformed.getString(left);
-        ColumnObject<String> middles = transformed.getString(middle);
-        ColumnObject<String> rights = transformed.getString(right);
+        ColumnObject<String> lefts = transformed.getString(LEFT);
+        ColumnObject<String> middles = transformed.getString(MIDDLE);
+        ColumnObject<String> rights = transformed.getString(RIGHT);
 
         assertEquals("A", lefts.get(0));
         assertEquals("B", middles.get(0));

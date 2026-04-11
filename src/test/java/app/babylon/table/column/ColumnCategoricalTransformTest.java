@@ -27,7 +27,8 @@ class ColumnCategoricalTransformTest
     @Test
     void transformShouldApplyOncePerCategoryAndPreserveNulls()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
         builder.add("A");
         builder.add("a");
         builder.addNull();
@@ -54,7 +55,8 @@ class ColumnCategoricalTransformTest
     @Test
     void transformConstantShouldRemainConstant()
     {
-        ColumnCategorical<String> constant = ColumnCategorical.constant(ColumnName.of("s"), "X", 4, ColumnTypes.STRING);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical<String> constant = ColumnCategorical.constant(S, "X", 4, ColumnTypes.STRING);
 
         ColumnCategorical<String> transformed = constant.transform(Transformer.of(String::toLowerCase, String.class));
 
@@ -69,7 +71,8 @@ class ColumnCategoricalTransformTest
     @Test
     void transformMixedResultTypesShouldUseObjectType()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
         builder.add("1");
         builder.add("x");
         ColumnCategorical<String> column = builder.build();
@@ -85,7 +88,8 @@ class ColumnCategoricalTransformTest
     @Test
     void transformViewShouldApplyOnlyForCodesUsedInView()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
         builder.add("A");
         builder.add("B");
         builder.add("C");
@@ -115,7 +119,8 @@ class ColumnCategoricalTransformTest
     @Test
     void viewOnTransformShouldPreserveUsedCodesFromTheTransformedColumn()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("s"), String.class);
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
         builder.add("A");
         builder.add("a");
         builder.add("B");
@@ -144,15 +149,17 @@ class ColumnCategoricalTransformTest
     @Test
     void transformShouldUseTransformerColumnNameWhenProvided()
     {
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(ColumnName.of("old_name"), String.class);
+        final ColumnName OLD_NAME = ColumnName.of("OLD_NAME");
+        final ColumnName NEW_NAME = ColumnName.of("NEW_NAME");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(OLD_NAME, String.class);
         builder.add("A");
         builder.add("B");
         ColumnCategorical<String> column = builder.build();
 
         ColumnCategorical<String> transformed = column
-                .transform(Transformer.of(String::toLowerCase, String.class, ColumnName.of("new_name")));
+                .transform(Transformer.of(String::toLowerCase, String.class, NEW_NAME));
 
-        assertEquals(ColumnName.of("new_name"), transformed.getName());
+        assertEquals(NEW_NAME, transformed.getName());
         assertEquals("a", transformed.get(0));
         assertEquals("b", transformed.get(1));
     }

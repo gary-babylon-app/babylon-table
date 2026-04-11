@@ -35,7 +35,8 @@ public class ColumnLocalDateTest
     @Test
     public void testIsConstant()
     {
-        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(ColumnName.of("Test"), LocalDate.class);
+        final ColumnName TEST = ColumnName.of("TEST");
+        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(TEST, LocalDate.class);
         dates.add(LocalDate.of(2026, 8, 20));
         dates.addNull();
         dates.addNull();
@@ -46,7 +47,8 @@ public class ColumnLocalDateTest
     @Test
     public void testIsConstant2()
     {
-        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(ColumnName.of("Test"), LocalDate.class);
+        final ColumnName TEST = ColumnName.of("TEST");
+        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(TEST, LocalDate.class);
         dates.addNull();
         dates.addNull();
         dates.add(LocalDate.of(2026, 8, 20));

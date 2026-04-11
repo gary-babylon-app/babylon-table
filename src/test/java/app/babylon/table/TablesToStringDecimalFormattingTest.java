@@ -24,7 +24,8 @@ class TablesToStringDecimalFormattingTest
     @Test
     void printFullTableShouldUsePlainDecimalNotation()
     {
-        ColumnObject.Builder<BigDecimal> quantity = ColumnObject.builderDecimal(ColumnName.of("Quantity"));
+        final ColumnName QUANTITY = ColumnName.of("QUANTITY");
+        ColumnObject.Builder<BigDecimal> quantity = ColumnObject.builderDecimal(QUANTITY);
         quantity.add(new BigDecimal("1E+2"));
         quantity.add(new BigDecimal("-4E+1"));
 

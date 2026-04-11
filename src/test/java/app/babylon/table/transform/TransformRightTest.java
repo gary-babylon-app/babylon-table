@@ -17,19 +17,19 @@ public class TransformRightTest
     @Test
     public void shouldTakeRightCharacters()
     {
-        ColumnName from = ColumnName.of("Code");
-        ColumnName to = ColumnName.of("Right");
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName RIGHT = ColumnName.of("Right");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(from, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
         strings.add("ABC123");
         strings.add("XY");
         strings.addNull();
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformRight(from, to, 3));
+        TableColumnar transformed = table.apply(new TransformRight(CODE, RIGHT, 3));
 
-        ColumnObject<String> right = transformed.getString(to);
+        ColumnObject<String> right = transformed.getString(RIGHT);
         assertEquals("123", right.get(0));
         assertEquals("XY", right.get(1));
         assertFalse(right.isSet(2));

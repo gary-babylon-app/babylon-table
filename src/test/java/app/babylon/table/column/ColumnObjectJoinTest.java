@@ -23,7 +23,8 @@ public class ColumnObjectJoinTest
     @Test
     public void objectJoinShouldReturnNullAndUnsetForNullJoinRows()
     {
-        ColumnObject.Builder<String> original = ColumnObject.builder(ColumnName.of("Test"), String.class);
+        final ColumnName TEST = ColumnName.of("TEST");
+        ColumnObject.Builder<String> original = ColumnObject.builder(TEST, String.class);
         original.add("abc1");
         original.add("abc2");
         original.add("abc3");

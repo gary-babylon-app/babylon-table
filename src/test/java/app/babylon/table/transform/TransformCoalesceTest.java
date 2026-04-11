@@ -20,24 +20,24 @@ public class TransformCoalesceTest
     @Test
     public void shouldTakeFirstNonNullAcrossThreeColumns()
     {
-        ColumnName output = ColumnName.of("Chosen");
-        ColumnName first = ColumnName.of("First");
-        ColumnName second = ColumnName.of("Second");
-        ColumnName third = ColumnName.of("Third");
+        final ColumnName CHOSEN = ColumnName.of("Chosen");
+        final ColumnName FIRST = ColumnName.of("First");
+        final ColumnName SECOND = ColumnName.of("Second");
+        final ColumnName THIRD = ColumnName.of("Third");
 
-        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(first, String.class);
+        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST, String.class);
         firstBuilder.addNull();
         firstBuilder.add("a");
         firstBuilder.addNull();
         firstBuilder.addNull();
 
-        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(second, String.class);
+        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(SECOND, String.class);
         secondBuilder.add("b");
         secondBuilder.add("bb");
         secondBuilder.addNull();
         secondBuilder.addNull();
 
-        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(third, String.class);
+        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(THIRD, String.class);
         thirdBuilder.add("c");
         thirdBuilder.add("cc");
         thirdBuilder.add("d");
@@ -47,9 +47,9 @@ public class TransformCoalesceTest
                 thirdBuilder.build());
 
         TableColumnar transformed = table
-                .apply(new TransformCoalesce(output, ColumnObject.Mode.AUTO, first, second, third));
+                .apply(new TransformCoalesce(CHOSEN, ColumnObject.Mode.AUTO, FIRST, SECOND, THIRD));
 
-        ColumnObject<String> chosen = transformed.getString(output);
+        ColumnObject<String> chosen = transformed.getString(CHOSEN);
         assertEquals("b", chosen.get(0));
         assertEquals("a", chosen.get(1));
         assertEquals("d", chosen.get(2));
@@ -59,19 +59,20 @@ public class TransformCoalesceTest
     @Test
     public void shouldUseExplicitCategoricalModeFromRegistry()
     {
-        ColumnName first = ColumnName.of("First");
-        ColumnName second = ColumnName.of("Second");
-        ColumnName third = ColumnName.of("Third");
+        final ColumnName CHOSEN = ColumnName.of("CHOSEN");
+        final ColumnName FIRST = ColumnName.of("First");
+        final ColumnName SECOND = ColumnName.of("Second");
+        final ColumnName THIRD = ColumnName.of("Third");
 
-        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(first, String.class);
+        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST, String.class);
         firstBuilder.addNull();
         firstBuilder.add("x");
 
-        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(second, String.class);
+        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(SECOND, String.class);
         secondBuilder.add("y");
         secondBuilder.addNull();
 
-        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(third, String.class);
+        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(THIRD, String.class);
         thirdBuilder.add("z");
         thirdBuilder.add("z");
 
@@ -82,8 +83,8 @@ public class TransformCoalesceTest
                 "Third");
         TableColumnar transformed = table.apply(transform);
 
-        assertTrue(transformed.get(ColumnName.of("Chosen")) instanceof ColumnCategorical<?>);
-        ColumnCategorical<String> chosen = transformed.getCategorical(ColumnName.of("Chosen"));
+        assertTrue(transformed.get(CHOSEN) instanceof ColumnCategorical<?>);
+        ColumnCategorical<String> chosen = transformed.getCategorical(CHOSEN);
         assertEquals("y", chosen.get(0));
         assertEquals("x", chosen.get(1));
     }
@@ -99,22 +100,22 @@ public class TransformCoalesceTest
     @Test
     public void shouldCoalesceBigDecimalColumns()
     {
-        ColumnName output = ColumnName.of("Amount");
-        ColumnName first = ColumnName.of("First");
-        ColumnName second = ColumnName.of("Second");
-        ColumnName third = ColumnName.of("Third");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final ColumnName FIRST = ColumnName.of("First");
+        final ColumnName SECOND = ColumnName.of("Second");
+        final ColumnName THIRD = ColumnName.of("Third");
 
-        ColumnObject.Builder<BigDecimal> firstBuilder = ColumnObject.builder(first, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> firstBuilder = ColumnObject.builder(FIRST, BigDecimal.class);
         firstBuilder.addNull();
         firstBuilder.add(new BigDecimal("1.25"));
         firstBuilder.addNull();
 
-        ColumnObject.Builder<BigDecimal> secondBuilder = ColumnObject.builder(second, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> secondBuilder = ColumnObject.builder(SECOND, BigDecimal.class);
         secondBuilder.add(new BigDecimal("2.50"));
         secondBuilder.addNull();
         secondBuilder.addNull();
 
-        ColumnObject.Builder<BigDecimal> thirdBuilder = ColumnObject.builder(third, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> thirdBuilder = ColumnObject.builder(THIRD, BigDecimal.class);
         thirdBuilder.add(new BigDecimal("3.75"));
         thirdBuilder.add(new BigDecimal("4.00"));
         thirdBuilder.add(new BigDecimal("5.50"));
@@ -123,9 +124,9 @@ public class TransformCoalesceTest
                 thirdBuilder.build());
 
         TableColumnar transformed = table
-                .apply(new TransformCoalesce(output, ColumnObject.Mode.AUTO, first, second, third));
+                .apply(new TransformCoalesce(AMOUNT, ColumnObject.Mode.AUTO, FIRST, SECOND, THIRD));
 
-        ColumnObject<BigDecimal> chosen = transformed.getDecimal(output);
+        ColumnObject<BigDecimal> chosen = transformed.getDecimal(AMOUNT);
         assertEquals(0, new BigDecimal("2.50").compareTo(chosen.get(0)));
         assertEquals(0, new BigDecimal("1.25").compareTo(chosen.get(1)));
         assertEquals(0, new BigDecimal("5.50").compareTo(chosen.get(2)));

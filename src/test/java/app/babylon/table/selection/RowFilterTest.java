@@ -30,7 +30,8 @@ class RowFilterTest
     @Test
     void filterShouldWorkForObjectColumns()
     {
-        ColumnObject.Builder<String> names = ColumnObject.builder(ColumnName.of("name"), String.class);
+        final ColumnName NAME = ColumnName.of("NAME");
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -38,24 +39,25 @@ class RowFilterTest
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
         TableColumnar filtered = table
-                .filter(RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A")));
+                .filter(RowFilter.of(NAME, (Predicate<Object>) x -> ((String) x).startsWith("A")));
 
         assertEquals(2, filtered.getRowCount());
-        assertEquals("Alice", filtered.getString(ColumnName.of("name")).get(0));
-        assertEquals("Amy", filtered.getString(ColumnName.of("name")).get(1));
+        assertEquals("Alice", filtered.getString(NAME).get(0));
+        assertEquals("Amy", filtered.getString(NAME).get(1));
     }
 
     @Test
     void filterShouldWorkForPrimitiveColumns()
     {
-        ColumnInt.Builder ints = ColumnInt.builder(ColumnName.of("i"));
+        final ColumnName I = ColumnName.of("I");
+        ColumnInt.Builder ints = ColumnInt.builder(I);
         ints.add(1);
         ints.add(2);
         ints.add(3);
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), ints.build());
 
-        TableColumnar filtered = table.filter(RowFilter.of(ColumnName.of("i"), (int x) -> x >= 2));
+        TableColumnar filtered = table.filter(RowFilter.of(I, (int x) -> x >= 2));
 
         assertEquals(2, filtered.getRowCount());
     }
@@ -63,7 +65,8 @@ class RowFilterTest
     @Test
     void filterShouldComposeAndShortCircuit()
     {
-        ColumnObject.Builder<String> names = ColumnObject.builder(ColumnName.of("name"), String.class);
+        final ColumnName NAME = ColumnName.of("NAME");
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -72,8 +75,8 @@ class RowFilterTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        RowFilter left = RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("A"));
-        RowFilter right = RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> {
+        RowFilter left = RowFilter.of(NAME, (Predicate<Object>) x -> ((String) x).startsWith("A"));
+        RowFilter right = RowFilter.of(NAME, (Predicate<Object>) x -> {
             rightEvaluations.incrementAndGet();
             return ((String) x).length() > 3;
         });
@@ -87,17 +90,16 @@ class RowFilterTest
     @Test
     void filterShouldComposeOr()
     {
-        ColumnObject.Builder<String> names = ColumnObject.builder(ColumnName.of("name"), String.class);
+        final ColumnName NAME = ColumnName.of("NAME");
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        RowFilter startsWithA = RowFilter.of(ColumnName.of("name"),
-                (Predicate<Object>) x -> ((String) x).startsWith("A"));
-        RowFilter startsWithB = RowFilter.of(ColumnName.of("name"),
-                (Predicate<Object>) x -> ((String) x).startsWith("B"));
+        RowFilter startsWithA = RowFilter.of(NAME, (Predicate<Object>) x -> ((String) x).startsWith("A"));
+        RowFilter startsWithB = RowFilter.of(NAME, (Predicate<Object>) x -> ((String) x).startsWith("B"));
 
         TableColumnar filtered = table.filter(startsWithA.or(startsWithB));
 
@@ -107,37 +109,38 @@ class RowFilterTest
     @Test
     void filterShouldComposeNot()
     {
-        ColumnObject.Builder<String> names = ColumnObject.builder(ColumnName.of("name"), String.class);
+        final ColumnName NAME = ColumnName.of("NAME");
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
-        RowFilter startsWithA = RowFilter.of(ColumnName.of("name"),
-                (Predicate<Object>) x -> ((String) x).startsWith("A"));
+        RowFilter startsWithA = RowFilter.of(NAME, (Predicate<Object>) x -> ((String) x).startsWith("A"));
 
         TableColumnar filtered = table.filter(startsWithA.not());
 
         assertEquals(1, filtered.getRowCount());
-        assertEquals("Bob", filtered.getString(ColumnName.of("name")).get(0));
+        assertEquals("Bob", filtered.getString(NAME).get(0));
     }
 
     @Test
     void filterShouldReturnEmptyTableInsteadOfNullWhenNoRowsMatch()
     {
-        ColumnObject.Builder<String> names = ColumnObject.builder(ColumnName.of("name"), String.class);
+        final ColumnName NAME = ColumnName.of("NAME");
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
         names.add("Alice");
         names.add("Bob");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
 
         TableColumnar filtered = table
-                .filter(RowFilter.of(ColumnName.of("name"), (Predicate<Object>) x -> ((String) x).startsWith("Z")));
+                .filter(RowFilter.of(NAME, (Predicate<Object>) x -> ((String) x).startsWith("Z")));
 
         assertNotNull(filtered);
         assertEquals(0, filtered.getRowCount());
         assertEquals(1, filtered.getColumnCount());
-        assertEquals(ColumnName.of("name"), filtered.getColumnNames()[0]);
+        assertEquals(NAME, filtered.getColumnNames()[0]);
     }
 }

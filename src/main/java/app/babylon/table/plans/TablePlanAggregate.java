@@ -28,11 +28,11 @@ import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowKey;
-import app.babylon.table.io.TabularReader;
+import app.babylon.table.io.TabularRowReader;
 
-public class TablePlanAggregate implements TablePlan
+public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
 {
-    private static final class RowConsumerGroupAggregatePlan implements RowConsumer<TableColumnar>
+    private static final class RowConsumerGroupAggregate implements RowConsumer
     {
         private static final class GroupAccumulators
         {
@@ -55,7 +55,7 @@ public class TablePlanAggregate implements TablePlan
         private int maxAggregatePosition;
         private final Map<RowKey, GroupAccumulators> accumulatorsByGroup;
 
-        private RowConsumerGroupAggregatePlan(TablePlanAggregate plan)
+        private RowConsumerGroupAggregate(TablePlanAggregate plan)
         {
             this.plan = plan;
             this.groupByPositions = null;
@@ -134,7 +134,6 @@ public class TablePlanAggregate implements TablePlan
             }
         }
 
-        @Override
         public TableColumnar build()
         {
             @SuppressWarnings("unchecked")
@@ -163,10 +162,12 @@ public class TablePlanAggregate implements TablePlan
             {
                 columns[i + groupByBuilders.length] = aggregateBuilders[i].build();
             }
-            TableName tableName = this.plan.outputTableName == null
-                    ? TableName.of("Summary")
-                    : this.plan.outputTableName;
-            return Tables.newTable(tableName, columns);
+            TableName tableName = this.plan.getTableName();
+            if (tableName == null)
+            {
+                tableName = TableName.of("Summary");
+            }
+            return Tables.newTable(tableName, this.plan.getTableDescription(), columns);
         }
 
     }
@@ -184,25 +185,12 @@ public class TablePlanAggregate implements TablePlan
     private final List<ColumnName> groupByColumns;
     private final List<AggregateSpec> aggregateSpecs;
     private final Map<ColumnName, Column.Type> columnTypes;
-    private TableName outputTableName;
 
     public TablePlanAggregate()
     {
         this.groupByColumns = new ArrayList<>();
         this.aggregateSpecs = new ArrayList<>();
         this.columnTypes = new LinkedHashMap<>();
-        this.outputTableName = null;
-    }
-
-    public TablePlanAggregate withOutputTableName(TableName outputTableName)
-    {
-        this.outputTableName = outputTableName;
-        return this;
-    }
-
-    public TableName getOutputTableName()
-    {
-        return this.outputTableName;
     }
 
     public TablePlanAggregate withColumnType(ColumnName columnName, Column.Type columnType)
@@ -260,7 +248,7 @@ public class TablePlanAggregate implements TablePlan
     @SuppressWarnings("unchecked")
     public TableColumnar execute(TableColumnar table)
     {
-        validateForCurrentImplementation();
+        validate();
         TableColumnar sourceTable = ArgumentCheck.nonNull(table);
 
         GroupBy grouped = sourceTable.groupBy(this.groupByColumns.toArray(new ColumnName[this.groupByColumns.size()]));
@@ -295,25 +283,26 @@ public class TablePlanAggregate implements TablePlan
         {
             columns[i + groupByBuilders.length] = aggregateBuilders[i].build();
         }
-        TableName tableName = this.outputTableName == null ? TableName.of("Summary") : this.outputTableName;
-        return Tables.newTable(tableName, columns);
+        TableName tableName = getTableName() == null ? TableName.of("Summary") : getTableName();
+        return Tables.newTable(tableName, getTableDescription(), columns);
     }
 
     @Override
-    public TableColumnar execute(DataSource dataSource, TabularReader reader)
+    public TableColumnar execute(DataSource dataSource, TabularRowReader reader)
     {
-        validateForCurrentImplementation();
-        ArgumentCheck.nonNull(dataSource);
-        TabularReader.Result readResult = ArgumentCheck.nonNull(reader)
-                .withRowConsumer(new RowConsumerGroupAggregatePlan(this)).read(dataSource);
-        return getTable(readResult);
+        validate();
+        DataSource checkedDataSource = ArgumentCheck.nonNull(dataSource);
+        RowConsumerGroupAggregate rowConsumer = new RowConsumerGroupAggregate(this);
+        TabularRowReader.Result readResult = ArgumentCheck.nonNull(reader).read(checkedDataSource, rowConsumer);
+        ensureSuccess(readResult);
+        return rowConsumer.build();
     }
 
-    private static TableColumnar getTable(TabularReader.Result readResult)
+    private static void ensureSuccess(TabularRowReader.Result readResult)
     {
-        if (readResult.hasTable())
+        if (readResult.isSuccessLike())
         {
-            return readResult.getTable();
+            return;
         }
         if (readResult.getCause() instanceof RuntimeException runtimeException)
         {
@@ -322,7 +311,7 @@ public class TablePlanAggregate implements TablePlan
         throw new TableException(readResult.getMessage());
     }
 
-    private void validateForCurrentImplementation()
+    private void validate()
     {
         if (this.groupByColumns.isEmpty())
         {
@@ -490,5 +479,11 @@ public class TablePlanAggregate implements TablePlan
             }
         }
         return max;
+    }
+
+    @Override
+    protected TablePlanAggregate self()
+    {
+        return this;
     }
 }

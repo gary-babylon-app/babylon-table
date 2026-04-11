@@ -18,9 +18,9 @@ public class TransformCleanWhitespaceTest
     @Test
     public void shouldTrimAndNormalizeInternalWhitespace()
     {
-        ColumnName columnName = ColumnName.of("Name");
+        final ColumnName NAME = ColumnName.of("Name");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(columnName, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, String.class);
         strings.add("  Alice   Bob  ");
         strings.add("\tCarol\nDave\r\n");
         strings.add("   ");
@@ -28,9 +28,9 @@ public class TransformCleanWhitespaceTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformCleanWhitespace(columnName));
+        TableColumnar transformed = table.apply(new TransformCleanWhitespace(NAME));
 
-        ColumnObject<String> cleaned = transformed.getString(columnName);
+        ColumnObject<String> cleaned = transformed.getString(NAME);
         assertEquals("Alice Bob", cleaned.get(0));
         assertEquals("Carol Dave", cleaned.get(1));
         assertEquals("", cleaned.get(2));
@@ -40,20 +40,20 @@ public class TransformCleanWhitespaceTest
     @Test
     public void shouldPreserveCategoricalShapeWhenWritingToNewColumn()
     {
-        ColumnName from = ColumnName.of("Name");
-        ColumnName to = ColumnName.of("Cleaned");
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName CLEANED = ColumnName.of("Cleaned");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(from, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME, String.class);
         strings.add("  Alice   Bob  ");
         strings.add("  Alice   Bob  ");
         strings.add(" Carol ");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformCleanWhitespace(from, to));
+        TableColumnar transformed = table.apply(new TransformCleanWhitespace(NAME, CLEANED));
 
-        assertTrue(transformed.get(to) instanceof ColumnCategorical<?>);
-        ColumnCategorical<String> cleaned = transformed.getCategorical(to);
+        assertTrue(transformed.get(CLEANED) instanceof ColumnCategorical<?>);
+        ColumnCategorical<String> cleaned = transformed.getCategorical(CLEANED);
         assertEquals("Alice Bob", cleaned.get(0));
         assertEquals("Alice Bob", cleaned.get(1));
         assertEquals("Carol", cleaned.get(2));

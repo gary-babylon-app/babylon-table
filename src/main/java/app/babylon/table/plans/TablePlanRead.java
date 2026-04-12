@@ -25,8 +25,11 @@ import app.babylon.table.TableException;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.RowConsumerCreateTable;
+import app.babylon.table.io.RowSource;
+import app.babylon.table.io.RowSupplier;
 import app.babylon.table.io.TabularRowReader;
 import app.babylon.table.transform.Transform;
 
@@ -138,6 +141,30 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         return apply(parsed);
     }
 
+    @Override
+    public TableColumnar execute(RowSupplier rowSupplier)
+    {
+        return execute(rowSupplier, null);
+    }
+
+    @Override
+    public TableColumnar execute(RowSource rowSource)
+    {
+        RowSource checkedRowSource = ArgumentCheck.nonNull(rowSource);
+        try (RowSupplier rowSupplier = checkedRowSource.openRows())
+        {
+            return execute(rowSupplier, checkedRowSource.getName());
+        }
+        catch (RuntimeException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new TableException("Failed to read rows from row source '" + checkedRowSource.getName() + "'.", e);
+        }
+    }
+
     private static void ensureSuccess(TabularRowReader.Result readResult)
     {
         if (readResult.isSuccessLike())
@@ -149,6 +176,45 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
             throw runtimeException;
         }
         throw new TableException(readResult.getMessage());
+    }
+
+    private ColumnName[] toColumnNames(ColumnDefinition[] columnDefinitions)
+    {
+        ColumnName[] columnNames = new ColumnName[columnDefinitions.length];
+        for (int i = 0; i < columnDefinitions.length; ++i)
+        {
+            columnNames[i] = columnDefinitions[i].name();
+        }
+        return columnNames;
+    }
+
+    private Map<ColumnName, Column.Type> effectiveColumnTypes(ColumnDefinition[] columnDefinitions)
+    {
+        Map<ColumnName, Column.Type> effective = new LinkedHashMap<>();
+        for (ColumnDefinition columnDefinition : columnDefinitions)
+        {
+            columnDefinition.type().ifPresent(type -> effective.put(columnDefinition.name(), type));
+        }
+        effective.putAll(this.columnTypes);
+        return effective;
+    }
+
+    private TableColumnar execute(RowSupplier rowSupplier, String sourceName)
+    {
+        RowSupplier checkedRowSupplier = ArgumentCheck.nonNull(rowSupplier);
+        ColumnDefinition[] columnDefinitions = checkedRowSupplier.columns();
+        ColumnName[] columnNames = toColumnNames(columnDefinitions);
+        Map<ColumnName, Column.Type> effectiveColumnTypes = effectiveColumnTypes(columnDefinitions);
+
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(getTableName(), getTableDescription(),
+                this.dataSourceNameColumnName, sourceName, effectiveColumnTypes);
+        rowConsumer.start(columnNames);
+        while (checkedRowSupplier.next())
+        {
+            rowConsumer.accept(checkedRowSupplier.current());
+        }
+        TableColumnar parsed = rowConsumer.build();
+        return apply(parsed);
     }
 
     private TableColumnar apply(TableColumnar table)

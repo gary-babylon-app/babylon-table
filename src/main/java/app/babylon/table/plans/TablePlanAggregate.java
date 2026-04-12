@@ -28,6 +28,8 @@ import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowKey;
+import app.babylon.table.io.RowSource;
+import app.babylon.table.io.RowSupplier;
 import app.babylon.table.io.TabularRowReader;
 
 public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
@@ -298,6 +300,40 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         return rowConsumer.build();
     }
 
+    @Override
+    public TableColumnar execute(RowSupplier rowSupplier)
+    {
+        validate();
+        RowSupplier checkedRowSupplier = ArgumentCheck.nonNull(rowSupplier);
+        RowConsumerGroupAggregate rowConsumer = new RowConsumerGroupAggregate(this);
+        rowConsumer.start(toColumnNames(checkedRowSupplier.columns()));
+        while (checkedRowSupplier.next())
+        {
+            rowConsumer.accept(checkedRowSupplier.current());
+        }
+        return rowConsumer.build();
+    }
+
+    @Override
+    public TableColumnar execute(RowSource rowSource)
+    {
+        validate();
+        RowSource checkedRowSource = ArgumentCheck.nonNull(rowSource);
+        try (RowSupplier rowSupplier = checkedRowSource.openRows())
+        {
+            return execute(rowSupplier);
+        }
+        catch (RuntimeException e)
+        {
+            throw e;
+        }
+        catch (Exception e)
+        {
+            throw new TableException("Failed to aggregate rows from row source '" + checkedRowSource.getName() + "'.",
+                    e);
+        }
+    }
+
     private static void ensureSuccess(TabularRowReader.Result readResult)
     {
         if (readResult.isSuccessLike())
@@ -309,6 +345,16 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             throw runtimeException;
         }
         throw new TableException(readResult.getMessage());
+    }
+
+    private static ColumnName[] toColumnNames(app.babylon.table.column.ColumnDefinition[] columnDefinitions)
+    {
+        ColumnName[] columnNames = new ColumnName[columnDefinitions.length];
+        for (int i = 0; i < columnDefinitions.length; ++i)
+        {
+            columnNames[i] = columnDefinitions[i].name();
+        }
+        return columnNames;
     }
 
     private void validate()

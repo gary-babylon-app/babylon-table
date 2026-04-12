@@ -13,19 +13,20 @@ package app.babylon.table.io;
 import app.babylon.table.column.ColumnDefinition;
 
 /**
- * Supplies tabular rows from an already-open underlying source.
+ * Supplies tabular rows from a live underlying source.
  * <p>
- * Implementations do not own the backing resource: they do not open it and they
- * do not close it. Callers remain responsible for the lifecycle of any backing
- * {@link java.io.InputStream}, {@link java.sql.ResultSet}, or other source
- * object. The backing resource must remain open for the full lifetime of
- * iteration.
+ * A row supplier represents an open row cursor. Some implementations own the
+ * underlying resource and release it on {@link #close()}, while others adapt
+ * caller-owned resources and treat {@code close()} as a no-op.
  */
-public interface RowSupplier
+public interface RowSupplier extends AutoCloseable
 {
     ColumnDefinition[] columns();
 
     boolean next();
 
     Row current();
+
+    @Override
+    void close() throws Exception;
 }

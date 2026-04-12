@@ -12,6 +12,7 @@ package app.babylon.table.io;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -29,9 +30,9 @@ import app.babylon.text.Strings;
 /**
  * Supplies rows from a caller-owned {@link ResultSet}.
  * <p>
- * This supplier does not create or close the supplied {@link ResultSet}. The
- * caller remains responsible for managing the lifecycle of the underlying JDBC
- * resources.
+ * This supplier adapts a caller-owned {@link ResultSet}. Closing the supplier
+ * is a no-op; the caller remains responsible for the lifecycle of the
+ * underlying JDBC resources.
  * <p>
  * Example:
  *
@@ -58,15 +59,27 @@ public class RowSupplierResultSet implements RowSupplier
 {
     private final ResultSet resultSet;
     private final RowBuffer rowBuffer;
+    private final boolean closeOnClose;
     private ColumnDefinition[] columns;
     private boolean currentAvailable;
 
     public RowSupplierResultSet(ResultSet resultSet)
     {
+        this(resultSet, false);
+    }
+
+    RowSupplierResultSet(ResultSet resultSet, boolean closeOnClose)
+    {
         this.resultSet = ArgumentCheck.nonNull(resultSet);
         this.rowBuffer = new RowBuffer();
+        this.closeOnClose = closeOnClose;
         this.columns = resolveColumns(resultSet);
         this.currentAvailable = false;
+    }
+
+    static RowSupplierResultSet open(PreparedStatement preparedStatement) throws SQLException
+    {
+        return new RowSupplierResultSet(ArgumentCheck.nonNull(preparedStatement).executeQuery(), true);
     }
 
     @Override
@@ -107,6 +120,15 @@ public class RowSupplierResultSet implements RowSupplier
             throw new IllegalStateException("current row is not available until next() succeeds");
         }
         return this.rowBuffer;
+    }
+
+    @Override
+    public void close() throws SQLException
+    {
+        if (this.closeOnClose)
+        {
+            this.resultSet.close();
+        }
     }
 
     private void populateRowBuffer() throws SQLException, IOException

@@ -28,56 +28,75 @@ import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 
 /**
- * Supplies rows from a caller-owned CSV input stream.
+ * Supplies rows from an open CSV input stream.
  * <p>
- * This supplier does not open or close the supplied {@link InputStream}. The
- * stream must remain open while rows are being read.
- * <p>
- * Example:
- *
- * <pre>{@code
- * DataSource dataSource = ...;
- * try (InputStream inputStream = dataSource.openStream())
- * {
- *     RowSupplierCsv supplier = RowSupplierCsv.builder()
- *             .withSeparator(';')
- *             .withColumnType(ColumnName.of("Amount"), ColumnTypes.DECIMAL)
- *             .build(inputStream);
- *
- *     ColumnDefinition[] columns = supplier.columns();
- *     while (supplier.next())
- *     {
- *         Row row = supplier.current();
- *     }
- * }
- * }</pre>
+ * Instances are created by a configured {@link RowSourceCsv} and own the CSV
+ * reader resources for the lifetime of iteration.
  */
-public class RowSupplierCsv implements RowSupplier
+public final class RowSupplierCsv implements RowSupplier
 {
-    private final BufferedInputStream inputStream;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private final HeaderStrategy headerStrategy;
     private final char separator;
     private final int[] fixedWidths;
     private final Charset charset;
     private final boolean autoDetectEncoding;
-    private ColumnDefinition[] columnDefinitions;
-    private RowStreamMarkable rowStream;
+    private final LineReader lineReader;
+    private final RowStreamMarkable rowStream;
+    private final ColumnDefinition[] columnDefinitions;
 
-    private RowSupplierCsv(Builder builder, InputStream inputStream)
+    RowSupplierCsv(InputStream inputStream, HeaderStrategy headerStrategy, char separator, int[] fixedWidths,
+            Charset charset, boolean autoDetectEncoding, Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        this.inputStream = toBufferedStream(ArgumentCheck.nonNull(inputStream));
-        this.explicitColumnTypes = new LinkedHashMap<>(builder.explicitColumnTypes);
-        this.headerStrategy = builder.headerStrategy;
-        this.separator = builder.separator;
-        this.fixedWidths = builder.fixedWidths == null
-                ? null
-                : Arrays.copyOf(builder.fixedWidths, builder.fixedWidths.length);
-        this.charset = builder.charset;
-        this.autoDetectEncoding = builder.autoDetectEncoding;
-        this.columnDefinitions = null;
-        this.rowStream = null;
-        prepare();
+        BufferedInputStream bufferedInputStream = toBufferedStream(ArgumentCheck.nonNull(inputStream));
+        this.explicitColumnTypes = new LinkedHashMap<>(ArgumentCheck.nonNull(explicitColumnTypes));
+        this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
+        this.separator = separator;
+        this.fixedWidths = fixedWidths == null ? null : Arrays.copyOf(fixedWidths, fixedWidths.length);
+        this.charset = ArgumentCheck.nonNull(charset);
+        this.autoDetectEncoding = autoDetectEncoding;
+
+        try
+        {
+            DataSourceProbe probe = DataSourceProbe.of(bufferedInputStream, "stream.csv");
+            if (probe.isXls() || probe.isXlsx() || probe.isPdf() || probe.isZip())
+            {
+                throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
+            }
+
+            Charset resolvedCharset = resolveCharset(probe);
+            int bomLength = resolveBomLength(probe);
+            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, resolvedCharset, bomLength);
+            this.lineReader = isFixedWidths()
+                    ? new LineReaderCSVFixedWidth(reader, toReaderOptions())
+                    : new LineReaderCSV(reader, toReaderOptions());
+            this.rowStream = new RowStreamBuffered(this.lineReader);
+
+            HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, null);
+            this.columnDefinitions = toColumnDefinitions(headerDetection.getSelectedHeaders());
+            this.rowStream.reset();
+        }
+        catch (IOException | RuntimeException e)
+        {
+            try
+            {
+                bufferedInputStream.close();
+            }
+            catch (IOException closeException)
+            {
+                e.addSuppressed(closeException);
+            }
+            if (e instanceof RuntimeException runtimeException)
+            {
+                throw runtimeException;
+            }
+            throw new TableException("Failed to prepare CSV row supplier.", e);
+        }
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
     }
 
     public HeaderStrategy getHeaderStrategy()
@@ -130,37 +149,10 @@ public class RowSupplierCsv implements RowSupplier
         return this.rowStream.current();
     }
 
-    public static Builder builder()
+    @Override
+    public void close() throws IOException
     {
-        return new Builder();
-    }
-
-    private void prepare()
-    {
-        try
-        {
-            DataSourceProbe probe = DataSourceProbe.of(this.inputStream, "stream.csv");
-            if (probe.isXls() || probe.isXlsx() || probe.isPdf() || probe.isZip())
-            {
-                throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
-            }
-
-            Charset resolvedCharset = resolveCharset(probe);
-            int bomLength = resolveBomLength(probe);
-            BufferedCharReader reader = createBufferedCharReader(this.inputStream, resolvedCharset, bomLength);
-            LineReader lineReader = isFixedWidths()
-                    ? new LineReaderCSVFixedWidth(reader, toReaderOptions())
-                    : new LineReaderCSV(reader, toReaderOptions());
-            this.rowStream = new RowStreamBuffered(lineReader);
-
-            HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, null);
-            this.columnDefinitions = toColumnDefinitions(headerDetection.getSelectedHeaders());
-            this.rowStream.reset();
-        }
-        catch (IOException e)
-        {
-            throw new TableException("Failed to prepare CSV row supplier.", e);
-        }
+        this.lineReader.close();
     }
 
     private TabularRowReaderCsv toReaderOptions()
@@ -193,28 +185,20 @@ public class RowSupplierCsv implements RowSupplier
 
     private Charset resolveCharset(DataSourceProbe probe)
     {
-        if (probe == null)
-        {
-            return StandardCharsets.UTF_8;
-        }
         if (this.autoDetectEncoding)
         {
             Charset detected = probe.detectedCharset();
             return detected == null ? StandardCharsets.UTF_8 : detected;
         }
-        return this.charset == null ? StandardCharsets.UTF_8 : this.charset;
+        return this.charset;
     }
 
     private int resolveBomLength(DataSourceProbe probe)
     {
-        if (probe == null)
-        {
-            return 0;
-        }
         return this.autoDetectEncoding ? probe.bomLengthBytes() : 0;
     }
 
-    private BufferedCharReader createBufferedCharReader(InputStream inputStream, Charset charset, int bomLength)
+    private static BufferedCharReader createBufferedCharReader(InputStream inputStream, Charset charset, int bomLength)
     {
         try
         {
@@ -323,34 +307,10 @@ public class RowSupplierCsv implements RowSupplier
             return this;
         }
 
-        public HeaderStrategy getHeaderStrategy()
-        {
-            return this.headerStrategy;
-        }
-
-        public char getSeparator()
-        {
-            return this.separator;
-        }
-
-        public int[] getFixedWidths()
-        {
-            return this.fixedWidths == null ? null : Arrays.copyOf(this.fixedWidths, this.fixedWidths.length);
-        }
-
-        public Charset getCharset()
-        {
-            return this.charset;
-        }
-
-        public boolean isAutoDetectEncoding()
-        {
-            return this.autoDetectEncoding;
-        }
-
         public RowSupplierCsv build(InputStream inputStream)
         {
-            return new RowSupplierCsv(this, inputStream);
+            return new RowSupplierCsv(inputStream, this.headerStrategy, this.separator, this.fixedWidths, this.charset,
+                    this.autoDetectEncoding, this.explicitColumnTypes);
         }
     }
 }

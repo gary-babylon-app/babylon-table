@@ -2,6 +2,7 @@ package app.babylon.table.plans;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.RowConsumerCreateTable;
+import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.TabularRowReader;
 import app.babylon.table.io.TabularRowReaderCsv;
 
@@ -256,6 +258,38 @@ class TablePlanAggregateTest
                             table.getDouble(humidityMax).get(i)));
         }
         return rows;
+    }
+
+    @Test
+    void executeShouldAggregateFromRowSource()
+    {
+        final ColumnName STATION = ColumnName.of("Station");
+        final ColumnName TEMPERATURE = ColumnName.of("Temperature");
+        final ColumnName COUNT = ColumnName.of("Count");
+        final ColumnName MEAN = ColumnName.of("Mean");
+        final String csv = """
+                Station,Temperature
+                Amsterdam,10.0
+                Amsterdam,14.0
+                London,7.0
+                """;
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withDataSource(DataSources.fromString(csv, "summary.csv"))
+                .withColumnType(TEMPERATURE, app.babylon.table.column.ColumnTypes.DOUBLE).build();
+        TablePlanAggregate plan = new TablePlanAggregate().withTableName(TableName.of("StationSummary"))
+                .withGroupBy(STATION).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
+                .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(TableName.of("StationSummary"), table.getName());
+        assertEquals(2, table.getRowCount());
+        assertEquals("Amsterdam", table.getString(STATION).get(0));
+        assertEquals(2L, table.getLong(COUNT).get(0));
+        assertEquals(12.0d, table.getDouble(MEAN).get(0));
+        assertEquals("London", table.getString(STATION).get(1));
+        assertEquals(1L, table.getLong(COUNT).get(1));
+        assertEquals(7.0d, table.getDouble(MEAN).get(1));
     }
 
     private static record SummaryRow(long count, double sum, double min, double mean, double max, double humidityMax)

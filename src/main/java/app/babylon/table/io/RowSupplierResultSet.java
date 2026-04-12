@@ -32,6 +32,27 @@ import app.babylon.text.Strings;
  * This supplier does not create or close the supplied {@link ResultSet}. The
  * caller remains responsible for managing the lifecycle of the underlying JDBC
  * resources.
+ * <p>
+ * Example:
+ *
+ * <pre>{@code
+ * Connection connection = ...;
+ * try (PreparedStatement statement = connection
+ *         .prepareStatement("select city, amount from trades where trade_date >= ?"))
+ * {
+ *     statement.setDate(1, java.sql.Date.valueOf("2026-01-01"));
+ *     try (ResultSet resultSet = statement.executeQuery())
+ *     {
+ *         RowSupplier supplier = new RowSupplierResultSet(resultSet);
+ *
+ *         ColumnDefinition[] columns = supplier.columns();
+ *         while (supplier.next())
+ *         {
+ *             Row row = supplier.current();
+ *         }
+ *     }
+ * }
+ * }</pre>
  */
 public class RowSupplierResultSet implements RowSupplier
 {

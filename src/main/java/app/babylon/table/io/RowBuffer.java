@@ -10,6 +10,9 @@
 
 package app.babylon.table.io;
 
+import java.io.IOException;
+import java.io.Reader;
+
 public final class RowBuffer implements Row
 {
     private static final int DEFAULT_CHAR_CAPACITY = 256;
@@ -70,6 +73,51 @@ public final class RowBuffer implements Row
         ensureCharCapacity(this.charCount + length);
         System.arraycopy(source, offset, this.chars, this.charCount, length);
         this.charCount += length;
+    }
+
+    public void append(CharSequence source)
+    {
+        if (source == null || source.isEmpty())
+        {
+            return;
+        }
+        int length = source.length();
+        ensureCharCapacity(this.charCount + length);
+        if (source instanceof String string)
+        {
+            string.getChars(0, length, this.chars, this.charCount);
+            this.charCount += length;
+            return;
+        }
+        for (int i = 0; i < length; ++i)
+        {
+            this.chars[this.charCount + i] = source.charAt(i);
+        }
+        this.charCount += length;
+    }
+
+    public void append(Reader reader) throws IOException
+    {
+        if (reader == null)
+        {
+            return;
+        }
+        while (true)
+        {
+            ensureCharCapacity(this.charCount + 1);
+            int available = this.chars.length - this.charCount;
+            int read = reader.read(this.chars, this.charCount, available);
+            if (read < 0)
+            {
+                return;
+            }
+            if (read == 0)
+            {
+                ensureCharCapacity(this.chars.length + 1);
+                continue;
+            }
+            this.charCount += read;
+        }
     }
 
     public void finishField()

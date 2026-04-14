@@ -10,8 +10,6 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -20,6 +18,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.selection.Selection;
@@ -125,6 +124,30 @@ public interface ColumnObject<T> extends Column
     public static Builder<BigDecimal> builderDecimal(ColumnName name)
     {
         return builder(name, ColumnTypes.DECIMAL);
+    }
+
+    /**
+     * Creates a {@link String} column builder.
+     *
+     * @param name
+     *            the column name
+     * @return a string column builder
+     */
+    public static Builder<BigDecimal> builderString(ColumnName name)
+    {
+        return builder(name, ColumnTypes.STRING);
+    }
+
+    /**
+     * Creates a {@link String} column builder.
+     *
+     * @param name
+     *            the column name
+     * @return a string column builder
+     */
+    public static Builder<BigDecimal> builder(ColumnName name)
+    {
+        return builder(name, ColumnTypes.STRING);
     }
 
     /**

@@ -167,12 +167,10 @@ class TablePlanReadTest
         final ColumnName AMOUNT = ColumnName.of("Amount");
         String csv = "Code,Amount,\nabc,10.5,\ndef,\nxyz,20.0,\n";
 
-        RowSourceCsv rowSource = RowSourceCsv.builder()
-                .withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .withHeaderStrategy(new HeaderStrategyExplicitRow(0))
-                .withColumnType(AMOUNT, ColumnTypes.DECIMAL)
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withHeaderStrategy(new HeaderStrategyExplicitRow(0)).withColumnType(AMOUNT, ColumnTypes.DECIMAL)
                 .build();
-        
+
         TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"));
 
         TableColumnar table = plan.execute(rowSource);

@@ -88,7 +88,7 @@ class RowKeyTest
         }
 
         @Override
-        public int fieldCount()
+        public int size()
         {
             return this.starts.length;
         }

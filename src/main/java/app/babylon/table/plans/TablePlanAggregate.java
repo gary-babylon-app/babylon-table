@@ -115,7 +115,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         @Override
         public void accept(Row row)
         {
-            if (row.fieldCount() <= Math.max(this.maxGroupByPosition, this.maxAggregatePosition))
+            if (row.size() <= Math.max(this.maxGroupByPosition, this.maxAggregatePosition))
             {
                 return;
             }

@@ -245,7 +245,7 @@ public class RowCursorResultSet implements RowCursor
         }
 
         @Override
-        public int fieldCount()
+        public int size()
         {
             return RowCursorResultSet.this.columns.length;
         }
@@ -327,14 +327,14 @@ public class RowCursorResultSet implements RowCursor
             {
                 this.rowBuffer = new RowBuffer();
             }
-            if (this.rowBuffer.fieldCount() == fieldCount())
+            if (this.rowBuffer.size() == size())
             {
                 return this.rowBuffer;
             }
             try
             {
                 this.rowBuffer.clear();
-                for (int i = 1; i <= fieldCount(); ++i)
+                for (int i = 1; i <= size(); ++i)
                 {
                     RowCursorResultSet.this.appendColumnValue(this.rowBuffer, i);
                     this.rowBuffer.finishField();

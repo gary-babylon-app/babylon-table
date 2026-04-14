@@ -65,16 +65,16 @@ public class HeaderStrategyAuto implements HeaderStrategy
 
     static double headerScore(RowBuffer rowValues)
     {
-        if (rowValues == null || rowValues.fieldCount() == 0)
+        if (rowValues == null || rowValues.size() == 0)
         {
             return Double.NEGATIVE_INFINITY;
         }
 
-        int total = rowValues.fieldCount();
+        int total = rowValues.size();
         int nonBlank = 0, textCnt = 0, numCnt = 0, dateCnt = 0, lenSum = 0;
         Set<String> distinct = new HashSet<>();
 
-        for (int i = 0; i < rowValues.fieldCount(); ++i)
+        for (int i = 0; i < rowValues.size(); ++i)
         {
             String raw = rowValues.getString(i);
             String s = raw == null ? "" : raw.strip();
@@ -212,7 +212,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
     {
         Set<String> distinct = new HashSet<>();
         int nonBlank = 0;
-        for (int i = 0; i < row.fieldCount(); ++i)
+        for (int i = 0; i < row.size(); ++i)
         {
             String raw = row.getString(i);
             String s = raw == null ? "" : raw.strip();
@@ -239,7 +239,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
 
         int matchedCount = 0;
         int nonBlank = 0;
-        for (int i = 0; i < row.fieldCount(); ++i)
+        for (int i = 0; i < row.size(); ++i)
         {
             String raw = row.getString(i);
             String value = raw == null ? "" : raw.strip();

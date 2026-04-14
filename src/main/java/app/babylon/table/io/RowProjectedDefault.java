@@ -30,7 +30,7 @@ final class RowProjectedDefault implements RowProjected
     }
 
     @Override
-    public int fieldCount()
+    public int size()
     {
         return this.projectedIndexes.length;
     }
@@ -38,7 +38,7 @@ final class RowProjectedDefault implements RowProjected
     @Override
     public boolean isEmpty()
     {
-        for (int i = 0; i < fieldCount(); ++i)
+        for (int i = 0; i < size(); ++i)
         {
             if (isSet(i))
             {
@@ -52,7 +52,7 @@ final class RowProjectedDefault implements RowProjected
     public boolean isSet(int fieldIndex)
     {
         int sourceIndex = sourceIndex(fieldIndex);
-        return sourceIndex < source().fieldCount() && source().isSet(sourceIndex);
+        return sourceIndex < source().size() && source().isSet(sourceIndex);
     }
 
     @Override
@@ -71,7 +71,7 @@ final class RowProjectedDefault implements RowProjected
     public int start(int fieldIndex)
     {
         int sourceIndex = sourceIndex(fieldIndex);
-        if (sourceIndex >= source().fieldCount())
+        if (sourceIndex >= source().size())
         {
             return source().end();
         }
@@ -82,7 +82,7 @@ final class RowProjectedDefault implements RowProjected
     public int length(int fieldIndex)
     {
         int sourceIndex = sourceIndex(fieldIndex);
-        if (sourceIndex >= source().fieldCount())
+        if (sourceIndex >= source().size())
         {
             return 0;
         }
@@ -100,7 +100,7 @@ final class RowProjectedDefault implements RowProjected
     {
         RowBuffer copy = new RowBuffer();
         char[] chars = chars();
-        for (int i = 0; i < fieldCount(); ++i)
+        for (int i = 0; i < size(); ++i)
         {
             int start = start(i);
             int length = length(i);

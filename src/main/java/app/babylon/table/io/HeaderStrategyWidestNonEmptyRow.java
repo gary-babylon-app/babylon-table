@@ -73,7 +73,7 @@ public class HeaderStrategyWidestNonEmptyRow implements HeaderStrategy
     private static int countNonEmptyValues(RowBuffer row)
     {
         int count = 0;
-        for (int i = 0; i < row.fieldCount(); ++i)
+        for (int i = 0; i < row.size(); ++i)
         {
             String value = row.getString(i);
             String trimmed = value == null ? "" : value.strip();

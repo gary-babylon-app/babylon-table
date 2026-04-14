@@ -31,7 +31,7 @@ final class RowProjectedStripped implements RowProjected
     {
         this.source = ArgumentCheck.nonNull(source, "source must not be null");
         char[] chars = source.chars();
-        int sourceFieldCount = source.fieldCount();
+        int sourceFieldCount = source.size();
         int sourceEnd = source.end();
         for (int i = 0; i < this.projectedIndexes.length; ++i)
         {
@@ -59,7 +59,7 @@ final class RowProjectedStripped implements RowProjected
     }
 
     @Override
-    public int fieldCount()
+    public int size()
     {
         return this.projectedIndexes.length;
     }
@@ -67,7 +67,7 @@ final class RowProjectedStripped implements RowProjected
     @Override
     public boolean isEmpty()
     {
-        for (int i = 0; i < fieldCount(); ++i)
+        for (int i = 0; i < size(); ++i)
         {
             if (isSet(i))
             {
@@ -118,7 +118,7 @@ final class RowProjectedStripped implements RowProjected
     {
         RowBuffer copy = new RowBuffer();
         char[] chars = chars();
-        for (int i = 0; i < fieldCount(); ++i)
+        for (int i = 0; i < size(); ++i)
         {
             int start = this.starts[i];
             int length = this.lengths[i];

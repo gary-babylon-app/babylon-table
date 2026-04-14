@@ -68,7 +68,7 @@ public final class RowConsumerCreateTable implements RowConsumer
     public void accept(Row rowValues)
     {
         int columnCount = this.columnBuilders.length;
-        if (rowValues.fieldCount() != columnCount)
+        if (rowValues.size() != columnCount)
         {
             return;
         }

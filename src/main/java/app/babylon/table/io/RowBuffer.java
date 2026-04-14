@@ -176,7 +176,7 @@ public final class RowBuffer implements Row
     }
 
     @Override
-    public int fieldCount()
+    public int size()
     {
         return this.fieldCount;
     }

@@ -74,7 +74,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
             ++rowsScanned;
             RowBuffer rowBuffer = (RowBuffer) rowStream.current();
             int matchedHeaderCount = 0;
-            for (int i = 0; i < rowBuffer.fieldCount(); ++i)
+            for (int i = 0; i < rowBuffer.size(); ++i)
             {
                 String item = rowBuffer.getString(i);
                 if (item == null || item.strip().isEmpty())

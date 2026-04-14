@@ -59,9 +59,9 @@ public class HeaderStrategyNoHeaders implements HeaderStrategy
         {
             ++rowsScanned;
             Row rowBuffer = rowStream.current();
-            if (rowBuffer.fieldCount() > maxWidth)
+            if (rowBuffer.size() > maxWidth)
             {
-                maxWidth = rowBuffer.fieldCount();
+                maxWidth = rowBuffer.size();
             }
         }
         if (maxWidth == 0)

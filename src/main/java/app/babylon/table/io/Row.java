@@ -11,11 +11,11 @@
 package app.babylon.table.io;
 
 /**
- * Represents a parsed input row backed by character slices.
+ * Represents a parsed input row represented as a character slice.
  */
 public interface Row
 {
-    int fieldCount();
+    int size();
 
     boolean isEmpty();
 
@@ -29,7 +29,7 @@ public interface Row
 
     int length(int fieldIndex);
 
-    RowKey keyOf(int[] positions);
+    RowKey keyOf(int[] fieldPositions);
 
     Row copy();
 }

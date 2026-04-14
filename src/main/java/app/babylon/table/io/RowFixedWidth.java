@@ -61,7 +61,7 @@ final class RowFixedWidth implements Row
     }
 
     @Override
-    public int fieldCount()
+    public int size()
     {
         return this.widths.length;
     }

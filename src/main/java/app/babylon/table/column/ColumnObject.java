@@ -133,7 +133,7 @@ public interface ColumnObject<T> extends Column
      *            the column name
      * @return a string column builder
      */
-    public static Builder<BigDecimal> builderString(ColumnName name)
+    public static Builder<String> builderString(ColumnName name)
     {
         return builder(name, ColumnTypes.STRING);
     }
@@ -145,7 +145,7 @@ public interface ColumnObject<T> extends Column
      *            the column name
      * @return a string column builder
      */
-    public static Builder<BigDecimal> builder(ColumnName name)
+    public static Builder<String> builder(ColumnName name)
     {
         return builder(name, ColumnTypes.STRING);
     }

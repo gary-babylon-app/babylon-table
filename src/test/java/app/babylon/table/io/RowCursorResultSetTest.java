@@ -19,12 +19,12 @@ import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 
-class RowSupplierResultSetTest
+class RowCursorResultSetTest
 {
     @Test
     void shouldExposeMetadataColumnsWithOptionalTypes()
     {
-        RowSupplierResultSet supplier = new RowSupplierResultSet(resultSet(new String[]
+        RowCursorResultSet supplier = new RowCursorResultSet(resultSet(new String[]
         {"City", "Amount", "Count"}, new String[]
         {"City", "Amount", "Count"}, new int[]
         {Types.VARCHAR, Types.DECIMAL, Types.INTEGER}, new boolean[]
@@ -35,15 +35,15 @@ class RowSupplierResultSetTest
         ColumnDefinition[] columns = supplier.columns();
 
         assertEquals(ColumnName.of("City"), columns[0].name());
-        assertEquals(ColumnTypes.STRING, columns[0].type().orElseThrow());
-        assertEquals(ColumnTypes.DECIMAL, columns[1].type().orElseThrow());
-        assertEquals(ColumnTypes.INT, columns[2].type().orElseThrow());
+        assertEquals(ColumnTypes.STRING, columns[0].type());
+        assertEquals(ColumnTypes.DECIMAL, columns[1].type());
+        assertEquals(ColumnTypes.INT, columns[2].type());
     }
 
     @Test
     void shouldReadResultSetRowsUsingCharacterStreamsAndFallbackStrings()
     {
-        RowSupplierResultSet supplier = new RowSupplierResultSet(resultSet(new String[]
+        RowCursorResultSet supplier = new RowCursorResultSet(resultSet(new String[]
         {"City", ""}, new String[]
         {"City", "Notes"}, new int[]
         {Types.VARCHAR, Types.LONGVARCHAR}, new boolean[]
@@ -65,6 +65,59 @@ class RowSupplierResultSetTest
         assertFalse(supplier.next());
     }
 
+    @Test
+    void shouldExposeStringBackedValuesForRows()
+    {
+        RowCursorResultSet supplier = new RowCursorResultSet(resultSet(new String[]
+        {"Count", "Amount", "Name"}, new String[]
+        {"Count", "Amount", "Name"}, new int[]
+        {Types.INTEGER, Types.DECIMAL, Types.VARCHAR}, new boolean[]
+        {false, false, false}, new String[][]
+        {
+                {"3", "10.25", "London"},
+                {null, null, ""}}));
+
+        assertTrue(supplier.next());
+        Row row = supplier.current();
+        assertTrue(row.isSet(0));
+        assertTrue(row.isSet(1));
+        assertTrue(row.isSet(2));
+        assertArrayEquals(new String[]
+        {"3", "10.25", "London"}, values(row));
+
+        assertTrue(supplier.next());
+        row = supplier.current();
+        assertFalse(row.isSet(0));
+        assertFalse(row.isSet(1));
+        assertFalse(row.isSet(2));
+        assertArrayEquals(new String[]
+        {"", "", ""}, values(row));
+
+        assertFalse(supplier.next());
+    }
+
+    @Test
+    void shouldTreatAllNullResultSetRowAsEmpty()
+    {
+        RowCursorResultSet supplier = new RowCursorResultSet(resultSet(new String[]
+        {"Count", "Amount", "Name"}, new String[]
+        {"Count", "Amount", "Name"}, new int[]
+        {Types.INTEGER, Types.DECIMAL, Types.VARCHAR}, new boolean[]
+        {false, false, false}, new String[][]
+        {
+                {null, null, null}}));
+
+        assertTrue(supplier.next());
+        Row row = supplier.current();
+        assertTrue(row.isEmpty());
+        assertFalse(row.isSet(0));
+        assertFalse(row.isSet(1));
+        assertFalse(row.isSet(2));
+        assertArrayEquals(new String[]
+        {"", "", ""}, values(row));
+        assertFalse(supplier.next());
+    }
+
     private static String[] values(Row row)
     {
         String[] values = new String[row.fieldCount()];
@@ -83,6 +136,7 @@ class RowSupplierResultSetTest
         InvocationHandler handler = new InvocationHandler()
         {
             private int rowIndex = -1;
+            private boolean wasNull = false;
 
             @Override
             public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) throws Throwable
@@ -101,6 +155,7 @@ class RowSupplierResultSetTest
                 {
                     int columnIndex = ((Integer) args[0]).intValue() - 1;
                     String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
                     if (!streamColumns[columnIndex] || value == null)
                     {
                         return null;
@@ -110,7 +165,13 @@ class RowSupplierResultSetTest
                 if (methodName.equals("getString"))
                 {
                     int columnIndex = ((Integer) args[0]).intValue() - 1;
-                    return rows[this.rowIndex][columnIndex];
+                    String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
+                    return value;
+                }
+                if (methodName.equals("wasNull"))
+                {
+                    return this.wasNull;
                 }
                 if (methodName.equals("close"))
                 {
@@ -156,7 +217,7 @@ class RowSupplierResultSetTest
                 return null;
             }
         };
-        return (ResultSet) Proxy.newProxyInstance(RowSupplierResultSetTest.class.getClassLoader(), new Class<?>[]
+        return (ResultSet) Proxy.newProxyInstance(RowCursorResultSetTest.class.getClassLoader(), new Class<?>[]
         {ResultSet.class}, handler);
     }
 
@@ -211,8 +272,7 @@ class RowSupplierResultSetTest
             }
             return null;
         };
-        return (ResultSetMetaData) Proxy.newProxyInstance(RowSupplierResultSetTest.class.getClassLoader(),
-                new Class<?>[]
-                {ResultSetMetaData.class}, handler);
+        return (ResultSetMetaData) Proxy.newProxyInstance(RowCursorResultSetTest.class.getClassLoader(), new Class<?>[]
+        {ResultSetMetaData.class}, handler);
     }
 }

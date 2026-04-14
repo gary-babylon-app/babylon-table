@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import app.babylon.lang.Is;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
 
@@ -38,15 +39,17 @@ public interface HeaderStrategy
         {
             return foundDetection;
         }
+        HeaderDetection normalizedDetection = normalise(foundDetection);
 
-        if (selectedColumns == null || selectedColumns.isEmpty())
+        if (Is.empty(selectedColumns))
         {
-            return foundDetection;
+            return normalizedDetection;
         }
 
         List<String> selectedHeaders = new ArrayList<>();
         List<Integer> selectedPositions = new ArrayList<>();
-        String[] headersFound = foundDetection.getHeadersFound();
+        String[] headersFound = normalizedDetection.getHeadersFound();
+        int[] normalizedPositions = normalizedDetection.getSelectedPositions();
         for (int i = 0; i < headersFound.length; ++i)
         {
             String headerFound = headersFound[i];
@@ -57,7 +60,7 @@ public interface HeaderStrategy
             if (selectedColumns.contains(ColumnName.of(headerFound)))
             {
                 selectedHeaders.add(headerFound);
-                selectedPositions.add(i);
+                selectedPositions.add(normalizedPositions[i]);
             }
         }
         return new HeaderDetection(headersFound, false, selectedHeaders.toArray(new String[selectedHeaders.size()]),
@@ -65,6 +68,31 @@ public interface HeaderStrategy
     }
 
     HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns) throws IOException;
+
+    private static HeaderDetection normalise(HeaderDetection detection)
+    {
+        String[] headersFound = detection.getHeadersFound();
+        int trimmedLength = headersFound.length;
+        while (trimmedLength > 0 && isBlankHeader(headersFound[trimmedLength - 1]))
+        {
+            --trimmedLength;
+        }
+
+        String[] normalizedHeaders = new String[trimmedLength];
+        int[] normalizedPositions = new int[trimmedLength];
+        for (int i = 0; i < trimmedLength; ++i)
+        {
+            String header = headersFound[i];
+            normalizedHeaders[i] = isBlankHeader(header) ? "Column" + (i + 1) : header;
+            normalizedPositions[i] = i;
+        }
+        return new HeaderDetection(normalizedHeaders, false, normalizedHeaders, normalizedPositions);
+    }
+
+    private static boolean isBlankHeader(String header)
+    {
+        return Strings.isEmpty(Strings.stripx(header));
+    }
 
     private static int[] toIntArray(List<Integer> values)
     {

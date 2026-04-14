@@ -18,6 +18,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
+import java.util.Arrays;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
@@ -44,7 +45,7 @@ import app.babylon.text.Strings;
  *     statement.setDate(1, java.sql.Date.valueOf("2026-01-01"));
  *     try (ResultSet resultSet = statement.executeQuery())
  *     {
- *         RowSupplier supplier = new RowSupplierResultSet(resultSet);
+ *         RowCursor supplier = new RowCursorResultSet(resultSet);
  *
  *         ColumnDefinition[] columns = supplier.columns();
  *         while (supplier.next())
@@ -54,38 +55,43 @@ import app.babylon.text.Strings;
  *     }
  * }
  * }</pre>
+ *
+ * This implementation is a demonstration of what is possible and the likely
+ * structure given the ResultSet API. Different drivers may still have quirks
+ * that require special implementations.
+ *
  */
-public class RowSupplierResultSet implements RowSupplier
+public class RowCursorResultSet implements RowCursor
 {
     private final ResultSet resultSet;
-    private final RowBuffer rowBuffer;
+    private final RowResultSet row;
     private final boolean closeOnClose;
     private ColumnDefinition[] columns;
     private boolean currentAvailable;
 
-    public RowSupplierResultSet(ResultSet resultSet)
+    public RowCursorResultSet(ResultSet resultSet)
     {
         this(resultSet, false);
     }
 
-    RowSupplierResultSet(ResultSet resultSet, boolean closeOnClose)
+    RowCursorResultSet(ResultSet resultSet, boolean closeOnClose)
     {
         this.resultSet = ArgumentCheck.nonNull(resultSet);
-        this.rowBuffer = new RowBuffer();
         this.closeOnClose = closeOnClose;
         this.columns = resolveColumns(resultSet);
+        this.row = new RowResultSet();
         this.currentAvailable = false;
     }
 
-    static RowSupplierResultSet open(PreparedStatement preparedStatement) throws SQLException
+    static RowCursorResultSet open(PreparedStatement preparedStatement) throws SQLException
     {
-        return new RowSupplierResultSet(ArgumentCheck.nonNull(preparedStatement).executeQuery(), true);
+        return new RowCursorResultSet(ArgumentCheck.nonNull(preparedStatement).executeQuery(), true);
     }
 
     @Override
     public ColumnDefinition[] columns()
     {
-        return this.columns.clone();
+        return Arrays.copyOf(this.columns, this.columns.length);
     }
 
     @Override
@@ -98,17 +104,13 @@ public class RowSupplierResultSet implements RowSupplier
                 this.currentAvailable = false;
                 return false;
             }
-            populateRowBuffer();
+            this.row.reset();
             this.currentAvailable = true;
             return true;
         }
         catch (SQLException e)
         {
-            throw new TableException("Failed to advance ResultSet row supplier.", e);
-        }
-        catch (IOException e)
-        {
-            throw new TableException("Failed to read character data from ResultSet.", e);
+            throw new TableException("Failed to advance ResultSet row cursor.", e);
         }
     }
 
@@ -119,7 +121,7 @@ public class RowSupplierResultSet implements RowSupplier
         {
             throw new IllegalStateException("current row is not available until next() succeeds");
         }
-        return this.rowBuffer;
+        return this.row;
     }
 
     @Override
@@ -131,17 +133,7 @@ public class RowSupplierResultSet implements RowSupplier
         }
     }
 
-    private void populateRowBuffer() throws SQLException, IOException
-    {
-        this.rowBuffer.clear();
-        for (int i = 1; i <= this.columns.length; ++i)
-        {
-            appendColumnValue(i);
-            this.rowBuffer.finishField();
-        }
-    }
-
-    private void appendColumnValue(int columnIndex) throws SQLException, IOException
+    private void appendColumnValue(RowBuffer rowBuffer, int columnIndex) throws SQLException, IOException
     {
         Reader columnValueReader = null;
         try
@@ -150,28 +142,28 @@ public class RowSupplierResultSet implements RowSupplier
         }
         catch (SQLFeatureNotSupportedException e)
         {
-            appendStringValue(columnIndex);
+            appendStringValue(rowBuffer, columnIndex);
             return;
         }
 
         if (columnValueReader == null)
         {
-            appendStringValue(columnIndex);
+            appendStringValue(rowBuffer, columnIndex);
             return;
         }
 
         try (Reader ignored = columnValueReader)
         {
-            this.rowBuffer.append(columnValueReader);
+            rowBuffer.append(columnValueReader);
         }
     }
 
-    private void appendStringValue(int columnIndex) throws SQLException
+    private void appendStringValue(RowBuffer rowBuffer, int columnIndex) throws SQLException
     {
         String value = this.resultSet.getString(columnIndex);
         if (value != null)
         {
-            this.rowBuffer.append(value);
+            rowBuffer.append(value);
         }
     }
 
@@ -226,5 +218,137 @@ public class RowSupplierResultSet implements RowSupplier
                 ColumnTypes.STRING;
             default -> null;
         };
+    }
+
+    private final class RowResultSet implements Row
+    {
+        private final String[] stringValues;
+        private final boolean[] stringLoaded;
+        private RowBuffer rowBuffer;
+
+        private RowResultSet()
+        {
+            int size = RowCursorResultSet.this.columns.length;
+            this.stringValues = new String[size];
+            this.stringLoaded = new boolean[size];
+            this.rowBuffer = null;
+        }
+
+        private void reset()
+        {
+            Arrays.fill(this.stringValues, null);
+            Arrays.fill(this.stringLoaded, false);
+            if (this.rowBuffer != null)
+            {
+                this.rowBuffer.clear();
+            }
+        }
+
+        @Override
+        public int fieldCount()
+        {
+            return RowCursorResultSet.this.columns.length;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return ensureRowBuffer().isEmpty();
+        }
+
+        @Override
+        public boolean isSet(int fieldIndex)
+        {
+            return length(fieldIndex) > 0;
+        }
+
+        @Override
+        public char[] chars()
+        {
+            return ensureRowBuffer().chars();
+        }
+
+        @Override
+        public int end()
+        {
+            return ensureRowBuffer().end();
+        }
+
+        @Override
+        public int start(int fieldIndex)
+        {
+            return ensureRowBuffer().start(fieldIndex);
+        }
+
+        @Override
+        public int length(int fieldIndex)
+        {
+            return ensureRowBuffer().length(fieldIndex);
+        }
+
+        @Override
+        public RowKey keyOf(int[] positions)
+        {
+            for (int position : positions)
+            {
+                readStringValue(position);
+            }
+            return RowKey.copyOf(this.stringValues, positions);
+        }
+
+        @Override
+        public Row copy()
+        {
+            return ensureRowBuffer().copy();
+        }
+
+        private String readStringValue(int fieldIndex)
+        {
+            if (this.stringLoaded[fieldIndex])
+            {
+                return this.stringValues[fieldIndex];
+            }
+            try
+            {
+                String value = RowCursorResultSet.this.resultSet.getString(fieldIndex + 1);
+                this.stringValues[fieldIndex] = value;
+                this.stringLoaded[fieldIndex] = true;
+                return value;
+            }
+            catch (SQLException e)
+            {
+                throw new TableException("Failed to read ResultSet value for column " + (fieldIndex + 1) + ".", e);
+            }
+        }
+
+        private RowBuffer ensureRowBuffer()
+        {
+            if (this.rowBuffer == null)
+            {
+                this.rowBuffer = new RowBuffer();
+            }
+            if (this.rowBuffer.fieldCount() == fieldCount())
+            {
+                return this.rowBuffer;
+            }
+            try
+            {
+                this.rowBuffer.clear();
+                for (int i = 1; i <= fieldCount(); ++i)
+                {
+                    RowCursorResultSet.this.appendColumnValue(this.rowBuffer, i);
+                    this.rowBuffer.finishField();
+                }
+                return this.rowBuffer;
+            }
+            catch (SQLException e)
+            {
+                throw new TableException("Failed to read ResultSet row text.", e);
+            }
+            catch (IOException e)
+            {
+                throw new TableException("Failed to stream ResultSet character data.", e);
+            }
+        }
     }
 }

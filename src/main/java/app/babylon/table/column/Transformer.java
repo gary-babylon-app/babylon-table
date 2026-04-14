@@ -32,6 +32,19 @@ public interface Transformer<T, S> extends Function<T, S>
         return of(function, valueClass, null);
     }
 
+    @SuppressWarnings("unchecked")
+    static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Column.Type type)
+    {
+        return of(function, (Class<S>) ArgumentCheck.nonNull(type).getValueClass(), null);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Column.Type type,
+            ColumnName columnName)
+    {
+        return of(function, (Class<S>) ArgumentCheck.nonNull(type).getValueClass(), columnName);
+    }
+
     static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Class<S> valueClass,
             ColumnName columnName)
     {

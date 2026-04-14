@@ -31,7 +31,7 @@ class RowFilterTest
     void filterShouldWorkForObjectColumns()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -66,7 +66,7 @@ class RowFilterTest
     void filterShouldComposeAndShortCircuit()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -91,7 +91,7 @@ class RowFilterTest
     void filterShouldComposeOr()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -110,7 +110,7 @@ class RowFilterTest
     void filterShouldComposeNot()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -129,7 +129,7 @@ class RowFilterTest
     void filterShouldReturnEmptyTableInsteadOfNullWhenNoRowsMatch()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
 

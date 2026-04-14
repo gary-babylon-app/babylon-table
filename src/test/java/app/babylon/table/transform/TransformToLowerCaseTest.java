@@ -20,7 +20,7 @@ public class TransformToLowerCaseTest
     {
         final ColumnName NAME = ColumnName.of("Name");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ALICE");
         strings.add("Bob");
         strings.add("");
@@ -43,7 +43,8 @@ public class TransformToLowerCaseTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName LOWER = ColumnName.of("Lower");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME,
+                app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ALICE");
         strings.add("ALICE");
         strings.add("Bob");

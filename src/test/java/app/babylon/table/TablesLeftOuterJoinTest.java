@@ -29,20 +29,23 @@ public class TablesLeftOuterJoinTest
         final ColumnName RIGHT_VALUE = ColumnName.of("RightValue");
         final ColumnName RIGHT_SCORE = ColumnName.of("RightScore");
 
-        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, String.class);
+        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, app.babylon.table.column.ColumnTypes.STRING);
         leftKey.add("A");
         leftKey.add("B");
 
-        ColumnObject.Builder<String> leftValues = ColumnObject.builder(LEFT_VALUE, String.class);
+        ColumnObject.Builder<String> leftValues = ColumnObject.builder(LEFT_VALUE,
+                app.babylon.table.column.ColumnTypes.STRING);
         leftValues.add("left-a");
         leftValues.add("left-b");
 
         TableColumnar left = Tables.newTable(TableName.of("left"), leftKey.build(), leftValues.build());
 
-        ColumnObject.Builder<String> rightKeyBuilder = ColumnObject.builder(KEY, String.class);
+        ColumnObject.Builder<String> rightKeyBuilder = ColumnObject.builder(KEY,
+                app.babylon.table.column.ColumnTypes.STRING);
         rightKeyBuilder.add("A");
 
-        ColumnObject.Builder<String> rightValues = ColumnObject.builder(RIGHT_VALUE, String.class);
+        ColumnObject.Builder<String> rightValues = ColumnObject.builder(RIGHT_VALUE,
+                app.babylon.table.column.ColumnTypes.STRING);
         rightValues.add("right-a");
 
         ColumnInt.Builder rightScores = ColumnInt.builder(RIGHT_SCORE);
@@ -75,17 +78,18 @@ public class TablesLeftOuterJoinTest
         final ColumnName KEY = ColumnName.of("Key");
         final ColumnName RIGHT_VALUE = ColumnName.of("RightValue");
 
-        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, String.class);
+        ColumnObject.Builder<String> leftKey = ColumnObject.builder(KEY, app.babylon.table.column.ColumnTypes.STRING);
         leftKey.add("A");
         leftKey.add("A");
         leftKey.add("B");
 
         TableColumnar left = Tables.newTable(TableName.of("left"), leftKey.build());
 
-        ColumnObject.Builder<String> rightKey = ColumnObject.builder(KEY, String.class);
+        ColumnObject.Builder<String> rightKey = ColumnObject.builder(KEY, app.babylon.table.column.ColumnTypes.STRING);
         rightKey.add("A");
 
-        ColumnObject.Builder<String> rightValues = ColumnObject.builder(RIGHT_VALUE, String.class);
+        ColumnObject.Builder<String> rightValues = ColumnObject.builder(RIGHT_VALUE,
+                app.babylon.table.column.ColumnTypes.STRING);
         rightValues.add("right-a");
 
         TableColumnar right = Tables.newTable(TableName.of("right"), rightKey.build(), rightValues.build());

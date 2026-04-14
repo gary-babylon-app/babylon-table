@@ -38,12 +38,12 @@ class RowSourceResultSetTest
                 .withName("TradesQuery").build();
 
         assertEquals("TradesQuery", rowSource.getName());
-        try (RowSupplier supplier = rowSource.openRows())
+        try (RowCursor supplier = rowSource.openRows())
         {
             assertTrue(executed.get());
             ColumnDefinition[] columns = supplier.columns();
             assertEquals(ColumnName.of("City"), columns[0].name());
-            assertEquals(ColumnTypes.DECIMAL, columns[1].type().orElseThrow());
+            assertEquals(ColumnTypes.DECIMAL, columns[1].type());
             assertTrue(supplier.next());
             assertEquals("London",
                     new String(supplier.current().chars(), supplier.current().start(0), supplier.current().length(0)));

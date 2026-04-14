@@ -10,42 +10,26 @@
 
 package app.babylon.table.io;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
-import app.babylon.io.DataSource;
+import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 
 /**
- * Configured CSV row source that opens a {@link RowSupplierCsv} from a
- * {@link DataSource}.
+ * Configured CSV row source that opens a {@link RowCursorCsv} from a
+ * {@link StreamSource}.
  */
 public final class RowSourceCsv implements RowSource
 {
-    private final DataSource dataSource;
-    private final HeaderStrategy headerStrategy;
-    private final char separator;
-    private final int[] fixedWidths;
-    private final Charset charset;
-    private final boolean autoDetectEncoding;
-    private final Map<ColumnName, Column.Type> explicitColumnTypes;
+    private final StreamSource streamSource;
+    private final RowCursorCsv.Builder rowCursorBuilder;
 
     private RowSourceCsv(Builder builder)
     {
-        this.dataSource = ArgumentCheck.nonNull(builder.dataSource);
-        this.headerStrategy = ArgumentCheck.nonNull(builder.headerStrategy);
-        this.separator = builder.separator;
-        this.fixedWidths = builder.fixedWidths == null
-                ? null
-                : Arrays.copyOf(builder.fixedWidths, builder.fixedWidths.length);
-        this.charset = ArgumentCheck.nonNull(builder.charset);
-        this.autoDetectEncoding = builder.autoDetectEncoding;
-        this.explicitColumnTypes = new LinkedHashMap<>(builder.explicitColumnTypes);
+        this.streamSource = ArgumentCheck.nonNull(builder.streamSource);
+        this.rowCursorBuilder = builder.rowCursorBuilder.copy();
     }
 
     public static Builder builder()
@@ -56,90 +40,71 @@ public final class RowSourceCsv implements RowSource
     @Override
     public String getName()
     {
-        return this.dataSource.getName();
+        return this.streamSource.getName();
     }
 
     @Override
-    public RowSupplier openRows()
+    public RowCursor openRows()
     {
-        return RowSupplierCsv.builder().withHeaderStrategy(this.headerStrategy).withSeparator(this.separator)
-                .withFixedWidths(this.fixedWidths).withCharset(this.charset)
-                .withAutoDetectEncoding(this.autoDetectEncoding).withColumnTypes(this.explicitColumnTypes)
-                .build(this.dataSource.openStream());
+        return this.rowCursorBuilder.build(this.streamSource.openStream());
     }
 
     public static final class Builder
     {
-        private final Map<ColumnName, Column.Type> explicitColumnTypes;
-        private DataSource dataSource;
-        private HeaderStrategy headerStrategy;
-        private char separator;
-        private int[] fixedWidths;
-        private Charset charset;
-        private boolean autoDetectEncoding;
+        private StreamSource streamSource;
+        private final RowCursorCsv.Builder rowCursorBuilder;
 
         private Builder()
         {
-            this.explicitColumnTypes = new LinkedHashMap<>();
-            this.dataSource = null;
-            this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
-            this.separator = ',';
-            this.fixedWidths = null;
-            this.charset = StandardCharsets.UTF_8;
-            this.autoDetectEncoding = true;
+            this.streamSource = null;
+            this.rowCursorBuilder = RowCursorCsv.builder();
         }
 
-        public Builder withDataSource(DataSource dataSource)
+        public Builder withStreamSource(StreamSource streamSource)
         {
-            this.dataSource = ArgumentCheck.nonNull(dataSource);
+            this.streamSource = ArgumentCheck.nonNull(streamSource);
             return this;
         }
 
         public Builder withHeaderStrategy(HeaderStrategy headerStrategy)
         {
-            this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
+            this.rowCursorBuilder.withHeaderStrategy(headerStrategy);
             return this;
         }
 
         public Builder withSeparator(char separator)
         {
-            this.separator = separator;
+            this.rowCursorBuilder.withSeparator(separator);
             return this;
         }
 
         public Builder withFixedWidths(int[] fixedWidths)
         {
-            this.fixedWidths = fixedWidths == null ? null : Arrays.copyOf(fixedWidths, fixedWidths.length);
+            this.rowCursorBuilder.withFixedWidths(fixedWidths);
             return this;
         }
 
-        public Builder withCharset(Charset charset)
+        public Builder withCharset(java.nio.charset.Charset charset)
         {
-            this.charset = ArgumentCheck.nonNull(charset);
+            this.rowCursorBuilder.withCharset(charset);
             return this;
         }
 
         public Builder withAutoDetectEncoding(boolean autoDetectEncoding)
         {
-            this.autoDetectEncoding = autoDetectEncoding;
+            this.rowCursorBuilder.withAutoDetectEncoding(autoDetectEncoding);
             return this;
         }
 
         public Builder withColumnType(ColumnName columnName, Column.Type columnType)
         {
-            this.explicitColumnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
+            this.rowCursorBuilder.withColumnType(columnName, columnType);
             return this;
         }
 
         public Builder withColumnTypes(Map<ColumnName, Column.Type> columnTypes)
         {
-            if (columnTypes != null)
-            {
-                for (Map.Entry<ColumnName, Column.Type> entry : columnTypes.entrySet())
-                {
-                    withColumnType(entry.getKey(), entry.getValue());
-                }
-            }
+            this.rowCursorBuilder.withColumnTypes(columnTypes);
             return this;
         }
 

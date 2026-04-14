@@ -24,7 +24,8 @@ class TransformToLongTest
     void applyShouldConvertPlainStringColumnAndLeaveUnparseableValuesUnset()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("1");
         builder.add("2147483648");
         builder.add("1 2");
@@ -50,7 +51,8 @@ class TransformToLongTest
     void applyShouldConvertCategoricalStringColumnToPrimitiveLongColumn()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("10");
         builder.add("bad");
         builder.add("10");
@@ -74,11 +76,13 @@ class TransformToLongTest
         final ColumnName OTHER = ColumnName.of("OTHER");
         final ColumnName EXISTING = ColumnName.of("EXISTING");
         final ColumnName PARSED = ColumnName.of("PARSED");
-        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT, String.class);
+        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
         amountBuilder.add("1");
         amountBuilder.add("2147483648");
 
-        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER, String.class);
+        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER,
+                app.babylon.table.column.ColumnTypes.STRING);
         otherBuilder.add("x");
         otherBuilder.add("y");
 

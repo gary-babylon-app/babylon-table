@@ -12,18 +12,18 @@ package app.babylon.table.io;
 
 import app.babylon.lang.ArgumentCheck;
 
-final class ProjectedRow implements RowProjected
+final class RowProjectedDefault implements RowProjected
 {
     private final int[] projectedIndexes;
     private Row source;
 
-    public ProjectedRow(int[] projectedIndexes)
+    public RowProjectedDefault(int[] projectedIndexes)
     {
         this.projectedIndexes = ArgumentCheck.nonNull(projectedIndexes, "projectedIndexes must not be null");
     }
 
     @Override
-    public ProjectedRow with(Row source)
+    public RowProjectedDefault with(Row source)
     {
         this.source = ArgumentCheck.nonNull(source, "source must not be null");
         return this;
@@ -33,6 +33,26 @@ final class ProjectedRow implements RowProjected
     public int fieldCount()
     {
         return this.projectedIndexes.length;
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        for (int i = 0; i < fieldCount(); ++i)
+        {
+            if (isSet(i))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isSet(int fieldIndex)
+    {
+        int sourceIndex = sourceIndex(fieldIndex);
+        return sourceIndex < source().fieldCount() && source().isSet(sourceIndex);
     }
 
     @Override
@@ -67,6 +87,12 @@ final class ProjectedRow implements RowProjected
             return 0;
         }
         return source().length(sourceIndex);
+    }
+
+    @Override
+    public RowKey keyOf(int[] positions)
+    {
+        return RowKey.copyOf(this, positions);
     }
 
     @Override

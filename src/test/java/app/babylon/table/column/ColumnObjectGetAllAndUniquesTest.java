@@ -29,7 +29,7 @@ class ColumnObjectGetAllAndUniquesTest
     void objectColumnGetAllAndUniquesShouldSkipNullsWithoutBecomingCategorical()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, app.babylon.table.column.ColumnTypes.STRING);
         for (int i = 0; i < 260; ++i)
         {
             if (i == 120)
@@ -61,7 +61,7 @@ class ColumnObjectGetAllAndUniquesTest
     void objectViewGetAllAndUniquesShouldRespectViewOrderAndSkipNulls()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, app.babylon.table.column.ColumnTypes.STRING);
         for (int i = 0; i < 260; ++i)
         {
             if (i == 50)
@@ -86,7 +86,8 @@ class ColumnObjectGetAllAndUniquesTest
     void categoricalGetAllShouldKeepDuplicatesButUniquesShouldUseCategories()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("A");
         builder.addNull();
         builder.add("B");
@@ -105,7 +106,8 @@ class ColumnObjectGetAllAndUniquesTest
     void categoricalConstantShouldReturnRepeatedValuesForGetAllAndSingleValueForUniques()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnCategorical<String> constant = ColumnCategorical.constant(S, "X", 4, String.class);
+        ColumnCategorical<String> constant = ColumnCategorical.constant(S, "X", 4,
+                app.babylon.table.column.ColumnTypes.STRING);
 
         List<String> all = (List<String>) constant.getAll(new ArrayList<>());
         Set<String> uniques = constant.getUniques(null);
@@ -118,7 +120,8 @@ class ColumnObjectGetAllAndUniquesTest
     void categoricalViewUniquesShouldOnlyContainCategoriesUsedByTheView()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("A");
         builder.add("B");
         builder.add("C");

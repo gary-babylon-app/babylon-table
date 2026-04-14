@@ -20,7 +20,7 @@ public class TransformSubstringTest
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName PREFIX = ColumnName.of("Prefix");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ABC123");
         strings.add("XY");
         strings.add("");

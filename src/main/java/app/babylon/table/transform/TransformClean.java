@@ -29,7 +29,8 @@ public class TransformClean extends TransformBase
         {
             return;
         }
-        ColumnObject.Builder<String> cleanedColumn = ColumnObject.builder(this.columnToClean, String.class);
+        ColumnObject.Builder<String> cleanedColumn = ColumnObject.builder(this.columnToClean,
+                app.babylon.table.column.ColumnTypes.STRING);
         ToStringSettings settings = ToStringSettings.standard();
 
         for (int i = 0; i < column.size(); i++)

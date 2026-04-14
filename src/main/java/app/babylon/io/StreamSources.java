@@ -15,35 +15,35 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-public class DataSources
+public class StreamSources
 {
-    public static DataSource fromFile(String directory, String fileName)
+    public static StreamSource fromFile(String directory, String fileName)
     {
         File file = new File(directory, fileName);
         return new DataSourceFile(file);
     }
 
-    public static DataSource fromFile(File file)
+    public static StreamSource fromFile(File file)
     {
         return new DataSourceFile(file);
     }
 
-    public static DataSource fromClass(Class<?> clazz, String name)
+    public static StreamSource fromClass(Class<?> clazz, String name)
     {
         return new DataSourceClassResource(clazz, name);
     }
 
-    public static DataSource fromString(CharSequence data, String resourceName)
+    public static StreamSource fromString(CharSequence data, String resourceName)
     {
         return new DataSourceString(data, resourceName);
     }
 
-    public static DataSource fromBase64(String fileBase64, String resourceName, MimeType mimeType)
+    public static StreamSource fromBase64(String fileBase64, String resourceName, MimeType mimeType)
     {
         return new DataSourceBase64(fileBase64, resourceName, mimeType);
     }
 
-    public static String getAsString(DataSource stream)
+    public static String getAsString(StreamSource stream)
     {
         try (InputStream inputStream = stream.openStream())
         {
@@ -61,7 +61,7 @@ public class DataSources
         }
     }
 
-    public static String getSnippet(DataSource stream)
+    public static String getSnippet(StreamSource stream)
     {
         try (InputStream inputStream = stream.openStream())
         {

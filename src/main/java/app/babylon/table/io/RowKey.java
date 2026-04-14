@@ -32,6 +32,25 @@ public abstract class RowKey
         };
     }
 
+    public static RowKey copyOf(CharSequence[] values, int[] positions)
+    {
+        if (values == null)
+        {
+            throw new IllegalArgumentException("values must not be null");
+        }
+        if (positions == null || positions.length == 0)
+        {
+            throw new IllegalArgumentException("positions must not be empty");
+        }
+        return switch (positions.length)
+        {
+            case 1 -> RowKey1.copyOf(values[positions[0]]);
+            case 2 -> RowKey2.copyOf(values[positions[0]], values[positions[1]]);
+            case 3 -> RowKey3.copyOf(values[positions[0]], values[positions[1]], values[positions[2]]);
+            default -> RowKeyN.copyOfN(values, positions);
+        };
+    }
+
     public abstract int fieldCount();
 
     protected abstract int fieldStart(int fieldIndex);
@@ -92,6 +111,32 @@ public abstract class RowKey
         return chars;
     }
 
+    private static char[] copyChars(CharSequence... values)
+    {
+        int totalLength = 0;
+        for (CharSequence value : values)
+        {
+            if (value != null)
+            {
+                totalLength += value.length();
+            }
+        }
+        char[] chars = new char[totalLength];
+        int writeIndex = 0;
+        for (CharSequence value : values)
+        {
+            if (value == null)
+            {
+                continue;
+            }
+            for (int i = 0; i < value.length(); ++i)
+            {
+                chars[writeIndex++] = value.charAt(i);
+            }
+        }
+        return chars;
+    }
+
     private static final class RowKey1 extends RowKey
     {
         private int hash;
@@ -107,6 +152,16 @@ public abstract class RowKey
         private static RowKey1 copyOf(Row row, int position)
         {
             return new RowKey1(row, position);
+        }
+
+        private RowKey1(CharSequence value)
+        {
+            this.chars = copyChars(value);
+        }
+
+        private static RowKey1 copyOf(CharSequence value)
+        {
+            return new RowKey1(value);
         }
 
         @Override
@@ -206,6 +261,17 @@ public abstract class RowKey
         private static RowKey2 copyOf(Row row, int position1, int position2)
         {
             return new RowKey2(row, position1, position2);
+        }
+
+        private RowKey2(CharSequence value0, CharSequence value1)
+        {
+            this.length0 = value0 == null ? 0 : value0.length();
+            this.chars = copyChars(value0, value1);
+        }
+
+        private static RowKey2 copyOf(CharSequence value0, CharSequence value1)
+        {
+            return new RowKey2(value0, value1);
         }
 
         @Override
@@ -322,6 +388,19 @@ public abstract class RowKey
         private static RowKey3 copyOf(Row row, int position1, int position2, int position3)
         {
             return new RowKey3(row, position1, position2, position3);
+        }
+
+        private RowKey3(CharSequence value0, CharSequence value1, CharSequence value2)
+        {
+            this.length1 = value0 == null ? 0 : value0.length();
+            this.length2 = value1 == null ? 0 : value1.length();
+            this.length3 = value2 == null ? 0 : value2.length();
+            this.chars = copyChars(value0, value1, value2);
+        }
+
+        private static RowKey3 copyOf(CharSequence value0, CharSequence value1, CharSequence value2)
+        {
+            return new RowKey3(value0, value1, value2);
         }
 
         @Override
@@ -467,6 +546,31 @@ public abstract class RowKey
         private static RowKeyN copyOfN(Row row, int[] positions)
         {
             return new RowKeyN(row, positions);
+        }
+
+        private RowKeyN(CharSequence[] values, int[] positions)
+        {
+            CharSequence[] selected = new CharSequence[positions.length];
+            for (int i = 0; i < positions.length; ++i)
+            {
+                selected[i] = values[positions[i]];
+            }
+            this.chars = copyChars(selected);
+            this.starts = new int[positions.length];
+            this.lengths = new int[positions.length];
+            int writeIndex = 0;
+            for (int i = 0; i < positions.length; ++i)
+            {
+                int length = selected[i] == null ? 0 : selected[i].length();
+                this.starts[i] = writeIndex;
+                this.lengths[i] = length;
+                writeIndex += length;
+            }
+        }
+
+        private static RowKeyN copyOfN(CharSequence[] values, int[] positions)
+        {
+            return new RowKeyN(values, positions);
         }
 
         @Override

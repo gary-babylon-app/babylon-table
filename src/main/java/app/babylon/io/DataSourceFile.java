@@ -16,7 +16,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-class DataSourceFile implements DataSource
+class DataSourceFile implements StreamSource
 {
     private final File file;
 

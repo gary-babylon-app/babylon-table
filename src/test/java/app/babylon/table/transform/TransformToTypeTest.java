@@ -10,6 +10,7 @@ import app.babylon.table.column.ColumnObject;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
+import app.babylon.table.column.Column;
 import org.junit.jupiter.api.Test;
 
 public class TransformToTypeTest
@@ -20,7 +21,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("1");
         strings.add("2");
         strings.add("1");
@@ -30,7 +31,7 @@ public class TransformToTypeTest
         TableColumnar transformed = table.apply(new TransformToType<>(Integer.class, FROM, Integer::parseInt, TO));
 
         assertTrue(transformed.get(TO) instanceof ColumnCategorical<?>);
-        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Integer.class);
+        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Column.Type.of(Integer.class));
         assertEquals(Integer.valueOf(1), ints.get(0));
         assertEquals(Integer.valueOf(2), ints.get(1));
         assertEquals(Integer.valueOf(1), ints.get(2));
@@ -42,7 +43,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ignore one here");
         strings.add("missing");
 
@@ -51,7 +52,7 @@ public class TransformToTypeTest
         TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
                 "From", "To", "CATEGORICAL", "FIRST_IN"));
 
-        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Integer.class);
+        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Column.Type.of(Integer.class));
         assertEquals(Integer.valueOf(1), ints.get(0));
         assertFalse(ints.isSet(1));
     }
@@ -62,7 +63,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("one ignore two");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
@@ -70,7 +71,7 @@ public class TransformToTypeTest
         TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
                 "From", "To", "ARRAY", "LAST_IN"));
 
-        ColumnObject<Integer> ints = transformed.getTyped(TO, Integer.class);
+        ColumnObject<Integer> ints = transformed.getObject(TO, Column.Type.of(Integer.class));
         assertEquals(Integer.valueOf(2), ints.get(0));
     }
 
@@ -80,7 +81,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ignore one here");
         strings.add("one and two");
 
@@ -89,7 +90,7 @@ public class TransformToTypeTest
         TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
                 "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
 
-        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Integer.class);
+        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, Column.Type.of(Integer.class));
         assertEquals(Integer.valueOf(1), ints.get(0));
         assertFalse(ints.isSet(1));
     }

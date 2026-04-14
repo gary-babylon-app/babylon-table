@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-class DataSourceString implements DataSource
+class DataSourceString implements StreamSource
 {
     private final String data;
     private final String resourceName;

@@ -44,7 +44,8 @@ public class TransformConcat extends TransformBase
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn, String.class);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn,
+                app.babylon.table.column.ColumnTypes.STRING);
         Column[] columns = new Column[this.sourceColumns.length];
         String[] values = new String[this.sourceColumns.length];
         ToStringSettings settings = ToStringSettings.standard();

@@ -11,11 +11,15 @@
 package app.babylon.table.io;
 
 /**
- * Represents a parsed input row as offsets into a shared character buffer.
+ * Represents a parsed input row backed by character slices.
  */
 public interface Row
 {
     int fieldCount();
+
+    boolean isEmpty();
+
+    boolean isSet(int fieldIndex);
 
     char[] chars();
 
@@ -24,6 +28,8 @@ public interface Row
     int start(int fieldIndex);
 
     int length(int fieldIndex);
+
+    RowKey keyOf(int[] positions);
 
     Row copy();
 }

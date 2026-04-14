@@ -43,7 +43,8 @@ public class TransformStringReplaceAll extends TransformBase
         {
             return;
         }
-        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName, String.class);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName,
+                app.babylon.table.column.ColumnTypes.STRING);
         Map<String, String> old2New = new HashMap<>();
 
         for (int i = 0; i < column.size(); ++i)

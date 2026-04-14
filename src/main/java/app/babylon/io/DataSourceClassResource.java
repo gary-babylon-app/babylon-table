@@ -13,7 +13,7 @@ package app.babylon.io;
 import app.babylon.lang.ArgumentCheck;
 import java.io.InputStream;
 
-class DataSourceClassResource implements DataSource
+class DataSourceClassResource implements StreamSource
 {
     private final Class<?> clazz;
     private final String name;

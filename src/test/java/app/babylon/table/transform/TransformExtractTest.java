@@ -23,7 +23,8 @@ public class TransformExtractTest
         final ColumnName DESCRIPTION = ColumnName.of("Description");
         final ColumnName SYMBOL = ColumnName.of("Symbol");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION,
+                app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ABC (VEVE)");
         strings.add("No match");
         strings.addNull();
@@ -45,7 +46,8 @@ public class TransformExtractTest
         final ColumnName DESCRIPTION = ColumnName.of("Description");
         final ColumnName SYMBOL = ColumnName.of("Symbol");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(DESCRIPTION, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(DESCRIPTION,
+                app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ABC (VEVE)");
         strings.add("ABC (VEVE)");
         strings.add("XYZ (SGLN)");

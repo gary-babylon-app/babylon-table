@@ -22,7 +22,7 @@ public class ColumnStringTest
     public void testSmallMutable()
     {
         final ColumnName TEST = ColumnName.of("Test");
-        ColumnObject.Builder<String> cs = ColumnObject.builder(TEST, String.class);
+        ColumnObject.Builder<String> cs = ColumnObject.builder(TEST, app.babylon.table.column.ColumnTypes.STRING);
         cs.add(BigDecimal.ZERO.toPlainString());
         cs.add(BigDecimal.ONE.toPlainString());
         cs.add(BigDecimal.TEN.toPlainString());

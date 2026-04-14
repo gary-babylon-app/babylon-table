@@ -8,8 +8,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.DataSource;
-import app.babylon.io.DataSources;
+import app.babylon.io.StreamSource;
+import app.babylon.io.StreamSources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.aggregation.Aggregate;
@@ -47,7 +47,8 @@ class TablePlanAggregateTest
         final ColumnName STATION = ColumnName.of("station");
         final ColumnName OBSERVATION = ColumnName.of("observation");
 
-        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
+        TablePlanAggregate plan = new TablePlanAggregate()
+                .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
                 .withColumnType(OBSERVATION, double.class);
 
         assertEquals(Column.Type.of(String.class), plan.getColumnType(STATION));
@@ -68,7 +69,8 @@ class TablePlanAggregateTest
         final ColumnName MEAN = ColumnName.of("Mean");
         final ColumnName MAX = ColumnName.of("Max");
 
-        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
+        TablePlanAggregate plan = new TablePlanAggregate()
+                .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
                 .withColumnType(TEMPERATURE, double.class).withTableName(TableName.of("StationSummary"))
                 .withGroupBy(STATION).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, SUM, Aggregate.SUM).withAggregate(TEMPERATURE, MIN, Aggregate.MIN)
@@ -79,7 +81,7 @@ class TablePlanAggregateTest
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE);
 
         TableColumnar table = plan
-                .execute(DataSources.fromString("Amsterdam;10.0\nAmsterdam;14.0\nLondon;7.0\n", "1brc.csv"), reader);
+                .execute(StreamSources.fromString("Amsterdam;10.0\nAmsterdam;14.0\nLondon;7.0\n", "1brc.csv"), reader);
 
         assertEquals(TableName.of("StationSummary"), table.getName());
         assertEquals(2, table.getRowCount());
@@ -109,7 +111,8 @@ class TablePlanAggregateTest
         final ColumnName MIN_TEMPERATURE = ColumnName.of("MinTemperature");
         final ColumnName MAX_HUMIDITY = ColumnName.of("MaxHumidity");
 
-        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
+        TablePlanAggregate plan = new TablePlanAggregate()
+                .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
                 .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class).withGroupBy(STATION)
                 .withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
                 .withAggregate(HUMIDITY, MAX_HUMIDITY, Aggregate.MAX);
@@ -120,7 +123,7 @@ class TablePlanAggregateTest
                 .withColumnRename(COLUMN_3, HUMIDITY);
 
         TableColumnar table = plan.execute(
-                DataSources.fromString("Amsterdam;10.0;85.0\nAmsterdam;12.0;82.0\nLondon;7.0;91.0\n", "1brc.csv"),
+                StreamSources.fromString("Amsterdam;10.0;85.0\nAmsterdam;12.0;82.0\nLondon;7.0;91.0\n", "1brc.csv"),
                 reader);
 
         assertEquals(2, table.getRowCount());
@@ -144,17 +147,19 @@ class TablePlanAggregateTest
         final ColumnName COUNT = ColumnName.of("Count");
         final ColumnName MEAN = ColumnName.of("Mean");
 
-        TablePlanAggregate plan = new TablePlanAggregate().withColumnType(STATION, String.class)
-                .withColumnType(COUNTRY, String.class).withColumnType(TEMPERATURE, double.class)
-                .withTableName(TableName.of("StationCountrySummary")).withGroupBy(STATION, COUNTRY)
-                .withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT).withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN);
+        TablePlanAggregate plan = new TablePlanAggregate()
+                .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
+                .withColumnType(COUNTRY, app.babylon.table.column.ColumnTypes.STRING)
+                .withColumnType(TEMPERATURE, double.class).withTableName(TableName.of("StationCountrySummary"))
+                .withGroupBy(STATION, COUNTRY).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
+                .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN);
 
         TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(';')
                 .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
                 .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, COUNTRY)
                 .withColumnRename(COLUMN_3, TEMPERATURE);
 
-        TableColumnar table = plan.execute(DataSources.fromString(
+        TableColumnar table = plan.execute(StreamSources.fromString(
                 "Amsterdam;NL;10.0\nAmsterdam;NL;14.0\nAmsterdam;US;30.0\nLondon;UK;7.0\n", "1brc.csv"), reader);
 
         assertEquals(3, table.getRowCount());
@@ -197,15 +202,16 @@ class TablePlanAggregateTest
                 """;
 
         TablePlanAggregate plan = new TablePlanAggregate().withTableName(TableName.of("StationCountrySummary"))
-                .withColumnType(STATION, String.class).withColumnType(COUNTRY, String.class)
+                .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
+                .withColumnType(COUNTRY, app.babylon.table.column.ColumnTypes.STRING)
                 .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class)
                 .withGroupBy(STATION, COUNTRY).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, SUM, Aggregate.SUM).withAggregate(TEMPERATURE, MIN, Aggregate.MIN)
                 .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN).withAggregate(TEMPERATURE, MAX, Aggregate.MAX)
                 .withAggregate(HUMIDITY, HUMIDITY_MAX, Aggregate.MAX);
 
-        DataSource streamingSource = DataSources.fromString(csv, "summary.csv");
-        DataSource inMemorySource = DataSources.fromString(csv, "summary.csv");
+        StreamSource streamingSource = StreamSources.fromString(csv, "summary.csv");
+        StreamSource inMemorySource = StreamSources.fromString(csv, "summary.csv");
 
         TabularRowReaderCsv reader = newReader(STATION, COUNTRY, TEMPERATURE, HUMIDITY);
         TableColumnar streamingResult = plan.execute(streamingSource, reader);
@@ -274,7 +280,7 @@ class TablePlanAggregateTest
                 London,7.0
                 """;
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withDataSource(DataSources.fromString(csv, "summary.csv"))
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "summary.csv"))
                 .withColumnType(TEMPERATURE, app.babylon.table.column.ColumnTypes.DOUBLE).build();
         TablePlanAggregate plan = new TablePlanAggregate().withTableName(TableName.of("StationSummary"))
                 .withGroupBy(STATION).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)

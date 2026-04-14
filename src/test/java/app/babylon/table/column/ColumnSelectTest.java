@@ -28,7 +28,7 @@ public class ColumnSelectTest
     public void select_onColumnObject_usesPredicateAndTreatsNullAsFalse()
     {
         final ColumnName OBJ = ColumnName.of("OBJ");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(OBJ, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(OBJ, app.babylon.table.column.ColumnTypes.STRING);
         builder.add("a");
         builder.addNull();
         builder.add("bb");

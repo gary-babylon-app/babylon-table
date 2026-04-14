@@ -112,6 +112,17 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
         return new ColumnCategoricalBuilderDictionary<T>(name, type);
     }
 
+    public static <T> Builder<T> builder(ColumnName name, Column.Type type)
+    {
+        Column.Type columnType = ArgumentCheck.nonNull(type);
+        if (columnType.isPrimitive())
+        {
+            throw new IllegalArgumentException(
+                    "Categorical builder requires non-primitive type: " + columnType.getValueClass().getName());
+        }
+        return new ColumnCategoricalBuilderDictionary<T>(name, columnType);
+    }
+
     @Override
     public T get(int i);
 

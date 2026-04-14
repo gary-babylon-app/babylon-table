@@ -13,7 +13,11 @@ package app.babylon.table.io;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.math.BigDecimal;
+
 import org.junit.jupiter.api.Test;
+
+import app.babylon.text.BigDecimals;
 
 class RowKeyTest
 {
@@ -90,6 +94,18 @@ class RowKeyTest
         }
 
         @Override
+        public boolean isEmpty()
+        {
+            return this.starts.length == 0;
+        }
+
+        @Override
+        public boolean isSet(int fieldIndex)
+        {
+            return this.lengths[fieldIndex] > 0;
+        }
+
+        @Override
         public char[] chars()
         {
             return this.chars;
@@ -111,6 +127,47 @@ class RowKeyTest
         public int length(int fieldIndex)
         {
             return this.lengths[fieldIndex];
+        }
+
+        public String getString(int fieldIndex)
+        {
+            return new String(this.chars, this.starts[fieldIndex], this.lengths[fieldIndex]);
+        }
+
+        public CharSequence getCharSequence(int fieldIndex)
+        {
+            return new RowBuffer.FieldCharSequence(this.chars, this.starts[fieldIndex], this.lengths[fieldIndex]);
+        }
+
+        public byte getByte(int fieldIndex)
+        {
+            return Byte.parseByte(getString(fieldIndex));
+        }
+
+        public int getInt(int fieldIndex)
+        {
+            return Integer.parseInt(getString(fieldIndex));
+        }
+
+        public long getLong(int fieldIndex)
+        {
+            return Long.parseLong(getString(fieldIndex));
+        }
+
+        public double getDouble(int fieldIndex)
+        {
+            return Double.parseDouble(getString(fieldIndex));
+        }
+
+        public BigDecimal getBigDecimal(int fieldIndex)
+        {
+            return BigDecimals.parse(getString(fieldIndex));
+        }
+
+        @Override
+        public RowKey keyOf(int[] positions)
+        {
+            return RowKey.copyOf(this, positions);
         }
 
         @Override

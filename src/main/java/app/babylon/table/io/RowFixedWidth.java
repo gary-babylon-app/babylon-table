@@ -67,6 +67,25 @@ final class RowFixedWidth implements Row
     }
 
     @Override
+    public boolean isEmpty()
+    {
+        for (int i = 0; i < this.widths.length; ++i)
+        {
+            if (isSet(i))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isSet(int fieldIndex)
+    {
+        return length(fieldIndex) > 0;
+    }
+
+    @Override
     public char[] chars()
     {
         return this.chars;
@@ -88,6 +107,12 @@ final class RowFixedWidth implements Row
     public int length(int fieldIndex)
     {
         return this.lengths[fieldIndex];
+    }
+
+    @Override
+    public RowKey keyOf(int[] positions)
+    {
+        return RowKey.copyOf(this, positions);
     }
 
     @Override

@@ -28,7 +28,8 @@ public class ColumnLocalDateViewTest
 
         final ColumnName TEST = ColumnName.of("TEST");
 
-        ColumnObject.Builder<LocalDate> original = ColumnObject.builder(TEST, LocalDate.class);
+        ColumnObject.Builder<LocalDate> original = ColumnObject.builder(TEST,
+                app.babylon.table.column.ColumnTypes.LOCALDATE);
         original.add(ColumnLocalDates.stringToDate("2024-08-20", DateFormat.YMD));
         original.add(ColumnLocalDates.stringToDate("2023/08/20", DateFormat.YMD));
         original.add(ColumnLocalDates.stringToDate("20230220", DateFormat.YMD));

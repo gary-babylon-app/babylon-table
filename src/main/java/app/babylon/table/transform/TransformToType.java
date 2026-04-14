@@ -161,7 +161,7 @@ public class TransformToType<T> extends TransformBase
     private <S> ColumnObject<T> rebuild(ColumnObject<S> input, ColumnName newColumnName, ColumnObject.Mode mode,
             Function<? super S, ? extends T> mapper)
     {
-        ColumnObject.Builder<T> transformed = ColumnObject.builder(newColumnName, valueClass, mode);
+        ColumnObject.Builder<T> transformed = ColumnObject.builder(newColumnName, Column.Type.of(valueClass), mode);
         for (int j = 0; j < input.size(); ++j)
         {
             if (input.isSet(j))

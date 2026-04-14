@@ -184,7 +184,7 @@ public class Columns
         {
             if (!valueClass.isPrimitive())
             {
-                return ColumnObject.builder(colName, valueClass);
+                return ColumnObject.builder(colName, type);
             }
             else if (int.class.equals(valueClass))
             {
@@ -197,6 +197,10 @@ public class Columns
             else if (long.class.equals(valueClass))
             {
                 return ColumnLong.builder(colName);
+            }
+            else if (byte.class.equals(valueClass))
+            {
+                return ColumnByte.builder(colName);
             }
         }
         throw new IllegalArgumentException("Unsupported value class " + valueClass);
@@ -211,7 +215,8 @@ public class Columns
 
         if (ColumnTypes.STRING.equals(type))
         {
-            return new CharSliceBuilderStringByDelegate(ColumnObject.builder(colName, String.class));
+            return new CharSliceBuilderStringByDelegate(
+                    ColumnObject.builder(colName, app.babylon.table.column.ColumnTypes.STRING));
         }
         if (ColumnTypes.DECIMAL.equals(type))
         {
@@ -239,7 +244,7 @@ public class Columns
 
     public static ColumnObject<BigDecimal> newDecimal(ColumnName colName, BigDecimal value, int size)
     {
-        return ColumnCategorical.constant(colName, value, size, BigDecimal.class);
+        return ColumnCategorical.constant(colName, value, size, app.babylon.table.column.ColumnTypes.DECIMAL);
     }
 
     public static ColumnInt newInt(ColumnName colName, int value, int size)
@@ -249,7 +254,7 @@ public class Columns
 
     public static ColumnObject<String> newString(ColumnName colName, String value, int size)
     {
-        return ColumnCategorical.constant(colName, value, size, String.class);
+        return ColumnCategorical.constant(colName, value, size, app.babylon.table.column.ColumnTypes.STRING);
     }
 
     public static <T> ColumnCategorical<T> newCategorical(ColumnName colName, T value, int size, Class<T> valueClass)
@@ -545,7 +550,8 @@ public class Columns
                 throw new IllegalStateException("Unsupported object column type for concat: " + type);
             }
             Class<Object> typedValueClass = (Class<Object>) valueClass;
-            ColumnObject.Builder<Object> newColumn = ColumnObject.builder(outputColumnName, typedValueClass);
+            ColumnObject.Builder<Object> newColumn = ColumnObject.builder(outputColumnName,
+                    Column.Type.of(typedValueClass));
 
             for (Column c : columns)
             {

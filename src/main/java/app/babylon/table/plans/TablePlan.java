@@ -10,12 +10,12 @@
 
 package app.babylon.table.plans;
 
-import app.babylon.io.DataSource;
+import app.babylon.io.StreamSource;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.io.RowSource;
-import app.babylon.table.io.RowSupplier;
+import app.babylon.table.io.RowCursor;
 import app.babylon.table.io.TabularRowReader;
 
 public interface TablePlan
@@ -28,7 +28,7 @@ public interface TablePlan
 
     TableDescription getTableDescription();
 
-    TableColumnar execute(DataSource dataSource, TabularRowReader reader);
+    TableColumnar execute(StreamSource streamSource, TabularRowReader reader);
 
     /**
      * Executes this plan against an already-open row supplier.
@@ -39,15 +39,15 @@ public interface TablePlan
      * CSV example:
      *
      * <pre>{@code
-     * DataSource dataSource = ...;
+     * StreamSource streamSource = ...;
      * TablePlanRead plan = new TablePlanRead();
      *
-     * try (InputStream inputStream = dataSource.openStream();
-     *         RowSupplier rowSupplier = RowSupplierCsv.builder()
+     * try (InputStream inputStream = streamSource.openStream();
+     *         RowCursor rowCursor = RowCursorCsv.builder()
      *                 .withSeparator(';')
      *                 .build(inputStream))
      * {
-     *     TableColumnar table = plan.execute(rowSupplier);
+     *     TableColumnar table = plan.execute(rowCursor);
      * }
      * }</pre>
      *
@@ -58,17 +58,17 @@ public interface TablePlan
      * TablePlanRead plan = new TablePlanRead();
      *
      * try (ResultSet resultSet = preparedStatement.executeQuery();
-     *         RowSupplier rowSupplier = new RowSupplierResultSet(resultSet))
+     *         RowCursor rowCursor = new RowCursorResultSet(resultSet))
      * {
-     *     TableColumnar table = plan.execute(rowSupplier);
+     *     TableColumnar table = plan.execute(rowCursor);
      * }
      * }</pre>
      *
-     * @param rowSupplier
+     * @param rowCursor
      *            open row supplier to consume
      * @return the resulting table
      */
-    TableColumnar execute(RowSupplier rowSupplier);
+    TableColumnar execute(RowCursor rowCursor);
 
     /**
      * Executes this plan against a configured row source.
@@ -79,11 +79,11 @@ public interface TablePlan
      * CSV example:
      *
      * <pre>{@code
-     * DataSource dataSource = ...;
+     * StreamSource streamSource = ...;
      * TablePlanRead plan = new TablePlanRead();
      *
      * TableColumnar table = plan.execute(RowSourceCsv.builder()
-     *         .withDataSource(dataSource)
+     *         .withStreamSource(streamSource)
      *         .withSeparator(';')
      *         .build());
      * }</pre>

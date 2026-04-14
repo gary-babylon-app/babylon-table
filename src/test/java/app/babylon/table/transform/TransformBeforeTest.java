@@ -20,7 +20,7 @@ public class TransformBeforeTest
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName BEFORE = ColumnName.of("Before");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ABC-123");
         strings.add("NoDash");
         strings.addNull();

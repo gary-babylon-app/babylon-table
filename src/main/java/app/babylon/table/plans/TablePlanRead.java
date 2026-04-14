@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import app.babylon.io.DataSource;
+import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
@@ -29,10 +29,22 @@ import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.io.RowConsumerCreateTable;
 import app.babylon.table.io.RowSource;
-import app.babylon.table.io.RowSupplier;
+import app.babylon.table.io.RowCursor;
 import app.babylon.table.io.TabularRowReader;
 import app.babylon.table.transform.Transform;
 
+/**
+ * Reads rows into a {@link TableColumnar}.
+ * <p>
+ * Example:
+ *
+ * <pre>{@code
+ * StreamSource streamSource = StreamSources.fromString("Code,Amount\nabc,10.5\n", "values.csv");
+ * RowSource rowSource = RowSourceCsv.builder().withStreamSource(streamSource).withSeparator(',').build();
+ *
+ * TableColumnar table = new TablePlanRead().withTableName(TableName.of("Trades")).execute(rowSource);
+ * }</pre>
+ */
 public class TablePlanRead extends TablePlanCommon<TablePlanRead>
 {
     private final List<Transform> transforms;
@@ -129,31 +141,31 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
     }
 
     @Override
-    public TableColumnar execute(DataSource dataSource, TabularRowReader reader)
+    public TableColumnar execute(StreamSource streamSource, TabularRowReader reader)
     {
-        DataSource checkedDataSource = ArgumentCheck.nonNull(dataSource);
+        StreamSource checkedStreamSource = ArgumentCheck.nonNull(streamSource);
         TabularRowReader checkedReader = ArgumentCheck.nonNull(reader);
         RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(getTableName(), getTableDescription(),
-                this.dataSourceNameColumnName, checkedDataSource.getName(), this.columnTypes);
-        TabularRowReader.Result readResult = checkedReader.read(checkedDataSource, rowConsumer);
+                this.dataSourceNameColumnName, checkedStreamSource.getName(), this.columnTypes);
+        TabularRowReader.Result readResult = checkedReader.read(checkedStreamSource, rowConsumer);
         ensureSuccess(readResult);
         TableColumnar parsed = rowConsumer.build();
         return apply(parsed);
     }
 
     @Override
-    public TableColumnar execute(RowSupplier rowSupplier)
+    public TableColumnar execute(RowCursor rowCursor)
     {
-        return execute(rowSupplier, null);
+        return execute(rowCursor, null);
     }
 
     @Override
     public TableColumnar execute(RowSource rowSource)
     {
         RowSource checkedRowSource = ArgumentCheck.nonNull(rowSource);
-        try (RowSupplier rowSupplier = checkedRowSource.openRows())
+        try (RowCursor rowCursor = checkedRowSource.openRows())
         {
-            return execute(rowSupplier, checkedRowSource.getName());
+            return execute(rowCursor, checkedRowSource.getName());
         }
         catch (RuntimeException e)
         {
@@ -193,25 +205,29 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         Map<ColumnName, Column.Type> effective = new LinkedHashMap<>();
         for (ColumnDefinition columnDefinition : columnDefinitions)
         {
-            columnDefinition.type().ifPresent(type -> effective.put(columnDefinition.name(), type));
+            Column.Type type = columnDefinition.type();
+            if (type != null)
+            {
+                effective.put(columnDefinition.name(), type);
+            }
         }
         effective.putAll(this.columnTypes);
         return effective;
     }
 
-    private TableColumnar execute(RowSupplier rowSupplier, String sourceName)
+    private TableColumnar execute(RowCursor rowCursor, String sourceName)
     {
-        RowSupplier checkedRowSupplier = ArgumentCheck.nonNull(rowSupplier);
-        ColumnDefinition[] columnDefinitions = checkedRowSupplier.columns();
+        RowCursor checkedRowCursor = ArgumentCheck.nonNull(rowCursor);
+        ColumnDefinition[] columnDefinitions = checkedRowCursor.columns();
         ColumnName[] columnNames = toColumnNames(columnDefinitions);
         Map<ColumnName, Column.Type> effectiveColumnTypes = effectiveColumnTypes(columnDefinitions);
 
         RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(getTableName(), getTableDescription(),
                 this.dataSourceNameColumnName, sourceName, effectiveColumnTypes);
         rowConsumer.start(columnNames);
-        while (checkedRowSupplier.next())
+        while (checkedRowCursor.next())
         {
-            rowConsumer.accept(checkedRowSupplier.current());
+            rowConsumer.accept(checkedRowCursor.current());
         }
         TableColumnar parsed = rowConsumer.build();
         return apply(parsed);

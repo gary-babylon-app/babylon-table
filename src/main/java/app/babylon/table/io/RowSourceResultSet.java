@@ -42,11 +42,11 @@ public final class RowSourceResultSet implements RowSource
     }
 
     @Override
-    public RowSupplier openRows()
+    public RowCursor openRows()
     {
         try
         {
-            return RowSupplierResultSet.open(this.preparedStatement);
+            return RowCursorResultSet.open(this.preparedStatement);
         }
         catch (SQLException e)
         {

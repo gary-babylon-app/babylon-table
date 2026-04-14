@@ -19,8 +19,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-import app.babylon.io.DataSource;
-import app.babylon.io.DataSourceProbe;
+import app.babylon.io.StreamSource;
+import app.babylon.io.StreamSourceProbe;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 import app.babylon.table.column.ColumnName;
@@ -111,11 +111,11 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
     }
 
     @Override
-    public TabularRowReader.Result read(DataSource dataSource, RowConsumer rowConsumer)
+    public TabularRowReader.Result read(StreamSource streamSource, RowConsumer rowConsumer)
     {
-        DataSource checkedDataSource = ArgumentCheck.nonNull(dataSource);
+        StreamSource checkedStreamSource = ArgumentCheck.nonNull(streamSource);
         RowConsumer checkedRowConsumer = ArgumentCheck.nonNull(rowConsumer);
-        try (LineReader lineReader = createLineReader(checkedDataSource))
+        try (LineReader lineReader = createLineReader(checkedStreamSource))
         {
             RowStreamMarkable parsedRowStream = new RowStreamBuffered(lineReader);
             HeaderDetection headerDetection = getHeaderStrategy().detect(parsedRowStream, getSelectedColumns(null));
@@ -154,18 +154,18 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         catch (TableException e)
         {
             return TabularRowReader.Result
-                    .exception("Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", e);
+                    .exception("Failed to read CSV tabular data from '" + checkedStreamSource.getName() + "'.", e);
         }
         catch (IOException e)
         {
             return TabularRowReader.Result.exception(
-                    "Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", new TableException(
-                            "Failed to read table from data source '" + checkedDataSource.getName() + "'.", e));
+                    "Failed to read CSV tabular data from '" + checkedStreamSource.getName() + "'.", new TableException(
+                            "Failed to read table from stream source '" + checkedStreamSource.getName() + "'.", e));
         }
         catch (RuntimeException e)
         {
             return TabularRowReader.Result
-                    .exception("Failed to read CSV tabular data from '" + checkedDataSource.getName() + "'.", e);
+                    .exception("Failed to read CSV tabular data from '" + checkedStreamSource.getName() + "'.", e);
         }
     }
 
@@ -181,10 +181,10 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         return this;
     }
 
-    private LineReader createLineReader(DataSource dataSource) throws IOException
+    private LineReader createLineReader(StreamSource streamSource) throws IOException
     {
-        BufferedInputStream bufferedStream = toBufferedStream(dataSource.openStream());
-        DataSourceProbe probe = DataSourceProbe.of(bufferedStream, dataSource.getName());
+        BufferedInputStream bufferedStream = toBufferedStream(streamSource.openStream());
+        StreamSourceProbe probe = StreamSourceProbe.of(bufferedStream, streamSource.getName());
         if (probe.isXlsx() || probe.isXls() || probe.isPdf() || probe.isZip())
         {
             throw new IllegalArgumentException();
@@ -212,7 +212,7 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
     {
         return this.stripping
                 ? new RowProjectedStripped(headerDetection.getSelectedPositions())
-                : new ProjectedRow(headerDetection.getSelectedPositions());
+                : new RowProjectedDefault(headerDetection.getSelectedPositions());
     }
 
     private ColumnName[] createProjectedColumnNames(HeaderDetection headerDetection)
@@ -242,7 +242,7 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         return this.fixedWidths != null && this.fixedWidths.length > 0;
     }
 
-    private Charset resolveCharset(DataSourceProbe probe)
+    private Charset resolveCharset(StreamSourceProbe probe)
     {
         if (probe == null)
         {
@@ -256,7 +256,7 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         return this.charset == null ? java.nio.charset.StandardCharsets.UTF_8 : this.charset;
     }
 
-    private int resolveBomLength(DataSourceProbe probe)
+    private int resolveBomLength(StreamSourceProbe probe)
     {
         if (probe == null)
         {

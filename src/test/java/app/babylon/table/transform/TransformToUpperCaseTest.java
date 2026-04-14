@@ -20,7 +20,7 @@ public class TransformToUpperCaseTest
     {
         final ColumnName NAME = ColumnName.of("Name");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("Alice");
         strings.add("Bob");
         strings.add("");
@@ -43,7 +43,8 @@ public class TransformToUpperCaseTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName UPPER = ColumnName.of("Upper");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME,
+                app.babylon.table.column.ColumnTypes.STRING);
         strings.add("Alice");
         strings.add("Alice");
         strings.add("Bob");

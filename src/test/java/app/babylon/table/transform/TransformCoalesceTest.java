@@ -25,19 +25,22 @@ public class TransformCoalesceTest
         final ColumnName SECOND = ColumnName.of("Second");
         final ColumnName THIRD = ColumnName.of("Third");
 
-        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST, String.class);
+        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST,
+                app.babylon.table.column.ColumnTypes.STRING);
         firstBuilder.addNull();
         firstBuilder.add("a");
         firstBuilder.addNull();
         firstBuilder.addNull();
 
-        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(SECOND, String.class);
+        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(SECOND,
+                app.babylon.table.column.ColumnTypes.STRING);
         secondBuilder.add("b");
         secondBuilder.add("bb");
         secondBuilder.addNull();
         secondBuilder.addNull();
 
-        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(THIRD, String.class);
+        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(THIRD,
+                app.babylon.table.column.ColumnTypes.STRING);
         thirdBuilder.add("c");
         thirdBuilder.add("cc");
         thirdBuilder.add("d");
@@ -64,15 +67,18 @@ public class TransformCoalesceTest
         final ColumnName SECOND = ColumnName.of("Second");
         final ColumnName THIRD = ColumnName.of("Third");
 
-        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST, String.class);
+        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST,
+                app.babylon.table.column.ColumnTypes.STRING);
         firstBuilder.addNull();
         firstBuilder.add("x");
 
-        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(SECOND, String.class);
+        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(SECOND,
+                app.babylon.table.column.ColumnTypes.STRING);
         secondBuilder.add("y");
         secondBuilder.addNull();
 
-        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(THIRD, String.class);
+        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(THIRD,
+                app.babylon.table.column.ColumnTypes.STRING);
         thirdBuilder.add("z");
         thirdBuilder.add("z");
 
@@ -105,17 +111,20 @@ public class TransformCoalesceTest
         final ColumnName SECOND = ColumnName.of("Second");
         final ColumnName THIRD = ColumnName.of("Third");
 
-        ColumnObject.Builder<BigDecimal> firstBuilder = ColumnObject.builder(FIRST, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> firstBuilder = ColumnObject.builder(FIRST,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         firstBuilder.addNull();
         firstBuilder.add(new BigDecimal("1.25"));
         firstBuilder.addNull();
 
-        ColumnObject.Builder<BigDecimal> secondBuilder = ColumnObject.builder(SECOND, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> secondBuilder = ColumnObject.builder(SECOND,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         secondBuilder.add(new BigDecimal("2.50"));
         secondBuilder.addNull();
         secondBuilder.addNull();
 
-        ColumnObject.Builder<BigDecimal> thirdBuilder = ColumnObject.builder(THIRD, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> thirdBuilder = ColumnObject.builder(THIRD,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         thirdBuilder.add(new BigDecimal("3.75"));
         thirdBuilder.add(new BigDecimal("4.00"));
         thirdBuilder.add(new BigDecimal("5.50"));

@@ -24,7 +24,8 @@ class TransformToDoubleTest
     void applyShouldConvertPlainStringColumnAndLeaveUnparseableValuesUnset()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("1.25");
         builder.add("USD 12.50");
         builder.add("1 2 3");
@@ -48,7 +49,8 @@ class TransformToDoubleTest
     void applyShouldConvertCategoricalStringColumnToPrimitiveDoubleColumn()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("10.5");
         builder.add("bad");
         builder.add("10.5");
@@ -72,11 +74,13 @@ class TransformToDoubleTest
         final ColumnName OTHER = ColumnName.of("OTHER");
         final ColumnName EXISTING = ColumnName.of("EXISTING");
         final ColumnName PARSED = ColumnName.of("PARSED");
-        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT, String.class);
+        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
         amountBuilder.add("1.25");
         amountBuilder.add("USD 12.50");
 
-        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER, String.class);
+        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER,
+                app.babylon.table.column.ColumnTypes.STRING);
         otherBuilder.add("x");
         otherBuilder.add("y");
 
@@ -130,7 +134,8 @@ class TransformToDoubleTest
     void applyShouldAcceptScientificNotation()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("1e6");
         builder.add("1E-6");
         ColumnObject<String> source = builder.build();

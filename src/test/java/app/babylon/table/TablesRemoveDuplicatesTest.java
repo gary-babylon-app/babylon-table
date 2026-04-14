@@ -30,12 +30,12 @@ class TablesRemoveDuplicatesTest
         final ColumnName ID = ColumnName.of("id");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<String> ids = ColumnObject.builder(ID, String.class);
+        ColumnObject.Builder<String> ids = ColumnObject.builder(ID, app.babylon.table.column.ColumnTypes.STRING);
         ids.add("A");
         ids.add("B");
         ids.add("B");
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Bob duplicate");
@@ -62,7 +62,7 @@ class TablesRemoveDuplicatesTest
         ids.add(2);
         ids.add(2);
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Bob duplicate");
@@ -89,7 +89,7 @@ class TablesRemoveDuplicatesTest
         ids.add(200L);
         ids.add(200L);
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Bob duplicate");
@@ -111,12 +111,13 @@ class TablesRemoveDuplicatesTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         amounts.add(new BigDecimal("1.0"));
         amounts.add(new BigDecimal("1.00"));
         amounts.add(new BigDecimal("2.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Alice");
         names.add("Alice duplicate");
         names.add("Bob");
@@ -139,12 +140,13 @@ class TablesRemoveDuplicatesTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         amounts.add(new BigDecimal("0.0"));
         amounts.add(new BigDecimal("0.00"));
         amounts.add(new BigDecimal("1.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Zero");
         names.add("Zero duplicate");
         names.add("One");
@@ -167,12 +169,13 @@ class TablesRemoveDuplicatesTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         amounts.add(new BigDecimal("1000.0"));
         amounts.add(new BigDecimal("1000"));
         amounts.add(new BigDecimal("2000"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Thousand");
         names.add("Thousand duplicate");
         names.add("Two thousand");
@@ -195,12 +198,13 @@ class TablesRemoveDuplicatesTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         amounts.addNull();
         amounts.addNull();
         amounts.add(new BigDecimal("1.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Null");
         names.add("Null duplicate");
         names.add("One");
@@ -222,11 +226,12 @@ class TablesRemoveDuplicatesTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, BigDecimal.class);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.DECIMAL);
         amounts.addNull();
         amounts.add(new BigDecimal("0.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         names.add("Null");
         names.add("Zero");
 

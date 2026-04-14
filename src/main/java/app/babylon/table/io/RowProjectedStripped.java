@@ -65,6 +65,25 @@ final class RowProjectedStripped implements RowProjected
     }
 
     @Override
+    public boolean isEmpty()
+    {
+        for (int i = 0; i < fieldCount(); ++i)
+        {
+            if (isSet(i))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isSet(int fieldIndex)
+    {
+        return this.lengths[fieldIndex] > 0;
+    }
+
+    @Override
     public char[] chars()
     {
         return source().chars();
@@ -86,6 +105,12 @@ final class RowProjectedStripped implements RowProjected
     public int length(int fieldIndex)
     {
         return this.lengths[fieldIndex];
+    }
+
+    @Override
+    public RowKey keyOf(int[] positions)
+    {
+        return RowKey.copyOf(this, positions);
     }
 
     @Override

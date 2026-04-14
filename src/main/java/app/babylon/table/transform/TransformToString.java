@@ -54,7 +54,8 @@ public class TransformToString extends TransformBase
             {
                 Column c = validColumns[i];
                 ColumnName newColumnName = newColumnNames.getOrDefault(c.getName(), c.getName());
-                ColumnObject.Builder<String> cc = ColumnObject.builder(newColumnName, String.class);
+                ColumnObject.Builder<String> cc = ColumnObject.builder(newColumnName,
+                        app.babylon.table.column.ColumnTypes.STRING);
                 for (int j = 0; j < c.size(); ++j)
                 {
                     cc.add(c.toString(j));

@@ -47,7 +47,8 @@ public class TransformSubstring extends TransformBase
         {
             return;
         }
-        ColumnObject.Builder<String> newColumnBuilder = ColumnObject.builder(this.newColumnName, String.class);
+        ColumnObject.Builder<String> newColumnBuilder = ColumnObject.builder(this.newColumnName,
+                app.babylon.table.column.ColumnTypes.STRING);
 
         for (int i = 0; i < column.size(); ++i)
         {

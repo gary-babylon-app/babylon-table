@@ -19,7 +19,7 @@ import app.babylon.table.column.ColumnDefinition;
  * underlying resource and release it on {@link #close()}, while others adapt
  * caller-owned resources and treat {@code close()} as a no-op.
  */
-public interface RowSupplier extends AutoCloseable
+public interface RowCursor extends AutoCloseable
 {
     ColumnDefinition[] columns();
 

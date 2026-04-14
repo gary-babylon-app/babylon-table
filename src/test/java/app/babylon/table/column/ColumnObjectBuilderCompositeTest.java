@@ -21,7 +21,7 @@ class ColumnObjectBuilderCompositeTest
     void builderShouldChooseArrayForMostlyUniqueObjectValues()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, app.babylon.table.column.ColumnTypes.STRING);
         for (int i = 0; i < 230; ++i)
         {
             builder.add("value-" + i);
@@ -41,7 +41,7 @@ class ColumnObjectBuilderCompositeTest
     void builderShouldChooseCategoricalForRepeatedObjectValues()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(S, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(S, app.babylon.table.column.ColumnTypes.STRING);
         for (int i = 0; i < 229; ++i)
         {
             builder.add("value-" + i);

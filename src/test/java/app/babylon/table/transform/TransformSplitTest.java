@@ -22,7 +22,7 @@ public class TransformSplitTest
         final ColumnName MIDDLE = ColumnName.of("Middle");
         final ColumnName RIGHT = ColumnName.of("Right");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(PAIR, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(PAIR, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("A|B|C");
         strings.add("D||F");
         strings.add("G|H");

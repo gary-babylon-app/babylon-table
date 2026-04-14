@@ -57,7 +57,7 @@ public class TransformSplit extends TransformBase
         ColumnObject.Builder<String>[] newColumns = new ColumnObject.Builder[splitColumnNames.length];
         for (int i = 0; i < splitColumnNames.length; ++i)
         {
-            newColumns[i] = ColumnObject.builder(splitColumnNames[i], String.class);
+            newColumns[i] = ColumnObject.builder(splitColumnNames[i], app.babylon.table.column.ColumnTypes.STRING);
         }
         for (int i = 0; i < toSplit.size(); ++i)
         {

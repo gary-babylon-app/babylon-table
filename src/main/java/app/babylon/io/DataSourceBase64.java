@@ -13,7 +13,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Base64;
 
-class DataSourceBase64 implements DataSource
+class DataSourceBase64 implements StreamSource
 {
     private final String data;
     private final String resourceName;

@@ -91,7 +91,8 @@ public class TransformSubstitute extends TransformBase
             return;
         }
         ColumnObject<String> stringColumn = Columns.asStringColumn(column);
-        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName, String.class);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName,
+                app.babylon.table.column.ColumnTypes.STRING);
         for (int i = 0; i < stringColumn.size(); ++i)
         {
             String s = stringColumn.get(i);

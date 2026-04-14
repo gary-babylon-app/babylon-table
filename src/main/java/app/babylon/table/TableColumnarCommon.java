@@ -10,14 +10,6 @@
 
 package app.babylon.table;
 
-import app.babylon.lang.Is;
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnCategorical;
-import app.babylon.table.column.ColumnDouble;
-import app.babylon.table.column.ColumnInt;
-import app.babylon.table.column.ColumnLong;
-import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,6 +18,16 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+
+import app.babylon.lang.Is;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 abstract class TableColumnarCommon implements TableColumnar
 {
@@ -153,20 +155,21 @@ abstract class TableColumnarCommon implements TableColumnar
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> ColumnObject<T> getTyped(ColumnName x, Class<T> clazz)
+    public <T> ColumnObject<T> getObject(ColumnName x, Column.Type type)
     {
-        if (clazz == null)
+        if (type == null)
         {
-            throw new IllegalArgumentException("Column value class cannot be null.");
+            throw new IllegalArgumentException("Column type cannot be null.");
         }
+        Class<?> valueClass = type.getValueClass();
         Column column = get(x);
-        if (column != null && column instanceof ColumnObject<?> && clazz.equals(column.getType().getValueClass()))
+        if (column != null && column instanceof ColumnObject<?> && valueClass.equals(column.getType().getValueClass()))
         {
             return (ColumnObject<T>) column;
         }
         if (column != null)
         {
-            throw new RuntimeException(x + " not " + clazz.getSimpleName() + " column but " + column.getType());
+            throw new RuntimeException(x + " not " + type + " column but " + column.getType());
         }
         return null;
     }
@@ -174,13 +177,13 @@ abstract class TableColumnarCommon implements TableColumnar
     @Override
     public ColumnObject<String> getString(ColumnName x)
     {
-        return getTyped(x, String.class);
+        return getObject(x, ColumnTypes.STRING);
     }
 
     @Override
     public ColumnObject<BigDecimal> getDecimal(ColumnName x)
     {
-        return getTyped(x, BigDecimal.class);
+        return getObject(x, ColumnTypes.DECIMAL);
     }
 
     @SuppressWarnings("unchecked")
@@ -218,21 +221,22 @@ abstract class TableColumnarCommon implements TableColumnar
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> ColumnCategorical<T> getCategorical(ColumnName x, Class<T> clazz)
+    public <T> ColumnCategorical<T> getCategorical(ColumnName x, Column.Type type)
     {
-        if (clazz == null)
+        if (type == null)
         {
-            throw new IllegalArgumentException("Categorical value class cannot be null.");
+            throw new IllegalArgumentException("Categorical type cannot be null.");
         }
+        Class<?> valueClass = type.getValueClass();
         Column column = get(x);
-        if (column != null && column instanceof ColumnCategorical<?> && clazz.equals(column.getType().getValueClass()))
+        if (column != null && column instanceof ColumnCategorical<?>
+                && valueClass.equals(column.getType().getValueClass()))
         {
             return (ColumnCategorical<T>) column;
         }
         if (column != null)
         {
-            throw new RuntimeException(
-                    x + " not " + clazz.getSimpleName() + " categorical column but " + column.getType());
+            throw new RuntimeException(x + " not " + type + " categorical column but " + column.getType());
         }
         return null;
     }

@@ -20,7 +20,8 @@ public class TransformCopyTest
         final ColumnName SYMBOL = ColumnName.of("Symbol");
         final ColumnName SYMBOL_COPY = ColumnName.of("SymbolCopy");
 
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(SYMBOL, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(SYMBOL,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("VEVE");
         builder.add("SGLN");
         builder.add("VEVE");

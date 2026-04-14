@@ -20,7 +20,7 @@ public class TransformCleanWhitespaceTest
     {
         final ColumnName NAME = ColumnName.of("Name");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("  Alice   Bob  ");
         strings.add("\tCarol\nDave\r\n");
         strings.add("   ");
@@ -43,7 +43,8 @@ public class TransformCleanWhitespaceTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName CLEANED = ColumnName.of("Cleaned");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME, String.class);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME,
+                app.babylon.table.column.ColumnTypes.STRING);
         strings.add("  Alice   Bob  ");
         strings.add("  Alice   Bob  ");
         strings.add(" Carol ");

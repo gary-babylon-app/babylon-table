@@ -14,9 +14,9 @@ import java.io.InputStream;
 
 /**
  * Supplies a named input stream for reading tabular data from an external
- * source.
+ * stream source.
  */
-public interface DataSource
+public interface StreamSource
 {
     String getName();
 

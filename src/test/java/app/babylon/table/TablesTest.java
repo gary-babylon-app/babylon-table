@@ -23,11 +23,11 @@ public class TablesTest
     {
         final ColumnName A_2 = ColumnName.of("A");
         final ColumnName EMPTY = ColumnName.of("EMPTY");
-        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, String.class);
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
         a.add("a0");
         a.add("a1");
 
-        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, String.class);
+        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, app.babylon.table.column.ColumnTypes.STRING);
         empty.addNull();
         empty.addNull();
 

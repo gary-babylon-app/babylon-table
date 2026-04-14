@@ -33,11 +33,7 @@ public final class RowFilters
         return availableColumns -> {
             BoundPredicate boundPredicate = new BoundPredicate(positionOf(availableColumns, requiredColumn),
                     fieldValue -> requiredPattern.matcher(fieldValue).find());
-            FieldCharSequence fieldValue = new FieldCharSequence();
-            return row -> {
-                fieldValue.with(row, boundPredicate.position());
-                return boundPredicate.predicate().test(fieldValue);
-            };
+            return row -> boundPredicate.predicate().test(fieldValue(row, boundPredicate.position()));
         };
     }
 
@@ -86,12 +82,10 @@ public final class RowFilters
         }
         return availableColumns -> {
             BoundPredicate[] boundPredicates = bindPredicates(availableColumns, predicates);
-            FieldCharSequence fieldValue = new FieldCharSequence();
             return row -> {
                 for (BoundPredicate boundPredicate : boundPredicates)
                 {
-                    fieldValue.with(row, boundPredicate.position());
-                    if (!boundPredicate.predicate().test(fieldValue))
+                    if (!boundPredicate.predicate().test(fieldValue(row, boundPredicate.position())))
                     {
                         return false;
                     }
@@ -110,12 +104,10 @@ public final class RowFilters
         }
         return availableColumns -> {
             BoundPredicate[] boundPredicates = bindPredicates(availableColumns, predicates);
-            FieldCharSequence fieldValue = new FieldCharSequence();
             return row -> {
                 for (BoundPredicate boundPredicate : boundPredicates)
                 {
-                    fieldValue.with(row, boundPredicate.position());
-                    if (boundPredicate.predicate().test(fieldValue))
+                    if (boundPredicate.predicate().test(fieldValue(row, boundPredicate.position())))
                     {
                         return false;
                     }
@@ -142,51 +134,9 @@ public final class RowFilters
     {
     }
 
-    private static final class FieldCharSequence implements CharSequence
+    private static CharSequence fieldValue(Row row, int fieldIndex)
     {
-        private char[] chars;
-        private int start;
-        private int length;
-
-        private FieldCharSequence with(Row row, int fieldIndex)
-        {
-            this.chars = row.chars();
-            this.start = row.start(fieldIndex);
-            this.length = row.length(fieldIndex);
-            return this;
-        }
-
-        @Override
-        public int length()
-        {
-            return this.length;
-        }
-
-        @Override
-        public char charAt(int index)
-        {
-            if (index < 0 || index >= this.length)
-            {
-                throw new IndexOutOfBoundsException();
-            }
-            return this.chars[this.start + index];
-        }
-
-        @Override
-        public CharSequence subSequence(int start, int end)
-        {
-            if (start < 0 || end < start || end > this.length)
-            {
-                throw new IndexOutOfBoundsException();
-            }
-            return new String(this.chars, this.start + start, end - start);
-        }
-
-        @Override
-        public String toString()
-        {
-            return new String(this.chars, this.start, this.length);
-        }
+        return new RowBuffer.FieldCharSequence(row.chars(), row.start(fieldIndex), row.length(fieldIndex));
     }
 
     private static int positionOf(ColumnName[] availableColumns, ColumnName requiredColumn)

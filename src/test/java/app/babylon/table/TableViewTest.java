@@ -25,12 +25,12 @@ public class TableViewTest
     {
         final ColumnName A_2 = ColumnName.of("A");
         final ColumnName B_2 = ColumnName.of("B");
-        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, String.class);
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
         a.add("a0");
         a.add("a1");
         a.add("a2");
 
-        ColumnObject.Builder<String> b = ColumnObject.builder(B_2, String.class);
+        ColumnObject.Builder<String> b = ColumnObject.builder(B_2, app.babylon.table.column.ColumnTypes.STRING);
         b.add("b0");
         b.add("b1");
         b.add("b2");
@@ -96,11 +96,11 @@ public class TableViewTest
     {
         final ColumnName A_2 = ColumnName.of("A");
         final ColumnName EMPTY = ColumnName.of("EMPTY");
-        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, String.class);
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
         a.add("a0");
         a.add("a1");
 
-        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, String.class);
+        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, app.babylon.table.column.ColumnTypes.STRING);
         empty.addNull();
         empty.addNull();
 
@@ -171,10 +171,11 @@ public class TableViewTest
         rowIndexBuilder.add(2).add(1);
         TableColumnar view = Tables.newTableView(TableName.of("v"), table, rowIndexBuilder.build());
 
-        ColumnObject.Builder<String> replaceA = ColumnObject.builder(A_2, String.class);
+        ColumnObject.Builder<String> replaceA = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
         replaceA.add("ra0").add("ra1");
 
-        ColumnObject.Builder<String> missingColumn = ColumnObject.builder(C_2, String.class);
+        ColumnObject.Builder<String> missingColumn = ColumnObject.builder(C_2,
+                app.babylon.table.column.ColumnTypes.STRING);
         missingColumn.add("c0").add("c1");
 
         assertThrows(RuntimeException.class, () -> view.replace(replaceA.build(), missingColumn.build(), null));

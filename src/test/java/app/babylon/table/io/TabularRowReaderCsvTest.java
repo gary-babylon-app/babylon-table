@@ -9,8 +9,8 @@ import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.DataSource;
-import app.babylon.io.DataSources;
+import app.babylon.io.StreamSource;
+import app.babylon.io.StreamSources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.column.ColumnName;
 
@@ -384,10 +384,10 @@ class TabularRowReaderCsvTest
     private static TableRead readTable(TabularRowReaderCsv reader, String csv, String resourceName,
             ColumnName resourceColumnName)
     {
-        DataSource dataSource = DataSources.fromString(csv, resourceName);
+        StreamSource streamSource = StreamSources.fromString(csv, resourceName);
         RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(null, null, resourceColumnName,
-                dataSource.getName(), java.util.Collections.emptyMap());
-        TabularRowReader.Result result = reader.read(dataSource, rowConsumer);
+                streamSource.getName(), java.util.Collections.emptyMap());
+        TabularRowReader.Result result = reader.read(streamSource, rowConsumer);
         TableColumnar table = result.isSuccessLike() ? rowConsumer.build() : null;
         return new TableRead(result, table);
     }

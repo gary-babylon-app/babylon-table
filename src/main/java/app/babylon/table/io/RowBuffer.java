@@ -15,6 +15,52 @@ import java.io.Reader;
 
 public final class RowBuffer implements Row
 {
+    static final class FieldCharSequence implements CharSequence
+    {
+        private final char[] chars;
+        private final int start;
+        private final int length;
+
+        FieldCharSequence(char[] chars, int start, int length)
+        {
+            this.chars = chars;
+            this.start = start;
+            this.length = length;
+        }
+
+        @Override
+        public int length()
+        {
+            return this.length;
+        }
+
+        @Override
+        public char charAt(int index)
+        {
+            if (index < 0 || index >= this.length)
+            {
+                throw new IndexOutOfBoundsException();
+            }
+            return this.chars[this.start + index];
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end)
+        {
+            if (start < 0 || end < start || end > this.length)
+            {
+                throw new IndexOutOfBoundsException();
+            }
+            return new FieldCharSequence(this.chars, this.start + start, end - start);
+        }
+
+        @Override
+        public String toString()
+        {
+            return new String(this.chars, this.start, this.length);
+        }
+    }
+
     private static final int DEFAULT_CHAR_CAPACITY = 256;
     private static final int DEFAULT_FIELD_CAPACITY = 16;
 
@@ -135,9 +181,39 @@ public final class RowBuffer implements Row
         return this.fieldCount;
     }
 
-    String getString(int fieldIndex)
+    @Override
+    public boolean isEmpty()
     {
-        return new String(this.chars, start(fieldIndex), length(fieldIndex));
+        for (int i = 0; i < this.fieldCount; ++i)
+        {
+            if (isSet(i))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isSet(int fieldIndex)
+    {
+        return length(fieldIndex) > 0;
+    }
+
+    public String getString(int fieldIndex)
+    {
+        int length = length(fieldIndex);
+        if (length == 0)
+        {
+            return null;
+        }
+        return new String(this.chars, start(fieldIndex), length);
+    }
+
+    @Override
+    public RowKey keyOf(int[] positions)
+    {
+        return RowKey.copyOf(this, positions);
     }
 
     String[] toStringArray()

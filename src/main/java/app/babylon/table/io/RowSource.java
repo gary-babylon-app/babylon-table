@@ -11,11 +11,11 @@
 package app.babylon.table.io;
 
 /**
- * Opens a live {@link RowSupplier} from a configured tabular source.
+ * Opens a live {@link RowCursor} from a configured tabular source.
  */
 public interface RowSource
 {
     String getName();
 
-    RowSupplier openRows();
+    RowCursor openRows();
 }

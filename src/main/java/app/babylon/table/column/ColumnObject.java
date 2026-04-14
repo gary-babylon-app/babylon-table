@@ -64,13 +64,13 @@ public interface ColumnObject<T> extends Column
      *            the value type
      * @param name
      *            the column name
-     * @param clazz
-     *            the runtime value class
+     * @param type
+     *            the column type
      * @return a builder for the supplied object type
      */
-    public static <T> Builder<T> builder(ColumnName name, Class<T> clazz)
+    public static <T> Builder<T> builder(ColumnName name, Column.Type type)
     {
-        return builder(name, clazz, Mode.AUTO);
+        return builder(name, type, Mode.AUTO);
     }
 
     /**
@@ -80,13 +80,26 @@ public interface ColumnObject<T> extends Column
      *            the value type
      * @param name
      *            the column name
-     * @param clazz
-     *            the runtime value class
+     * @param type
+     *            the column type
      * @param mode
      *            the preferred storage strategy
      * @return a builder for the supplied object type
      */
-    public static <T> Builder<T> builder(ColumnName name, Class<T> clazz, Mode mode)
+    public static <T> Builder<T> builder(ColumnName name, Column.Type type, Mode mode)
+    {
+        Column.Type columnType = ArgumentCheck.nonNull(type);
+        @SuppressWarnings("unchecked")
+        Class<T> valueClass = (Class<T>) columnType.getValueClass();
+        return builderByClass(name, valueClass, mode);
+    }
+
+    static <T> Builder<T> builderByClass(ColumnName name, Class<T> clazz)
+    {
+        return builderByClass(name, clazz, Mode.AUTO);
+    }
+
+    static <T> Builder<T> builderByClass(ColumnName name, Class<T> clazz, Mode mode)
     {
         Class<T> valueClass = ArgumentCheck.nonNull(clazz);
         if (valueClass.isPrimitive())
@@ -111,7 +124,7 @@ public interface ColumnObject<T> extends Column
      */
     public static Builder<BigDecimal> builderDecimal(ColumnName name)
     {
-        return builder(name, BigDecimal.class);
+        return builder(name, ColumnTypes.DECIMAL);
     }
 
     /**
@@ -294,7 +307,7 @@ public interface ColumnObject<T> extends Column
 
         Class<S> valueClass = xform.valueClass();
         ColumnName transformedName = xform.columnName() == null ? getName() : xform.columnName();
-        ColumnObject.Builder<S> transformed = ColumnObject.builder(transformedName, valueClass);
+        ColumnObject.Builder<S> transformed = ColumnObject.builderByClass(transformedName, valueClass);
         for (int i = 0; i < size(); ++i)
         {
             if (isSet(i))

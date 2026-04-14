@@ -138,7 +138,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         for (int i = 0; i < rows.size(); ++i)
         {
             RowBuffer row = rows.get(i);
-            if (row == null || row.fieldCount() == 0)
+            if (row == null || row.isEmpty())
             {
                 continue;
             }
@@ -184,7 +184,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
     private static double uniquenessContrastBonus(List<RowBuffer> rows, int rowIndex)
     {
         RowBuffer current = rows.get(rowIndex);
-        if (current == null || current.fieldCount() == 0)
+        if (current == null || current.isEmpty())
         {
             return 0.0;
         }
@@ -195,7 +195,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         if (nextIndex < rows.size())
         {
             RowBuffer next = rows.get(nextIndex);
-            if (next != null && next.fieldCount() > 0)
+            if (next != null && !next.isEmpty())
             {
                 double nextUniqueRatio = uniqueNonBlankRatio(next);
                 double contrast = currentUniqueRatio - nextUniqueRatio;
@@ -232,7 +232,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
 
     private static double selectedColumnBonus(RowBuffer row, Set<ColumnName> selectedColumns)
     {
-        if (row == null || row.fieldCount() == 0 || selectedColumns == null || selectedColumns.isEmpty())
+        if (row == null || row.isEmpty() || selectedColumns == null || selectedColumns.isEmpty())
         {
             return 0.0;
         }

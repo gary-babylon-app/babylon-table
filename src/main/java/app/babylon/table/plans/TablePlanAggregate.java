@@ -8,7 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import app.babylon.io.DataSource;
+import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableException;
@@ -29,7 +29,7 @@ import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowKey;
 import app.babylon.table.io.RowSource;
-import app.babylon.table.io.RowSupplier;
+import app.babylon.table.io.RowCursor;
 import app.babylon.table.io.TabularRowReader;
 
 public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
@@ -121,7 +121,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             }
 
             char[] chars = row.chars();
-            RowKey groupKey = RowKey.copyOf(row, this.groupByPositions);
+            RowKey groupKey = row.keyOf(this.groupByPositions);
             GroupAccumulators accumulators = this.accumulatorsByGroup.computeIfAbsent(groupKey,
                     k -> new GroupAccumulators(this.aggregatePositions.length));
             for (int i = 0; i < this.aggregatePositions.length; ++i)
@@ -142,7 +142,8 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             ColumnObject.Builder<String>[] groupByBuilders = new ColumnObject.Builder[this.plan.groupByColumns.size()];
             for (int i = 0; i < groupByBuilders.length; ++i)
             {
-                groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i), String.class);
+                groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i),
+                        app.babylon.table.column.ColumnTypes.STRING);
             }
             ColumnBuilder[] aggregateBuilders = newAggregateBuilders(this.plan);
             for (Map.Entry<RowKey, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())
@@ -290,26 +291,26 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
     }
 
     @Override
-    public TableColumnar execute(DataSource dataSource, TabularRowReader reader)
+    public TableColumnar execute(StreamSource streamSource, TabularRowReader reader)
     {
         validate();
-        DataSource checkedDataSource = ArgumentCheck.nonNull(dataSource);
+        StreamSource checkedStreamSource = ArgumentCheck.nonNull(streamSource);
         RowConsumerGroupAggregate rowConsumer = new RowConsumerGroupAggregate(this);
-        TabularRowReader.Result readResult = ArgumentCheck.nonNull(reader).read(checkedDataSource, rowConsumer);
+        TabularRowReader.Result readResult = ArgumentCheck.nonNull(reader).read(checkedStreamSource, rowConsumer);
         ensureSuccess(readResult);
         return rowConsumer.build();
     }
 
     @Override
-    public TableColumnar execute(RowSupplier rowSupplier)
+    public TableColumnar execute(RowCursor rowCursor)
     {
         validate();
-        RowSupplier checkedRowSupplier = ArgumentCheck.nonNull(rowSupplier);
+        RowCursor checkedRowCursor = ArgumentCheck.nonNull(rowCursor);
         RowConsumerGroupAggregate rowConsumer = new RowConsumerGroupAggregate(this);
-        rowConsumer.start(toColumnNames(checkedRowSupplier.columns()));
-        while (checkedRowSupplier.next())
+        rowConsumer.start(toColumnNames(checkedRowCursor.columns()));
+        while (checkedRowCursor.next())
         {
-            rowConsumer.accept(checkedRowSupplier.current());
+            rowConsumer.accept(checkedRowCursor.current());
         }
         return rowConsumer.build();
     }
@@ -319,9 +320,9 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
     {
         validate();
         RowSource checkedRowSource = ArgumentCheck.nonNull(rowSource);
-        try (RowSupplier rowSupplier = checkedRowSource.openRows())
+        try (RowCursor rowCursor = checkedRowSource.openRows())
         {
-            return execute(rowSupplier);
+            return execute(rowCursor);
         }
         catch (RuntimeException e)
         {

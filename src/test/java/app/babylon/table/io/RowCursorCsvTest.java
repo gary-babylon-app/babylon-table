@@ -7,37 +7,38 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.DataSources;
+import app.babylon.io.StreamSources;
 import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 
-class RowSupplierCsvTest
+class RowCursorCsvTest
 {
     @Test
     void shouldDetectHeadersAndIterateDataRows()
     {
         String csv = "" + "Meta,Value\n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n"
                 + "2026-01-02,Salary,1000.00\n";
-        RowSourceCsv source = RowSourceCsv.builder().withDataSource(DataSources.fromString(csv, "rows.csv")).build();
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
+                .build();
 
-        try (RowSupplier supplier = source.openRows())
+        try (RowCursor rowCursort = source.openRows())
         {
-            ColumnDefinition[] columns = supplier.columns();
+            ColumnDefinition[] columns = rowCursort.columns();
 
             assertEquals(3, columns.length);
             assertEquals(ColumnName.of("Date"), columns[0].name());
-            assertTrue(columns[0].type().isEmpty());
+            assertEquals(null, columns[0].type());
 
-            assertTrue(supplier.next());
+            assertTrue(rowCursort.next());
             assertArrayEquals(new String[]
-            {"2026-01-01", "Coffee", "3.50"}, values(supplier.current()));
+            {"2026-01-01", "Coffee", "3.50"}, values(rowCursort.current()));
 
-            assertTrue(supplier.next());
+            assertTrue(rowCursort.next());
             assertArrayEquals(new String[]
-            {"2026-01-02", "Salary", "1000.00"}, values(supplier.current()));
+            {"2026-01-02", "Salary", "1000.00"}, values(rowCursort.current()));
 
-            assertFalse(supplier.next());
+            assertFalse(rowCursort.next());
         }
         catch (Exception e)
         {
@@ -49,16 +50,16 @@ class RowSupplierCsvTest
     void shouldExposeExplicitCsvColumnTypes()
     {
         String csv = "City,Temp\nLondon,12\n";
-        RowSourceCsv source = RowSourceCsv.builder().withDataSource(DataSources.fromString(csv, "rows.csv"))
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
                 .withColumnType(ColumnName.of("Temp"), ColumnTypes.INT_OBJECT).build();
 
-        try (RowSupplier supplier = source.openRows())
+        try (RowCursor rowCursor = source.openRows())
         {
-            ColumnDefinition[] columns = supplier.columns();
+            ColumnDefinition[] columns = rowCursor.columns();
 
             assertEquals(ColumnName.of("City"), columns[0].name());
-            assertTrue(columns[0].type().isEmpty());
-            assertEquals(ColumnTypes.INT_OBJECT, columns[1].type().orElseThrow());
+            assertEquals(null, columns[0].type());
+            assertEquals(ColumnTypes.INT_OBJECT, columns[1].type());
         }
         catch (Exception e)
         {

@@ -118,4 +118,11 @@ public class HeaderStrategyAutoDetectionTest
                 row("John Smith", "john@x.com", "Home", "Home"), row("Mary Jones", "mary@x.com", "Work", "Work"));
         assertEquals(0, HeaderStrategyAuto.detectHeaderRowIndex(rows));
     }
+
+    @Test
+    public void detectHeaderRowIndex_ignores_blank_rows()
+    {
+        List<RowBuffer> rows = rows(row("", "", ""), row("Date", "Symbol", "Price"), row("2026-01-02", "AAA", "10.25"));
+        assertEquals(1, HeaderStrategyAuto.detectHeaderRowIndex(rows));
+    }
 }

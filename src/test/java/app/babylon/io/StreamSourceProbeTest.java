@@ -20,14 +20,14 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-public class DataSourceProbeTest
+public class StreamSourceProbeTest
 {
     @Test
     public void testExcelFile() throws IOException
     {
-        DataSource ds = DataSources.fromClass(DataSourceProbe.class, "ExcelTestCase.xlsx");
+        StreamSource ds = StreamSources.fromClass(StreamSourceProbe.class, "ExcelTestCase.xlsx");
 
-        DataSourceProbe snippet = DataSourceProbe.of(ds);
+        StreamSourceProbe snippet = StreamSourceProbe.of(ds);
         assertTrue(snippet.isXlsx());
         assertFalse(snippet.isXls());
     }
@@ -37,7 +37,7 @@ public class DataSourceProbeTest
     {
         byte[] bytes = new byte[]
         {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, 'a', ',', 'b'};
-        DataSourceProbe snippet = DataSourceProbe.of(bytes, "x.csv");
+        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
         assertTrue(snippet.hasBom());
         assertTrue(snippet.hasUtf8Bom());
         assertFalse(snippet.hasUtf16LeBom());
@@ -51,7 +51,7 @@ public class DataSourceProbeTest
     {
         byte[] bytes = new byte[]
         {(byte) 0xFF, (byte) 0xFE, 'a', 0x00};
-        DataSourceProbe snippet = DataSourceProbe.of(bytes, "x.csv");
+        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
         assertTrue(snippet.hasBom());
         assertFalse(snippet.hasUtf8Bom());
         assertTrue(snippet.hasUtf16LeBom());
@@ -65,7 +65,7 @@ public class DataSourceProbeTest
     {
         byte[] bytes = new byte[]
         {'a', ',', 'b'};
-        DataSourceProbe snippet = DataSourceProbe.of(bytes, "x.csv");
+        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
         assertFalse(snippet.hasBom());
         assertFalse(snippet.hasUtf8Bom());
         assertFalse(snippet.hasUtf16LeBom());

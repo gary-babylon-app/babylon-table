@@ -12,7 +12,7 @@ package app.babylon.table.io;
 
 import java.util.Map;
 
-import app.babylon.io.DataSource;
+import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.ColumnName;
 
@@ -30,7 +30,7 @@ public interface TabularRowReader
 
     ColumnName getColumnReName(ColumnName original);
 
-    Result read(DataSource dataSource, RowConsumer rowConsumer);
+    Result read(StreamSource streamSource, RowConsumer rowConsumer);
 
     enum Status
     {

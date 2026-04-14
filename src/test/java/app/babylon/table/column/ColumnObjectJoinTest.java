@@ -24,7 +24,7 @@ public class ColumnObjectJoinTest
     public void objectJoinShouldReturnNullAndUnsetForNullJoinRows()
     {
         final ColumnName TEST = ColumnName.of("TEST");
-        ColumnObject.Builder<String> original = ColumnObject.builder(TEST, String.class);
+        ColumnObject.Builder<String> original = ColumnObject.builder(TEST, app.babylon.table.column.ColumnTypes.STRING);
         original.add("abc1");
         original.add("abc2");
         original.add("abc3");

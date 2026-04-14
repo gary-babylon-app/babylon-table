@@ -12,8 +12,8 @@ package app.babylon.table.plans;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.StringReader;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
@@ -24,14 +24,16 @@ import java.sql.Types;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.DataSource;
-import app.babylon.io.DataSources;
+import app.babylon.io.StreamSource;
+import app.babylon.io.StreamSources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.io.HeaderStrategyExplicitRow;
 import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.RowSourceResultSet;
 import app.babylon.table.io.TabularRowReaderCsv;
@@ -45,7 +47,7 @@ class TablePlanReadTest
     void shouldApplyTransformsInInsertionOrder()
     {
         final ColumnName CODE = ColumnName.of("Code");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(CODE, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
         builder.add("A/B");
 
         TablePlanRead plan = new TablePlanRead().withTransform(new TransformAfter(CODE, CODE, "/"))
@@ -60,7 +62,7 @@ class TablePlanReadTest
     void shouldUseConfiguredOutputMetadataWhenExecutingExistingTable()
     {
         final ColumnName CODE = ColumnName.of("Code");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(CODE, String.class);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
         builder.add("ABC");
 
         TableColumnar source = Tables.newTable(TableName.of("Source"), new TableDescription("Source description"),
@@ -104,7 +106,7 @@ class TablePlanReadTest
         TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv"))
                 .withColumnType(AMOUNT, double.class).withTransform(new TransformToUpperCase(CODE));
 
-        TableColumnar table = plan.execute(DataSources.fromString(csv, "values.csv"), reader);
+        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
 
         assertEquals(TableName.of("BuiltFromCsv"), table.getName());
         assertEquals("ABC", table.getString(CODE).get(0));
@@ -128,7 +130,7 @@ class TablePlanReadTest
         TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv")).withColumnType(AMOUNT,
                 BigDecimal.class);
 
-        TableColumnar table = plan.execute(DataSources.fromString(csv, "values.csv"), reader);
+        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
 
         assertEquals(TableName.of("BuiltFromCsv"), table.getName());
         assertEquals("abc", table.getString(CODE).get(0));
@@ -143,9 +145,9 @@ class TablePlanReadTest
         final ColumnName AMOUNT = ColumnName.of("Amount");
         String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
 
-        DataSource dataSource = DataSources.fromString(csv, "values.csv");
-        RowSourceCsv rowSource = RowSourceCsv.builder().withDataSource(dataSource)
-                .withColumnType(AMOUNT, app.babylon.table.column.ColumnTypes.DOUBLE).build();
+        StreamSource streamSource = StreamSources.fromString(csv, "values.csv");
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(streamSource)
+                .withColumnType(AMOUNT, ColumnTypes.DOUBLE).build();
         TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"))
                 .withTransform(new TransformToUpperCase(CODE));
 
@@ -156,6 +158,37 @@ class TablePlanReadTest
         assertEquals("XYZ", table.getString(CODE).get(1));
         assertEquals(10.5d, table.getDouble(AMOUNT).get(0));
         assertEquals(20.0d, table.getDouble(AMOUNT).get(1));
+    }
+
+    @Test
+    void shouldTrimTrailingBlankDetectedHeaderColumns()
+    {
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        String csv = "Code,Amount,\nabc,10.5,\ndef,\nxyz,20.0,\n";
+
+        RowSourceCsv rowSource = RowSourceCsv.builder()
+                .withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withHeaderStrategy(new HeaderStrategyExplicitRow(0))
+                .withColumnType(AMOUNT, ColumnTypes.DECIMAL)
+                .build();
+        
+        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"));
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(2, table.getColumnCount());
+
+        ColumnObject<String> codes = table.getString(CODE);
+        ColumnObject<BigDecimal> amounts = table.getDecimal(AMOUNT);
+
+        assertEquals("abc", codes.first());
+        assertEquals("xyz", codes.last());
+        assertEquals("10.5", amounts.first().toPlainString());
+        assertEquals("20", amounts.last().toPlainString());
+        int shortRow = 1;
+        assertTrue(codes.isSet(shortRow));
+        assertFalse(amounts.isSet(shortRow));
     }
 
     @Test
@@ -245,6 +278,7 @@ class TablePlanReadTest
         InvocationHandler handler = new InvocationHandler()
         {
             private int rowIndex = -1;
+            private boolean wasNull = false;
 
             @Override
             public Object invoke(Object proxy, java.lang.reflect.Method method, Object[] args) throws Throwable
@@ -266,7 +300,48 @@ class TablePlanReadTest
                 if (methodName.equals("getString"))
                 {
                     int columnIndex = ((Integer) args[0]).intValue() - 1;
-                    return rows[this.rowIndex][columnIndex];
+                    String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
+                    return value;
+                }
+                if (methodName.equals("getInt"))
+                {
+                    int columnIndex = ((Integer) args[0]).intValue() - 1;
+                    String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
+                    return value == null ? 0 : Integer.parseInt(value);
+                }
+                if (methodName.equals("getLong"))
+                {
+                    int columnIndex = ((Integer) args[0]).intValue() - 1;
+                    String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
+                    return value == null ? 0L : Long.parseLong(value);
+                }
+                if (methodName.equals("getDouble"))
+                {
+                    int columnIndex = ((Integer) args[0]).intValue() - 1;
+                    String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
+                    return value == null ? 0d : Double.parseDouble(value);
+                }
+                if (methodName.equals("getByte"))
+                {
+                    int columnIndex = ((Integer) args[0]).intValue() - 1;
+                    String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
+                    return value == null ? (byte) 0 : Byte.parseByte(value);
+                }
+                if (methodName.equals("getBigDecimal"))
+                {
+                    int columnIndex = ((Integer) args[0]).intValue() - 1;
+                    String value = rows[this.rowIndex][columnIndex];
+                    this.wasNull = value == null;
+                    return value == null ? null : new BigDecimal(value);
+                }
+                if (methodName.equals("wasNull"))
+                {
+                    return this.wasNull;
                 }
                 if (methodName.equals("close"))
                 {

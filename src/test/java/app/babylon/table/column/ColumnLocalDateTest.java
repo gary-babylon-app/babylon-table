@@ -36,7 +36,8 @@ public class ColumnLocalDateTest
     public void testIsConstant()
     {
         final ColumnName TEST = ColumnName.of("TEST");
-        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(TEST, LocalDate.class);
+        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(TEST,
+                app.babylon.table.column.ColumnTypes.LOCALDATE);
         dates.add(LocalDate.of(2026, 8, 20));
         dates.addNull();
         dates.addNull();
@@ -48,7 +49,8 @@ public class ColumnLocalDateTest
     public void testIsConstant2()
     {
         final ColumnName TEST = ColumnName.of("TEST");
-        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(TEST, LocalDate.class);
+        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(TEST,
+                app.babylon.table.column.ColumnTypes.LOCALDATE);
         dates.addNull();
         dates.addNull();
         dates.add(LocalDate.of(2026, 8, 20));

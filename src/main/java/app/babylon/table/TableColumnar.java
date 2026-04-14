@@ -61,9 +61,9 @@ public interface TableColumnar extends Table
 
     public <T> ColumnCategorical<T> getCategorical(ColumnName x);
 
-    public <T> ColumnCategorical<T> getCategorical(ColumnName x, Class<T> clazz);
+    public <T> ColumnCategorical<T> getCategorical(ColumnName x, Column.Type type);
 
-    public <T> ColumnObject<T> getTyped(ColumnName x, Class<T> clazz);
+    public <T> ColumnObject<T> getObject(ColumnName x, Column.Type type);
 
     public ColumnObject<String> getString(ColumnName x);
 

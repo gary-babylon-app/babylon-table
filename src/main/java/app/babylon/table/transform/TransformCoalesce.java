@@ -82,7 +82,7 @@ public class TransformCoalesce extends TransformBase
     private void coalesce(Map<ColumnName, Column> columnsByName, ColumnObject<?> first, ColumnObject<?> second,
             ColumnObject<?> third, Class<?> valueClass)
     {
-        ColumnObject.Builder builder = ColumnObject.builder(this.newColumnName, valueClass, this.mode);
+        ColumnObject.Builder builder = ColumnObject.builder(this.newColumnName, Column.Type.of(valueClass), this.mode);
         for (int i = 0; i < first.size(); ++i)
         {
             if (first.isSet(i))

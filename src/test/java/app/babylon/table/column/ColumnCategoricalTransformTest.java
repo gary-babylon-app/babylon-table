@@ -28,7 +28,8 @@ class ColumnCategoricalTransformTest
     void transformShouldApplyOncePerCategoryAndPreserveNulls()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("A");
         builder.add("a");
         builder.addNull();
@@ -72,7 +73,8 @@ class ColumnCategoricalTransformTest
     void transformMixedResultTypesShouldUseObjectType()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("1");
         builder.add("x");
         ColumnCategorical<String> column = builder.build();
@@ -89,7 +91,8 @@ class ColumnCategoricalTransformTest
     void transformViewShouldApplyOnlyForCodesUsedInView()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("A");
         builder.add("B");
         builder.add("C");
@@ -105,7 +108,7 @@ class ColumnCategoricalTransformTest
         ColumnCategorical<String> transformed = view.transform(Transformer.of(x -> {
             calls.incrementAndGet();
             return x.toLowerCase();
-        }, String.class));
+        }, app.babylon.table.column.ColumnTypes.STRING));
 
         assertEquals(1, calls.get());
         assertEquals(2, transformed.size());
@@ -120,7 +123,8 @@ class ColumnCategoricalTransformTest
     void viewOnTransformShouldPreserveUsedCodesFromTheTransformedColumn()
     {
         final ColumnName S = ColumnName.of("S");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("A");
         builder.add("a");
         builder.add("B");
@@ -151,7 +155,8 @@ class ColumnCategoricalTransformTest
     {
         final ColumnName OLD_NAME = ColumnName.of("OLD_NAME");
         final ColumnName NEW_NAME = ColumnName.of("NEW_NAME");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(OLD_NAME, String.class);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(OLD_NAME,
+                app.babylon.table.column.ColumnTypes.STRING);
         builder.add("A");
         builder.add("B");
         ColumnCategorical<String> column = builder.build();

@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import app.babylon.io.DataSourceProbe;
+import app.babylon.io.StreamSourceProbe;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 import app.babylon.table.column.Column;
@@ -33,7 +33,7 @@ import app.babylon.table.column.ColumnName;
  * Instances are created by a configured {@link RowSourceCsv} and own the CSV
  * reader resources for the lifetime of iteration.
  */
-public final class RowSupplierCsv implements RowSupplier
+public final class RowCursorCsv implements RowCursor
 {
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private final HeaderStrategy headerStrategy;
@@ -43,22 +43,24 @@ public final class RowSupplierCsv implements RowSupplier
     private final boolean autoDetectEncoding;
     private final LineReader lineReader;
     private final RowStreamMarkable rowStream;
+    private final RowProjected projectedRow;
     private final ColumnDefinition[] columnDefinitions;
 
-    RowSupplierCsv(InputStream inputStream, HeaderStrategy headerStrategy, char separator, int[] fixedWidths,
-            Charset charset, boolean autoDetectEncoding, Map<ColumnName, Column.Type> explicitColumnTypes)
+    RowCursorCsv(InputStream inputStream, Builder builder)
     {
         BufferedInputStream bufferedInputStream = toBufferedStream(ArgumentCheck.nonNull(inputStream));
-        this.explicitColumnTypes = new LinkedHashMap<>(ArgumentCheck.nonNull(explicitColumnTypes));
-        this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
-        this.separator = separator;
-        this.fixedWidths = fixedWidths == null ? null : Arrays.copyOf(fixedWidths, fixedWidths.length);
-        this.charset = ArgumentCheck.nonNull(charset);
-        this.autoDetectEncoding = autoDetectEncoding;
+        this.explicitColumnTypes = new LinkedHashMap<>(ArgumentCheck.nonNull(builder).explicitColumnTypes);
+        this.headerStrategy = ArgumentCheck.nonNull(builder.headerStrategy);
+        this.separator = builder.separator;
+        this.fixedWidths = builder.fixedWidths == null
+                ? null
+                : Arrays.copyOf(builder.fixedWidths, builder.fixedWidths.length);
+        this.charset = ArgumentCheck.nonNull(builder.charset);
+        this.autoDetectEncoding = builder.autoDetectEncoding;
 
         try
         {
-            DataSourceProbe probe = DataSourceProbe.of(bufferedInputStream, "stream.csv");
+            StreamSourceProbe probe = StreamSourceProbe.of(bufferedInputStream, "stream.csv");
             if (probe.isXls() || probe.isXlsx() || probe.isPdf() || probe.isZip())
             {
                 throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
@@ -73,6 +75,7 @@ public final class RowSupplierCsv implements RowSupplier
             this.rowStream = new RowStreamBuffered(this.lineReader);
 
             HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, null);
+            this.projectedRow = createProjectedRow(headerDetection);
             this.columnDefinitions = toColumnDefinitions(headerDetection.getSelectedHeaders());
             this.rowStream.reset();
         }
@@ -146,7 +149,8 @@ public final class RowSupplierCsv implements RowSupplier
     @Override
     public Row current()
     {
-        return this.rowStream.current();
+        Row row = this.rowStream.current();
+        return this.projectedRow == null ? row : this.projectedRow.with(row);
     }
 
     @Override
@@ -178,12 +182,17 @@ public final class RowSupplierCsv implements RowSupplier
         return definitions;
     }
 
+    private RowProjected createProjectedRow(HeaderDetection headerDetection)
+    {
+        return new RowProjectedDefault(headerDetection.getSelectedPositions());
+    }
+
     private boolean isFixedWidths()
     {
         return this.fixedWidths != null && this.fixedWidths.length > 0;
     }
 
-    private Charset resolveCharset(DataSourceProbe probe)
+    private Charset resolveCharset(StreamSourceProbe probe)
     {
         if (this.autoDetectEncoding)
         {
@@ -193,7 +202,7 @@ public final class RowSupplierCsv implements RowSupplier
         return this.charset;
     }
 
-    private int resolveBomLength(DataSourceProbe probe)
+    private int resolveBomLength(StreamSourceProbe probe)
     {
         return this.autoDetectEncoding ? probe.bomLengthBytes() : 0;
     }
@@ -307,10 +316,23 @@ public final class RowSupplierCsv implements RowSupplier
             return this;
         }
 
-        public RowSupplierCsv build(InputStream inputStream)
+        Builder copy()
         {
-            return new RowSupplierCsv(inputStream, this.headerStrategy, this.separator, this.fixedWidths, this.charset,
-                    this.autoDetectEncoding, this.explicitColumnTypes);
+            Builder copy = new Builder();
+            copy.headerStrategy = this.headerStrategy;
+            copy.separator = this.separator;
+            copy.fixedWidths = this.fixedWidths == null
+                    ? null
+                    : Arrays.copyOf(this.fixedWidths, this.fixedWidths.length);
+            copy.charset = this.charset;
+            copy.autoDetectEncoding = this.autoDetectEncoding;
+            copy.explicitColumnTypes.putAll(this.explicitColumnTypes);
+            return copy;
+        }
+
+        public RowCursorCsv build(InputStream inputStream)
+        {
+            return new RowCursorCsv(inputStream, this);
         }
     }
 }

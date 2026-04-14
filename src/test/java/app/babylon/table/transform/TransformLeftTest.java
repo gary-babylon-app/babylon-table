@@ -20,7 +20,7 @@ public class TransformLeftTest
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName LEFT = ColumnName.of("Left");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, String.class);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ABC123");
         strings.add("XY");
         strings.addNull();

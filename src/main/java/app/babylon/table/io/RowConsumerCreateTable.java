@@ -10,6 +10,7 @@
 
 package app.babylon.table.io;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,9 +20,9 @@ import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
-import app.babylon.table.column.CharSliceBuilder;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
+import app.babylon.table.column.CharSliceBuilder;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
@@ -34,8 +35,8 @@ public final class RowConsumerCreateTable implements RowConsumer
     private final ColumnName resourceName;
     private final String sourceName;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
-    private ColumnBuilder[] columnBuilders;
-    private CharSliceBuilder[] charSliceBuilders;
+    private Column.Type[] columnTypes;
+    private CharSliceBuilder[] columnBuilders;
 
     RowConsumerCreateTable(TableName tableName, TableDescription tableDescription, ColumnName resourceName,
             String sourceName, Map<ColumnName, Column.Type> explicitColumnTypes)
@@ -45,22 +46,21 @@ public final class RowConsumerCreateTable implements RowConsumer
         this.resourceName = resourceName;
         this.sourceName = sourceName;
         this.explicitColumnTypes = new LinkedHashMap<>(explicitColumnTypes);
+        this.columnTypes = null;
         this.columnBuilders = null;
-        this.charSliceBuilders = null;
     }
 
     @Override
     public void start(ColumnName[] columnNames)
     {
         ArgumentCheck.nonEmpty(columnNames);
-        this.columnBuilders = new ColumnBuilder[columnNames.length];
-        this.charSliceBuilders = new CharSliceBuilder[columnNames.length];
+        this.columnTypes = new Column.Type[columnNames.length];
+        this.columnBuilders = new CharSliceBuilder[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
         {
             Column.Type columnType = effectiveColumnType(columnNames[i], this.explicitColumnTypes);
-            CharSliceBuilder builder = Columns.newCharSliceBuilder(columnNames[i], columnType);
-            this.columnBuilders[i] = builder;
-            this.charSliceBuilders[i] = builder;
+            this.columnTypes[i] = columnType;
+            this.columnBuilders[i] = Columns.newCharSliceBuilder(columnNames[i], columnType);
         }
     }
 
@@ -72,23 +72,14 @@ public final class RowConsumerCreateTable implements RowConsumer
         {
             return;
         }
-        boolean isEmpty = true;
-        char[] chars = rowValues.chars();
-        for (int i = 0; i < columnCount; ++i)
-        {
-            if (rowValues.length(i) > 0)
-            {
-                isEmpty = false;
-                break;
-            }
-        }
-        if (isEmpty)
+        if (rowValues.isEmpty())
         {
             return;
         }
+        char[] chars = rowValues.chars();
         for (int i = 0; i < columnCount; ++i)
         {
-            this.charSliceBuilders[i].add(chars, rowValues.start(i), rowValues.length(i));
+            addValue(this.columnBuilders[i], chars, rowValues.start(i), rowValues.length(i));
         }
     }
 
@@ -150,5 +141,15 @@ public final class RowConsumerCreateTable implements RowConsumer
             return s.substring(lastSlash + 1, lastPeriod);
         }
         return s;
+    }
+
+    private static void addValue(CharSliceBuilder builder, char[] chars, int start, int length)
+    {
+        if (length <= 0)
+        {
+            builder.add(null, 0, 0);
+            return;
+        }
+        builder.add(chars, start, length);
     }
 }

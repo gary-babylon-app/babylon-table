@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import app.babylon.io.DataSource;
+import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 import app.babylon.table.column.ColumnName;
@@ -68,7 +68,7 @@ public class TabularRowReaderResultSet extends TabularRowReaderCommon<TabularRow
 
             HeaderDetection headerDetection = createHeaderDetection(metaData);
             ColumnName[] projectedColumnNames = createProjectedColumnNames(headerDetection);
-            RowProjected projectedRow = new ProjectedRow(headerDetection.getSelectedPositions());
+            RowProjected projectedRow = new RowProjectedDefault(headerDetection.getSelectedPositions());
             Predicate<Row> boundRowFilter = getBoundRowFilter(projectedColumnNames);
 
             checkedRowConsumer.start(projectedColumnNames);
@@ -109,10 +109,10 @@ public class TabularRowReaderResultSet extends TabularRowReaderCommon<TabularRow
     }
 
     @Override
-    public TabularRowReader.Result read(DataSource dataSource, RowConsumer rowConsumer)
+    public TabularRowReader.Result read(StreamSource streamSource, RowConsumer rowConsumer)
     {
         throw new UnsupportedOperationException(
-                "TabularRowReaderResultSet does not read from DataSource. Use read(ResultSet, RowConsumer).");
+                "TabularRowReaderResultSet does not read from StreamSource. Use read(ResultSet, RowConsumer).");
     }
 
     @Override

@@ -133,18 +133,6 @@ public interface ColumnObject<T> extends Column
      *            the column name
      * @return a string column builder
      */
-    public static Builder<String> builderString(ColumnName name)
-    {
-        return builder(name, ColumnTypes.STRING);
-    }
-
-    /**
-     * Creates a {@link String} column builder.
-     *
-     * @param name
-     *            the column name
-     * @return a string column builder
-     */
     public static Builder<String> builder(ColumnName name)
     {
         return builder(name, ColumnTypes.STRING);

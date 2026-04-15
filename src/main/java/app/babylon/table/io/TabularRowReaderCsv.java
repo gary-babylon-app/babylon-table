@@ -27,6 +27,8 @@ import app.babylon.table.column.ColumnName;
 
 public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReaderCsv>
 {
+    private static final Charset LEGACY_CSV_FALLBACK = Charset.forName("windows-1252");
+
     private HeaderStrategy headerStrategy;
     private boolean stripping;
     private char separator;
@@ -246,14 +248,17 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
     {
         if (probe == null)
         {
-            return java.nio.charset.StandardCharsets.UTF_8;
+            return LEGACY_CSV_FALLBACK;
         }
         if (this.autoDetectEncoding)
         {
-            Charset detected = probe.detectedCharset();
-            return detected == null ? java.nio.charset.StandardCharsets.UTF_8 : detected;
+            // Excel-style CSV exports are a common legacy case here. ISO-8859-1 is the
+            // other
+            // plausible default to consider if caller expectations skew more toward
+            // database exports.
+            return probe.getCharset(LEGACY_CSV_FALLBACK);
         }
-        return this.charset == null ? java.nio.charset.StandardCharsets.UTF_8 : this.charset;
+        return this.charset == null ? LEGACY_CSV_FALLBACK : this.charset;
     }
 
     private int resolveBomLength(StreamSourceProbe probe)

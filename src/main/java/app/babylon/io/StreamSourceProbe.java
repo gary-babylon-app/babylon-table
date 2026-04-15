@@ -14,12 +14,17 @@ import app.babylon.lang.ArgumentCheck;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.CharsetDecoder;
 import java.nio.charset.StandardCharsets;
 
 public class StreamSourceProbe
 {
     private static final int BYTES_TO_SNIP = 8192;
+    private static final Charset WINDOWS_1252 = Charset.forName("windows-1252");
 
     private final byte[] bytes;
     private final String resourceName;
@@ -119,7 +124,33 @@ public class StreamSourceProbe
         {
             return StandardCharsets.UTF_16BE;
         }
+        if (looksLikeUtf16Le())
+        {
+            return StandardCharsets.UTF_16LE;
+        }
+        if (looksLikeUtf16Be())
+        {
+            return StandardCharsets.UTF_16BE;
+        }
+        if (containsWindows1252OnlyBytes())
+        {
+            return WINDOWS_1252;
+        }
         return null;
+    }
+
+    public Charset getCharset(Charset valueIfNull)
+    {
+        Charset detected = detectedCharset();
+        if (detected != null)
+        {
+            return detected;
+        }
+        if (isValidUtf8())
+        {
+            return StandardCharsets.UTF_8;
+        }
+        return ArgumentCheck.nonNull(valueIfNull, "valueIfNull must not be null");
     }
 
     public boolean hasUtf8Bom()
@@ -135,6 +166,93 @@ public class StreamSourceProbe
     public boolean hasUtf16BeBom()
     {
         return bytes.length > 1 && bytes[0] == (byte) 0xFE && bytes[1] == (byte) 0xFF;
+    }
+
+    private boolean looksLikeUtf16Le()
+    {
+        return looksLikeUtf16(false);
+    }
+
+    private boolean looksLikeUtf16Be()
+    {
+        return looksLikeUtf16(true);
+    }
+
+    private boolean looksLikeUtf16(boolean zeroOnEvenPositions)
+    {
+        int start = bomLengthBytes();
+        int length = this.bytes.length - start;
+        if (length < 8)
+        {
+            return false;
+        }
+
+        int evenCount = 0;
+        int oddCount = 0;
+        int evenZeros = 0;
+        int oddZeros = 0;
+
+        for (int i = start; i < this.bytes.length; ++i)
+        {
+            if (((i - start) & 1) == 0)
+            {
+                ++evenCount;
+                if (this.bytes[i] == 0)
+                {
+                    ++evenZeros;
+                }
+            }
+            else
+            {
+                ++oddCount;
+                if (this.bytes[i] == 0)
+                {
+                    ++oddZeros;
+                }
+            }
+        }
+
+        if (evenCount == 0 || oddCount == 0)
+        {
+            return false;
+        }
+
+        double evenZeroRatio = (double) evenZeros / evenCount;
+        double oddZeroRatio = (double) oddZeros / oddCount;
+        if (zeroOnEvenPositions)
+        {
+            return evenZeroRatio >= 0.30d && oddZeroRatio <= 0.05d;
+        }
+        return oddZeroRatio >= 0.30d && evenZeroRatio <= 0.05d;
+    }
+
+    private boolean isValidUtf8()
+    {
+        CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
+        decoder.onMalformedInput(CodingErrorAction.REPORT);
+        decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+        try
+        {
+            decoder.decode(ByteBuffer.wrap(this.bytes, bomLengthBytes(), this.bytes.length - bomLengthBytes()));
+            return true;
+        }
+        catch (CharacterCodingException e)
+        {
+            return false;
+        }
+    }
+
+    private boolean containsWindows1252OnlyBytes()
+    {
+        for (int i = bomLengthBytes(); i < this.bytes.length; ++i)
+        {
+            int value = this.bytes[i] & 0xFF;
+            if (value >= 0x80 && value <= 0x9F)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean isPdf()

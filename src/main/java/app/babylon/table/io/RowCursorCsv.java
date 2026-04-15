@@ -35,6 +35,14 @@ import app.babylon.table.column.ColumnName;
  */
 public final class RowCursorCsv implements RowCursor
 {
+    /**
+     * It is difficult to distinguish what encoding to use when UTF8 fails, and no
+     * BOM and not UTF16 Common choices are ISO-8869-1 and Windows-1252.
+     */
+    private static final Charset LEGACY_CSV_FALLBACK = StandardCharsets.ISO_8859_1;
+    // private static final Charset LEGACY_CSV_FALLBACK =
+    // Charset.forName("windows-1252");
+
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private final HeaderStrategy headerStrategy;
     private final char separator;
@@ -196,8 +204,7 @@ public final class RowCursorCsv implements RowCursor
     {
         if (this.autoDetectEncoding)
         {
-            Charset detected = probe.detectedCharset();
-            return detected == null ? StandardCharsets.UTF_8 : detected;
+            return probe.getCharset(LEGACY_CSV_FALLBACK);
         }
         return this.charset;
     }

@@ -16,12 +16,15 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
 public class StreamSourceProbeTest
 {
+    private static final Charset WINDOWS_1252 = Charset.forName("windows-1252");
+
     @Test
     public void testExcelFile() throws IOException
     {
@@ -72,5 +75,38 @@ public class StreamSourceProbeTest
         assertFalse(snippet.hasUtf16BeBom());
         assertEquals(0, snippet.bomLengthBytes());
         assertNull(snippet.detectedCharset());
+        assertEquals(StandardCharsets.UTF_8, snippet.getCharset(StandardCharsets.UTF_8));
+        assertEquals(StandardCharsets.UTF_8, snippet.getCharset(StandardCharsets.ISO_8859_1));
+    }
+
+    @Test
+    public void testUtf16LeDetectionWithoutBom()
+    {
+        byte[] bytes = "a,b\nc,d\n".getBytes(StandardCharsets.UTF_16LE);
+        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+
+        assertFalse(snippet.hasBom());
+        assertEquals(StandardCharsets.UTF_16LE, snippet.detectedCharset());
+    }
+
+    @Test
+    public void testUtf16BeDetectionWithoutBom()
+    {
+        byte[] bytes = "a,b\nc,d\n".getBytes(StandardCharsets.UTF_16BE);
+        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+
+        assertFalse(snippet.hasBom());
+        assertEquals(StandardCharsets.UTF_16BE, snippet.detectedCharset());
+    }
+
+    @Test
+    public void testInvalidUtf8FallsBackToProvidedCharset()
+    {
+        byte[] bytes = "Price €12\n".getBytes(WINDOWS_1252);
+        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+
+        assertFalse(snippet.hasBom());
+        assertEquals(WINDOWS_1252, snippet.detectedCharset());
+        assertEquals(WINDOWS_1252, snippet.getCharset(StandardCharsets.ISO_8859_1));
     }
 }

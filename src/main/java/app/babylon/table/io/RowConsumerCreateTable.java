@@ -26,25 +26,20 @@ import app.babylon.table.column.CharSliceBuilder;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
-import app.babylon.text.Strings;
 
 public final class RowConsumerCreateTable implements RowConsumer
 {
     private final TableName tableName;
     private final TableDescription tableDescription;
-    private final ColumnName resourceName;
-    private final String sourceName;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private Column.Type[] columnTypes;
     private CharSliceBuilder[] columnBuilders;
 
-    RowConsumerCreateTable(TableName tableName, TableDescription tableDescription, ColumnName resourceName,
-            String sourceName, Map<ColumnName, Column.Type> explicitColumnTypes)
+    RowConsumerCreateTable(TableName tableName, TableDescription tableDescription,
+            Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         this.tableName = tableName;
         this.tableDescription = tableDescription;
-        this.resourceName = resourceName;
-        this.sourceName = sourceName;
         this.explicitColumnTypes = new LinkedHashMap<>(explicitColumnTypes);
         this.columnTypes = null;
         this.columnBuilders = null;
@@ -85,36 +80,18 @@ public final class RowConsumerCreateTable implements RowConsumer
 
     public TableColumnar build()
     {
-        TableName name = this.tableName;
-        TableDescription description = this.tableDescription;
-        String sourceName = this.sourceName;
-        if (name == null)
-        {
-            name = TableName.of(extractLastPart(sourceName));
-        }
-        if (this.resourceName != null && this.columnBuilders.length > 0)
-        {
-            Column[] builtColumns = new Column[this.columnBuilders.length + 1];
-            for (int i = 0; i < this.columnBuilders.length; ++i)
-            {
-                builtColumns[i + 1] = this.columnBuilders[i].build();
-            }
-            int rowCount = builtColumns.length > 1 ? builtColumns[1].size() : 0;
-            builtColumns[0] = Columns.newString(this.resourceName, sourceName, rowCount);
-            return Tables.newTable(name, description, builtColumns);
-        }
-        return Tables.newTable(name, description, this.columnBuilders);
+        return Tables.newTable(this.tableName, this.tableDescription, this.columnBuilders);
     }
 
-    public static RowConsumerCreateTable create(TableName tableName, ColumnName resourceName)
+    public static RowConsumerCreateTable create(TableName tableName)
     {
-        return create(tableName, null, resourceName, null, Collections.emptyMap());
+        return create(tableName, null, Collections.emptyMap());
     }
 
     public static RowConsumerCreateTable create(TableName tableName, TableDescription tableDescription,
-            ColumnName resourceName, String sourceName, Map<ColumnName, Column.Type> explicitColumnTypes)
+            Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        return new RowConsumerCreateTable(tableName, tableDescription, resourceName, sourceName, explicitColumnTypes);
+        return new RowConsumerCreateTable(tableName, tableDescription, explicitColumnTypes);
     }
 
     private static Column.Type effectiveColumnType(ColumnName columnName,
@@ -126,21 +103,6 @@ public final class RowConsumerCreateTable implements RowConsumer
             return ColumnTypes.STRING;
         }
         return columnType;
-    }
-
-    private static String extractLastPart(String s)
-    {
-        if (Strings.isEmpty(s))
-        {
-            return null;
-        }
-        int lastSlash = s.lastIndexOf('/');
-        int lastPeriod = s.lastIndexOf('.');
-        if (lastPeriod >= 0 && lastPeriod > lastSlash)
-        {
-            return s.substring(lastSlash + 1, lastPeriod);
-        }
-        return s;
     }
 
     private static void addValue(CharSliceBuilder builder, char[] chars, int start, int length)

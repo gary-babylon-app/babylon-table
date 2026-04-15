@@ -73,7 +73,7 @@ class TabularRowReaderResultSetTest
 
     private static TableRead readTable(TabularRowReaderResultSet reader, ResultSet resultSet)
     {
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(TableName.of("ResultSetRead"), null);
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(TableName.of("ResultSetRead"));
         TabularRowReader.Result result = reader.read(resultSet, rowConsumer);
         return new TableRead(result, rowConsumer.build());
     }

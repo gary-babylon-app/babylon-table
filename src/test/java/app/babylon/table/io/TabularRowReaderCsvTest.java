@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import app.babylon.io.StreamSource;
 import app.babylon.io.StreamSources;
 import app.babylon.table.TableColumnar;
+import app.babylon.table.TableName;
 import app.babylon.table.column.ColumnName;
 
 class TabularRowReaderCsvTest
@@ -48,16 +49,6 @@ class TabularRowReaderCsvTest
         assertEquals(StandardCharsets.UTF_8, reader.getCharset());
         assertTrue(!reader.isAutoDetectEncoding());
         assertEquals(expected, reader.getHeaderStrategy());
-    }
-
-    @Test
-    void shouldExposeConfiguredResourceMetadata()
-    {
-        final ColumnName SOURCE = ColumnName.of("Source");
-        TableRead read = readTable(new TabularRowReaderCsv(), "City,Temp\nLondon,12\n", "source.csv", SOURCE);
-
-        assertEquals(TabularRowReader.Status.SUCCESS, read.result.getStatus());
-        assertEquals("source.csv", read.table.getString(SOURCE).get(0));
     }
 
     @Test
@@ -201,24 +192,6 @@ class TabularRowReaderCsvTest
         assertEquals(3, table.getColumnCount());
         assertEquals(1, table.getRowCount());
         assertEquals("Coffee", table.getString(DESCRIPTION).get(0));
-    }
-
-    @Test
-    void shouldIncludeResourceNameColumnWhenConfigured()
-    {
-        final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
-        String csv = "" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n" + "2026-01-02,Salary,1000.00\n";
-        TabularRowReaderCsv reader = new TabularRowReaderCsv();
-
-        TableRead read = readTable(reader, csv, "resource-name.csv", RESOURCE_NAME);
-        TabularRowReader.Result result = read.result;
-        TableColumnar table = read.table;
-
-        assertEquals(TabularRowReader.Status.SUCCESS, result.getStatus());
-        assertEquals(4, table.getColumnCount());
-        assertEquals(2, table.getRowCount());
-        assertEquals("resource-name.csv", table.getString(RESOURCE_NAME).get(0));
-        assertEquals("resource-name.csv", table.getString(RESOURCE_NAME).get(1));
     }
 
     @Test
@@ -378,15 +351,9 @@ class TabularRowReaderCsvTest
 
     private static TableRead readTable(TabularRowReaderCsv reader, String csv, String resourceName)
     {
-        return readTable(reader, csv, resourceName, null);
-    }
-
-    private static TableRead readTable(TabularRowReaderCsv reader, String csv, String resourceName,
-            ColumnName resourceColumnName)
-    {
         StreamSource streamSource = StreamSources.fromString(csv, resourceName);
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(null, null, resourceColumnName,
-                streamSource.getName(), java.util.Collections.emptyMap());
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(TableName.of("CsvRead"), null,
+                java.util.Collections.emptyMap());
         TabularRowReader.Result result = reader.read(streamSource, rowConsumer);
         TableColumnar table = result.isSuccessLike() ? rowConsumer.build() : null;
         return new TableRead(result, table);

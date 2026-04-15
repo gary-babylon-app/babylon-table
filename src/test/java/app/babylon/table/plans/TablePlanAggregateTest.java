@@ -216,7 +216,7 @@ class TablePlanAggregateTest
         TabularRowReaderCsv reader = newReader(STATION, COUNTRY, TEMPERATURE, HUMIDITY);
         TableColumnar streamingResult = plan.execute(streamingSource, reader);
         TabularRowReaderCsv inMemoryReader = newReader(STATION, COUNTRY, TEMPERATURE, HUMIDITY);
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(null, null, null, inMemorySource.getName(),
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(TableName.of("ParsedSummary"), null,
                 plan.getColumnTypes());
         TabularRowReader.Result readResult = inMemoryReader.read(inMemorySource, rowConsumer);
         assertEquals(TabularRowReader.Status.SUCCESS, readResult.getStatus());

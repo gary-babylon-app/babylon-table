@@ -34,6 +34,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.io.HeaderStrategyExplicitRow;
+import app.babylon.table.io.HeaderStrategyNoHeaders;
 import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.RowSourceResultSet;
 import app.babylon.table.io.TabularRowReaderCsv;
@@ -139,6 +140,75 @@ class TablePlanReadTest
     }
 
     @Test
+    void shouldIncludeResourceNameColumnForStreamSourceReads()
+    {
+        final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
+
+        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
+        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv"))
+                .withIncludeResourceName(RESOURCE_NAME);
+
+        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
+
+        assertEquals(3, table.getColumnCount());
+        assertEquals(RESOURCE_NAME, table.getColumnNames()[2]);
+        assertEquals("values.csv", table.getString(RESOURCE_NAME).get(0));
+        assertEquals("values.csv", table.getString(RESOURCE_NAME).get(1));
+        assertEquals("abc", table.getString(CODE).get(0));
+        assertEquals("10.5", table.getString(AMOUNT).get(0));
+    }
+
+    @Test
+    void shouldIncludeResourceNameColumnForRowSourceReads()
+    {
+        final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .build();
+        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"))
+                .withIncludeResourceName(RESOURCE_NAME);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(3, table.getColumnCount());
+        assertEquals(RESOURCE_NAME, table.getColumnNames()[table.getColumnCount() - 1]);
+        assertEquals("values.csv", table.getString(RESOURCE_NAME).get(0));
+        assertEquals("values.csv", table.getString(RESOURCE_NAME).get(1));
+        assertEquals("abc", table.getString(CODE).get(0));
+        assertEquals("10.5", table.getString(AMOUNT).get(0));
+    }
+
+    @Test
+    void shouldIncludeEmptyResourceNameColumnForZeroRowTables()
+    {
+        final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        String csv = "Code,Amount\n";
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .build();
+        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"))
+                .withIncludeResourceName(RESOURCE_NAME);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        ColumnName[] columnNames = table.getColumnNames();
+
+        assertEquals(3, table.getColumnCount());
+        assertEquals(0, table.getRowCount());
+        assertEquals(CODE, columnNames[0]);
+        assertEquals(AMOUNT, columnNames[1]);
+        assertEquals(RESOURCE_NAME, columnNames[2]);
+    }
+
+    @Test
     void shouldReadFromRowSourceUsingSupplierTypesAndTransforms()
     {
         final ColumnName CODE = ColumnName.of("Code");
@@ -187,6 +257,36 @@ class TablePlanReadTest
         int shortRow = 1;
         assertTrue(codes.isSet(shortRow));
         assertFalse(amounts.isSet(shortRow));
+    }
+
+    @Test
+    void shouldKeepTrailingEmptyColumnWithoutHeadersUntilPruned()
+    {
+        final ColumnName COLUMN_1 = ColumnName.of("Column1");
+        final ColumnName COLUMN_2 = ColumnName.of("Column2");
+        final ColumnName COLUMN_3 = ColumnName.of("Column3");
+        String csv = "abc,10.5,\nxyz,20.0,\n";
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withHeaderStrategy(new HeaderStrategyNoHeaders(10)).build();
+
+        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"));
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(3, table.getColumnCount());
+        assertEquals("abc", table.getString(COLUMN_1).get(0));
+        assertEquals("xyz", table.getString(COLUMN_1).get(1));
+        assertEquals("10.5", table.getString(COLUMN_2).get(0));
+        assertEquals("20.0", table.getString(COLUMN_2).get(1));
+        assertFalse(table.getString(COLUMN_3).isSet(0));
+        assertFalse(table.getString(COLUMN_3).isSet(1));
+
+        TableColumnar pruned = table.prune();
+
+        assertEquals(2, pruned.getColumnCount());
+        assertEquals(COLUMN_1, pruned.getColumnNames()[0]);
+        assertEquals(COLUMN_2, pruned.getColumnNames()[1]);
     }
 
     @Test

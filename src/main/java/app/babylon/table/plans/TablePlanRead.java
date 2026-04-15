@@ -27,11 +27,13 @@ import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.Columns;
 import app.babylon.table.io.RowConsumerCreateTable;
-import app.babylon.table.io.RowSource;
 import app.babylon.table.io.RowCursor;
+import app.babylon.table.io.RowSource;
 import app.babylon.table.io.TabularRowReader;
 import app.babylon.table.transform.Transform;
+import app.babylon.text.Strings;
 
 /**
  * Reads rows into a {@link TableColumnar}.
@@ -145,11 +147,11 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
     {
         StreamSource checkedStreamSource = ArgumentCheck.nonNull(streamSource);
         TabularRowReader checkedReader = ArgumentCheck.nonNull(reader);
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(getTableName(), getTableDescription(),
-                this.dataSourceNameColumnName, checkedStreamSource.getName(), this.columnTypes);
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(
+                effectiveParsedTableName(checkedStreamSource.getName()), getTableDescription(), this.columnTypes);
         TabularRowReader.Result readResult = checkedReader.read(checkedStreamSource, rowConsumer);
         ensureSuccess(readResult);
-        TableColumnar parsed = rowConsumer.build();
+        TableColumnar parsed = appendResourceNameColumn(rowConsumer.build(), checkedStreamSource.getName());
         return apply(parsed);
     }
 
@@ -222,15 +224,53 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         ColumnName[] columnNames = toColumnNames(columnDefinitions);
         Map<ColumnName, Column.Type> effectiveColumnTypes = effectiveColumnTypes(columnDefinitions);
 
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(getTableName(), getTableDescription(),
-                this.dataSourceNameColumnName, sourceName, effectiveColumnTypes);
+        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(effectiveParsedTableName(sourceName),
+                getTableDescription(), effectiveColumnTypes);
         rowConsumer.start(columnNames);
         while (checkedRowCursor.next())
         {
             rowConsumer.accept(checkedRowCursor.current());
         }
-        TableColumnar parsed = rowConsumer.build();
+        TableColumnar parsed = appendResourceNameColumn(rowConsumer.build(), sourceName);
         return apply(parsed);
+    }
+
+    private TableName effectiveParsedTableName(String sourceName)
+    {
+        if (getTableName() != null)
+        {
+            return getTableName();
+        }
+        String extractedName = extractLastPart(sourceName);
+        if (Strings.isEmpty(extractedName))
+        {
+            return null;
+        }
+        return TableName.of(extractedName);
+    }
+
+    private TableColumnar appendResourceNameColumn(TableColumnar table, String sourceName)
+    {
+        if (this.dataSourceNameColumnName == null)
+        {
+            return table;
+        }
+        return table.addColumns(Columns.newString(this.dataSourceNameColumnName, sourceName, table.getRowCount()));
+    }
+
+    private static String extractLastPart(String s)
+    {
+        if (Strings.isEmpty(s))
+        {
+            return null;
+        }
+        int lastSlash = s.lastIndexOf('/');
+        int lastPeriod = s.lastIndexOf('.');
+        if (lastPeriod >= 0 && lastPeriod > lastSlash)
+        {
+            return s.substring(lastSlash + 1, lastPeriod);
+        }
+        return s;
     }
 
     private TableColumnar apply(TableColumnar table)

@@ -96,6 +96,56 @@ class RowCursorCsvTest
     }
 
     @Test
+    void shouldAutoDetectCommaAndDoubleQuote()
+    {
+        String csv = "City,Note\nParis,\"Price,12\"\n";
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
+                .build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            ColumnDefinition[] columns = rowCursor.columns();
+
+            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(ColumnName.of("Note"), columns[1].name());
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"Paris", "Price,12"}, values(rowCursor.current()));
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldReadSemicolonAndSingleQuoteWhenConfigured()
+    {
+        String csv = "City;Note\nParis;'Price;12'\n";
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
+                .withSeparator(';').withQuote('\'').build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            ColumnDefinition[] columns = rowCursor.columns();
+
+            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(ColumnName.of("Note"), columns[1].name());
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"Paris", "Price;12"}, values(rowCursor.current()));
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     void shouldFallbackToWindows1252WhenUtf8IsInvalid()
     {
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));

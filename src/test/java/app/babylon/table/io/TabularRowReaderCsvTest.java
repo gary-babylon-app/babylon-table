@@ -40,11 +40,13 @@ class TabularRowReaderCsvTest
         HeaderStrategy expected = new HeaderStrategyNoHeaders(10);
         TabularRowReaderCsv reader = new TabularRowReaderCsv();
 
-        reader.withHeaderStrategy(expected).withSeparator(';').withStripping(false).withFixedWidths(new int[]
-        {1, 2}).withCharset(StandardCharsets.UTF_8).withAutoDetectEncoding(false);
+        reader.withHeaderStrategy(expected).withSeparator(';').withQuote('\'').withStripping(false)
+                .withFixedWidths(new int[]
+                {1, 2}).withCharset(StandardCharsets.UTF_8).withAutoDetectEncoding(false);
 
         assertTrue(!reader.isStripping());
         assertEquals(';', reader.getSeparator());
+        assertEquals('\'', reader.getQuote());
         assertEquals(2, reader.getFixedWidths().length);
         assertEquals(StandardCharsets.UTF_8, reader.getCharset());
         assertTrue(!reader.isAutoDetectEncoding());

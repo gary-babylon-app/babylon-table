@@ -35,17 +35,12 @@ import app.babylon.table.column.ColumnName;
  */
 public final class RowCursorCsv implements RowCursor
 {
-    /**
-     * It is difficult to distinguish what encoding to use when UTF8 fails, and no
-     * BOM and not UTF16 Common choices are ISO-8869-1 and Windows-1252.
-     */
-    private static final Charset LEGACY_CSV_FALLBACK = StandardCharsets.ISO_8859_1;
-    // private static final Charset LEGACY_CSV_FALLBACK =
-    // Charset.forName("windows-1252");
+    private static final Charset LEGACY_CSV_FALLBACK = Charset.forName("windows-1252");
 
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private final HeaderStrategy headerStrategy;
     private final char separator;
+    private final char quote;
     private final int[] fixedWidths;
     private final Charset charset;
     private final boolean autoDetectEncoding;
@@ -60,6 +55,7 @@ public final class RowCursorCsv implements RowCursor
         this.explicitColumnTypes = new LinkedHashMap<>(ArgumentCheck.nonNull(builder).explicitColumnTypes);
         this.headerStrategy = ArgumentCheck.nonNull(builder.headerStrategy);
         this.separator = builder.separator;
+        this.quote = builder.quote;
         this.fixedWidths = builder.fixedWidths == null
                 ? null
                 : Arrays.copyOf(builder.fixedWidths, builder.fixedWidths.length);
@@ -74,12 +70,15 @@ public final class RowCursorCsv implements RowCursor
                 throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
             }
 
-            Charset resolvedCharset = resolveCharset(probe);
             int bomLength = resolveBomLength(probe);
-            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, resolvedCharset, bomLength);
+            CsvFormat format = this.autoDetectEncoding
+                    ? CsvFormatProbe.detect(bufferedInputStream, "stream.csv", LEGACY_CSV_FALLBACK, this.separator,
+                            this.quote)
+                    : new CsvFormat(resolveCharset(probe), this.separator, this.quote, 1.0d);
+            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, format.charset(), bomLength);
             this.lineReader = isFixedWidths()
-                    ? new LineReaderCSVFixedWidth(reader, toReaderOptions())
-                    : new LineReaderCSV(reader, toReaderOptions());
+                    ? new LineReaderCSVFixedWidth(reader, toReaderOptions(format))
+                    : new LineReaderCSV(reader, toReaderOptions(format));
             this.rowStream = new RowStreamBuffered(this.lineReader);
 
             HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, null);
@@ -118,6 +117,11 @@ public final class RowCursorCsv implements RowCursor
     public char getSeparator()
     {
         return this.separator;
+    }
+
+    public char getQuote()
+    {
+        return this.quote;
     }
 
     public int[] getFixedWidths()
@@ -167,13 +171,14 @@ public final class RowCursorCsv implements RowCursor
         this.lineReader.close();
     }
 
-    private TabularRowReaderCsv toReaderOptions()
+    private TabularRowReaderCsv toReaderOptions(CsvFormat format)
     {
         TabularRowReaderCsv options = new TabularRowReaderCsv();
         options.withHeaderStrategy(this.headerStrategy);
-        options.withSeparator(this.separator);
+        options.withSeparator(format.separator());
+        options.withQuote(format.quote());
         options.withFixedWidths(this.fixedWidths);
-        options.withCharset(this.charset);
+        options.withCharset(format.charset());
         options.withAutoDetectEncoding(this.autoDetectEncoding);
         return options;
     }
@@ -261,6 +266,7 @@ public final class RowCursorCsv implements RowCursor
         private final Map<ColumnName, Column.Type> explicitColumnTypes;
         private HeaderStrategy headerStrategy;
         private char separator;
+        private char quote;
         private int[] fixedWidths;
         private Charset charset;
         private boolean autoDetectEncoding;
@@ -270,6 +276,7 @@ public final class RowCursorCsv implements RowCursor
             this.explicitColumnTypes = new LinkedHashMap<>();
             this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
             this.separator = ',';
+            this.quote = '"';
             this.fixedWidths = null;
             this.charset = StandardCharsets.UTF_8;
             this.autoDetectEncoding = true;
@@ -284,6 +291,12 @@ public final class RowCursorCsv implements RowCursor
         public Builder withSeparator(char separator)
         {
             this.separator = separator;
+            return this;
+        }
+
+        public Builder withQuote(char quote)
+        {
+            this.quote = quote;
             return this;
         }
 
@@ -328,6 +341,7 @@ public final class RowCursorCsv implements RowCursor
             Builder copy = new Builder();
             copy.headerStrategy = this.headerStrategy;
             copy.separator = this.separator;
+            copy.quote = this.quote;
             copy.fixedWidths = this.fixedWidths == null
                     ? null
                     : Arrays.copyOf(this.fixedWidths, this.fixedWidths.length);

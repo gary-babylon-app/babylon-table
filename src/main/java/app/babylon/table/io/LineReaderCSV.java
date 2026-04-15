@@ -16,17 +16,19 @@ import java.io.IOException;
 
 final class LineReaderCSV implements LineReader
 {
-    private static final char QUOTE = '"';
     private static final char CR = '\r';
     private static final char LF = '\n';
 
     private final BufferedCharReader reader;
     private final char separator;
+    private final char quote;
     private final RowBuffer current;
 
     protected LineReaderCSV(BufferedCharReader reader, TabularRowReaderCsv options)
     {
-        this.separator = ArgumentCheck.nonNull(options, "options must not be null").getSeparator();
+        TabularRowReaderCsv checkedOptions = ArgumentCheck.nonNull(options, "options must not be null");
+        this.separator = checkedOptions.getSeparator();
+        this.quote = checkedOptions.getQuote();
         this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
         this.current = new RowBuffer();
     }
@@ -46,6 +48,7 @@ final class LineReaderCSV implements LineReader
     private boolean readRowParsed(RowBuffer output) throws IOException
     {
         final char separator = this.separator;
+        final char quote = this.quote;
         output.clear();
         boolean inQuotes = false;
         boolean anyCharRead = false;
@@ -57,7 +60,7 @@ final class LineReaderCSV implements LineReader
         {
             if (inQuotes)
             {
-                int quoteIndex = this.reader.next(QUOTE);
+                int quoteIndex = this.reader.next(quote);
                 if (quoteIndex == -1)
                 {
                     throw new IOException("Unterminated quoted field at EOF.");
@@ -76,7 +79,7 @@ final class LineReaderCSV implements LineReader
             }
             else
             {
-                int specialIndex = this.reader.nextSpecial(separator, QUOTE);
+                int specialIndex = this.reader.nextSpecial(separator, quote);
                 if (specialIndex == -1)
                 {
                     if (!anyCharRead)
@@ -129,13 +132,13 @@ final class LineReaderCSV implements LineReader
 
             if (inQuotes)
             {
-                if (ch == QUOTE)
+                if (ch == quote)
                 {
                     int next = this.reader.peek();
-                    if (next == QUOTE)
+                    if (next == quote)
                     {
                         this.reader.read();
-                        output.append(QUOTE);
+                        output.append(quote);
                         fieldHasContent = true;
                         anyNonRowTerminator = true;
                     }
@@ -153,7 +156,7 @@ final class LineReaderCSV implements LineReader
                 continue;
             }
 
-            if (ch == QUOTE)
+            if (ch == quote)
             {
                 if (!fieldHasContent)
                 {

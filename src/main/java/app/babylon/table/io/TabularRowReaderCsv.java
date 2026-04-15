@@ -32,6 +32,7 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
     private HeaderStrategy headerStrategy;
     private boolean stripping;
     private char separator;
+    private char quote;
     private int[] fixedWidths;
     private Charset charset;
     private boolean autoDetectEncoding;
@@ -41,6 +42,7 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
         this.stripping = true;
         this.separator = ',';
+        this.quote = '"';
         this.fixedWidths = null;
         this.charset = StandardCharsets.UTF_8;
         this.autoDetectEncoding = true;
@@ -61,6 +63,12 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
     public TabularRowReaderCsv withSeparator(char separator)
     {
         this.separator = separator;
+        return this;
+    }
+
+    public TabularRowReaderCsv withQuote(char quote)
+    {
+        this.quote = quote;
         return this;
     }
 
@@ -95,6 +103,11 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
     public char getSeparator()
     {
         return this.separator;
+    }
+
+    public char getQuote()
+    {
+        return this.quote;
     }
 
     public int[] getFixedWidths()
@@ -191,14 +204,20 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         {
             throw new IllegalArgumentException();
         }
-        Charset resolvedCharset = resolveCharset(probe);
+        CsvFormat format = this.autoDetectEncoding
+                ? CsvFormatProbe.detect(bufferedStream, streamSource.getName(), LEGACY_CSV_FALLBACK, this.separator,
+                        this.quote)
+                : new CsvFormat(resolveCharset(probe), this.separator, this.quote, 1.0d);
         int bomLength = resolveBomLength(probe);
-        BufferedCharReader reader = createBufferedCharReader(bufferedStream, resolvedCharset, bomLength);
+        BufferedCharReader reader = createBufferedCharReader(bufferedStream, format.charset(), bomLength);
+        TabularRowReaderCsv effectiveOptions = copy();
+        effectiveOptions.withSeparator(format.separator());
+        effectiveOptions.withQuote(format.quote());
         if (isFixedWidths())
         {
-            return new LineReaderCSVFixedWidth(reader, this);
+            return new LineReaderCSVFixedWidth(reader, effectiveOptions);
         }
-        return new LineReaderCSV(reader, this);
+        return new LineReaderCSV(reader, effectiveOptions);
     }
 
     private static BufferedInputStream toBufferedStream(InputStream instream)
@@ -259,6 +278,19 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
             return probe.getCharset(LEGACY_CSV_FALLBACK);
         }
         return this.charset == null ? LEGACY_CSV_FALLBACK : this.charset;
+    }
+
+    private TabularRowReaderCsv copy()
+    {
+        TabularRowReaderCsv copy = new TabularRowReaderCsv();
+        copy.headerStrategy = this.headerStrategy;
+        copy.stripping = this.stripping;
+        copy.separator = this.separator;
+        copy.quote = this.quote;
+        copy.fixedWidths = this.fixedWidths == null ? null : Arrays.copyOf(this.fixedWidths, this.fixedWidths.length);
+        copy.charset = this.charset;
+        copy.autoDetectEncoding = this.autoDetectEncoding;
+        return copy;
     }
 
     private int resolveBomLength(StreamSourceProbe probe)

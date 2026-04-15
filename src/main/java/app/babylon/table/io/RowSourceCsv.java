@@ -78,6 +78,12 @@ public final class RowSourceCsv implements RowSource
             return this;
         }
 
+        public Builder withQuote(char quote)
+        {
+            this.rowCursorBuilder.withQuote(quote);
+            return this;
+        }
+
         public Builder withFixedWidths(int[] fixedWidths)
         {
             this.rowCursorBuilder.withFixedWidths(fixedWidths);

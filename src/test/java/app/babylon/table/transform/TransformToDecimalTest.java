@@ -3,22 +3,22 @@ package app.babylon.table.transform;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnCategorical;
-import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 
 class TransformToDecimalTest
 {
@@ -40,7 +40,7 @@ class TransformToDecimalTest
         builder.add("-2.50");
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformed = new TransformToDecimal(AMOUNT).apply((Column) source);
+        ColumnObject<BigDecimal> transformed = TransformToDecimal.of(AMOUNT).apply((Column) source);
 
         assertEquals(5, transformed.size());
         assertDecimalEquals("1.25", transformed.get(0));
@@ -48,6 +48,44 @@ class TransformToDecimalTest
         assertFalse(transformed.isSet(2));
         assertFalse(transformed.isSet(3));
         assertDecimalEquals("-2.50", transformed.get(4));
+    }
+
+    @Test
+    void constructorsAndFactoriesShouldCreateWorkingDecimalTransforms()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final ColumnName PARSED = ColumnName.of("Parsed");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
+                app.babylon.table.column.ColumnTypes.STRING);
+        builder.add("-12.5");
+        builder.add("$1,234.50");
+        ColumnObject<String> source = builder.build();
+
+        ColumnObject<BigDecimal> parsedWithCustomName = TransformToDecimal.of("Amount", "Parsed")
+                .apply((Column) source);
+        ColumnObject<BigDecimal> parsedFromColumns = TransformToDecimal.of(AMOUNT).apply((Column) source);
+        TransformToDecimal fromStringFactory = TransformToDecimal.of("ToDecimal(Amount)");
+        TransformToDecimal fromParamsFactory = TransformToDecimal.of("Amount", "Parsed");
+
+        assertEquals(PARSED, parsedWithCustomName.getName());
+        assertDecimalEquals("-12.5", parsedWithCustomName.get(0));
+        assertDecimalEquals("1234.50", parsedWithCustomName.get(1));
+
+        assertDecimalEquals("-12.5", parsedFromColumns.get(0));
+        assertDecimalEquals("1234.50", parsedFromColumns.get(1));
+
+        assertEquals("ToDecimal(Amount)", fromStringFactory.toString());
+        assertDecimalEquals("-12.5", fromStringFactory.apply((Column) source).get(0));
+
+        assertTrue(fromParamsFactory instanceof TransformToDecimal);
+        ColumnObject<BigDecimal> parsedFromParams = fromParamsFactory.apply((Column) source);
+        assertEquals(PARSED, parsedFromParams.getName());
+        assertDecimalEquals("-12.5", parsedFromParams.get(0));
+        assertDecimalEquals("1234.50", parsedFromParams.get(1));
+
+        assertNull(TransformToDecimal.of(new String[]
+        {"Amount"}));
+        assertNull(TransformToDecimal.of((ColumnName) null));
     }
 
     @Test
@@ -63,7 +101,7 @@ class TransformToDecimalTest
         builder.addNull();
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(AMOUNT).apply((Column) source);
+        ColumnObject<BigDecimal> transformedBase = TransformToDecimal.of(AMOUNT).apply((Column) source);
         assertTrue(transformedBase instanceof ColumnCategorical<?>);
 
         ColumnCategorical<BigDecimal> transformed = (ColumnCategorical<BigDecimal>) transformedBase;
@@ -94,7 +132,7 @@ class TransformToDecimalTest
         builder.add("bad");
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(AMOUNT).apply((Column) source);
+        ColumnObject<BigDecimal> transformedBase = TransformToDecimal.of(AMOUNT).apply((Column) source);
         assertTrue(transformedBase instanceof ColumnCategorical<?>);
 
         ColumnCategorical<BigDecimal> transformed = (ColumnCategorical<BigDecimal>) transformedBase;
@@ -120,7 +158,7 @@ class TransformToDecimalTest
         builder.add("bad");
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformedBase = new TransformToDecimal(AMOUNT).apply((Column) source);
+        ColumnObject<BigDecimal> transformedBase = TransformToDecimal.of(AMOUNT).apply((Column) source);
         ColumnCategorical<BigDecimal> transformed = (ColumnCategorical<BigDecimal>) transformedBase;
 
         ViewIndex.Builder rowIndexBuilder = ViewIndex.builder();
@@ -164,14 +202,16 @@ class TransformToDecimalTest
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), amountBuilder.build(),
                 otherBuilder.build(), existingDecimal);
 
-        TableColumnar transformed = table.apply(new TransformToDecimal(AMOUNT, EXISTING));
+        TableColumnar transformed = table.apply(TransformToDecimal.of("AMOUNT", "EXISTING"));
 
-        ColumnObject<BigDecimal> amount = transformed.getDecimal(AMOUNT);
-        assertDecimalEquals("1", amount.get(0));
-        assertDecimalEquals("2", amount.get(1));
+        assertEquals("1", transformed.getString(AMOUNT).get(0));
+        assertEquals("2", transformed.getString(AMOUNT).get(1));
 
         assertEquals("x", transformed.getString(OTHER).get(0));
-        assertSame(existingDecimal, transformed.getDecimal(EXISTING));
+        ColumnObject<BigDecimal> parsed = transformed.getDecimal(EXISTING);
+        assertDecimalEquals("1", parsed.get(0));
+        assertDecimalEquals("2", parsed.get(1));
+        assertTrue(parsed != existingDecimal);
     }
 
     @Test
@@ -184,7 +224,7 @@ class TransformToDecimalTest
         builder.add("1E-6");
         ColumnObject<String> source = builder.build();
 
-        ColumnObject<BigDecimal> transformed = new TransformToDecimal(AMOUNT).apply((Column) source);
+        ColumnObject<BigDecimal> transformed = TransformToDecimal.of(AMOUNT).apply((Column) source);
 
         assertDecimalEquals("1000000", transformed.get(0));
         assertDecimalEquals("0.000001", transformed.get(1));

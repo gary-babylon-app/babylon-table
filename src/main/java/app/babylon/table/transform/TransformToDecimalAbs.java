@@ -10,27 +10,26 @@ import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.text.BigDecimals;
 import app.babylon.text.Split;
 import app.babylon.text.Strings;
 
-public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
+public class TransformToDecimalAbs extends TransformStringColumnsBase<BigDecimal>
 {
-    public static final String FUNCTION_NAME = "ToDecimal";
+    public static final String FUNCTION_NAME = "ToDecimalAbs";
     private final Function<CharSequence, BigDecimal> parser;
 
-    private TransformToDecimal(ColumnName... columnNames)
+    private TransformToDecimalAbs(ColumnName... columnNames)
     {
         super(FUNCTION_NAME, ArgumentCheck.nonEmpty(columnNames), null);
-        this.parser = TransformToDecimal::parseDecimal;
+        this.parser = TransformToDecimalAbs::parseAbsDecimal;
     }
 
-    private TransformToDecimal(ColumnName columnName, ColumnName newColumnName)
+    private TransformToDecimalAbs(ColumnName columnName, ColumnName newColumnName)
     {
         this(columnName, newColumnName, null);
     }
 
-    public static TransformToDecimal of(ColumnName... columnNames)
+    public static TransformToDecimalAbs of(ColumnName... columnNames)
     {
         if (Is.empty(columnNames))
         {
@@ -43,10 +42,10 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
                 return null;
             }
         }
-        return new TransformToDecimal(columnNames);
+        return new TransformToDecimalAbs(columnNames);
     }
 
-    public static TransformToDecimal of(String... params)
+    public static TransformToDecimalAbs of(String... params)
     {
         if (Is.empty(params))
         {
@@ -61,13 +60,13 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
                 return null;
             }
             s = s.substring(FUNCTION_NAME.length() + 1, s.length() - 1);
-            return new TransformToDecimal(ColumnName.of(Split.commaSeparatedParams(s)));
+            return new TransformToDecimalAbs(ColumnName.of(Split.commaSeparatedParams(s)));
         }
         if (params.length >= 2)
         {
             ColumnName columnName = ColumnName.parse(params[0]);
             ColumnName newColumnName = ColumnName.parse(params[1]);
-            return new TransformToDecimal(columnName, newColumnName);
+            return new TransformToDecimalAbs(columnName, newColumnName);
         }
         return null;
     }
@@ -84,23 +83,23 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
         return this.parser;
     }
 
-    static BigDecimal parseDecimal(CharSequence s)
+    static BigDecimal parseAbsDecimal(CharSequence s)
     {
-        BigDecimal bd = BigDecimals.parse(s);
-        if (bd == null)
+        BigDecimal bd = TransformToDecimal.parseDecimal(s);
+        if (bd != null)
         {
-            bd = BigDecimals.extract(s);
+            return bd.abs();
         }
-        return bd;
+        return null;
     }
 
-    private TransformToDecimal(ColumnName columnName, ColumnName newColumnName,
+    private TransformToDecimalAbs(ColumnName columnName, ColumnName newColumnName,
             Function<CharSequence, BigDecimal> parser)
     {
         super(FUNCTION_NAME, new ColumnName[]
         {ArgumentCheck.nonNull(columnName)}, new ColumnName[]
         {ArgumentCheck.nonNull(newColumnName)});
-        this.parser = resolveParser(parser, TransformToDecimal::parseDecimal);
+        this.parser = resolveParser(parser, TransformToDecimalAbs::parseAbsDecimal);
     }
 
     public ColumnObject<BigDecimal> apply(Column x)

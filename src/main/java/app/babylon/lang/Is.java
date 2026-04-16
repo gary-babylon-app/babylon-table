@@ -13,15 +13,8 @@ package app.babylon.lang;
 import java.util.Collection;
 import java.util.Map;
 
-import app.babylon.text.Strings;
-
 public class Is
 {
-    public static boolean empty(int[] x)
-    {
-        return (x == null || x.length == 0);
-    }
-
     public static <T> boolean empty(Collection<T> x)
     {
         return (x == null || x.size() == 0);
@@ -35,88 +28,5 @@ public class Is
     public static <T> boolean empty(T[] x)
     {
         return (x == null || x.length == 0);
-    }
-
-    public static boolean alphaUpper(char c)
-    {
-        return (c >= 'A' && c <= 'Z');
-    }
-
-    public static boolean alphaNumeric(char c)
-    {
-        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || digit(c);
-    }
-
-    public static boolean digit(char c)
-    {
-        return c >= '0' && c <= '9';
-    }
-
-    public static boolean strictLeftDecimal(String s, int until)
-    {
-        if (Strings.isEmpty(s))
-        {
-            return false;
-        }
-
-        int len = Math.min(until, s.length());
-        int start = (s.charAt(0) == '-' || s.charAt(0) == '+') ? 1 : 0;
-
-        boolean hasDigit = false;
-        boolean hasDot = false;
-
-        for (int i = start; i < len; i++)
-        {
-            char c = s.charAt(i);
-            if (c >= '0' && c <= '9')
-            {
-                hasDigit = true;
-            }
-            else if (c == '.')
-            {
-                if (hasDot)
-                {
-                    return false; // second dot → invalid
-                }
-                hasDot = true;
-            }
-            else
-            {
-                return false; // invalid char
-            }
-        }
-        return hasDigit;
-    }
-
-    public static boolean decimal(String s)
-    {
-        return strictLeftDecimal(s, s.length());
-    }
-
-    public static boolean integer(String s)
-    {
-        if (Strings.isEmpty(s))
-        {
-            return false;
-        }
-
-        int len = s.length();
-        int start = (s.charAt(0) == '-' || s.charAt(0) == '+') ? 1 : 0;
-
-        boolean hasDigit = false;
-
-        for (int i = start; i < len; ++i)
-        {
-            char c = s.charAt(i);
-            if (c >= '0' && c <= '9')
-            {
-                hasDigit = true;
-            }
-            else
-            {
-                return false; // invalid char
-            }
-        }
-        return hasDigit;
     }
 }

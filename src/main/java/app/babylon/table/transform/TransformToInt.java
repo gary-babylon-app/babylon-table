@@ -7,9 +7,11 @@ import java.util.Map;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
+import app.babylon.text.Strings;
 
 public class TransformToInt extends TransformBase
 {
@@ -64,7 +66,7 @@ public class TransformToInt extends TransformBase
                 continue;
             }
             String s = stringColumn.get(i);
-            if (!Is.integer(s))
+            if (!Strings.isInt(s))
             {
                 builder.addNull();
                 continue;

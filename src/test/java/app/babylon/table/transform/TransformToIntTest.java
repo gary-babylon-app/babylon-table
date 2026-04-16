@@ -31,18 +31,24 @@ class TransformToIntTest
         builder.add("abc");
         builder.addNull();
         builder.add("-2");
-        builder.add("999999999999");
+        builder.add("2147483647");
+        builder.add("2147483648");
+        builder.add("-2147483648");
+        builder.add("-2147483649");
         ColumnObject<String> source = builder.build();
 
         ColumnInt transformed = new TransformToInt(AMOUNT).apply((Column) source);
 
-        assertEquals(6, transformed.size());
+        assertEquals(9, transformed.size());
         assertEquals(1, transformed.get(0));
         assertFalse(transformed.isSet(1));
         assertFalse(transformed.isSet(2));
         assertFalse(transformed.isSet(3));
         assertEquals(-2, transformed.get(4));
-        assertFalse(transformed.isSet(5));
+        assertEquals(2147483647, transformed.get(5));
+        assertFalse(transformed.isSet(6));
+        assertEquals(-2147483648, transformed.get(7));
+        assertFalse(transformed.isSet(8));
     }
 
     @Test

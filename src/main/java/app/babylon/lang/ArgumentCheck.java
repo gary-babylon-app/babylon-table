@@ -26,15 +26,6 @@ public final class ArgumentCheck
         return i;
     }
 
-    public static int[] nonEmpty(int[] x)
-    {
-        if (x == null || x.length == 0)
-        {
-            throw new RuntimeException("Require non-empty array.");
-        }
-        return x;
-    }
-
     public static <T> T[] nonEmpty(T[] x)
     {
         if (x == null || x.length == 0)
@@ -60,15 +51,6 @@ public final class ArgumentCheck
             throw new RuntimeException("Require non-empty String.");
         }
         return s;
-    }
-
-    public static String nonEmptyAsString(CharSequence s)
-    {
-        if (Strings.isEmpty(s))
-        {
-            throw new RuntimeException("Require non-empty String.");
-        }
-        return s.toString();
     }
 
     public static <T> T nonNull(T o)

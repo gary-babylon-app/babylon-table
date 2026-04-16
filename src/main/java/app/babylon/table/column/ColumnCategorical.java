@@ -219,6 +219,16 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
             return 0;
         }
 
+        if (a == null)
+        {
+            return -1;
+        }
+
+        if (b == null)
+        {
+            return 1;
+        }
+
         if (a instanceof Comparable)
         {
             @SuppressWarnings("unchecked")
@@ -228,14 +238,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
 
         if (a != null)
         {
-            if (b != null)
-            {
-                return a.toString().compareTo(b.toString());
-            }
-            else
-            {
-                return 1;
-            }
+            return a.toString().compareTo(b.toString());
         }
         else
         {

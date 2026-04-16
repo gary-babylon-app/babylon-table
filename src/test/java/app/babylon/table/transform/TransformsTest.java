@@ -17,5 +17,7 @@ class TransformsTest
         assertTrue(first.create("After", "Code", "After", "-") instanceof TransformAfter);
         assertTrue(first.create("NewConstant", "Value", "X") instanceof TransformCreateConstant);
         assertTrue(first.create("AppendSuffix", "Code", "Out", "_X") instanceof TransformSuffix);
+        assertTrue(first.create("ToDecimal", "Amount", "Parsed") instanceof TransformToDecimal);
+        assertTrue(first.create("ToDecimalAbs", "Amount", "Parsed") instanceof TransformToDecimalAbs);
     }
 }

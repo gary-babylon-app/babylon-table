@@ -32,19 +32,25 @@ class TransformToLongTest
         builder.add("abc");
         builder.addNull();
         builder.add("-2");
-        builder.add("999999999999999999999999");
+        builder.add("9223372036854775807");
+        builder.add("9223372036854775808");
+        builder.add("-9223372036854775808");
+        builder.add("-9223372036854775809");
         ColumnObject<String> source = builder.build();
 
         ColumnLong transformed = new TransformToLong(AMOUNT).apply((Column) source);
 
-        assertEquals(7, transformed.size());
+        assertEquals(10, transformed.size());
         assertEquals(1L, transformed.get(0));
         assertEquals(2147483648L, transformed.get(1));
         assertFalse(transformed.isSet(2));
         assertFalse(transformed.isSet(3));
         assertFalse(transformed.isSet(4));
         assertEquals(-2L, transformed.get(5));
-        assertFalse(transformed.isSet(6));
+        assertEquals(9223372036854775807L, transformed.get(6));
+        assertFalse(transformed.isSet(7));
+        assertEquals(-9223372036854775808L, transformed.get(8));
+        assertFalse(transformed.isSet(9));
     }
 
     @Test

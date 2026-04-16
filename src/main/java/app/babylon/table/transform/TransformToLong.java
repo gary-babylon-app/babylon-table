@@ -4,12 +4,13 @@ import app.babylon.lang.ArgumentCheck;
 
 import java.util.Map;
 
-import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
+import app.babylon.lang.Is;
+import app.babylon.text.Strings;
 
 public class TransformToLong extends TransformBase
 {
@@ -64,7 +65,7 @@ public class TransformToLong extends TransformBase
                 continue;
             }
             String s = strings.get(i);
-            if (!Is.integer(s))
+            if (!Strings.isLong(s))
             {
                 builder.addNull();
                 continue;

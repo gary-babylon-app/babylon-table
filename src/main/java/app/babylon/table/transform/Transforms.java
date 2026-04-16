@@ -36,6 +36,7 @@ public final class Transforms
                             .register(TransformSubstring.FUNCTION_NAME, TransformSubstring::of)
                             .register(TransformSuffix.FUNCTION_NAME, TransformSuffix::of)
                             .register(/* backward compat */"AppendSuffix", TransformSuffix::of)
+                            .register(TransformToDecimalAbs.FUNCTION_NAME, TransformToDecimalAbs::of)
                             .register(TransformToDecimal.FUNCTION_NAME, TransformToDecimal::of)
                             .register(TransformToDouble.FUNCTION_NAME, TransformToDouble::of)
                             .register(TransformToInt.FUNCTION_NAME, TransformToInt::of)

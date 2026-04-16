@@ -118,6 +118,43 @@ public final class Strings
         return s == null || s.length() == 0;
     }
 
+    public static boolean isWholeNumber(String s)
+    {
+        if (isEmpty(s))
+        {
+            return false;
+        }
+
+        int len = s.length();
+        int start = (s.charAt(0) == '-' || s.charAt(0) == '+') ? 1 : 0;
+
+        boolean hasDigit = false;
+
+        for (int i = start; i < len; ++i)
+        {
+            char c = s.charAt(i);
+            if (c >= '0' && c <= '9')
+            {
+                hasDigit = true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return hasDigit;
+    }
+
+    public static boolean isInt(String s)
+    {
+        return isBoundedWholeNumber(s, "2147483647", "2147483648");
+    }
+
+    public static boolean isLong(String s)
+    {
+        return isBoundedWholeNumber(s, "9223372036854775807", "9223372036854775808");
+    }
+
     /**
      * Unicode-aware edge stripping (like {@link String#strip()}) plus additional
      * ingestion cleanup characters.
@@ -188,5 +225,42 @@ public final class Strings
     {
         return Character.isWhitespace(c) || c == '\u00A0' || c == '\u200B' || c == '\u200C' || c == '\u200D'
                 || c == '\uFEFF' || c == '\uFFFD';
+    }
+
+    private static boolean isBoundedWholeNumber(String s, String positiveBound, String negativeMagnitudeBound)
+    {
+        if (!isWholeNumber(s))
+        {
+            return false;
+        }
+
+        boolean negative = s.charAt(0) == '-';
+        int start = (negative || s.charAt(0) == '+') ? 1 : 0;
+        int digits = s.length() - start;
+        String bound = negative ? negativeMagnitudeBound : positiveBound;
+
+        if (digits < bound.length())
+        {
+            return true;
+        }
+        if (digits > bound.length())
+        {
+            return false;
+        }
+
+        for (int i = 0; i < digits; ++i)
+        {
+            char a = s.charAt(start + i);
+            char b = bound.charAt(i);
+            if (a < b)
+            {
+                return true;
+            }
+            if (a > b)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -3,8 +3,11 @@ package app.babylon.table.io;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -12,6 +15,7 @@ import org.junit.jupiter.api.Test;
 
 import app.babylon.io.TestStreamSources;
 import app.babylon.io.StreamSources;
+import app.babylon.table.TableException;
 import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
@@ -267,6 +271,27 @@ class RowCursorCsvTest
             assertArrayEquals(new String[]
             {"Paris", "Price €12"}, values(rowCursor.current()));
             assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldWrapClosedInputStreamFailureInTableException()
+    {
+        InputStream inputStream = InputStream.nullInputStream();
+        try
+        {
+            inputStream.close();
+            RowCursorCsv.builder().build(inputStream);
+            fail("Expected TableException");
+        }
+        catch (TableException e)
+        {
+            assertNotNull(e.getCause());
+            assertTrue(e.getMessage() != null && !e.getMessage().isBlank());
         }
         catch (Exception e)
         {

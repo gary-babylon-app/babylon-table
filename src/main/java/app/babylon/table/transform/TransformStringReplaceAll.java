@@ -50,6 +50,11 @@ public class TransformStringReplaceAll extends TransformBase
         for (int i = 0; i < column.size(); ++i)
         {
             String s = column.get(i);
+            if (s == null)
+            {
+                newColumn.addNull();
+                continue;
+            }
             if (!old2New.containsKey(s))
             {
                 String r = s.replaceAll(target, replacement);

@@ -59,4 +59,19 @@ class AccumulatorDoubleTest
         assertEquals(12.5d, accumulator.getSum());
         assertEquals(12.5d, accumulator.getMean());
     }
+
+    @Test
+    void shouldExposeAggregateValues()
+    {
+        AccumulatorDouble accumulator = new AccumulatorDouble();
+
+        accumulator.accept(10.0d);
+        accumulator.accept(20.0d);
+
+        assertEquals(10.0d, accumulator.get(Aggregate.MIN));
+        assertEquals(20.0d, accumulator.get(Aggregate.MAX));
+        assertEquals(30.0d, accumulator.get(Aggregate.SUM));
+        assertEquals(15.0d, accumulator.get(Aggregate.MEAN));
+        assertEquals(2.0d, accumulator.get(Aggregate.COUNT));
+    }
 }

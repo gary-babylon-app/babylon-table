@@ -92,9 +92,16 @@ class ColumnLongBuilderArray implements ColumnLong.Builder
     public ColumnLong build()
     {
         boolean constant = isConstant();
+        boolean allSet = !this.hasAnyUnset;
+        long constantValue = this.size == 0 ? 0L : this.values[0];
+        ColumnName columnName = getName();
         long[] transferredValues = detachValues();
         BitList transferredIsSet = detachIsSet();
-        return new ColumnLongArray(getName(), transferredValues, transferredIsSet, size, constant, !this.hasAnyUnset,
+        if (constant && allSet)
+        {
+            return new ColumnLongConstant(columnName, constantValue, this.size);
+        }
+        return new ColumnLongArray(columnName, transferredValues, transferredIsSet, size, constant, allSet,
                 !this.hasAnySet);
     }
 

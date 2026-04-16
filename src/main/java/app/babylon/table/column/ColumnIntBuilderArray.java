@@ -92,9 +92,16 @@ class ColumnIntBuilderArray implements ColumnInt.Builder
     public ColumnInt build()
     {
         boolean constant = isConstant();
+        boolean allSet = !this.hasAnyUnset;
+        int constantValue = this.size == 0 ? 0 : this.values[0];
+        ColumnName columnName = getName();
         int[] transferredValues = detachValues();
         BitList transferredIsSet = detachIsSet();
-        return new ColumnIntArray(getName(), transferredValues, transferredIsSet, size, constant, !this.hasAnyUnset,
+        if (constant && allSet)
+        {
+            return new ColumnIntConstant(columnName, constantValue, this.size);
+        }
+        return new ColumnIntArray(columnName, transferredValues, transferredIsSet, size, constant, allSet,
                 !this.hasAnySet);
     }
 

@@ -38,6 +38,11 @@ class ColumnLongConstant implements ColumnLong
         this.isSet = isSet;
     }
 
+    public static ColumnLongConstant createNull(ColumnName name, int size)
+    {
+        return new ColumnLongConstant(name, Long.MAX_VALUE, size, false);
+    }
+
     @Override
     public long get(int i)
     {
@@ -78,7 +83,9 @@ class ColumnLongConstant implements ColumnLong
         ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
-            return new ColumnLongConstant(this.name, this.value, rowIndex.size(), this.isSet);
+            return this.isSet
+                    ? new ColumnLongConstant(this.name, this.value, rowIndex.size(), true)
+                    : createNull(this.name, rowIndex.size());
         }
         ColumnLong.Builder builder = ColumnLong.builder(this.name);
         for (int i = 0; i < rowIndex.size(); ++i)

@@ -14,7 +14,6 @@ import app.babylon.lang.ArgumentCheck;
 
 import java.util.Arrays;
 
-import app.babylon.table.TableException;
 import app.babylon.table.ViewIndex;
 
 class ColumnByteBuilderArray implements ColumnByte.Builder
@@ -77,6 +76,10 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
     public ColumnByte build()
     {
         ensureActive();
+        boolean constant = isConstant();
+        boolean allSet = !this.hasAnyUnset;
+        byte constantValue = this.size == 0 ? (byte) 0 : this.bytes[0];
+        ColumnName columnName = this.name;
         byte[] transferredBytes = this.bytes;
         BitList transferredIsSet = this.isSet.build();
         int transferredSize = this.size;
@@ -84,8 +87,41 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         this.isSet = null;
         this.size = 0;
         this.built = true;
-        return new ColumnByteStream(this.name, transferredBytes, transferredIsSet, transferredSize, !this.hasAnyUnset,
+        if (constant && allSet)
+        {
+            return new ColumnByteConstant(columnName, constantValue, transferredSize);
+        }
+        return new ColumnByteStream(columnName, transferredBytes, transferredIsSet, transferredSize, allSet,
                 !this.hasAnySet);
+    }
+
+    private boolean isConstant()
+    {
+        if (this.size <= 1)
+        {
+            return true;
+        }
+        boolean firstSet = this.isSet.get(0);
+        if (!firstSet)
+        {
+            for (int i = 1; i < this.size; ++i)
+            {
+                if (this.isSet.get(i))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        byte firstValue = this.bytes[0];
+        for (int i = 1; i < this.size; ++i)
+        {
+            if (!this.isSet.get(i) || this.bytes[i] != firstValue)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void ensureCapacity(int minCapacity)
@@ -134,9 +170,21 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         }
 
         @Override
-        public Column copy(ColumnName x)
+        public ColumnByte copy(ColumnName x)
         {
-            throw new TableException("Copy not implemented yet.");
+            ColumnByte.Builder builder = ColumnByte.builder(x);
+            for (int i = 0; i < this.size; ++i)
+            {
+                if (this.isSet.get(i))
+                {
+                    builder.add(this.bytes[i]);
+                }
+                else
+                {
+                    builder.addNull();
+                }
+            }
+            return builder.build();
         }
         @Override
         public Type getType()
@@ -236,13 +284,28 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         @Override
         public Column view(ViewIndex rowIndex)
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            ArgumentCheck.nonNull(rowIndex);
+            ColumnByte.Builder builder = ColumnByte.builder(this.name);
+            for (int i = 0; i < rowIndex.size(); ++i)
+            {
+                if (rowIndex.isSet(i) && this.isSet.get(rowIndex.get(i)))
+                {
+                    builder.add(this.bytes[rowIndex.get(i)]);
+                }
+                else
+                {
+                    builder.addNull();
+                }
+            }
+            return builder.build();
         }
 
         @Override
         public Column getAsColumn(int i)
         {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return this.isSet.get(i)
+                    ? new ColumnByteConstant(this.name, this.bytes[i], 1, true)
+                    : ColumnByteConstant.createNull(this.name, 1);
         }
     }
 }

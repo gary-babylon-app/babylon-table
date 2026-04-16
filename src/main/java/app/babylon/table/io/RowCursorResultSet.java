@@ -293,7 +293,7 @@ public class RowCursorResultSet implements RowCursor
             {
                 readStringValue(position);
             }
-            return RowKey.copyOf(this.stringValues, positions);
+            return RowKey.of(this.stringValues, positions);
         }
 
         @Override

@@ -10,6 +10,8 @@
 
 package app.babylon.table.column;
 
+import app.babylon.table.selection.Selection;
+
 /**
  * A column of byte values used for compact storage of byte-oriented data and
  * file-signature style checks.
@@ -74,6 +76,12 @@ public interface ColumnByte extends Column
         return new ColumnByteBuilderArray(name);
     }
 
+    @Override
+    default public Type getType()
+    {
+        return TYPE;
+    }
+
     /**
      * Returns the byte value at the supplied row.
      *
@@ -82,6 +90,83 @@ public interface ColumnByte extends Column
      * @return the byte value
      */
     public byte get(int i);
+
+    @Override
+    default int compare(int i, int j)
+    {
+        if (i == j)
+        {
+            return 0;
+        }
+        boolean aSet = isSet(i);
+        boolean bSet = isSet(j);
+        if (aSet && bSet)
+        {
+            return Byte.compare(get(i), get(j));
+        }
+        if (!aSet && !bSet)
+        {
+            return 0;
+        }
+        return aSet ? 1 : -1;
+    }
+
+    @Override
+    default public String toString(int i)
+    {
+        return isSet(i) ? Byte.toString(get(i)) : "";
+    }
+
+    @Override
+    default public Column getAsColumn(int i)
+    {
+        return isSet(i)
+                ? new ColumnByteConstant(getName(), get(i), 1, true)
+                : ColumnByteConstant.createNull(getName(), 1);
+    }
+
+    @Override
+    default public ColumnByte copy(ColumnName x)
+    {
+        Builder newBuilder = ColumnByte.builder(x);
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                newBuilder.add(get(i));
+            }
+            else
+            {
+                newBuilder.addNull();
+            }
+        }
+        return newBuilder.build();
+    }
+
+    /**
+     * Selects rows whose values satisfy the supplied predicate.
+     *
+     * @param predicate
+     *            the predicate to test against each set value
+     * @return a selection containing the predicate result for each row
+     */
+    default Selection select(BytePredicate predicate)
+    {
+        BytePredicate p = predicate;
+        Selection selection = new Selection(this.getName() + " filtered.");
+        for (int i = 0; i < this.size(); ++i)
+        {
+            if (isSet(i))
+            {
+                selection.add(p.test(get(i)));
+            }
+            else
+            {
+                selection.add(false);
+            }
+        }
+        return selection;
+    }
 
     /**
      * Indicates whether the byte values match the legacy XLS file signature.

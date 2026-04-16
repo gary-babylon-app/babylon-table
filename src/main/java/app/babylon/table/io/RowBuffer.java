@@ -213,7 +213,7 @@ public final class RowBuffer implements Row
     @Override
     public RowKey keyOf(int[] positions)
     {
-        return RowKey.copyOf(this, positions);
+        return RowKey.of(this, positions);
     }
 
     String[] toStringArray()

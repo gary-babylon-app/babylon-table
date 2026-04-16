@@ -94,4 +94,16 @@ public class AccumulatorDouble implements DoubleConsumer
     {
         return this.m2;
     }
+
+    public double get(Aggregate aggregate)
+    {
+        return switch (aggregate)
+        {
+            case COUNT -> getCount();
+            case MIN -> getMin();
+            case MAX -> getMax();
+            case SUM -> getSum();
+            case MEAN -> getMean();
+        };
+    }
 }

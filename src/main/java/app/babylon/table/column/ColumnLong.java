@@ -145,7 +145,9 @@ public interface ColumnLong extends Column
     @Override
     default public Column getAsColumn(int i)
     {
-        return new ColumnLongConstant(getName(), get(i), 1, isSet(i));
+        return isSet(i)
+                ? new ColumnLongConstant(getName(), get(i), 1, true)
+                : ColumnLongConstant.createNull(getName(), 1);
     }
 
     @Override

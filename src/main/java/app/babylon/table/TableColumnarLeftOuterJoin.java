@@ -13,6 +13,7 @@ package app.babylon.table;
 import app.babylon.lang.ArgumentCheck;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -113,7 +114,32 @@ class TableColumnarLeftOuterJoin extends TableColumnarCommon
     {
         if (!Is.empty(x))
         {
-            throw new RuntimeException(getName() + ":Cannot add new columns to a join view on a table.");
+            Set<ColumnName> columnsToRemove = new HashSet<>();
+            for (ColumnName columnName : x)
+            {
+                if (contains(columnName))
+                {
+                    columnsToRemove.add(columnName);
+                }
+            }
+            if (columnsToRemove.isEmpty())
+            {
+                return this;
+            }
+
+            TableColumnar reducedLeft = this.left
+                    .removeColumns(columnsToRemove.toArray(new ColumnName[columnsToRemove.size()]));
+            java.util.List<ColumnName> remainingRightColumns = new java.util.ArrayList<>();
+            for (ColumnName rightColumn : this.rightColumnsToAdd)
+            {
+                if (!columnsToRemove.contains(rightColumn))
+                {
+                    remainingRightColumns.add(rightColumn);
+                }
+            }
+
+            return new TableColumnarLeftOuterJoin(getName(), getDescription(), reducedLeft, this.right, this.rowIndex,
+                    remainingRightColumns.toArray(new ColumnName[remainingRightColumns.size()]));
         }
         return this;
     }

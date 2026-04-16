@@ -131,7 +131,9 @@ public interface ColumnInt extends Column
     @Override
     default public Column getAsColumn(int i)
     {
-        return new ColumnIntConstant(getName(), get(i), 1, isSet(i));
+        return isSet(i)
+                ? new ColumnIntConstant(getName(), get(i), 1, true)
+                : ColumnIntConstant.createNull(getName(), 1);
     }
 
     @Override

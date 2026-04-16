@@ -166,7 +166,9 @@ public interface ColumnDouble extends Column
     @Override
     default public Column getAsColumn(int i)
     {
-        return new ColumnDoubleConstant(getName(), get(i), 1, isSet(i));
+        return isSet(i)
+                ? new ColumnDoubleConstant(getName(), get(i), 1, true)
+                : ColumnDoubleConstant.createNull(getName(), 1);
     }
 
     @Override

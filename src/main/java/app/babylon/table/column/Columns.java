@@ -18,7 +18,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 import app.babylon.table.ViewIndex;
+import app.babylon.table.aggregation.AccumulatorDouble;
 import app.babylon.table.aggregation.Aggregate;
+import app.babylon.table.sorting.ComparatorInt;
+import app.babylon.table.sorting.SortInt;
 import app.babylon.text.BigDecimals;
 import app.babylon.text.Strings;
 
@@ -252,6 +255,11 @@ public class Columns
         return new ColumnIntConstant(colName, value, size);
     }
 
+    public static ColumnByte newByte(ColumnName colName, byte value, int size)
+    {
+        return new ColumnByteConstant(colName, value, size);
+    }
+
     public static ColumnObject<String> newString(ColumnName colName, String value, int size)
     {
         return ColumnCategorical.constant(colName, value, size, app.babylon.table.column.ColumnTypes.STRING);
@@ -282,20 +290,15 @@ public class Columns
 
     public static double aggregate(ColumnDouble cd, Aggregate aggregate)
     {
-        switch (aggregate)
+        AccumulatorDouble accumulator = new AccumulatorDouble();
+        for (int i = 0; i < cd.size(); ++i)
         {
-            case SUM :
-                return sum(cd);
-            case MIN :
-                return min(cd);
-            case MAX :
-                return max(cd);
-            case MEAN :
-                return mean(cd);
-
-            default :
-                throw new IllegalArgumentException("Unsupported aggregate " + aggregate + " for double column.");
+            if (cd.isSet(i))
+            {
+                accumulator.accept(cd.get(i));
+            }
         }
+        return accumulator.get(aggregate);
     }
 
     private static BigDecimal sum(ColumnObject<BigDecimal> cd)
@@ -328,62 +331,7 @@ public class Columns
         return sum.divide(new BigDecimal(n), mc);
     }
 
-    private static double sum(ColumnDouble cd)
-    {
-        double sum = 0.0d;
-        for (int i = 0; i < cd.size(); ++i)
-        {
-            if (cd.isSet(i))
-            {
-                sum += cd.get(i);
-            }
-        }
-        return sum;
-    }
-
-    private static double mean(ColumnDouble cd)
-    {
-        double sum = 0.0d;
-        int n = 0;
-        for (int i = 0; i < cd.size(); ++i)
-        {
-            if (cd.isSet(i))
-            {
-                sum += cd.get(i);
-                ++n;
-            }
-        }
-        return sum / n;
-    }
-
-    // private static BigDecimal max(ColumnObject<BigDecimal> cd)
-    // {
-    // if (cd.size()==0)
-    // {
-    // throw new RuntimeException("Can not compute max on column with no values. " +
-    // cd.getName());
-    // }
-    //
-    // BigDecimal max = null;
-    // for(int i=0;i<cd.size();++i)
-    // {
-    // if (cd.isSet(i))
-    // {
-    // BigDecimal v = cd.get(i);
-    // if (max==null)
-    // {
-    // max = v;
-    // }
-    // else if (max.compareTo(v)<0)
-    // {
-    // max = v;
-    // }
-    // }
-    // }
-    // return max;
-    // }
-
-    public static <T extends Comparable<? super T>> T max(ColumnObject<T> co)
+    private static <T extends Comparable<? super T>> T max(ColumnObject<T> co)
     {
         if (co.size() == 0)
         {
@@ -401,28 +349,6 @@ public class Columns
                     max = v;
                 }
                 else if (max.compareTo(v) < 0)
-                {
-                    max = v;
-                }
-            }
-        }
-        return max;
-    }
-
-    private static double max(ColumnDouble cd)
-    {
-        if (cd.size() == 0)
-        {
-            throw new RuntimeException("Can not compute max on column with no values. " + cd.getName());
-        }
-
-        Double max = null;
-        for (int i = 0; i < cd.size(); ++i)
-        {
-            if (cd.isSet(i))
-            {
-                double v = cd.get(i);
-                if (max == null || Double.compare(max, v) < 0)
                 {
                     max = v;
                 }
@@ -457,28 +383,6 @@ public class Columns
         return min;
     }
 
-    private static double min(ColumnDouble cd)
-    {
-        if (cd.size() == 0)
-        {
-            throw new RuntimeException("Can not compute min on column with no values. " + cd.getName());
-        }
-
-        Double min = null;
-        for (int i = 0; i < cd.size(); ++i)
-        {
-            if (cd.isSet(i))
-            {
-                double v = cd.get(i);
-                if (min == null || Double.compare(min, v) > 0)
-                {
-                    min = v;
-                }
-            }
-        }
-        return min;
-    }
-
     public static ColumnDouble newDouble(ColumnName colName, double value, int size)
     {
         return new ColumnDoubleConstant(colName, value, size);
@@ -487,6 +391,34 @@ public class Columns
     public static <T extends Enum<T>> Column newView(Column c, ViewIndex rowIndex)
     {
         return c.view(rowIndex);
+    }
+
+    public static Column sort(Column column)
+    {
+        return sort(column, column::compare);
+    }
+
+    public static Column sort(Column column, ComparatorInt comparator)
+    {
+        if (column == null)
+        {
+            return null;
+        }
+        if (column.size() == 0)
+        {
+            return column.view(ViewIndex.builder().build());
+        }
+
+        int[] sortArray = new int[column.size()];
+        for (int i = 0; i < sortArray.length; ++i)
+        {
+            sortArray[i] = i;
+        }
+        SortInt.stableSort(sortArray, comparator);
+
+        ViewIndex.Builder rowIndexBuilder = ViewIndex.builder();
+        rowIndexBuilder.addAll(sortArray);
+        return column.view(rowIndexBuilder.build());
     }
 
     public static ColumnObject<String> newStringView(ColumnObject<String> c, ViewIndex rowIndex)

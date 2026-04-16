@@ -34,6 +34,11 @@ class ColumnDoubleConstant implements ColumnDouble
         this.isSet = isSet;
     }
 
+    public static ColumnDoubleConstant createNull(ColumnName name, int size)
+    {
+        return new ColumnDoubleConstant(name, Double.MAX_VALUE, size, false);
+    }
+
     @Override
     public double get(int i)
     {
@@ -69,7 +74,9 @@ class ColumnDoubleConstant implements ColumnDouble
         ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
-            return new ColumnDoubleConstant(this.name, this.value, rowIndex.size(), this.isSet);
+            return this.isSet
+                    ? new ColumnDoubleConstant(this.name, this.value, rowIndex.size(), true)
+                    : createNull(this.name, rowIndex.size());
         }
         ColumnDouble.Builder builder = ColumnDouble.builder(this.name);
         for (int i = 0; i < rowIndex.size(); ++i)

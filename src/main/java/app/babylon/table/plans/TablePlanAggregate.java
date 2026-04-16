@@ -448,7 +448,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             }
             else
             {
-                ((ColumnDouble.Builder) aggregateBuilders[i]).add(valueOf(accumulators[i], aggregate));
+                ((ColumnDouble.Builder) aggregateBuilders[i]).add(accumulators[i].get(aggregate));
             }
         }
     }
@@ -501,18 +501,6 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             }
         }
         return count;
-    }
-
-    private static double valueOf(AccumulatorDouble accumulator, Aggregate aggregate)
-    {
-        return switch (aggregate)
-        {
-            case COUNT -> throw new IllegalArgumentException("COUNT is not a double aggregate");
-            case MIN -> accumulator.getMin();
-            case MAX -> accumulator.getMax();
-            case SUM -> accumulator.getSum();
-            case MEAN -> accumulator.getMean();
-        };
     }
 
     private static int max(int[] values)

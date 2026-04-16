@@ -231,7 +231,7 @@ public final class ColumnName implements Comparable<ColumnName>
         return words;
     }
 
-    public String toSql()
+    public String toSqlIdentifier()
     {
         String snake = toSnake();
         if (snake.length() == 0 || snake.length() > 64)

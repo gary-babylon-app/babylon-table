@@ -11,9 +11,15 @@
 package app.babylon.table.column;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -139,5 +145,71 @@ public class ColumnNameTest
             assertEquals("TradeDate", CN.getValue(), variant);
             assertEquals("tradedate", CN.getCanonical(), variant);
         }
+    }
+
+    @Test
+    public void testParseFactoriesAndArrayFactories()
+    {
+        assertNull(ColumnName.parse(null));
+        assertNull(ColumnName.parse(""));
+
+        ColumnName parsed = ColumnName.parse("trade date");
+        assertEquals("TradeDate", parsed.getValue());
+
+        ColumnName[] fromCollection = ColumnName.of(List.of("Trade Date", "Settle Date"));
+        assertEquals(2, fromCollection.length);
+        assertEquals("TradeDate", fromCollection[0].getValue());
+        assertEquals("SettleDate", fromCollection[1].getValue());
+
+        ColumnName[] fromArray = ColumnName.of(new String[]
+        {"Skip", "Trade Date", "Settle Date"}, 1);
+        assertEquals(2, fromArray.length);
+        assertEquals("TradeDate", fromArray[0].getValue());
+        assertEquals("SettleDate", fromArray[1].getValue());
+
+        assertEquals(0, ColumnName.of(new String[0]).length);
+        assertEquals(0, ColumnName.of(new String[]
+        {"Only"}, 1).length);
+    }
+
+    @Test
+    public void testStringAndHashRepresentCanonicalIdentity()
+    {
+        ColumnName left = ColumnName.of("trade-date");
+        ColumnName right = ColumnName.of("Trade Date");
+
+        assertEquals("TradeDate", left.toString());
+        assertEquals(left.hashCode(), right.hashCode());
+        assertFalse(left.equals("TradeDate"));
+        assertSame(left, left);
+    }
+
+    @Test
+    public void testSqlAndCamelCaseConversions()
+    {
+        ColumnName cn = ColumnName.of("trade date 20");
+
+        assertEquals("TradeDate20", cn.toCamelCaseUpper());
+        assertEquals("tradeDate20", cn.toCamelCase());
+        assertEquals("trade_date_20", cn.toSnake());
+        assertEquals("`trade_date_20`", cn.toSqlIdentifier());
+    }
+
+    @Test
+    public void testToWordsAndToStringArrayReuseProvidedCollection()
+    {
+        ColumnName cn = ColumnName.of("tradeDate20");
+        Collection<String> words = new ArrayList<>();
+
+        Collection<String> returned = cn.toWords(words);
+
+        assertSame(words, returned);
+        assertEquals(List.of("Trade", "Date20"), new ArrayList<>(returned));
+
+        String[] values = ColumnName
+                .toStringArray(Arrays.asList(ColumnName.of("Trade Date"), ColumnName.of("SettleDate")));
+        assertEquals("TradeDate", values[0]);
+        assertEquals("SettleDate", values[1]);
+        assertNull(ColumnName.toStringArray(null));
     }
 }

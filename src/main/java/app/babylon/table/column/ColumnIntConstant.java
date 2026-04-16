@@ -38,6 +38,11 @@ class ColumnIntConstant implements ColumnInt
     {
         return new ColumnIntConstant(name, value, size);
     }
+
+    public static ColumnIntConstant createNull(ColumnName name, int size)
+    {
+        return new ColumnIntConstant(name, Integer.MAX_VALUE, size, false);
+    }
     @Override
     public int get(int i)
     {
@@ -78,7 +83,9 @@ class ColumnIntConstant implements ColumnInt
         ArgumentCheck.nonNull(rowIndex);
         if (rowIndex.isAllSet())
         {
-            return new ColumnIntConstant(this.name, this.value, rowIndex.size(), this.isSet);
+            return this.isSet
+                    ? new ColumnIntConstant(this.name, this.value, rowIndex.size(), true)
+                    : createNull(this.name, rowIndex.size());
         }
         ColumnInt.Builder builder = ColumnInt.builder(this.name);
         for (int i = 0; i < rowIndex.size(); ++i)

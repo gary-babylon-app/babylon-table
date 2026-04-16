@@ -110,7 +110,7 @@ final class RowProjectedStripped implements RowProjected
     @Override
     public RowKey keyOf(int[] positions)
     {
-        return RowKey.copyOf(this, positions);
+        return RowKey.of(this, positions);
     }
 
     @Override

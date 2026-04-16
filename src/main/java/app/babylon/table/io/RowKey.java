@@ -12,7 +12,7 @@ package app.babylon.table.io;
 
 public abstract class RowKey
 {
-    public static RowKey copyOf(Row row, int[] positions)
+    public static RowKey of(Row row, int[] positions)
     {
         if (row == null)
         {
@@ -25,14 +25,14 @@ public abstract class RowKey
 
         return switch (positions.length)
         {
-            case 1 -> RowKey1.copyOf(row, positions[0]);
-            case 2 -> RowKey2.copyOf(row, positions[0], positions[1]);
-            case 3 -> RowKey3.copyOf(row, positions[0], positions[1], positions[2]);
-            default -> RowKeyN.copyOfN(row, positions);
+            case 1 -> RowKey1.of(row, positions[0]);
+            case 2 -> RowKey2.of(row, positions[0], positions[1]);
+            case 3 -> RowKey3.of(row, positions[0], positions[1], positions[2]);
+            default -> RowKeyN.ofN(row, positions);
         };
     }
 
-    public static RowKey copyOf(CharSequence[] values, int[] positions)
+    public static RowKey of(CharSequence[] values, int[] positions)
     {
         if (values == null)
         {
@@ -44,10 +44,10 @@ public abstract class RowKey
         }
         return switch (positions.length)
         {
-            case 1 -> RowKey1.copyOf(values[positions[0]]);
-            case 2 -> RowKey2.copyOf(values[positions[0]], values[positions[1]]);
-            case 3 -> RowKey3.copyOf(values[positions[0]], values[positions[1]], values[positions[2]]);
-            default -> RowKeyN.copyOfN(values, positions);
+            case 1 -> RowKey1.of(values[positions[0]]);
+            case 2 -> RowKey2.of(values[positions[0]], values[positions[1]]);
+            case 3 -> RowKey3.of(values[positions[0]], values[positions[1]], values[positions[2]]);
+            default -> RowKeyN.ofN(values, positions);
         };
     }
 
@@ -149,7 +149,7 @@ public abstract class RowKey
             System.arraycopy(row.chars(), row.start(position), this.chars, 0, length);
         }
 
-        private static RowKey1 copyOf(Row row, int position)
+        private static RowKey1 of(Row row, int position)
         {
             return new RowKey1(row, position);
         }
@@ -159,7 +159,7 @@ public abstract class RowKey
             this.chars = copyChars(value);
         }
 
-        private static RowKey1 copyOf(CharSequence value)
+        private static RowKey1 of(CharSequence value)
         {
             return new RowKey1(value);
         }
@@ -258,7 +258,7 @@ public abstract class RowKey
             System.arraycopy(source, row.start(position1), this.chars, this.length0, length1);
         }
 
-        private static RowKey2 copyOf(Row row, int position1, int position2)
+        private static RowKey2 of(Row row, int position1, int position2)
         {
             return new RowKey2(row, position1, position2);
         }
@@ -269,7 +269,7 @@ public abstract class RowKey
             this.chars = copyChars(value0, value1);
         }
 
-        private static RowKey2 copyOf(CharSequence value0, CharSequence value1)
+        private static RowKey2 of(CharSequence value0, CharSequence value1)
         {
             return new RowKey2(value0, value1);
         }
@@ -385,7 +385,7 @@ public abstract class RowKey
             System.arraycopy(source, row.start(position2), this.chars, this.length1 + this.length2, this.length3);
         }
 
-        private static RowKey3 copyOf(Row row, int position1, int position2, int position3)
+        private static RowKey3 of(Row row, int position1, int position2, int position3)
         {
             return new RowKey3(row, position1, position2, position3);
         }
@@ -398,7 +398,7 @@ public abstract class RowKey
             this.chars = copyChars(value0, value1, value2);
         }
 
-        private static RowKey3 copyOf(CharSequence value0, CharSequence value1, CharSequence value2)
+        private static RowKey3 of(CharSequence value0, CharSequence value1, CharSequence value2)
         {
             return new RowKey3(value0, value1, value2);
         }
@@ -543,7 +543,7 @@ public abstract class RowKey
             }
         }
 
-        private static RowKeyN copyOfN(Row row, int[] positions)
+        private static RowKeyN ofN(Row row, int[] positions)
         {
             return new RowKeyN(row, positions);
         }
@@ -568,7 +568,7 @@ public abstract class RowKey
             }
         }
 
-        private static RowKeyN copyOfN(CharSequence[] values, int[] positions)
+        private static RowKeyN ofN(CharSequence[] values, int[] positions)
         {
             return new RowKeyN(values, positions);
         }

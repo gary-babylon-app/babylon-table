@@ -2,6 +2,8 @@ package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,10 +26,31 @@ class TransformStringReplaceTest
         codes.addNull();
 
         TableColumnar transformed = Tables.newTable(TableName.of("t"), codes.build())
-                .apply(new TransformStringReplace(CODE, OUT, "AA-", ""));
+                .apply(TransformStringReplace.of(CODE, OUT, "AA-", ""));
 
         assertEquals("01", transformed.getString(OUT).get(0));
         assertEquals("XX", transformed.getString(OUT).get(1));
         assertFalse(transformed.getString(OUT).isSet(2));
+    }
+
+    @Test
+    void factoriesShouldCreateWorkingTransforms()
+    {
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName OUT = ColumnName.of("Out");
+
+        TransformStringReplace sameName = TransformStringReplace.of(CODE, "AA-", "");
+        TransformStringReplace renamed = TransformStringReplace.of(CODE, OUT, "AA-", "");
+        TransformStringReplace fromParams = TransformStringReplace.of("Code", "Out", "AA-", "");
+
+        assertNotNull(sameName);
+        assertNotNull(renamed);
+        assertNotNull(fromParams);
+
+        assertNull(TransformStringReplace.of((ColumnName) null, "AA-", ""));
+        assertNull(TransformStringReplace.of(CODE, (String) null, ""));
+        assertNull(TransformStringReplace.of(CODE, "", ""));
+        assertNull(TransformStringReplace.of(CODE, OUT, "AA-", null));
+        assertNull(TransformStringReplace.of(new String[0]));
     }
 }

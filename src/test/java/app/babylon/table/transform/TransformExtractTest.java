@@ -40,6 +40,24 @@ public class TransformExtractTest
     }
 
     @Test
+    public void shouldKeepOriginalColumnNameWhenNoNewColumnNameIsProvided()
+    {
+        final ColumnName DESCRIPTION = ColumnName.of("Description");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION,
+                app.babylon.table.column.ColumnTypes.STRING);
+        strings.add("ABC (VEVE)");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table.apply(TransformExtract.of(DESCRIPTION, Pattern.compile(".*\\(([^)]+)\\)")));
+
+        ColumnObject<String> extracted = transformed.getString(DESCRIPTION);
+        assertEquals(DESCRIPTION, extracted.getName());
+        assertEquals("VEVE", extracted.get(0));
+    }
+
+    @Test
     public void shouldPreserveCategoricalShape()
     {
         final ColumnName DESCRIPTION = ColumnName.of("Description");
@@ -49,6 +67,7 @@ public class TransformExtractTest
                 app.babylon.table.column.ColumnTypes.STRING);
         strings.add("ABC (VEVE)");
         strings.add("ABC (VEVE)");
+        strings.addNull();
         strings.add("XYZ (SGLN)");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
@@ -59,8 +78,36 @@ public class TransformExtractTest
         ColumnCategorical<String> extracted = transformed.getCategorical(SYMBOL);
         assertEquals("VEVE", extracted.get(0));
         assertEquals("VEVE", extracted.get(1));
-        assertEquals("SGLN", extracted.get(2));
+        assertFalse(extracted.isSet(2));
+        assertEquals("SGLN", extracted.get(3));
         assertEquals(extracted.getCategoryCode(0), extracted.getCategoryCode(1));
+    }
+
+    @Test
+    public void shouldExtractFromArrayBackedStringColumnWithUnsetRows()
+    {
+        final ColumnName DESCRIPTION = ColumnName.of("Description");
+        final ColumnName SYMBOL = ColumnName.of("Symbol");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION,
+                app.babylon.table.column.ColumnTypes.STRING, ColumnObject.Mode.ARRAY);
+        strings.add("ABC (VEVE)");
+        strings.addNull();
+        strings.add("XYZ (SGLN)");
+        strings.add("LMN (NOVA)");
+
+        ColumnObject<String> source = strings.build();
+        assertFalse(source instanceof ColumnCategorical<?>);
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), source);
+
+        TableColumnar transformed = table.apply(TransformExtract.of("Description", "Symbol", ".*\\(([^)]+)\\)"));
+
+        ColumnObject<String> extracted = transformed.getString(SYMBOL);
+        assertEquals("VEVE", extracted.get(0));
+        assertFalse(extracted.isSet(1));
+        assertEquals("SGLN", extracted.get(2));
+        assertEquals("NOVA", extracted.get(3));
     }
 
     @Test

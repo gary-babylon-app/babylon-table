@@ -1,6 +1,7 @@
 package app.babylon.table.transform;
 
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,19 +14,19 @@ import app.babylon.text.Strings;
 
 public class TransformStringReplace extends TransformBase
 {
-    private static final String FUNCTION_NAME = "StringReplace";
+    public static final String FUNCTION_NAME = "StringReplace";
 
     private final ColumnName existingColumnName;
     private final ColumnName newColumnName;
     private final String target;
     private final String replacement;
 
-    public TransformStringReplace(ColumnName existingColumnName, String target, String replacement)
+    private TransformStringReplace(ColumnName existingColumnName, String target, String replacement)
     {
         this(existingColumnName, existingColumnName, target, replacement);
     }
 
-    public TransformStringReplace(ColumnName existingColumnName, ColumnName newColumnName, String target,
+    private TransformStringReplace(ColumnName existingColumnName, ColumnName newColumnName, String target,
             String replacement)
     {
         super(FUNCTION_NAME);
@@ -33,6 +34,36 @@ public class TransformStringReplace extends TransformBase
         this.newColumnName = ArgumentCheck.nonNull(newColumnName);
         this.target = ArgumentCheck.nonEmpty(target);
         this.replacement = ArgumentCheck.nonNull(replacement);
+    }
+
+    public static TransformStringReplace of(ColumnName existingColumnName, String target, String replacement)
+    {
+        if (existingColumnName == null || Strings.isEmpty(target) || replacement == null)
+        {
+            return null;
+        }
+        return new TransformStringReplace(existingColumnName, target, replacement);
+    }
+
+    public static TransformStringReplace of(ColumnName existingColumnName, ColumnName newColumnName, String target,
+            String replacement)
+    {
+        if (existingColumnName == null || newColumnName == null || Strings.isEmpty(target) || replacement == null)
+        {
+            return null;
+        }
+        return new TransformStringReplace(existingColumnName, newColumnName, target, replacement);
+    }
+
+    public static TransformStringReplace of(String... params)
+    {
+        if (Is.empty(params) || params.length < 4)
+        {
+            return null;
+        }
+        ColumnName existingColumnName = ColumnName.parse(params[0]);
+        ColumnName newColumnName = ColumnName.parse(params[1]);
+        return of(existingColumnName, newColumnName, params[2], params[3]);
     }
 
     @Override

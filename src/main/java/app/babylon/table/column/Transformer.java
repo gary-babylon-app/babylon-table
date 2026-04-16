@@ -10,9 +10,9 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.function.Function;
+
+import app.babylon.lang.ArgumentCheck;
 
 /**
  * Transforms individual column values from one type to another while carrying
@@ -22,10 +22,7 @@ public interface Transformer<T, S> extends Function<T, S>
 {
     public Class<S> valueClass();
 
-    default public ColumnName columnName()
-    {
-        return null;
-    }
+    public ColumnName columnName();
 
     static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Class<S> valueClass)
     {
@@ -36,13 +33,6 @@ public interface Transformer<T, S> extends Function<T, S>
     static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Column.Type type)
     {
         return of(function, (Class<S>) ArgumentCheck.nonNull(type).getValueClass(), null);
-    }
-
-    @SuppressWarnings("unchecked")
-    static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Column.Type type,
-            ColumnName columnName)
-    {
-        return of(function, (Class<S>) ArgumentCheck.nonNull(type).getValueClass(), columnName);
     }
 
     static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Class<S> valueClass,

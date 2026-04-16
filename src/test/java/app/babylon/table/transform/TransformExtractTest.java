@@ -2,6 +2,7 @@ package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.regex.Pattern;
@@ -21,7 +22,6 @@ public class TransformExtractTest
     public void shouldExtractFirstGroupFromStringColumn()
     {
         final ColumnName DESCRIPTION = ColumnName.of("Description");
-        final ColumnName SYMBOL = ColumnName.of("Symbol");
 
         ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION,
                 app.babylon.table.column.ColumnTypes.STRING);
@@ -31,10 +31,9 @@ public class TransformExtractTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table
-                .apply(new TransformExtract(DESCRIPTION, Pattern.compile(".*\\(([^)]+)\\)"), SYMBOL));
+        TableColumnar transformed = table.apply(TransformExtract.of(DESCRIPTION, Pattern.compile(".*\\(([^)]+)\\)")));
 
-        ColumnObject<String> extracted = transformed.getString(SYMBOL);
+        ColumnObject<String> extracted = transformed.getString(DESCRIPTION);
         assertEquals("VEVE", extracted.get(0));
         assertFalse(extracted.isSet(1));
         assertFalse(extracted.isSet(2));
@@ -54,8 +53,7 @@ public class TransformExtractTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table
-                .apply(new TransformExtract(DESCRIPTION, Pattern.compile(".*\\(([^)]+)\\)"), SYMBOL));
+        TableColumnar transformed = table.apply(TransformExtract.of("Description", "Symbol", ".*\\(([^)]+)\\)"));
 
         assertTrue(transformed.get(SYMBOL) instanceof ColumnCategorical<?>);
         ColumnCategorical<String> extracted = transformed.getCategorical(SYMBOL);
@@ -71,5 +69,13 @@ public class TransformExtractTest
         Transform transform = Transforms.registry().create("Extract", "Description", "Symbol", ".*\\(([^)]+)\\)");
 
         assertTrue(transform instanceof TransformExtract);
+    }
+
+    @Test
+    public void factoriesShouldRejectNullInputs()
+    {
+        assertNull(TransformExtract.of((ColumnName) null, Pattern.compile("x")));
+        assertNull(TransformExtract.of(ColumnName.of("Description"), null));
+        assertNull(TransformExtract.of(new String[0]));
     }
 }

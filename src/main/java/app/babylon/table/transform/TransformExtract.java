@@ -11,22 +11,31 @@ import app.babylon.text.Strings;
 
 public class TransformExtract extends TransformStringToString
 {
-    public static String FUNCTION_NAME = "Extract";
+    public static final String FUNCTION_NAME = "Extract";
 
     private final Pattern pattern;
 
-    public TransformExtract(ColumnName extractColumnName, Pattern pattern)
+    private TransformExtract(ColumnName extractColumnName, Pattern pattern)
     {
         this(extractColumnName, pattern, null);
     }
 
-    public TransformExtract(ColumnName extractColumnName, Pattern pattern, ColumnName newColumnName)
+    private TransformExtract(ColumnName extractColumnName, Pattern pattern, ColumnName newColumnName)
     {
         super(FUNCTION_NAME, extractColumnName, newColumnName == null ? extractColumnName : newColumnName);
         this.pattern = ArgumentCheck.nonNull(pattern);
     }
 
-    public static TransformExtract of(String[] params)
+    public static TransformExtract of(ColumnName extractColumnName, Pattern pattern)
+    {
+        if (extractColumnName == null || pattern == null)
+        {
+            return null;
+        }
+        return new TransformExtract(extractColumnName, pattern);
+    }
+
+    public static TransformExtract of(String... params)
     {
         if (!Is.empty(params) && params.length >= 3)
         {

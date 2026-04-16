@@ -90,9 +90,22 @@ public class AccumulatorDouble implements DoubleConsumer
         return this.mean;
     }
 
-    public double getM2()
+    public double getVariance()
     {
-        return this.m2;
+        if (this.count == 0L)
+        {
+            return Double.NaN;
+        }
+        return this.m2 / this.count;
+    }
+
+    public double getVarianceSample()
+    {
+        if (this.count <= 1L)
+        {
+            return Double.NaN;
+        }
+        return this.m2 / (this.count - 1L);
     }
 
     public double get(Aggregate aggregate)
@@ -104,6 +117,8 @@ public class AccumulatorDouble implements DoubleConsumer
             case MAX -> getMax();
             case SUM -> getSum();
             case MEAN -> getMean();
+            case VARIANCE -> getVariance();
+            case VARIANCE_SAMPLE -> getVarianceSample();
         };
     }
 }

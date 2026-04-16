@@ -312,6 +312,8 @@ public class ColumnDoubleTest
         assertEquals(-2.0, Columns.aggregate(column, Aggregate.MIN), 1e-12);
         assertEquals(3.0, Columns.aggregate(column, Aggregate.MAX), 1e-12);
         assertEquals(2.5 / 3.0, Columns.aggregate(column, Aggregate.MEAN), 1e-12);
+        assertEquals(4.388888888888889, Columns.aggregate(column, Aggregate.VARIANCE), 1e-12);
+        assertEquals(6.583333333333333, Columns.aggregate(column, Aggregate.VARIANCE_SAMPLE), 1e-12);
     }
 
     @Test
@@ -327,6 +329,8 @@ public class ColumnDoubleTest
         assertTrue(Double.isNaN(Columns.aggregate(column, Aggregate.MIN)));
         assertTrue(Double.isNaN(Columns.aggregate(column, Aggregate.MAX)));
         assertTrue(Double.isNaN(Columns.aggregate(column, Aggregate.MEAN)));
+        assertTrue(Double.isNaN(Columns.aggregate(column, Aggregate.VARIANCE)));
+        assertTrue(Double.isNaN(Columns.aggregate(column, Aggregate.VARIANCE_SAMPLE)));
     }
 
     @Test

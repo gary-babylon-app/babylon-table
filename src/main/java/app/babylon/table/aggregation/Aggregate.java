@@ -12,5 +12,5 @@ package app.babylon.table.aggregation;
 
 public enum Aggregate
 {
-    COUNT, SUM, MAX, MIN, MEAN;
+    COUNT, SUM, MAX, MIN, MEAN, VARIANCE, VARIANCE_SAMPLE;
 }

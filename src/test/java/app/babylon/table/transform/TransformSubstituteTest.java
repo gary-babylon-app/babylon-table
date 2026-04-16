@@ -2,6 +2,8 @@ package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 
@@ -52,5 +54,16 @@ class TransformSubstituteTest
                 new TransformSubstitute(ColumnName.of("Missing"), ColumnName.of("New"), java.util.Map.of("x", "y")));
 
         assertFalse(transformed.contains(ColumnName.of("New")));
+    }
+
+    @Test
+    void shouldCreateFromFactoryParameters()
+    {
+        TransformSubstitute transform = TransformSubstitute.of(new String[]
+        {"Status", "Normalised", "Other", "A", "Alpha", "B", "Beta"});
+
+        assertNotNull(transform);
+        assertNull(TransformSubstitute.of(new String[]
+        {"Status", "Normalised", "Other"}));
     }
 }

@@ -40,4 +40,12 @@ class TableDescriptionTest
         assertEquals("", description.getValue());
         assertEquals(0, description.length());
     }
+
+    @Test
+    void shouldExposeSubSequence()
+    {
+        TableDescription description = new TableDescription("alpha beta");
+
+        assertEquals("alpha", description.subSequence(0, 5).toString());
+    }
 }

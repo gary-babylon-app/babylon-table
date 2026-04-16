@@ -1,6 +1,8 @@
 package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
@@ -55,5 +57,17 @@ class TransformCreateConstantTest
         ColumnObject<BigDecimal> amount = transformed.getDecimal(AMOUNT);
         assertEquals(0, new BigDecimal("1.25").compareTo(amount.get(0)));
         assertEquals(0, new BigDecimal("1.25").compareTo(amount.get(2)));
+    }
+
+    @Test
+    void shouldExposeFactoryAndToString()
+    {
+        TransformCreateConstant transform = TransformCreateConstant.of(new String[]
+        {"Country", "UK"});
+
+        assertNotNull(transform);
+        assertEquals("CreateConstant(Country, UK)", transform.toString());
+        assertNull(TransformCreateConstant.of(new String[]
+        {"Country"}));
     }
 }

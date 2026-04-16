@@ -279,6 +279,36 @@ class RowCursorCsvTest
     }
 
     @Test
+    void shouldExposeConfiguredReaderOptions()
+    {
+        HeaderStrategy headerStrategy = new HeaderStrategyNoHeaders(1);
+        int[] fixedWidths = new int[]
+        {3, 2, 3};
+        RowCursorCsv rowCursor = RowCursorCsv.builder().withHeaderStrategy(headerStrategy).withSeparator(';')
+                .withQuote('\'').withFixedWidths(fixedWidths).withCharset(StandardCharsets.UTF_16LE)
+                .withAutoDetectEncoding(false).build(StreamSources.fromString("ABC12XYZ\n", "rows.txt").openStream());
+        try
+        {
+            assertEquals(headerStrategy, rowCursor.getHeaderStrategy());
+            assertEquals(';', rowCursor.getSeparator());
+            assertEquals('\'', rowCursor.getQuote());
+            assertArrayEquals(fixedWidths, rowCursor.getFixedWidths());
+            assertEquals(StandardCharsets.UTF_16LE, rowCursor.getCharset());
+            assertFalse(rowCursor.isAutoDetectEncoding());
+        } finally
+        {
+            try
+            {
+                rowCursor.close();
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    @Test
     void shouldWrapClosedInputStreamFailureInTableException()
     {
         InputStream inputStream = InputStream.nullInputStream();

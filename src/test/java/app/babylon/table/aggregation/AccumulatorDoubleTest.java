@@ -27,6 +27,8 @@ class AccumulatorDoubleTest
         assertTrue(Double.isNaN(accumulator.getMin()));
         assertTrue(Double.isNaN(accumulator.getMax()));
         assertTrue(Double.isNaN(accumulator.getMean()));
+        assertTrue(Double.isNaN(accumulator.getVariance()));
+        assertTrue(Double.isNaN(accumulator.getVarianceSample()));
     }
 
     @Test
@@ -43,6 +45,8 @@ class AccumulatorDoubleTest
         assertEquals(30.0d, accumulator.getMax());
         assertEquals(60.0d, accumulator.getSum());
         assertEquals(20.0d, accumulator.getMean());
+        assertEquals(200.0d / 3.0d, accumulator.getVariance(), 1e-12);
+        assertEquals(100.0d, accumulator.getVarianceSample(), 1e-12);
     }
 
     @Test
@@ -73,5 +77,7 @@ class AccumulatorDoubleTest
         assertEquals(30.0d, accumulator.get(Aggregate.SUM));
         assertEquals(15.0d, accumulator.get(Aggregate.MEAN));
         assertEquals(2.0d, accumulator.get(Aggregate.COUNT));
+        assertEquals(25.0d, accumulator.get(Aggregate.VARIANCE));
+        assertEquals(50.0d, accumulator.get(Aggregate.VARIANCE_SAMPLE));
     }
 }

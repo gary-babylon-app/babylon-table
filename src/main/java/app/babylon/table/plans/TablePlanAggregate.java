@@ -383,7 +383,8 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
     private static boolean isSupportedAggregate(Aggregate aggregate)
     {
         return aggregate == Aggregate.COUNT || aggregate == Aggregate.MIN || aggregate == Aggregate.MAX
-                || aggregate == Aggregate.SUM || aggregate == Aggregate.MEAN;
+                || aggregate == Aggregate.SUM || aggregate == Aggregate.MEAN || aggregate == Aggregate.VARIANCE
+                || aggregate == Aggregate.VARIANCE_SAMPLE;
     }
 
     private static ColumnBuilder[] newAggregateBuilders(TablePlanAggregate plan)

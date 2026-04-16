@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -43,6 +44,12 @@ class ColumnsTest
         assertEquals(2, frequencies.size());
         assertEquals(3, frequencies.get("London"));
         assertEquals(2, frequencies.get("Paris"));
+    }
+
+    @Test
+    void isEmptyReturnsTrueForNullColumn()
+    {
+        assertTrue(Columns.isEmpty(null));
     }
 
     @Test
@@ -79,6 +86,25 @@ class ColumnsTest
         ints.add(1);
 
         assertNull(Columns.stringToType(ints.build(), BigDecimal::new, BigDecimal.class));
+    }
+
+    @Test
+    void stringToDecimalSupportsFormattedDecimalText()
+    {
+        ColumnName amount = ColumnName.of("amount");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(amount, ColumnTypes.STRING);
+        strings.add("1,234.50");
+        strings.add("");
+        strings.addNull();
+        strings.add("(2.50)");
+
+        ColumnObject<BigDecimal> decimals = Columns.stringToDecimal(strings.build());
+
+        assertEquals(4, decimals.size());
+        assertEquals(0, new BigDecimal("1234.50").compareTo(decimals.get(0)));
+        assertFalse(decimals.isSet(1));
+        assertFalse(decimals.isSet(2));
+        assertEquals(0, new BigDecimal("-2.50").compareTo(decimals.get(3)));
     }
 
     @Test
@@ -150,6 +176,50 @@ class ColumnsTest
     }
 
     @Test
+    void newIntCreatesConstantIntColumn()
+    {
+        ColumnInt ints = Columns.newInt(ColumnName.of("values"), 7, 3);
+
+        assertEquals(3, ints.size());
+        assertEquals(7, ints.get(0));
+        assertEquals(7, ints.get(2));
+        assertTrue(ints.isAllSet());
+    }
+
+    @Test
+    void newDoubleCreatesConstantDoubleColumn()
+    {
+        ColumnDouble doubles = Columns.newDouble(ColumnName.of("values"), 1.5d, 3);
+
+        assertEquals(3, doubles.size());
+        assertEquals(1.5d, doubles.get(0), 1e-12);
+        assertEquals(1.5d, doubles.get(2), 1e-12);
+        assertTrue(doubles.isAllSet());
+    }
+
+    @Test
+    void newStringCreatesConstantStringColumn()
+    {
+        ColumnObject<String> strings = Columns.newString(ColumnName.of("values"), "ABC", 3);
+
+        assertEquals(3, strings.size());
+        assertEquals("ABC", strings.get(0));
+        assertEquals("ABC", strings.get(2));
+        assertTrue(strings.isAllSet());
+    }
+
+    @Test
+    void newCategoricalCreatesConstantCategoricalColumn()
+    {
+        ColumnCategorical<String> categorical = Columns.newCategorical(ColumnName.of("values"), "ABC", 3, String.class);
+
+        assertEquals(3, categorical.size());
+        assertEquals("ABC", categorical.get(0));
+        assertEquals("ABC", categorical.get(2));
+        assertTrue(categorical.isAllSet());
+    }
+
+    @Test
     void sortUsesColumnNaturalOrderAndReturnsView()
     {
         ColumnName city = ColumnName.of("city");
@@ -201,6 +271,18 @@ class ColumnsTest
         assertArrayEquals(new String[]
         {"London", null, "Paris", "Rome"}, values((ColumnObject<String>) categorical));
         assertEquals(city, result.getName());
+    }
+
+    @Test
+    void concatReturnsNullForEmptyList()
+    {
+        assertNull(Columns.concat(List.of()));
+    }
+
+    @Test
+    void concatReturnsNullForNullList()
+    {
+        assertNull(Columns.concat(null));
     }
 
     @Test

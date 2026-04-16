@@ -255,7 +255,7 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         {
             return table;
         }
-        return table.addColumns(Columns.newString(this.dataSourceNameColumnName, sourceName, table.getRowCount()));
+        return table.add(Columns.newString(this.dataSourceNameColumnName, sourceName, table.getRowCount()));
     }
 
     private static String extractLastPart(String s)

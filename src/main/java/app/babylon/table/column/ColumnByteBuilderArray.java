@@ -205,35 +205,23 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         }
 
         @Override
-        public String toString(int i)
-        {
-            return isSet(i) ? Byte.toString(get(i)) : "";
-        }
-
-        @Override
-        public int compare(int i, int j)
-        {
-            if (i == j)
-            {
-                return 0;
-            }
-            boolean aSet = isSet(i);
-            boolean bSet = isSet(j);
-            if (aSet && bSet)
-            {
-                return Byte.compare(get(i), get(j));
-            }
-            if (!aSet && !bSet)
-            {
-                return 0;
-            }
-            return aSet ? 1 : -1;
-        }
-
-        @Override
         public byte get(int i)
         {
             return this.bytes[i];
+        }
+
+        @Override
+        public byte[] toArray(byte[] x)
+        {
+            if (x == null || x.length < this.size)
+            {
+                x = Arrays.copyOf(this.bytes, this.size);
+            }
+            else
+            {
+                System.arraycopy(this.bytes, 0, x, 0, this.size);
+            }
+            return x;
         }
 
         @Override
@@ -300,12 +288,5 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
             return builder.build();
         }
 
-        @Override
-        public Column getAsColumn(int i)
-        {
-            return this.isSet.get(i)
-                    ? new ColumnByteConstant(this.name, this.bytes[i], 1, true)
-                    : ColumnByteConstant.createNull(this.name, 1);
-        }
     }
 }

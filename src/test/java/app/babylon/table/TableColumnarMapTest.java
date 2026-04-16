@@ -10,20 +10,140 @@
 
 package app.babylon.table;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.Test;
+
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.math.BigDecimal;
-
-import org.junit.jupiter.api.Test;
+import app.babylon.table.column.ColumnTypes;
 
 class TableColumnarMapTest
 {
+    private enum Status
+    {
+        OPEN, CLOSED
+    }
+
+    private static TableColumnar sampleTable()
+    {
+        final ColumnName ID = ColumnName.of("Id");
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final ColumnName STATUS = ColumnName.of("Status");
+
+        ColumnInt.Builder ids = ColumnInt.builder(ID);
+        ids.add(1);
+        ids.add(2);
+
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
+        names.add("Alice");
+        names.add("Bob");
+
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, ColumnTypes.DECIMAL);
+        amounts.add(new BigDecimal("10.5"));
+        amounts.add(new BigDecimal("20.0"));
+
+        ColumnCategorical.Builder<Status> statuses = ColumnCategorical.builder(STATUS, Status.class);
+        statuses.add(Status.OPEN);
+        statuses.add(Status.CLOSED);
+
+        return Tables.newTable(TableName.of("sample"), new TableDescription("desc"), ids.build(), names.build(),
+                amounts.build(), statuses.build());
+    }
+
+    void commonAccessorsShouldExposeTypedColumnsRowsAndCollections()
+    {
+        final ColumnName ID = ColumnName.of("Id");
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final ColumnName STATUS = ColumnName.of("Status");
+
+        TableColumnar table = sampleTable();
+
+        assertEquals(TableName.of("sample"), table.getName());
+        assertEquals("desc", table.getDescription().getValue());
+        assertEquals(4, table.getColumnCount());
+        assertEquals(2, table.getRowCount());
+
+        assertSame(table.getString(NAME), table.getObject(NAME, ColumnTypes.STRING));
+        assertSame(table.getDecimal(AMOUNT), table.getObject(AMOUNT, ColumnTypes.DECIMAL));
+        assertSame(table.getEnum(STATUS), table.getCategorical(STATUS));
+        assertSame(table.getEnum(STATUS), table.getCategorical(STATUS, Column.Type.of(Status.class)));
+        assertNull(table.getString(ColumnName.of("Missing")));
+        assertNull(table.getDouble(ColumnName.of("Missing")));
+        assertNull(table.getLong(ColumnName.of("Missing")));
+        assertNull(table.getInt(ColumnName.of("Missing")));
+        assertNull(table.getCategorical(ColumnName.of("Missing")));
+
+        List<ColumnName> names = new ArrayList<>();
+        table.getColumnNames(names);
+        assertArrayEquals(new ColumnName[]
+        {ID, NAME, AMOUNT, STATUS}, names.toArray(new ColumnName[0]));
+
+        List<ColumnName> namesFromArray = List.of(table.getColumnNames());
+        assertEquals(4, namesFromArray.size());
+        assertEquals(ID, namesFromArray.get(0));
+        assertEquals(STATUS, namesFromArray.get(3));
+
+        List<Column> iterated = new ArrayList<>();
+        for (Column column : table.columns())
+        {
+            iterated.add(column);
+        }
+        assertEquals(4, iterated.size());
+        assertSame(table.get(ID), iterated.get(0));
+        assertSame(table.get(STATUS), iterated.get(3));
+
+        Map<ColumnName, Column> selected = table.getColumns(new LinkedHashMap<>(), NAME, STATUS);
+        assertEquals(2, selected.size());
+        assertTrue(selected.containsKey(NAME));
+        assertTrue(selected.containsKey(STATUS));
+
+        TableColumnar firstRow = table.getFirstRow();
+        TableColumnar lastRow = table.getLastRow();
+        TableColumnar secondRow = table.getRow(1);
+        assertEquals(1, firstRow.getRowCount());
+        assertEquals(1, lastRow.getRowCount());
+        assertEquals("Alice", firstRow.getString(NAME).get(0));
+        assertEquals("Bob", lastRow.getString(NAME).get(0));
+        assertEquals(2, secondRow.getInt(ID).get(0));
+    }
+
+    @Test
+    void commonAccessorsShouldValidateWrongTypeRequests()
+    {
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName STATUS = ColumnName.of("Status");
+
+        TableColumnar table = sampleTable();
+
+        assertThrows(IllegalArgumentException.class, () -> table.getObject(NAME, null));
+        assertThrows(IllegalArgumentException.class, () -> table.getCategorical(STATUS, null));
+        assertThrows(RuntimeException.class, () -> table.getDouble(NAME));
+        assertThrows(RuntimeException.class, () -> table.getLong(NAME));
+        assertThrows(RuntimeException.class, () -> table.getInt(NAME));
+        assertThrows(RuntimeException.class, () -> table.getCategorical(NAME));
+        assertThrows(RuntimeException.class, () -> table.getObject(NAME, ColumnTypes.DECIMAL));
+        assertThrows(RuntimeException.class, () -> table.getCategorical(STATUS, ColumnTypes.STRING));
+    }
+
     @Test
     void pruneShouldRemoveColumnsThatAreNoneSet()
     {
@@ -44,6 +164,43 @@ class TableColumnarMapTest
         assertEquals(1, pruned.getColumnCount());
         assertEquals(A_2, pruned.getColumnNames()[0]);
         assertEquals("a0", pruned.getString(A_2).get(0));
+    }
+
+    @Test
+    void pruneShouldReturnSameTableWhenNoColumnsAreEmpty()
+    {
+        TableColumnar table = sampleTable();
+
+        TableColumnar pruned = table.prune();
+
+        assertSame(table, pruned);
+    }
+
+    @Test
+    void addShouldIgnoreNullColumn()
+    {
+        TableColumnar table = sampleTable();
+
+        assertSame(table, table.add((Column) null));
+        assertSame(table, table.add((Column[]) null));
+    }
+
+    @Test
+    void pruneShouldRemoveZeroRowColumns()
+    {
+        final ColumnName A_2 = ColumnName.of("A");
+        final ColumnName B_2 = ColumnName.of("B");
+
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnInt.Builder b = ColumnInt.builder(B_2);
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), a.build(), b.build());
+        TableColumnar pruned = table.prune();
+
+        assertEquals(2, table.getColumnCount());
+        assertEquals(0, table.getRowCount());
+        assertEquals(0, pruned.getColumnCount());
+        assertEquals(0, pruned.getRowCount());
     }
 
     @Test

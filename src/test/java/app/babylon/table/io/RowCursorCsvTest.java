@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -63,6 +64,27 @@ class RowCursorCsvTest
             assertEquals(ColumnName.of("City"), columns[0].name());
             assertEquals(null, columns[0].type());
             assertEquals(ColumnTypes.INT_OBJECT, columns[1].type());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldExposeExplicitCsvColumnTypesFromMap()
+    {
+        String csv = "City,Temp\nLondon,12.5\n";
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
+                .withColumnTypes(Map.of(ColumnName.of("Temp"), ColumnTypes.DOUBLE_OBJECT)).build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            ColumnDefinition[] columns = rowCursor.columns();
+
+            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(null, columns[0].type());
+            assertEquals(ColumnTypes.DOUBLE_OBJECT, columns[1].type());
         }
         catch (Exception e)
         {
@@ -151,6 +173,88 @@ class RowCursorCsvTest
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(TestStreamSources.fromBytes(bytes, "rows.csv"))
                 .build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            ColumnDefinition[] columns = rowCursor.columns();
+
+            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(ColumnName.of("Note"), columns[1].name());
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"Paris", "Price €12"}, values(rowCursor.current()));
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldReadFixedWidthRowsWhenConfigured()
+    {
+        String text = "ABC12XYZ\nDEF34UVW\n";
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(text, "rows.txt"))
+                .withFixedWidths(new int[]
+                {3, 2, 3}).withHeaderStrategy(new HeaderStrategyNoHeaders(1)).withAutoDetectEncoding(false).build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            ColumnDefinition[] columns = rowCursor.columns();
+
+            assertEquals(ColumnName.of("Column1"), columns[0].name());
+            assertEquals(ColumnName.of("Column2"), columns[1].name());
+            assertEquals(ColumnName.of("Column3"), columns[2].name());
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"ABC", "12", "XYZ"}, values(rowCursor.current()));
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"DEF", "34", "UVW"}, values(rowCursor.current()));
+
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldTreatNullFixedWidthsAsRegularDelimitedCsv()
+    {
+        String csv = "City,Note\nParis,\"Price,12\"\n";
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
+                .withFixedWidths(null).build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            ColumnDefinition[] columns = rowCursor.columns();
+
+            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(ColumnName.of("Note"), columns[1].name());
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"Paris", "Price,12"}, values(rowCursor.current()));
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldUseConfiguredCharsetWhenAutoDetectEncodingIsDisabled()
+    {
+        byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(TestStreamSources.fromBytes(bytes, "rows.csv"))
+                .withCharset(java.nio.charset.Charset.forName("windows-1252")).withAutoDetectEncoding(false).build();
 
         try (RowCursor rowCursor = source.openRows())
         {

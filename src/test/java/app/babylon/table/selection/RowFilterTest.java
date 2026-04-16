@@ -14,7 +14,9 @@ import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
+import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -60,6 +62,40 @@ class RowFilterTest
         TableColumnar filtered = table.filter(RowFilter.of(I, (int x) -> x >= 2));
 
         assertEquals(2, filtered.getRowCount());
+    }
+
+    @Test
+    void filterShouldWorkForLongColumns()
+    {
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder longs = ColumnLong.builder(L);
+        longs.add(10L);
+        longs.addNull();
+        longs.add(30L);
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), longs.build());
+
+        TableColumnar filtered = table.filter(RowFilter.of(L, (long x) -> x >= 20L));
+
+        assertEquals(1, filtered.getRowCount());
+        assertEquals(30L, filtered.getLong(L).get(0));
+    }
+
+    @Test
+    void filterShouldWorkForDoubleColumns()
+    {
+        final ColumnName D = ColumnName.of("D");
+        ColumnDouble.Builder doubles = ColumnDouble.builder(D);
+        doubles.add(1.5d);
+        doubles.addNull();
+        doubles.add(3.5d);
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), doubles.build());
+
+        TableColumnar filtered = table.filter(RowFilter.of(D, (double x) -> x > 2.0d));
+
+        assertEquals(1, filtered.getRowCount());
+        assertEquals(3.5d, filtered.getDouble(D).get(0));
     }
 
     @Test

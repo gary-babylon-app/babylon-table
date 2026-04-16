@@ -263,14 +263,12 @@ public interface ViewIndex
         @Override
         public boolean isSet(int i)
         {
-            checkBounds(i);
             return (this.values[i] & BYTE_MAX_VALUE) != BYTE_NULL;
         }
 
         @Override
         public int get(int i)
         {
-            checkBounds(i);
             return this.values[i] & BYTE_MAX_VALUE;
         }
 
@@ -292,14 +290,6 @@ public interface ViewIndex
         public ViewIndex copy()
         {
             return new ArrayByte(this);
-        }
-
-        private void checkBounds(int i)
-        {
-            if (i < 0 || i >= this.size)
-            {
-                throw new IndexOutOfBoundsException("Index out of bounds: " + i + ", size=" + this.size);
-            }
         }
     }
 
@@ -342,14 +332,12 @@ public interface ViewIndex
         @Override
         public boolean isSet(int i)
         {
-            checkBounds(i);
             return this.values[i] != CHAR_NULL;
         }
 
         @Override
         public int get(int i)
         {
-            checkBounds(i);
             return this.values[i];
         }
 
@@ -371,14 +359,6 @@ public interface ViewIndex
         public ViewIndex copy()
         {
             return new ArrayChar(this);
-        }
-
-        private void checkBounds(int i)
-        {
-            if (i < 0 || i >= this.size)
-            {
-                throw new IndexOutOfBoundsException("Index out of bounds: " + i + ", size=" + this.size);
-            }
         }
     }
 
@@ -418,14 +398,12 @@ public interface ViewIndex
         @Override
         public boolean isSet(int i)
         {
-            checkBounds(i);
             return this.values[i] != INT_NULL;
         }
 
         @Override
         public int get(int i)
         {
-            checkBounds(i);
             return this.values[i];
         }
 
@@ -444,14 +422,6 @@ public interface ViewIndex
         public ViewIndex copy()
         {
             return new ArrayInt(this);
-        }
-
-        private void checkBounds(int i)
-        {
-            if (i < 0 || i >= this.values.length)
-            {
-                throw new IndexOutOfBoundsException("Index out of bounds: " + i + ", size=" + this.values.length);
-            }
         }
     }
 }

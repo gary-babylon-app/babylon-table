@@ -40,7 +40,7 @@ class TableColumnarMap extends TableColumnarCommon
     {
         super(description);
         this.name = ArgumentCheck.nonNull(tableName);
-        ArgumentCheck.nonEmpty(columns);
+        ArgumentCheck.nonNull(columns);
 
         this.columnOrder = new ColumnName[columns.length];
 

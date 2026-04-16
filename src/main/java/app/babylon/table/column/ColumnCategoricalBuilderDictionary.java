@@ -83,18 +83,6 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
     }
 
     @Override
-    public T first()
-    {
-        return get(0);
-    }
-
-    @Override
-    public T last()
-    {
-        return get(size() - 1);
-    }
-
-    @Override
     public ColumnCategorical<T> build()
     {
         ensureActive();

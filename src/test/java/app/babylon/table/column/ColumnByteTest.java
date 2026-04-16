@@ -35,9 +35,12 @@ public class ColumnByteTest
         assertTrue(column.isSet(0));
         assertFalse(column.isSet(1));
         assertTrue(column.isSet(2));
+        assertFalse(column.toString(0).isEmpty());
         assertEquals("42", column.toString(0));
         assertEquals("", column.toString(1));
+        assertFalse(column.toString(2).isEmpty());
         assertEquals("-5", column.toString(2));
+        assertEquals(ColumnByte.TYPE, column.getType());
     }
 
     @Test
@@ -143,6 +146,7 @@ public class ColumnByteTest
 
         assertEquals(1, single.size());
         assertEquals("1", single.toString(0));
+        assertFalse(single.toString(0).isEmpty());
         assertTrue(single.isSet(0));
 
         assertEquals(1, nullSingle.size());
@@ -177,6 +181,62 @@ public class ColumnByteTest
     }
 
     @Test
+    public void byteColumnsShouldExposeCompareAndToArrayAcrossBaseAndView()
+    {
+        final ColumnName B = ColumnName.of("B");
+        ColumnByte.Builder builder = ColumnByte.builder(B);
+        builder.add((byte) 10);
+        builder.addNull();
+        builder.add((byte) -1);
+        ColumnByte column = builder.build();
+
+        byte[] target = new byte[5];
+        byte[] values = column.toArray(target);
+        assertTrue(values == target);
+        assertEquals((byte) 10, values[0]);
+        assertEquals((byte) 0, values[1]);
+        assertEquals((byte) -1, values[2]);
+        assertTrue(column.compare(0, 0) == 0);
+        assertTrue(column.compare(2, 0) < 0);
+        assertTrue(column.compare(0, 2) > 0);
+        assertTrue(column.compare(1, 0) < 0);
+        assertTrue(column.compare(0, 1) > 0);
+
+        ColumnByte view = (ColumnByte) column.view(ViewIndex.builder().add(2).addNull().add(0).build());
+        byte[] viewValues = view.toArray(null);
+        assertEquals(3, viewValues.length);
+        assertEquals((byte) -1, viewValues[0]);
+        assertEquals((byte) 0, viewValues[1]);
+        assertEquals((byte) 10, viewValues[2]);
+        assertTrue(view.compare(2, 0) > 0);
+        assertTrue(view.compare(1, 0) < 0);
+    }
+
+    @Test
+    public void getAsColumnShouldPreserveSetValueAndNullState()
+    {
+        ColumnByte column = ColumnByte.builder(ColumnName.of("B")).add((byte) 4).addNull().add((byte) 9).build();
+
+        ColumnByte first = (ColumnByte) column.getAsColumn(0);
+        ColumnByte second = (ColumnByte) column.getAsColumn(1);
+        ColumnByte third = (ColumnByte) column.getAsColumn(2);
+
+        assertEquals(1, first.size());
+        assertTrue(first.isSet(0));
+        assertFalse(first.toString(0).isEmpty());
+        assertEquals("4", first.toString(0));
+
+        assertEquals(1, second.size());
+        assertFalse(second.isSet(0));
+        assertEquals("", second.toString(0));
+
+        assertEquals(1, third.size());
+        assertTrue(third.isSet(0));
+        assertFalse(third.toString(0).isEmpty());
+        assertEquals("9", third.toString(0));
+    }
+
+    @Test
     public void byteConstantShouldExposeValueSizeAndViewBehavior()
     {
         final ColumnName B = ColumnName.of("B");
@@ -188,12 +248,75 @@ public class ColumnByteTest
         assertEquals(4, constant.size());
         assertTrue(constant.isAllSet());
         assertFalse(constant.isNoneSet());
+        byte[] target = new byte[6];
+        byte[] values = constant.toArray(target);
+        assertTrue(values == target);
+        assertEquals((byte) 7, values[0]);
+        assertEquals((byte) 7, values[1]);
+        assertEquals((byte) 7, values[2]);
+        assertEquals((byte) 7, values[3]);
 
         ColumnByte constantView = (ColumnByte) constant.view(ViewIndex.builder().add(2).addNull().add(0).build());
         assertEquals(3, constantView.size());
         assertEquals("7", constantView.toString(0));
         assertFalse(constantView.isSet(1));
         assertEquals("7", constantView.toString(2));
+    }
+
+    @Test
+    public void byteConstantViewShouldStayConstantWhenRowIndexIsAllSet()
+    {
+        final ColumnName B = ColumnName.of("B");
+        ColumnByteConstant constant = new ColumnByteConstant(B, (byte) 7, 4, true);
+
+        ColumnByte view = (ColumnByte) constant.view(ViewIndex.builder().add(2).add(1).add(0).build());
+
+        assertTrue(view instanceof ColumnByteConstant);
+        assertEquals(3, view.size());
+        assertTrue(view.isAllSet());
+        assertEquals("7", view.toString(0));
+        assertEquals("7", view.toString(2));
+    }
+
+    @Test
+    public void byteConstantShouldSupportCompareForSetAndNullCases()
+    {
+        ColumnByteConstant setConstant = new ColumnByteConstant(ColumnName.of("B"), (byte) 7, 3, true);
+        ColumnByteConstant nullConstant = ColumnByteConstant.createNull(ColumnName.of("N"), 3);
+
+        assertTrue(setConstant.compare(0, 0) == 0);
+        assertTrue(setConstant.compare(1, 2) == 0);
+        assertTrue(nullConstant.compare(0, 0) == 0);
+        assertTrue(nullConstant.compare(1, 2) == 0);
+    }
+
+    @Test
+    public void byteConstantShouldSupportCopyAndGetAsColumn()
+    {
+        ColumnByteConstant setConstant = new ColumnByteConstant(ColumnName.of("B"), (byte) 7, 3, true);
+        ColumnByteConstant nullConstant = ColumnByteConstant.createNull(ColumnName.of("N"), 3);
+
+        ColumnByte copied = setConstant.copy(ColumnName.of("COPY"));
+        ColumnByte copiedNull = nullConstant.copy(ColumnName.of("COPY_NULL"));
+        ColumnByte single = (ColumnByte) setConstant.getAsColumn(1);
+        ColumnByte singleNull = (ColumnByte) nullConstant.getAsColumn(1);
+
+        assertEquals(ColumnName.of("COPY"), copied.getName());
+        assertEquals(3, copied.size());
+        assertEquals("7", copied.toString(0));
+        assertTrue(copied.isAllSet());
+
+        assertEquals(ColumnName.of("COPY_NULL"), copiedNull.getName());
+        assertEquals(3, copiedNull.size());
+        assertFalse(copiedNull.isSet(0));
+
+        assertEquals(1, single.size());
+        assertEquals("7", single.toString(0));
+        assertTrue(single.isSet(0));
+
+        assertEquals(1, singleNull.size());
+        assertFalse(singleNull.isSet(0));
+        assertEquals("", singleNull.toString(0));
     }
 
     @Test

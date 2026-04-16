@@ -91,6 +91,16 @@ public interface ColumnByte extends Column
      */
     public byte get(int i);
 
+    /**
+     * Copies the values into the provided array, allocating a new array when
+     * necessary.
+     *
+     * @param x
+     *            the destination array, or {@code null}
+     * @return an array containing the column values
+     */
+    public byte[] toArray(byte[] x);
+
     @Override
     default int compare(int i, int j)
     {

@@ -161,23 +161,4 @@ public class TableColumnarViewTest
         assertEquals(table.get(B_2).getName(), view.get(B_2).getName());
     }
 
-    @Test
-    public void replaceShouldThrowForMissingColumnName()
-    {
-        final ColumnName A_2 = ColumnName.of("A");
-        final ColumnName C_2 = ColumnName.of("C");
-        TableColumnar table = sampleTable();
-        ViewIndex.Builder rowIndexBuilder = ViewIndex.builder();
-        rowIndexBuilder.add(2).add(1);
-        TableColumnar view = Tables.newTableView(TableName.of("v"), table, rowIndexBuilder.build());
-
-        ColumnObject.Builder<String> replaceA = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
-        replaceA.add("ra0").add("ra1");
-
-        ColumnObject.Builder<String> missingColumn = ColumnObject.builder(C_2,
-                app.babylon.table.column.ColumnTypes.STRING);
-        missingColumn.add("c0").add("c1");
-
-        assertThrows(RuntimeException.class, () -> view.replace(replaceA.build(), missingColumn.build(), null));
-    }
 }

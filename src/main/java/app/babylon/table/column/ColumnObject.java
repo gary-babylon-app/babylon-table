@@ -172,20 +172,6 @@ public interface ColumnObject<T> extends Column
         }
 
         /**
-         * Returns the first value currently added to the builder.
-         *
-         * @return the first value
-         */
-        public T first();
-
-        /**
-         * Returns the most recently added value.
-         *
-         * @return the last value
-         */
-        public T last();
-
-        /**
          * Returns the number of rows currently accumulated by the builder.
          *
          * @return the builder size

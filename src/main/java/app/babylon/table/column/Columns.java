@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import app.babylon.lang.Is;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.aggregation.AccumulatorDouble;
 import app.babylon.table.aggregation.Aggregate;
@@ -429,7 +430,7 @@ public class Columns
     @SuppressWarnings("unchecked")
     public static Column concat(List<Column> columns)
     {
-        if (columns.size() == 0)
+        if (Is.empty(columns))
         {
             return null;
         }

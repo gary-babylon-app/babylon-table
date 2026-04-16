@@ -28,6 +28,7 @@ import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.column.Columns;
 
 abstract class TableColumnarCommon implements TableColumnar
 {
@@ -88,35 +89,6 @@ abstract class TableColumnarCommon implements TableColumnar
             throw new RuntimeException(x + " not long column.");
         }
         return null;
-    }
-
-    @Override
-    public TableColumnar replaceOrAdd(Column... x)
-    {
-        Collection<Column> replaces = new ArrayList<>();
-        Collection<Column> adds = new ArrayList<>();
-        for (Column column : x)
-        {
-            if (this.contains(column.getName()))
-            {
-                replaces.add(column);
-            }
-            else
-            {
-                adds.add(column);
-            }
-        }
-
-        TableColumnar t = this;
-        if (replaces.size() > 0)
-        {
-            t = this.replace(replaces.toArray(new Column[replaces.size()]));
-        }
-        if (adds.size() > 0)
-        {
-            t = this.addColumns(adds.toArray(new Column[adds.size()]));
-        }
-        return t;
     }
 
     @Override
@@ -291,65 +263,40 @@ abstract class TableColumnarCommon implements TableColumnar
     }
 
     @Override
-    public TableColumnar replace(Column... x)
+    public TableColumnar add(Column... x)
     {
-        if (x != null && x.length > 0)
+        if (!Is.empty(x))
         {
-            Map<ColumnName, Column> replacementsByName = new HashMap<>();
-            for (Column column : x)
+            Collection<Column> columnsToAdd = new ArrayList<>();
+            for (int i = 0; i < x.length; ++i)
             {
-                if (column != null)
+                Column column = x[i];
+                if (column == null)
                 {
-                    ColumnName name = column.getName();
-                    if (!contains(name))
-                    {
-                        throw new RuntimeException("No column to replace with " + name);
-                    }
-                    replacementsByName.put(name, column);
+                    continue;
                 }
+                if (contains(column.getName()))
+                {
+                    throw new RuntimeException(
+                            "AddColumns failed on table " + getName() + ", " + column.getName() + " already present.");
+                }
+                columnsToAdd.add(column);
             }
-            if (replacementsByName.isEmpty())
+            if (columnsToAdd.isEmpty())
             {
                 return this;
             }
 
-            Column[] columns = getColumns();
-            for (int i = 0; i < columns.length; ++i)
-            {
-                Column currentColumn = columns[i];
-                Column replacement = replacementsByName.get(currentColumn.getName());
-                if (replacement != null)
-                {
-                    columns[i] = replacement;
-                }
-            }
-            return new TableColumnarMap(getName(), getDescription(), columns);
-        }
-        return this;
-    }
-
-    @Override
-    public TableColumnar addColumns(Column... x)
-    {
-        if (!Is.empty(x))
-        {
-            for (int i = 0; i < x.length; ++i)
-            {
-                if (contains(x[i].getName()))
-                {
-                    throw new RuntimeException(
-                            "AddColumns failed on table " + getName() + ", " + x[i].getName() + " already present.");
-                }
-            }
-            Column[] allColumns = new Column[this.getColumnCount() + x.length];
+            Column[] allColumns = new Column[this.getColumnCount() + columnsToAdd.size()];
             Column[] existingColumns = this.getColumns();
             for (int i = 0; i < existingColumns.length; ++i)
             {
                 allColumns[i] = existingColumns[i];
             }
-            for (int i = 0; i < x.length; ++i)
+            int offset = this.getColumnCount();
+            for (Column column : columnsToAdd)
             {
-                allColumns[i + this.getColumnCount()] = x[i];
+                allColumns[offset++] = column;
             }
 
             return new TableColumnarMap(getName(), getDescription(), allColumns);
@@ -366,7 +313,7 @@ abstract class TableColumnarCommon implements TableColumnar
         Collection<ColumnName> columnsToRemove = new ArrayList<>();
         for (Column column : getColumns())
         {
-            if (column.isNoneSet())
+            if (Columns.isEmpty(column))
             {
                 columnsToRemove.add(column.getName());
             }

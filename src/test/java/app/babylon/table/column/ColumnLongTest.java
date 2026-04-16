@@ -38,6 +38,7 @@ public class ColumnLongTest
         assertEquals("42", column.toString(0));
         assertEquals("", column.toString(1));
         assertEquals("-123", column.toString(2));
+        assertEquals(ColumnLong.TYPE, column.getType());
     }
 
     @Test
@@ -93,6 +94,20 @@ public class ColumnLongTest
         ColumnLong column = builder.build();
 
         assertTrue(column instanceof ColumnLongConstant);
+    }
+
+    @Test
+    public void builderWithInitialSizeShouldBuildLongColumn()
+    {
+        ColumnLong.Builder builder = ColumnLong.builder(ColumnName.of("L"), 2);
+        builder.add(5L);
+        builder.add(6L);
+
+        ColumnLong column = builder.build();
+
+        assertEquals(2, column.size());
+        assertEquals(5L, column.get(0));
+        assertEquals(6L, column.get(1));
     }
 
     @Test
@@ -243,6 +258,86 @@ public class ColumnLongTest
         assertEquals(-9L, view.get(0));
         assertFalse(view.isSet(1));
         assertEquals(42L, view.get(2));
+    }
+
+    @Test
+    public void baseArrayShouldExposeCompareAndToArray()
+    {
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L);
+        builder.add(42L);
+        builder.addNull();
+        builder.add(-9L);
+        ColumnLong column = builder.build();
+
+        long[] target = new long[5];
+        long[] values = column.toArray(target);
+
+        assertTrue(values == target);
+        assertEquals(42L, values[0]);
+        assertEquals(0L, values[1]);
+        assertEquals(-9L, values[2]);
+        assertTrue(column.compare(0, 0) == 0);
+        assertTrue(column.compare(2, 0) < 0);
+        assertTrue(column.compare(0, 2) > 0);
+        assertTrue(column.compare(1, 0) < 0);
+        assertTrue(column.compare(0, 1) > 0);
+        assertTrue(column.compare(1, 1) == 0);
+    }
+
+    @Test
+    public void viewShouldExposeArrayCompareAndFlags()
+    {
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L);
+        builder.add(10L);
+        builder.addNull();
+        builder.add(30L);
+        builder.add(40L);
+        ColumnLong original = builder.build();
+
+        ViewIndex index = ViewIndex.builder().add(2).addNull().add(0).build();
+        ColumnLong view = (ColumnLong) original.view(index);
+
+        long[] values = view.toArray(null);
+        assertEquals(3, values.length);
+        assertEquals(30L, values[0]);
+        assertEquals(0L, values[1]);
+        assertEquals(10L, values[2]);
+        assertFalse(view.isAllSet());
+        assertFalse(view.isNoneSet());
+        assertFalse(view.isConstant());
+        assertTrue(view.compare(2, 0) < 0);
+        assertTrue(view.compare(1, 0) < 0);
+    }
+
+    @Test
+    public void viewShouldDetectConstantAllSetAndNoneSetCases()
+    {
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L);
+        builder.add(7L);
+        builder.add(7L);
+        builder.add(7L);
+        ColumnLong original = builder.build();
+
+        ColumnLong constantView = (ColumnLong) original.view(ViewIndex.builder().add(2).add(1).add(0).build());
+        long[] target = new long[4];
+        long[] values = constantView.toArray(target);
+
+        assertTrue(values == target);
+        assertEquals(7L, values[0]);
+        assertEquals(7L, values[1]);
+        assertEquals(7L, values[2]);
+        assertTrue(constantView.isConstant());
+        assertTrue(constantView.isAllSet());
+        assertFalse(constantView.isNoneSet());
+
+        ColumnLong noneSetView = (ColumnLong) ColumnLongConstant.createNull(L, 3)
+                .view(ViewIndex.builder().add(2).add(1).add(0).build());
+        assertTrue(noneSetView.isConstant());
+        assertFalse(noneSetView.isAllSet());
+        assertTrue(noneSetView.isNoneSet());
     }
 
     @Test

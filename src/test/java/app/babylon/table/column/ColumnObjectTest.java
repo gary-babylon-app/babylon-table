@@ -47,6 +47,17 @@ class ColumnObjectTest
     }
 
     @Test
+    void objectBuilderToStringShouldNotBeEmptyWhenAValueIsSet()
+    {
+        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("Test"), ColumnTypes.STRING,
+                ColumnObject.Mode.ARRAY);
+        builder.add("value");
+        builder.addNull();
+
+        assertFalse(builder.toString().isEmpty());
+    }
+
+    @Test
     void stringViewsShouldRespectViewOrder()
     {
         final ColumnName TEST = ColumnName.of("TEST");

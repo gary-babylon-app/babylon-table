@@ -19,12 +19,70 @@ import org.junit.jupiter.api.Test;
 class CsvFormatProbeTest
 {
     @Test
+    void shouldReturnDefaultsWhenNoInterestingCharactersArePresent()
+    {
+        CsvFormat format = CsvFormatProbe.detect("plain words only", StandardCharsets.UTF_8, ';', '\'');
+
+        assertEquals(StandardCharsets.UTF_8, format.charset());
+        assertEquals(';', format.separator());
+        assertEquals('\'', format.quote());
+        assertEquals(0.0d, format.confidence());
+    }
+
+    @Test
+    void shouldCountAllInterestingCharactersThroughDetectPath()
+    {
+        String sample = "A,B\tC;D|E\"F\"\n";
+
+        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
+
+        assertEquals(StandardCharsets.UTF_8, format.charset());
+        assertEquals('"', format.quote());
+        assertEquals(0.0d, format.confidence());
+    }
+
+    @Test
+    void shouldIgnoreColonUsedInsideDateTimeValues()
+    {
+        String sample = "" + "Date,Time,Value\n" + "2026-01-01,10:15:30,1\n" + "2026-01-02,11:45:00,2\n";
+
+        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
+
+        assertEquals(',', format.separator());
+        assertEquals('"', format.quote());
+    }
+
+    @Test
     void shouldDetectSemicolonSeparator()
     {
         CsvFormat format = CsvFormatProbe.detect("City;Note\nParis;'Price;12'\n", StandardCharsets.UTF_8, ',', '"');
 
         assertEquals(StandardCharsets.UTF_8, format.charset());
         assertEquals(';', format.separator());
+        assertEquals('"', format.quote());
+    }
+
+    @Test
+    void shouldDetectTabSeparator()
+    {
+        String sample = "City\tNote\nParis\t\"Price\t12\"\n";
+
+        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
+
+        assertEquals(StandardCharsets.UTF_8, format.charset());
+        assertEquals('\t', format.separator());
+        assertEquals('"', format.quote());
+    }
+
+    @Test
+    void shouldDetectPipeSeparator()
+    {
+        String sample = "City|Note\nParis|\"Price|12\"\n";
+
+        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
+
+        assertEquals(StandardCharsets.UTF_8, format.charset());
+        assertEquals('|', format.separator());
         assertEquals('"', format.quote());
     }
 

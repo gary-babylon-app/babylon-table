@@ -61,6 +61,20 @@ class ColumnByteConstant implements ColumnByte
     }
 
     @Override
+    public byte[] toArray(byte[] x)
+    {
+        if (x == null || x.length < this.size)
+        {
+            x = new byte[this.size];
+        }
+        for (int i = 0; i < this.size; ++i)
+        {
+            x[i] = this.value;
+        }
+        return x;
+    }
+
+    @Override
     public boolean isSet(int i)
     {
         return this.isSet;
@@ -88,32 +102,6 @@ class ColumnByteConstant implements ColumnByte
     public boolean isNoneSet()
     {
         return !this.isSet;
-    }
-
-    @Override
-    public String toString(int i)
-    {
-        return this.isSet(i) ? Byte.toString(get(i)) : "";
-    }
-
-    @Override
-    public int compare(int i, int j)
-    {
-        if (i == j)
-        {
-            return 0;
-        }
-        boolean aSet = isSet(i);
-        boolean bSet = isSet(j);
-        if (aSet && bSet)
-        {
-            return Byte.compare(get(i), get(j));
-        }
-        if (!aSet && !bSet)
-        {
-            return 0;
-        }
-        return aSet ? 1 : -1;
     }
 
     @Override
@@ -145,12 +133,6 @@ class ColumnByteConstant implements ColumnByte
             }
         }
         return builder.build();
-    }
-
-    @Override
-    public Column getAsColumn(int i)
-    {
-        return this.isSet ? new ColumnByteConstant(this.name, this.value, 1, true) : createNull(this.name, 1);
     }
 
     @Override

@@ -38,6 +38,7 @@ public class ColumnIntTest
         assertEquals("42", column.toString(0));
         assertEquals("", column.toString(1));
         assertEquals("-123", column.toString(2));
+        assertEquals(ColumnInt.TYPE, column.getType());
     }
 
     @Test
@@ -272,6 +273,57 @@ public class ColumnIntTest
         assertEquals(-1, view.get(0));
         assertFalse(view.isSet(1));
         assertEquals(7, view.get(2));
+    }
+
+    @Test
+    public void baseArrayShouldExposeCompareAndToArray()
+    {
+        final ColumnName I = ColumnName.of("I");
+        ColumnInt.Builder builder = ColumnInt.builder(I);
+        builder.add(42);
+        builder.addNull();
+        builder.add(-9);
+        ColumnInt column = builder.build();
+
+        int[] target = new int[5];
+        int[] values = column.toArray(target);
+
+        assertTrue(values == target);
+        assertEquals(42, values[0]);
+        assertEquals(0, values[1]);
+        assertEquals(-9, values[2]);
+        assertTrue(column.compare(0, 0) == 0);
+        assertTrue(column.compare(2, 0) < 0);
+        assertTrue(column.compare(0, 2) > 0);
+        assertTrue(column.compare(1, 0) < 0);
+        assertTrue(column.compare(0, 1) > 0);
+        assertTrue(column.compare(1, 1) == 0);
+    }
+
+    @Test
+    public void viewShouldExposeCompareAsWellAsArrayAndFlags()
+    {
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnInt.Builder builder = (ColumnInt.Builder) ColumnInt.builder(VALUES);
+        builder.add(10);
+        builder.addNull();
+        builder.add(30);
+        builder.add(40);
+        ColumnInt original = builder.build();
+
+        ViewIndex index = ViewIndex.builder().add(2).addNull().add(0).build();
+        ColumnInt view = (ColumnInt) original.view(index);
+
+        int[] values = view.toArray(null);
+        assertEquals(3, values.length);
+        assertEquals(30, values[0]);
+        assertEquals(0, values[1]);
+        assertEquals(10, values[2]);
+        assertFalse(view.isAllSet());
+        assertFalse(view.isNoneSet());
+        assertFalse(view.isConstant());
+        assertTrue(view.compare(2, 0) < 0);
+        assertTrue(view.compare(1, 0) < 0);
     }
 
     @Test

@@ -122,10 +122,6 @@ final class CsvFormatProbe
         {
             ++count;
         }
-        if (tally.hasColon())
-        {
-            ++count;
-        }
 
         char[] candidates = new char[count];
         int i = 0;
@@ -144,10 +140,6 @@ final class CsvFormatProbe
         if (tally.hasPipe())
         {
             candidates[i++] = '|';
-        }
-        if (tally.hasColon())
-        {
-            candidates[i++] = ':';
         }
         return candidates;
     }
@@ -169,10 +161,6 @@ final class CsvFormatProbe
         if (tally.hasPipe())
         {
             return '|';
-        }
-        if (tally.hasColon())
-        {
-            return ':';
         }
         throw new IllegalStateException("Expected at least one separator candidate.");
     }
@@ -416,7 +404,6 @@ final class CsvFormatProbe
         private int tabCount;
         private int semiColonCount;
         private int pipeCount;
-        private int colonCount;
         private int doubleQuoteCount;
         private int distinctSeparatorCount;
 
@@ -426,7 +413,6 @@ final class CsvFormatProbe
             this.tabCount = 0;
             this.semiColonCount = 0;
             this.pipeCount = 0;
-            this.colonCount = 0;
             this.doubleQuoteCount = 0;
             this.distinctSeparatorCount = 0;
         }
@@ -466,13 +452,6 @@ final class CsvFormatProbe
                             ++count.distinctSeparatorCount;
                         }
                         ++count.pipeCount;
-                    }
-                    case ':' -> {
-                        if (count.colonCount == 0)
-                        {
-                            ++count.distinctSeparatorCount;
-                        }
-                        ++count.colonCount;
                     }
                     case '"' -> {
                         ++count.doubleQuoteCount;
@@ -522,16 +501,6 @@ final class CsvFormatProbe
         int getPipeCount()
         {
             return this.pipeCount;
-        }
-
-        boolean hasColon()
-        {
-            return this.colonCount > 0;
-        }
-
-        int getColonCount()
-        {
-            return this.colonCount;
         }
 
         int getDistinctSeparatorCount()

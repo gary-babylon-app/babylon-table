@@ -93,20 +93,6 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
     }
 
     @Override
-    public T first()
-    {
-        ensureActive();
-        return activeBuilder().first();
-    }
-
-    @Override
-    public T last()
-    {
-        ensureActive();
-        return activeBuilder().last();
-    }
-
-    @Override
     public int size()
     {
         ensureActive();

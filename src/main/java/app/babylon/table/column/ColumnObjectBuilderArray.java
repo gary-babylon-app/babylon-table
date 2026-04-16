@@ -42,25 +42,6 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
         this.built = false;
     }
 
-    @SuppressWarnings("unchecked")
-    T get(int i)
-    {
-        ensureActive();
-        return (T) this.values[i];
-    }
-
-    @Override
-    public T last()
-    {
-        return get(size() - 1);
-    }
-
-    @Override
-    public T first()
-    {
-        return get(0);
-    }
-
     @Override
     public ColumnName getName()
     {
@@ -163,7 +144,8 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
 
     private String toString(int i)
     {
-        T value = get(i);
+        @SuppressWarnings("unchecked")
+        T value = (T) this.values[i];
         return value == null ? "" : value.toString();
     }
 

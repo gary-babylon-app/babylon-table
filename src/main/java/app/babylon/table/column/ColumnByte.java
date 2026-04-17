@@ -26,7 +26,7 @@ public interface ColumnByte extends Column
     /**
      * Builder for nullable byte columns.
      */
-    public static interface Builder extends ColumnBuilder
+    public static interface Builder extends Column.Builder
     {
         /**
          * Appends a byte value.

@@ -27,7 +27,7 @@ public interface ColumnLong extends Column
     /**
      * Builder for nullable long columns.
      */
-    public static interface Builder extends ColumnBuilder
+    public static interface Builder extends Column.Builder
     {
         /**
          * Appends a long value.

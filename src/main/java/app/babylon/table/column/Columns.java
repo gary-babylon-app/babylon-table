@@ -105,7 +105,7 @@ public class Columns
         return column.isNoneSet();
     }
 
-    public static ColumnBuilder newColumn(ColumnName colName, Column.Type type)
+    public static Column.Builder newColumn(ColumnName colName, Column.Type type)
     {
         if (type == null)
         {
@@ -139,7 +139,7 @@ public class Columns
         throw new IllegalArgumentException("Unsupported value class " + valueClass);
     }
 
-    public static ColumnBuilder newCharSliceBuilder(ColumnName colName, Column.Type type)
+    public static Column.Builder newCharSliceBuilder(ColumnName colName, Column.Type type)
     {
         if (type == null)
         {

@@ -21,7 +21,7 @@ import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnBuilder;
+import app.babylon.table.column.Column.Builder;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
@@ -32,7 +32,7 @@ public final class RowConsumerCreateTable implements RowConsumer
     private final TableDescription tableDescription;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private Column.Type[] columnTypes;
-    private ColumnBuilder[] columnBuilders;
+    private Column.Builder[] columnBuilders;
 
     RowConsumerCreateTable(TableName tableName, TableDescription tableDescription,
             Map<ColumnName, Column.Type> explicitColumnTypes)
@@ -49,7 +49,7 @@ public final class RowConsumerCreateTable implements RowConsumer
     {
         ArgumentCheck.nonEmpty(columnNames);
         this.columnTypes = new Column.Type[columnNames.length];
-        this.columnBuilders = new ColumnBuilder[columnNames.length];
+        this.columnBuilders = new Column.Builder[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
         {
             Column.Type columnType = effectiveColumnType(columnNames[i], this.explicitColumnTypes);
@@ -103,7 +103,7 @@ public final class RowConsumerCreateTable implements RowConsumer
         return columnType;
     }
 
-    private static void addValue(ColumnBuilder builder, CharSequence chars, int start, int length)
+    private static void addValue(Column.Builder builder, CharSequence chars, int start, int length)
     {
         if (length <= 0)
         {

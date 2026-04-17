@@ -23,7 +23,7 @@ import java.util.Set;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnBuilder;
+import app.babylon.table.column.Column.Builder;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnLong;
@@ -197,7 +197,7 @@ public class Tables
 
         TableIndex rightIndex = new TableIndex(right, rightKeys);
         Column[] rightColumns = right.getColumns(rightColumnsToAdd);
-        ColumnBuilder[] builders = new ColumnBuilder[rightColumns.length];
+        Column.Builder[] builders = new Column.Builder[rightColumns.length];
         for (int i = 0; i < rightColumns.length; ++i)
         {
             builders[i] = Columns.newColumn(rightColumns[i].getName(), rightColumns[i].getType());
@@ -230,7 +230,7 @@ public class Tables
 
         Map<ColumnName, Column> columnsByName = new LinkedHashMap<>();
         left.getColumns(columnsByName);
-        for (ColumnBuilder builder : builders)
+        for (Column.Builder builder : builders)
         {
             Column column = builder.build();
             columnsByName.put(column.getName(), column);
@@ -238,7 +238,7 @@ public class Tables
         return Tables.newTable(left.getName(), left.getDescription(), columnsByName.values());
     }
 
-    private static void addJoinedValue(ColumnBuilder builder, Column source, Integer matchIndex)
+    private static void addJoinedValue(Column.Builder builder, Column source, Integer matchIndex)
     {
         if (source instanceof ColumnObject<?> co && builder instanceof ColumnObject.Builder<?> coBuilder)
         {
@@ -311,7 +311,7 @@ public class Tables
     }
 
     public static TableColumnar newTable(TableName tableName, TableDescription description,
-            ColumnBuilder... columnBuilders)
+            Column.Builder... columnBuilders)
     {
         ArgumentCheck.nonEmpty(columnBuilders);
         Column[] columns = new Column[columnBuilders.length];
@@ -334,7 +334,7 @@ public class Tables
         return new TableColumnarMap(tableName, null, columns);
     }
 
-    public static TableColumnar newTable(TableName tableName, ColumnBuilder... columnBuilders)
+    public static TableColumnar newTable(TableName tableName, Column.Builder... columnBuilders)
     {
         ArgumentCheck.nonEmpty(columnBuilders);
         return newTable(tableName, null, columnBuilders);

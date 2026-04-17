@@ -133,7 +133,7 @@ public interface ColumnObject<T> extends Column
      * @param <T>
      *            the value type produced by the builder
      */
-    public static interface Builder<T> extends ColumnBuilder
+    public static interface Builder<T> extends Column.Builder
     {
         @Override
         public ColumnName getName();

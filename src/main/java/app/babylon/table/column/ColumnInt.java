@@ -27,7 +27,7 @@ public interface ColumnInt extends Column
     /**
      * Builder for nullable int columns.
      */
-    public static interface Builder extends ColumnBuilder
+    public static interface Builder extends Column.Builder
     {
         /**
          * Appends an int value.

@@ -17,7 +17,7 @@ import app.babylon.table.Tables;
 import app.babylon.table.aggregation.AccumulatorDouble;
 import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnBuilder;
+import app.babylon.table.column.Column.Builder;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
@@ -145,7 +145,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
                 groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i),
                         app.babylon.table.column.ColumnTypes.STRING);
             }
-            ColumnBuilder[] aggregateBuilders = newAggregateBuilders(this.plan);
+            Column.Builder[] aggregateBuilders = newAggregateBuilders(this.plan);
             for (Map.Entry<RowKey, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())
             {
                 RowKey groupKey = entry.getKey();
@@ -265,7 +265,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
                     groupColumn.getType());
         }
 
-        ColumnBuilder[] aggregateBuilders = newAggregateBuilders(sourceTable, this);
+        Column.Builder[] aggregateBuilders = newAggregateBuilders(sourceTable, this);
         for (Map.Entry<GroupKey, TableColumnar> entry : groupedTables.entrySet())
         {
             GroupKey groupKey = entry.getKey();
@@ -387,9 +387,9 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
                 || aggregate == Aggregate.VARIANCE_SAMPLE;
     }
 
-    private static ColumnBuilder[] newAggregateBuilders(TablePlanAggregate plan)
+    private static Column.Builder[] newAggregateBuilders(TablePlanAggregate plan)
     {
-        ColumnBuilder[] aggregateBuilders = new ColumnBuilder[plan.aggregateSpecs.size()];
+        Column.Builder[] aggregateBuilders = new Column.Builder[plan.aggregateSpecs.size()];
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {
             AggregateSpec aggregateSpec = plan.aggregateSpecs.get(i);
@@ -405,9 +405,9 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         return aggregateBuilders;
     }
 
-    private static ColumnBuilder[] newAggregateBuilders(TableColumnar table, TablePlanAggregate plan)
+    private static Column.Builder[] newAggregateBuilders(TableColumnar table, TablePlanAggregate plan)
     {
-        ColumnBuilder[] aggregateBuilders = new ColumnBuilder[plan.aggregateSpecs.size()];
+        Column.Builder[] aggregateBuilders = new Column.Builder[plan.aggregateSpecs.size()];
         for (int i = 0; i < aggregateBuilders.length; ++i)
         {
             AggregateSpec aggregateSpec = plan.aggregateSpecs.get(i);
@@ -437,7 +437,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         return aggregateBuilders;
     }
 
-    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, TablePlanAggregate plan,
+    private static void addAggregateValues(Column.Builder[] aggregateBuilders, TablePlanAggregate plan,
             AccumulatorDouble[] accumulators)
     {
         for (int i = 0; i < aggregateBuilders.length; ++i)
@@ -454,7 +454,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         }
     }
 
-    private static void addAggregateValues(ColumnBuilder[] aggregateBuilders, TablePlanAggregate plan,
+    private static void addAggregateValues(Column.Builder[] aggregateBuilders, TablePlanAggregate plan,
             TableColumnar table)
     {
         for (int i = 0; i < aggregateBuilders.length; ++i)
@@ -462,7 +462,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             AggregateSpec aggregateSpec = plan.aggregateSpecs.get(i);
             Aggregate aggregate = aggregateSpec.aggregate();
             Column sourceColumn = table.get(aggregateSpec.sourceColumnName());
-            ColumnBuilder builder = aggregateBuilders[i];
+            Column.Builder builder = aggregateBuilders[i];
 
             if (aggregate == Aggregate.COUNT)
             {

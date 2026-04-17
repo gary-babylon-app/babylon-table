@@ -23,6 +23,42 @@ import app.babylon.table.column.type.TypeParser;
 public interface Column
 {
     /**
+     * Builds an immutable column instance for a specific column name.
+     */
+    public static interface Builder
+    {
+        /**
+         * Returns the name that will be assigned to the built column.
+         *
+         * @return the target column name
+         */
+        public ColumnName getName();
+
+        /**
+         * Appends a value directly from a character slice.
+         *
+         * @param chars
+         *            the source text
+         * @param start
+         *            the start offset
+         * @param length
+         *            the slice length
+         * @return this builder
+         */
+        default Builder add(CharSequence chars, int start, int length)
+        {
+            throw new UnsupportedOperationException("Character-slice add not supported by " + getClass().getName());
+        }
+
+        /**
+         * Materialises the current builder contents as an immutable column.
+         *
+         * @return the built column
+         */
+        public Column build();
+    }
+
+    /**
      * Describes the runtime value type stored by a column.
      */
     public static interface Type

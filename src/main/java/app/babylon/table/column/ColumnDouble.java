@@ -27,7 +27,7 @@ public interface ColumnDouble extends Column
     /**
      * Builder for nullable double columns.
      */
-    public static interface Builder extends ColumnBuilder
+    public static interface Builder extends Column.Builder
     {
         /**
          * Appends a double value.

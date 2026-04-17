@@ -110,7 +110,7 @@ class ColumnsTest
     @Test
     void newColumnSupportsIntType()
     {
-        ColumnBuilder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.INT);
+        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.INT);
 
         assertInstanceOf(ColumnInt.Builder.class, builder);
     }
@@ -118,7 +118,7 @@ class ColumnsTest
     @Test
     void newColumnSupportsDoubleType()
     {
-        ColumnBuilder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.DOUBLE);
+        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.DOUBLE);
 
         assertInstanceOf(ColumnDouble.Builder.class, builder);
     }
@@ -126,7 +126,7 @@ class ColumnsTest
     @Test
     void newColumnSupportsLongType()
     {
-        ColumnBuilder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.LONG);
+        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.LONG);
 
         assertInstanceOf(ColumnLong.Builder.class, builder);
     }
@@ -134,7 +134,7 @@ class ColumnsTest
     @Test
     void newColumnSupportsByteType()
     {
-        ColumnBuilder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.BYTE);
+        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.BYTE);
 
         assertInstanceOf(ColumnByte.Builder.class, builder);
     }
@@ -142,7 +142,7 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsIntType()
     {
-        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.INT);
+        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.INT);
         builder.add("12", 0, 2);
         builder.add(null, 0, 0);
 
@@ -154,7 +154,7 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsByteType()
     {
-        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.BYTE);
+        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.BYTE);
         builder.add("7", 0, 1);
         builder.add(null, 0, 0);
 
@@ -166,7 +166,7 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsLongType()
     {
-        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.LONG);
+        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.LONG);
         builder.add("123456789", 0, 9);
         builder.add(null, 0, 0);
 
@@ -178,7 +178,7 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsStringType()
     {
-        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.STRING);
+        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.STRING);
         builder.add("Alpha", 0, 5);
         builder.add(null, 0, 0);
 
@@ -190,7 +190,7 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsDecimalType()
     {
-        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.DECIMAL);
+        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.DECIMAL);
         builder.add("1234.50", 0, 7);
         builder.add("bad", 0, 3);
 

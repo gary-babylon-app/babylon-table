@@ -23,31 +23,31 @@ public class StringsTest
     public void leftPadShouldMatchExpectedBehavior()
     {
         assertNull(Strings.leftPad(null, 5, 'x'));
-        assertEquals("bat", Strings.leftPad("bat", 1, 'x'));
-        assertEquals("bat", Strings.leftPad("bat", 3, 'x'));
-        assertEquals("xxbat", Strings.leftPad("bat", 5, 'x'));
-        assertEquals("xxx", Strings.leftPad("", 3, 'x'));
+        assertEquals("bat", Strings.leftPad("bat", 1, 'x').toString());
+        assertEquals("bat", Strings.leftPad("bat", 3, 'x').toString());
+        assertEquals("xxbat", Strings.leftPad("bat", 5, 'x').toString());
+        assertEquals("xxx", Strings.leftPad("", 3, 'x').toString());
     }
 
     @Test
     public void rightPadShouldMatchExpectedBehavior()
     {
         assertNull(Strings.rightPad(null, 5, 'x'));
-        assertEquals("bat", Strings.rightPad("bat", 1, 'x'));
-        assertEquals("bat", Strings.rightPad("bat", 3, 'x'));
-        assertEquals("batxx", Strings.rightPad("bat", 5, 'x'));
-        assertEquals("xxx", Strings.rightPad("", 3, 'x'));
+        assertEquals("bat", Strings.rightPad("bat", 1, 'x').toString());
+        assertEquals("bat", Strings.rightPad("bat", 3, 'x').toString());
+        assertEquals("batxx", Strings.rightPad("bat", 5, 'x').toString());
+        assertEquals("xxx", Strings.rightPad("", 3, 'x').toString());
     }
 
     @Test
     public void toCamelUpperShouldNormalizeCommonSeparatorsAndCase()
     {
-        assertEquals("TradeDate", Strings.toCamelUpperPreserve("trade-date"));
-        assertEquals("TradeDate", Strings.toCamelUpperPreserve("TRADE_DATE"));
-        assertEquals("TradeDate", Strings.toCamelUpperPreserve("trade date"));
-        assertEquals("TradeDate", Strings.toCamelUpperPreserve("trade.date"));
-        assertEquals("TradeDate", Strings.toCamelUpperPreserve("tradeDate"));
-        assertEquals("", Strings.toCamelUpperPreserve(""));
+        assertEquals("TradeDate", Strings.toCamelUpperPreserve("trade-date").toString());
+        assertEquals("TradeDate", Strings.toCamelUpperPreserve("TRADE_DATE").toString());
+        assertEquals("TradeDate", Strings.toCamelUpperPreserve("trade date").toString());
+        assertEquals("TradeDate", Strings.toCamelUpperPreserve("trade.date").toString());
+        assertEquals("TradeDate", Strings.toCamelUpperPreserve("tradeDate").toString());
+        assertEquals("", Strings.toCamelUpperPreserve("").toString());
         assertNull(Strings.toCamelUpperPreserve(null));
     }
 

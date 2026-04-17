@@ -13,7 +13,7 @@ package app.babylon.text;
 public final class Strings
 {
 
-    public static String toCamelUpperPreserve(String x)
+    public static CharSequence toCamelUpperPreserve(CharSequence x)
     {
         if (x == null)
         {
@@ -35,7 +35,7 @@ public final class Strings
             {
                 return x;
             }
-            return Character.toUpperCase(x.charAt(0)) + x.substring(1);
+            return Character.toUpperCase(x.charAt(0)) + x.toString().substring(1);
         }
 
         StringBuilder result = new StringBuilder(x.length());
@@ -63,7 +63,7 @@ public final class Strings
         return result.toString();
     }
 
-    public static String leftPad(CharSequence s, int size, char padChar)
+    public static CharSequence leftPad(CharSequence s, int size, char padChar)
     {
         if (s == null)
         {
@@ -72,7 +72,7 @@ public final class Strings
         int pads = size - s.length();
         if (pads <= 0)
         {
-            return s.toString();
+            return s;
         }
         StringBuilder builder = new StringBuilder(size);
         for (int i = 0; i < pads; ++i)
@@ -80,10 +80,10 @@ public final class Strings
             builder.append(padChar);
         }
         builder.append(s);
-        return builder.toString();
+        return builder;
     }
 
-    public static String rightPad(CharSequence s, int size, char padChar)
+    public static CharSequence rightPad(CharSequence s, int size, char padChar)
     {
         if (s == null)
         {
@@ -92,7 +92,7 @@ public final class Strings
         int pads = size - s.length();
         if (pads <= 0)
         {
-            return s.toString();
+            return s;
         }
         StringBuilder builder = new StringBuilder(size);
         builder.append(s);

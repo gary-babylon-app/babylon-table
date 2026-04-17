@@ -178,11 +178,11 @@ public class TablesToString
     {
         if (columnIndex == 0)
         {
-            return Strings.rightPad(v, width, SPACE);
+            return Strings.rightPad(v, width, SPACE).toString();
         }
         else
         {
-            return Strings.leftPad(v, width, SPACE);
+            return Strings.leftPad(v, width, SPACE).toString();
         }
     }
 

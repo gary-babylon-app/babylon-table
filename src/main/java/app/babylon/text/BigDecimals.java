@@ -48,7 +48,7 @@ public final class BigDecimals
     {
     }
 
-    public static boolean isExtractableDecimalWord(String s)
+    public static boolean isDecimal(CharSequence s)
     {
         if (s == null)
         {
@@ -57,7 +57,7 @@ public final class BigDecimals
         Classifier raw = new Classifier(s);
         if (raw.hasSpaces())
         {
-            s = s.strip();
+            s = Strings.stripx(s);
         }
         if (Strings.isEmpty(s))
         {
@@ -381,9 +381,9 @@ public final class BigDecimals
         private final int scientificECount;
         private final boolean hasCurrencySymbol;
 
-        private Classifier(String s)
+        private Classifier(CharSequence s)
         {
-            this.text = s;
+            this.text = s.toString();
             int invalid = 0;
             int digit = 0;
             int dot = 0;

@@ -10,17 +10,16 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
-import app.babylon.lang.Is;
-import app.babylon.text.Strings;
-
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
+
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
+import app.babylon.text.Strings;
 
 public final class ColumnName implements Comparable<ColumnName>
 {
@@ -88,7 +87,7 @@ public final class ColumnName implements Comparable<ColumnName>
     private ColumnName(String input)
     {
         String tokens = normalizeForTokens(input);
-        this.value = ArgumentCheck.nonEmpty(Strings.toCamelUpperPreserve(tokens));
+        this.value = ArgumentCheck.nonEmpty(Strings.toCamelUpperPreserve(tokens).toString());
         this.canonical = ArgumentCheck.nonEmpty(buildCanonicalKey(input));
     }
 

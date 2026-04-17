@@ -40,13 +40,13 @@ class BigDecimalsTest
     @Test
     void isExtractableDecimalWordShouldRecognizeSimpleExtractableWords()
     {
-        assertTrue(BigDecimals.isExtractableDecimalWord("$1,234.50"));
-        assertTrue(BigDecimals.isExtractableDecimalWord("(1,234.50)"));
-        assertTrue(BigDecimals.isExtractableDecimalWord(" 12.5% "));
-        assertFalse(BigDecimals.isExtractableDecimalWord("12.5 and 7.5"));
-        assertFalse(BigDecimals.isExtractableDecimalWord("abc"));
-        assertFalse(BigDecimals.isExtractableDecimalWord(null));
-        assertFalse(BigDecimals.isExtractableDecimalWord("   "));
+        assertTrue(BigDecimals.isDecimal("$1,234.50"));
+        assertTrue(BigDecimals.isDecimal("(1,234.50)"));
+        assertTrue(BigDecimals.isDecimal(" 12.5% "));
+        assertFalse(BigDecimals.isDecimal("12.5 and 7.5"));
+        assertFalse(BigDecimals.isDecimal("abc"));
+        assertFalse(BigDecimals.isDecimal(null));
+        assertFalse(BigDecimals.isDecimal("   "));
     }
 
     @Test

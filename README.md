@@ -1,5 +1,6 @@
 # babylon-table
 
+[![Build](https://github.com/gary-babylon-app/babylon-table/actions/workflows/build.yml/badge.svg)](https://github.com/gary-babylon-app/babylon-table/actions/workflows/build.yml)
 ![Coverage](.github/badges/coverage.svg)
 
 babylon-table is a focused Java 21 columnar table library with no third-party runtime

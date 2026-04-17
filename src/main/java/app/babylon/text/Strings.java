@@ -63,7 +63,7 @@ public final class Strings
         return result.toString();
     }
 
-    public static String leftPad(String s, int size, char padChar)
+    public static String leftPad(CharSequence s, int size, char padChar)
     {
         if (s == null)
         {
@@ -72,7 +72,7 @@ public final class Strings
         int pads = size - s.length();
         if (pads <= 0)
         {
-            return s;
+            return s.toString();
         }
         StringBuilder builder = new StringBuilder(size);
         for (int i = 0; i < pads; ++i)
@@ -83,7 +83,7 @@ public final class Strings
         return builder.toString();
     }
 
-    public static String rightPad(String s, int size, char padChar)
+    public static String rightPad(CharSequence s, int size, char padChar)
     {
         if (s == null)
         {
@@ -92,7 +92,7 @@ public final class Strings
         int pads = size - s.length();
         if (pads <= 0)
         {
-            return s;
+            return s.toString();
         }
         StringBuilder builder = new StringBuilder(size);
         builder.append(s);
@@ -118,19 +118,28 @@ public final class Strings
         return s == null || s.length() == 0;
     }
 
-    public static boolean isWholeNumber(String s)
+    public static boolean isWholeNumber(CharSequence s)
     {
         if (isEmpty(s))
         {
             return false;
         }
+        return isWholeNumber(s, 0, s.length());
+    }
 
-        int len = s.length();
-        int start = (s.charAt(0) == '-' || s.charAt(0) == '+') ? 1 : 0;
+    public static boolean isWholeNumber(CharSequence s, int start, int length)
+    {
+        if (s == null || length <= 0)
+        {
+            return false;
+        }
+
+        int end = start + length;
+        int digitsStart = (s.charAt(start) == '-' || s.charAt(start) == '+') ? start + 1 : start;
 
         boolean hasDigit = false;
 
-        for (int i = start; i < len; ++i)
+        for (int i = digitsStart; i < end; ++i)
         {
             char c = s.charAt(i);
             if (c >= '0' && c <= '9')
@@ -145,14 +154,24 @@ public final class Strings
         return hasDigit;
     }
 
-    public static boolean isInt(String s)
+    public static boolean isInt(CharSequence s)
     {
-        return isBoundedWholeNumber(s, "2147483647", "2147483648");
+        return s != null && isInt(s, 0, s.length());
+    }
+
+    public static boolean isInt(CharSequence s, int start, int length)
+    {
+        return isBoundedWholeNumber(s, start, length, "2147483647", "2147483648");
     }
 
     public static boolean isLong(String s)
     {
-        return isBoundedWholeNumber(s, "9223372036854775807", "9223372036854775808");
+        return s != null && isLong(s, 0, s.length());
+    }
+
+    public static boolean isLong(CharSequence s, int start, int length)
+    {
+        return isBoundedWholeNumber(s, start, length, "9223372036854775807", "9223372036854775808");
     }
 
     /**
@@ -227,16 +246,17 @@ public final class Strings
                 || c == '\uFEFF' || c == '\uFFFD';
     }
 
-    private static boolean isBoundedWholeNumber(String s, String positiveBound, String negativeMagnitudeBound)
+    private static boolean isBoundedWholeNumber(CharSequence s, int start, int length, String positiveBound,
+            String negativeMagnitudeBound)
     {
-        if (!isWholeNumber(s))
+        if (!isWholeNumber(s, start, length))
         {
             return false;
         }
 
-        boolean negative = s.charAt(0) == '-';
-        int start = (negative || s.charAt(0) == '+') ? 1 : 0;
-        int digits = s.length() - start;
+        boolean negative = s.charAt(start) == '-';
+        int digitsStart = (negative || s.charAt(start) == '+') ? start + 1 : start;
+        int digits = length - (digitsStart - start);
         String bound = negative ? negativeMagnitudeBound : positiveBound;
 
         if (digits < bound.length())
@@ -250,7 +270,7 @@ public final class Strings
 
         for (int i = 0; i < digits; ++i)
         {
-            char a = s.charAt(start + i);
+            char a = s.charAt(digitsStart + i);
             char b = bound.charAt(i);
             if (a < b)
             {

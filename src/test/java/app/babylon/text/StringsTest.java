@@ -88,6 +88,21 @@ public class StringsTest
     }
 
     @Test
+    public void isWholeNumberShouldRecogniseSignedDigitSlices()
+    {
+        assertTrue(Strings.isWholeNumber("x123y", 1, 3));
+        assertTrue(Strings.isWholeNumber("x-123y", 1, 4));
+        assertTrue(Strings.isWholeNumber("x+123y", 1, 4));
+        assertTrue(Strings.isWholeNumber("123%", 0, 3));
+        assertFalse(Strings.isWholeNumber(null, 0, 1));
+        assertFalse(Strings.isWholeNumber("123", 0, 0));
+        assertFalse(Strings.isWholeNumber("x+y", 1, 1));
+        assertFalse(Strings.isWholeNumber("12.3%", 0, 4));
+        assertFalse(Strings.isWholeNumber("x12.3y", 1, 4));
+        assertFalse(Strings.isWholeNumber("x12 3y", 1, 4));
+    }
+
+    @Test
     public void isIntShouldRecogniseIntBoundaries()
     {
         assertTrue(Strings.isInt("2147483646"));
@@ -106,6 +121,15 @@ public class StringsTest
     }
 
     @Test
+    public void isIntShouldRecogniseIntSlices()
+    {
+        assertTrue(Strings.isInt("2147483647%", 0, 10));
+        assertTrue(Strings.isInt("x-2147483648y", 1, 11));
+        assertFalse(Strings.isInt("2147483648%", 0, 10));
+        assertFalse(Strings.isInt("12.3%", 0, 4));
+    }
+
+    @Test
     public void isLongShouldRecogniseLongBoundaries()
     {
         assertTrue(Strings.isLong("9223372036854775806"));
@@ -120,6 +144,15 @@ public class StringsTest
         assertFalse(Strings.isLong("92233720368547758070"));
         assertFalse(Strings.isLong("+"));
         assertFalse(Strings.isLong("12.3"));
+    }
+
+    @Test
+    public void isLongShouldRecogniseLongSlices()
+    {
+        assertTrue(Strings.isLong("9223372036854775807%", 0, 19));
+        assertTrue(Strings.isLong("x-9223372036854775808y", 1, 20));
+        assertFalse(Strings.isLong("9223372036854775808%", 0, 19));
+        assertFalse(Strings.isLong("12.3%", 0, 4));
     }
 
     @Test

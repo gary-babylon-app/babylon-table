@@ -205,7 +205,7 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
             int n = this.size;
             if (n == 0)
             {
-                this.type = Column.Type.of(xform.valueClass());
+                this.type = xform.type();
                 this.dictionary = new Object[0];
                 this.categoricalList = CategoryCodeList.builder().build();
                 this.constant = true;
@@ -222,7 +222,7 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
                 throw new IllegalStateException("Negative dictionary size.");
             }
 
-            this.type = Column.Type.of(xform.valueClass());
+            this.type = xform.type();
             this.dictionary = new Object[dictionarySize];
             boolean[] transformedOldCode = new boolean[dictionarySize];
             boolean[] liveCodes = new boolean[dictionarySize];

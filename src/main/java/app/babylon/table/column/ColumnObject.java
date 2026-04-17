@@ -99,28 +99,7 @@ public interface ColumnObject<T> extends Column
         {
             case AUTO -> new ColumnObjectBuilderComposite<>(name, columnType);
             case ARRAY -> new ColumnObjectBuilderArray<>(name, columnType);
-            case CATEGORICAL -> (Builder<T>) ColumnCategorical.builder(name, columnType);
-        };
-    }
-
-    static <T> Builder<T> builderByClass(ColumnName name, Class<T> clazz)
-    {
-        return builderByClass(name, clazz, Mode.AUTO);
-    }
-
-    static <T> Builder<T> builderByClass(ColumnName name, Class<T> clazz, Mode mode)
-    {
-        Class<T> valueClass = ArgumentCheck.nonNull(clazz);
-        if (valueClass.isPrimitive())
-        {
-            throw new IllegalArgumentException("Object builder requires non-primitive class: " + valueClass.getName());
-        }
-        Mode resolvedMode = mode == null ? Mode.AUTO : mode;
-        return switch (resolvedMode)
-        {
-            case AUTO -> new ColumnObjectBuilderComposite<>(name, clazz);
-            case ARRAY -> new ColumnObjectBuilderArray<>(name, clazz);
-            case CATEGORICAL -> (Builder<T>) ColumnCategorical.builder(name, clazz);
+            case CATEGORICAL -> (Builder<T>) ColumnCategorical.<T>builder(name, columnType);
         };
     }
 
@@ -179,10 +158,6 @@ public interface ColumnObject<T> extends Column
             }
             @SuppressWarnings("unchecked")
             TypeParser<T> parser = (TypeParser<T>) getType().getParser();
-            if (parser == null)
-            {
-                return addNull();
-            }
             T value = parser.parse(chars, offset, length);
             if (value == null)
             {
@@ -339,9 +314,9 @@ public interface ColumnObject<T> extends Column
     {
         Transformer<T, S> xform = ArgumentCheck.nonNull(transformer);
 
-        Class<S> valueClass = xform.valueClass();
+        Column.Type targetType = xform.type();
         ColumnName transformedName = xform.columnName() == null ? getName() : xform.columnName();
-        ColumnObject.Builder<S> transformed = ColumnObject.builderByClass(transformedName, valueClass);
+        ColumnObject.Builder<S> transformed = ColumnObject.builder(transformedName, targetType);
         for (int i = 0; i < size(); ++i)
         {
             if (isSet(i))

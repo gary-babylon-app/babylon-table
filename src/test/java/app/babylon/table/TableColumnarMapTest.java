@@ -33,6 +33,7 @@ import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.column.type.TypeParsers;
 
 class TableColumnarMapTest
 {
@@ -40,6 +41,8 @@ class TableColumnarMapTest
     {
         OPEN, CLOSED
     }
+
+    private static final Column.Type STATUS_TYPE = Column.Type.register(Status.class, TypeParsers.NULL);
 
     private static TableColumnar sampleTable()
     {
@@ -60,7 +63,7 @@ class TableColumnarMapTest
         amounts.add(new BigDecimal("10.5"));
         amounts.add(new BigDecimal("20.0"));
 
-        ColumnCategorical.Builder<Status> statuses = ColumnCategorical.builder(STATUS, Status.class);
+        ColumnCategorical.Builder<Status> statuses = ColumnCategorical.builder(STATUS, STATUS_TYPE);
         statuses.add(Status.OPEN);
         statuses.add(Status.CLOSED);
 
@@ -85,7 +88,7 @@ class TableColumnarMapTest
         assertSame(table.getString(NAME), table.getObject(NAME, ColumnTypes.STRING));
         assertSame(table.getDecimal(AMOUNT), table.getObject(AMOUNT, ColumnTypes.DECIMAL));
         assertSame(table.getEnum(STATUS), table.getCategorical(STATUS));
-        assertSame(table.getEnum(STATUS), table.getCategorical(STATUS, Column.Type.of(Status.class)));
+        assertSame(table.getEnum(STATUS), table.getCategorical(STATUS, STATUS_TYPE));
         assertNull(table.getString(ColumnName.of("Missing")));
         assertNull(table.getDouble(ColumnName.of("Missing")));
         assertNull(table.getLong(ColumnName.of("Missing")));

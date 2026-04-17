@@ -1,9 +1,8 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.Map;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
@@ -74,15 +73,15 @@ public class TransformCoalesce extends TransformBase
                     + ", " + second.getName() + ", " + third.getName());
         }
 
-        coalesce(columnsByName, firstObject, secondObject, thirdObject, valueClass);
+        coalesce(columnsByName, firstObject, secondObject, thirdObject, first.getType());
     }
 
     @SuppressWarnings(
     {"unchecked", "rawtypes"})
     private void coalesce(Map<ColumnName, Column> columnsByName, ColumnObject<?> first, ColumnObject<?> second,
-            ColumnObject<?> third, Class<?> valueClass)
+            ColumnObject<?> third, Column.Type type)
     {
-        ColumnObject.Builder builder = ColumnObject.builder(this.newColumnName, Column.Type.of(valueClass), this.mode);
+        ColumnObject.Builder builder = ColumnObject.builder(this.newColumnName, type, this.mode);
         for (int i = 0; i < first.size(); ++i)
         {
             if (first.isSet(i))

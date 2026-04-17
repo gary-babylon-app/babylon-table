@@ -24,6 +24,7 @@ import app.babylon.text.Strings;
 
 public final class TypeParsers
 {
+    public static final TypeParser<Object> NULL = s -> null;
     public static final TypeParser<String> STRING = s -> s == null ? null : s.toString();
     public static final TypeParser<BigDecimal> BIG_DECIMAL = BigDecimals::parse;
     public static final TypeParser<LocalDate> LOCAL_DATE_YMD = localDate(DateFormat.YMD);

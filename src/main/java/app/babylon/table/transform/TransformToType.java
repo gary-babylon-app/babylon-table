@@ -1,19 +1,17 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
-import app.babylon.text.Strings;
-
 import java.util.Map;
 import java.util.function.Function;
 
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
-import app.babylon.lang.Is;
 import app.babylon.table.column.Transformer;
+import app.babylon.text.Strings;
 
 public class TransformToType<T> extends TransformBase
 {
@@ -22,7 +20,7 @@ public class TransformToType<T> extends TransformBase
     private final ColumnName[] columnNames;
     private final ColumnName[] newColumnNames;
     private final Function<String, T> parser;
-    private final Class<T> valueClass;
+    private final Column.Type type;
     private final ColumnObject.Mode mode;
     private final TransformParseMode parseMode;
 
@@ -44,9 +42,9 @@ public class TransformToType<T> extends TransformBase
         this.parser = ArgumentCheck.nonNull(parser);
         this.columnNames = ArgumentCheck.nonEmpty(columnNames);
         this.newColumnNames = null;
-        this.valueClass = ArgumentCheck.nonNull(valueClass);
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
         this.parseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
+        this.type = Column.Type.get(ArgumentCheck.nonNull(valueClass));
     }
 
     public TransformToType(Class<T> valueClass, ColumnName columnName, Function<String, T> parser,
@@ -70,9 +68,9 @@ public class TransformToType<T> extends TransformBase
         {ArgumentCheck.nonNull(columnName)};
         this.newColumnNames = new ColumnName[]
         {ArgumentCheck.nonNull(newColumnName)};
-        this.valueClass = ArgumentCheck.nonNull(valueClass);
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
         this.parseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
+        this.type = Column.Type.get(ArgumentCheck.nonNull(valueClass));
     }
 
     public static <T> TransformToType<T> of(Class<T> valueClass, Function<String, T> parser, String... params)
@@ -120,7 +118,7 @@ public class TransformToType<T> extends TransformBase
                             : rebuild(stringColumn, newColumnName, mode, this::parseValue);
                 }
             }
-            else if (valueClass.equals(column.getType().getValueClass()))
+            else if (type.getValueClass().equals(column.getType().getValueClass()))
             {
                 @SuppressWarnings("unchecked")
                 ColumnObject<T> typedColumn = (ColumnObject<T>) column;
@@ -142,7 +140,7 @@ public class TransformToType<T> extends TransformBase
             else
             {
                 throw new RuntimeException(
-                        "Cannot convert to " + valueClass.getSimpleName() + " from " + column.getName());
+                        "Cannot convert to " + type.getValueClass().getSimpleName() + " from " + column.getName());
             }
         }
         putColumns(columnsByName, transformedColumns);
@@ -161,7 +159,7 @@ public class TransformToType<T> extends TransformBase
     private <S> ColumnObject<T> rebuild(ColumnObject<S> input, ColumnName newColumnName, ColumnObject.Mode mode,
             Function<? super S, ? extends T> mapper)
     {
-        ColumnObject.Builder<T> transformed = ColumnObject.builder(newColumnName, Column.Type.of(valueClass), mode);
+        ColumnObject.Builder<T> transformed = ColumnObject.builder(newColumnName, type, mode);
         for (int j = 0; j < input.size(); ++j)
         {
             if (input.isSet(j))
@@ -179,7 +177,7 @@ public class TransformToType<T> extends TransformBase
 
     private Transformer<String, T> transformer(ColumnName newColumnName)
     {
-        return Transformer.of(this::parseValue, valueClass, newColumnName);
+        return Transformer.of(this::parseValue, type, newColumnName);
     }
 
     private T parseValue(String s)

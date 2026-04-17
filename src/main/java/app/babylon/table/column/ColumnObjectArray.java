@@ -151,9 +151,7 @@ class ColumnObjectArray<T> implements ColumnObject<T>
     @Override
     public Column copy(ColumnName x)
     {
-        @SuppressWarnings("unchecked")
-        Class<T> valueClass = (Class<T>) this.type.getValueClass();
-        ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, valueClass);
+        ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, this.type);
         for (int i = 0; i < size(); ++i)
         {
             copyBuilder.add(get(i));
@@ -226,9 +224,7 @@ class ColumnObjectArray<T> implements ColumnObject<T>
         @Override
         public Column copy(ColumnName x)
         {
-            @SuppressWarnings("unchecked")
-            Class<T> valueClass = (Class<T>) getType().getValueClass();
-            ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, valueClass);
+            ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, getType());
             for (int i = 0; i < size(); ++i)
             {
                 copyBuilder.add(get(i));

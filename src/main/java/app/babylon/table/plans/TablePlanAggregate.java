@@ -23,6 +23,7 @@ import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Row;
@@ -203,7 +204,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
 
     public TablePlanAggregate withColumnType(ColumnName columnName, Class<?> valueClass)
     {
-        return withColumnType(columnName, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
+        return withColumnType(columnName, Column.Type.get(ArgumentCheck.nonNull(valueClass)));
     }
 
     public Column.Type getColumnType(ColumnName columnName)

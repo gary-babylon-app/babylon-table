@@ -10,6 +10,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.table.column.Transformer;
+import app.babylon.table.column.ColumnTypes;
 
 abstract class TransformStringToString extends TransformBase
 {
@@ -35,7 +36,7 @@ abstract class TransformStringToString extends TransformBase
         ColumnName targetColumnName = this.newColumnName == null ? this.existingColumnName : this.newColumnName;
         Function<String, String> transform = this::transformString;
         columnsByName.put(targetColumnName,
-                strings.transform(Transformer.of(transform, String.class, targetColumnName)));
+                strings.transform(Transformer.of(transform, ColumnTypes.STRING, targetColumnName)));
     }
 
     protected abstract String transformString(String s);

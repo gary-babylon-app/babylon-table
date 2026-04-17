@@ -10,12 +10,10 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.HashSet;
 import java.util.Set;
 
-import app.babylon.table.column.Column.Type;
+import app.babylon.lang.ArgumentCheck;
 
 final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
 {
@@ -31,12 +29,6 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
     private boolean decided;
     private boolean useDictionary;
     private boolean built;
-
-    ColumnObjectBuilderComposite(ColumnName columnName, Class<T> valueClass)
-    {
-        this(columnName, Type.of(valueClass));
-    }
-
     ColumnObjectBuilderComposite(ColumnName columnName, Column.Type type)
     {
         this.type = ArgumentCheck.nonNull(type);

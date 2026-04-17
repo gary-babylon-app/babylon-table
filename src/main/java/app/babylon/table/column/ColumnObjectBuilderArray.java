@@ -10,9 +10,9 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.Objects;
+
+import app.babylon.lang.ArgumentCheck;
 
 final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
 {
@@ -24,11 +24,6 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
     private boolean hasAnySet;
     private boolean hasAnyUnset;
     private boolean built;
-
-    ColumnObjectBuilderArray(ColumnName name, Class<T> valueClass)
-    {
-        this(name, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
-    }
 
     ColumnObjectBuilderArray(ColumnName name, Column.Type type)
     {

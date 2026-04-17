@@ -15,6 +15,7 @@ import app.babylon.table.TableName;
 import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.io.RowConsumerCreateTable;
 import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.TabularRowReader;
@@ -51,8 +52,8 @@ class TablePlanAggregateTest
                 .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
                 .withColumnType(OBSERVATION, double.class);
 
-        assertEquals(Column.Type.of(String.class), plan.getColumnType(STATION));
-        assertEquals(Column.Type.of(double.class), plan.getColumnType(OBSERVATION));
+        assertEquals(ColumnTypes.STRING, plan.getColumnType(STATION));
+        assertEquals(ColumnTypes.DOUBLE, plan.getColumnType(OBSERVATION));
         assertEquals(2, plan.getColumnTypes().size());
     }
 

@@ -16,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.column.type.TypeParsers;
+
 public class ColumnCategoricalViewTest
 {
     private enum E
@@ -23,11 +25,13 @@ public class ColumnCategoricalViewTest
         A, B
     }
 
+    private static final Column.Type E_TYPE = Column.Type.register(E.class, TypeParsers.NULL);
+
     @Test
     public void categoryCode_usesViewRowMapping()
     {
         final ColumnName E_2 = ColumnName.of("E");
-        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(E_2, E.class);
+        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(E_2, E_TYPE);
         builder.add(E.A);
         builder.add(E.B);
         builder.add(E.A);
@@ -52,7 +56,7 @@ public class ColumnCategoricalViewTest
     public void dictionarySize_reflectsBackingDictionaryNotViewSubset()
     {
         final ColumnName E_2 = ColumnName.of("E");
-        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(E_2, E.class);
+        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(E_2, E_TYPE);
         builder.add(E.A);
         builder.add(E.B);
         builder.add(E.A);

@@ -16,37 +16,31 @@ import app.babylon.lang.ArgumentCheck;
 
 /**
  * Transforms individual column values from one type to another while carrying
- * the target value type and optional output column name.
+ * the target column type and optional output column name.
  */
 public interface Transformer<T, S> extends Function<T, S>
 {
-    public Class<S> valueClass();
+    public Column.Type type();
 
     public ColumnName columnName();
 
-    static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Class<S> valueClass)
-    {
-        return of(function, valueClass, null);
-    }
-
-    @SuppressWarnings("unchecked")
     static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Column.Type type)
     {
-        return of(function, (Class<S>) ArgumentCheck.nonNull(type).getValueClass(), null);
+        return of(function, type, null);
     }
 
-    static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Class<S> valueClass,
+    static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Column.Type type,
             ColumnName columnName)
     {
         Function<? super T, ? extends S> f = ArgumentCheck.nonNull(function);
-        Class<S> cls = ArgumentCheck.nonNull(valueClass);
+        Column.Type targetType = ArgumentCheck.nonNull(type);
         ColumnName name = columnName;
         return new Transformer<T, S>()
         {
             @Override
-            public Class<S> valueClass()
+            public Column.Type type()
             {
-                return cls;
+                return targetType;
             }
 
             @Override

@@ -278,7 +278,7 @@ class ColumnObjectTest
 
         ColumnObject<BigDecimal> view = column.view(ViewIndex.builder().add(2).add(1).build());
         ColumnObject<String> transformed = view
-                .transform(Transformer.of(BigDecimal::toPlainString, String.class, AMOUNT_TEXT));
+                .transform(Transformer.of(BigDecimal::toPlainString, ColumnTypes.STRING, AMOUNT_TEXT));
 
         assertEquals(AMOUNT_TEXT, transformed.getName());
         assertEquals("3.0", transformed.get(0));

@@ -1,7 +1,5 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -11,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -51,15 +50,15 @@ abstract class TransformBase implements Transform
     }
 
     protected <T> Column[] transformStringColumns(Map<ColumnName, Column> columnsByName,
-            ColumnName[] selectedColumnNames, ColumnName[] newColumnNames, Class<T> valueClass,
+            ColumnName[] selectedColumnNames, ColumnName[] newColumnNames, Column.Type type,
             Function<CharSequence, T> transformFunction)
     {
         Column[] validColumns = getColumns(columnsByName, selectedColumnNames);
-        return transformStringColumns(validColumns, newColumnNames, valueClass, transformFunction);
+        return transformStringColumns(validColumns, newColumnNames, type, transformFunction);
     }
 
-    protected <T> Column[] transformStringColumns(Column[] validColumns, ColumnName[] newColumnNames,
-            Class<T> valueClass, Function<CharSequence, T> transformFunction)
+    protected <T> Column[] transformStringColumns(Column[] validColumns, ColumnName[] newColumnNames, Column.Type type,
+            Function<CharSequence, T> transformFunction)
     {
         Set<String> uniqueStrings = gatherUniqueStrings(validColumns);
         Map<String, T> actualConversion = new HashMap<>();
@@ -73,10 +72,10 @@ abstract class TransformBase implements Transform
             {
                 ColumnObject<String> stringColumn = Columns.asStringColumn(c);
                 ColumnName newColumnName = (newColumnNames == null) ? c.getName() : newColumnNames[i];
-                Transformer<String, T> transformer = Transformer.of(actualConversion::get, valueClass, newColumnName);
+                Transformer<String, T> transformer = Transformer.of(actualConversion::get, type, newColumnName);
                 transformedColumns[i] = stringColumn.transform(transformer);
             }
-            else if (valueClass.equals(c.getType().getValueClass()))
+            else if (type.equals(c.getType()))
             {
                 transformedColumns[i] = c;
             }

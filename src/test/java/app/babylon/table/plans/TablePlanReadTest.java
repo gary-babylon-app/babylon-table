@@ -87,8 +87,8 @@ class TablePlanReadTest
         TablePlanRead plan = new TablePlanRead().withColumnType(AMOUNT, double.class).withColumnType(NAME,
                 String.class);
 
-        assertEquals(app.babylon.table.column.Column.Type.of(double.class), plan.getColumnType(AMOUNT));
-        assertEquals(app.babylon.table.column.Column.Type.of(String.class), plan.getColumnType(NAME));
+        assertEquals(app.babylon.table.column.ColumnTypes.DOUBLE, plan.getColumnType(AMOUNT));
+        assertEquals(app.babylon.table.column.ColumnTypes.STRING, plan.getColumnType(NAME));
         assertEquals(2, plan.getColumnTypes().size());
     }
 

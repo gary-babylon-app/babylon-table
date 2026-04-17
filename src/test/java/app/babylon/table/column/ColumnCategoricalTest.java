@@ -26,6 +26,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.column.type.TypeParsers;
+
 class ColumnCategoricalTest
 {
     private enum E
@@ -38,11 +40,14 @@ class ColumnCategoricalTest
         A, B
     }
 
+    private static final Column.Type E_TYPE = Column.Type.register(E.class, TypeParsers.NULL);
+    private static final Column.Type SAMPLE_TYPE = Column.Type.register(Sample.class, TypeParsers.NULL);
+
     @Test
     void categoricalViewsShouldRespectNullRowsAndCategoryMapping()
     {
         final ColumnName E_2 = ColumnName.of("E");
-        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(E_2, E.class);
+        ColumnCategorical.Builder<E> builder = ColumnCategorical.builder(E_2, E_TYPE);
         builder.add(E.A);
         builder.add(E.B);
         builder.add(E.A);
@@ -71,7 +76,8 @@ class ColumnCategoricalTest
         builder.add("b");
         ColumnCategorical<String> column = builder.build();
 
-        ColumnCategorical<String> transformed = column.transform(Transformer.of(String::toLowerCase, String.class));
+        ColumnCategorical<String> transformed = column
+                .transform(Transformer.of(String::toLowerCase, ColumnTypes.STRING));
 
         assertEquals(5, transformed.size());
         assertEquals("a", transformed.get(0));
@@ -93,7 +99,8 @@ class ColumnCategoricalTest
         final ColumnName S = ColumnName.of("S");
         ColumnCategorical<String> constant = ColumnCategorical.constant(S, "X", 4, ColumnTypes.STRING);
 
-        ColumnCategorical<String> transformed = constant.transform(Transformer.of(String::toLowerCase, String.class));
+        ColumnCategorical<String> transformed = constant
+                .transform(Transformer.of(String::toLowerCase, ColumnTypes.STRING));
 
         assertTrue(transformed.isConstant());
         assertEquals(4, transformed.size());
@@ -111,9 +118,10 @@ class ColumnCategoricalTest
         builder.add("1");
         builder.add("x");
         ColumnCategorical<String> column = builder.build();
+        Column.Type.register(Object.class, app.babylon.table.column.type.TypeParsers.NULL);
 
         ColumnCategorical<Object> transformed = column
-                .transform(Transformer.of(s -> "1".equals(s) ? Integer.valueOf(1) : s, Object.class));
+                .transform(Transformer.of(s -> "1".equals(s) ? Integer.valueOf(1) : s, Column.Type.get(Object.class)));
 
         assertEquals(Object.class, transformed.getType().getValueClass());
         assertEquals(Integer.valueOf(1), transformed.get(0));
@@ -158,7 +166,8 @@ class ColumnCategoricalTest
         builder.add("b");
         ColumnCategorical<String> original = builder.build();
 
-        ColumnCategorical<String> transformed = original.transform(Transformer.of(String::toLowerCase, String.class));
+        ColumnCategorical<String> transformed = original
+                .transform(Transformer.of(String::toLowerCase, ColumnTypes.STRING));
         ColumnCategorical<String> view = transformed.view(ViewIndex.builder().add(0).add(1).add(0).build());
 
         assertEquals(3, view.size());
@@ -182,7 +191,7 @@ class ColumnCategoricalTest
         ColumnCategorical<String> column = builder.build();
 
         ColumnCategorical<String> transformed = column
-                .transform(Transformer.of(String::toLowerCase, String.class, NEW_NAME));
+                .transform(Transformer.of(String::toLowerCase, ColumnTypes.STRING, NEW_NAME));
 
         assertEquals(NEW_NAME, transformed.getName());
         assertEquals("a", transformed.get(0));
@@ -193,7 +202,7 @@ class ColumnCategoricalTest
     void selectShouldUsePredicateAndTreatNullAsFalse()
     {
         final ColumnName CAT = ColumnName.of("CAT");
-        ColumnCategorical.Builder<Sample> builder = ColumnCategorical.builder(CAT, Sample.class);
+        ColumnCategorical.Builder<Sample> builder = ColumnCategorical.builder(CAT, SAMPLE_TYPE);
         builder.add(Sample.A);
         builder.addNull();
         builder.add(Sample.B);

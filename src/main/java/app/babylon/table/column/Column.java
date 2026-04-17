@@ -10,6 +10,9 @@
 
 package app.babylon.table.column;
 
+import java.util.concurrent.ConcurrentHashMap;
+
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
@@ -24,24 +27,83 @@ public interface Column
      */
     public static interface Type
     {
+        ConcurrentHashMap<Class<?>, Type> TYPES = new ConcurrentHashMap<>();
+
         /**
-         * Resolves a column type descriptor for the supplied Java class.
+         * Creates and registers a column type descriptor from its runtime value class
+         * and parser.
          *
          * @param valueClass
          *            the Java class represented by the column type
-         * @return a reusable column type descriptor
+         * @param parser
+         *            the parser associated with this type
+         * @return the created column type descriptor
          */
-        public static Type of(Class<?> valueClass)
+        public static Type register(Class<?> valueClass, TypeParser<?> parser)
         {
-            return ColumnTypes.of(valueClass);
+            final Class<?> resolvedValueClass = ArgumentCheck.nonNull(valueClass);
+            final TypeParser<?> resolvedParser = ArgumentCheck.nonNull(parser);
+            Type type = new Type()
+            {
+                @Override
+                public Class<?> getValueClass()
+                {
+                    return resolvedValueClass;
+                }
+
+                @Override
+                public TypeParser<?> getParser()
+                {
+                    return resolvedParser;
+                }
+
+                @Override
+                public int hashCode()
+                {
+                    return this.getValueClass().hashCode();
+                }
+
+                @Override
+                public boolean equals(Object obj)
+                {
+                    if (this == obj)
+                    {
+                        return true;
+                    }
+                    if (!(obj instanceof Column.Type other))
+                    {
+                        return false;
+                    }
+                    return this.getValueClass().equals(other.getValueClass());
+                }
+
+                @Override
+                public String toString()
+                {
+                    String simpleName = this.getValueClass().getSimpleName();
+                    return simpleName.isEmpty() ? this.getValueClass().getName() : simpleName;
+                }
+            };
+            TYPES.put(type.getValueClass(), type);
+            return type;
         }
 
         /**
-         * Returns the stable identifier used for this column type.
+         * Returns the registered column type for the supplied value class.
          *
-         * @return the column type identifier
+         * @param valueClass
+         *            the runtime value class
+         * @return the registered column type
          */
-        public String id();
+        public static Type get(Class<?> valueClass)
+        {
+            Type type = TYPES.get(ArgumentCheck.nonNull(valueClass));
+            if (type == null)
+            {
+                throw new IllegalArgumentException("No column type registered for " + valueClass.getName());
+            }
+            return type;
+        }
 
         /**
          * Returns the Java class represented by this column type.
@@ -51,10 +113,9 @@ public interface Column
         public Class<?> getValueClass();
 
         /**
-         * Returns the parser associated with this logical type, or {@code null} when no
-         * default parser is known.
+         * Returns the parser associated with this logical type.
          *
-         * @return the type parser, or {@code null}
+         * @return the type parser
          */
         public TypeParser<?> getParser();
 

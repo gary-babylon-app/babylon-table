@@ -10,6 +10,7 @@ import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.text.Split;
 import app.babylon.text.Strings;
 
@@ -72,9 +73,9 @@ public class TransformToDecimalAbs extends TransformStringColumnsBase<BigDecimal
     }
 
     @Override
-    protected Class<BigDecimal> valueClass()
+    protected Column.Type type()
     {
-        return BigDecimal.class;
+        return ColumnTypes.DECIMAL;
     }
 
     @Override

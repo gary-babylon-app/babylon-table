@@ -10,13 +10,11 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
-
 class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
 {
     private final ColumnName columnName;
@@ -41,7 +39,7 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
         this.columnName = ArgumentCheck.nonNull(colName);
         this.value = value;
         this.size = size;
-        this.type = Type.of(ArgumentCheck.nonNull(valueClass));
+        this.type = Type.get(ArgumentCheck.nonNull(valueClass));
         this.isAllSet = value != null;
         this.isNoneSet = value == null;
     }
@@ -84,9 +82,7 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
         {
             return ColumnCategorical.constant(getName(), getValue(), rowIndex.size(), getType());
         }
-        @SuppressWarnings("unchecked")
-        Class<T> valueClass = (Class<T>) getType().getValueClass();
-        ColumnCategorical.Builder<T> builder = ColumnCategorical.builder(getName(), valueClass);
+        ColumnCategorical.Builder<T> builder = ColumnCategorical.builder(getName(), getType());
         for (int i = 0; i < rowIndex.size(); ++i)
         {
             if (rowIndex.isSet(i) && isSet(0))
@@ -188,6 +184,6 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
         Transformer<T, S> xform = ArgumentCheck.nonNull(transformer);
         ColumnName transformedName = xform.columnName() == null ? getName() : xform.columnName();
         S transformedValue = isSet(0) ? xform.apply(this.value) : null;
-        return ColumnCategorical.constant(transformedName, transformedValue, this.size, xform.valueClass());
+        return ColumnCategorical.constant(transformedName, transformedValue, this.size, xform.type());
     }
 }

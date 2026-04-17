@@ -10,13 +10,13 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.selection.Selection;
 
@@ -108,8 +108,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
             throw new IllegalArgumentException(
                     "Categorical builder requires non-primitive class: " + valueClass.getName());
         }
-        Column.Type type = Column.Type.of(valueClass);
-        return new ColumnCategoricalBuilderDictionary<T>(name, type);
+        return new ColumnCategoricalBuilderDictionary<T>(name, Column.Type.get(valueClass));
     }
 
     public static <T> Builder<T> builder(ColumnName name, Column.Type type)
@@ -192,8 +191,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     default ColumnCategorical<T> copy(ColumnName x)
     {
         @SuppressWarnings("unchecked")
-        Class<T> valueClass = (Class<T>) getType().getValueClass();
-        Builder<T> newBuilder = ColumnCategorical.builder(x, valueClass);
+        Builder<T> newBuilder = ColumnCategorical.builder(x, getType());
         for (int i = 0; i < size(); ++i)
         {
             if (isSet(i))

@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import app.babylon.table.column.Column;
+import app.babylon.table.column.Column.Type;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;
 
@@ -31,10 +32,10 @@ abstract class TransformStringColumnsBase<T> extends TransformBase
     protected Column[] transformColumns(Column[] validColumns)
     {
         Function<CharSequence, T> parser = createParser(validColumns);
-        return transformStringColumns(validColumns, this.newColumnNames, valueClass(), s -> parseValue(parser, s));
+        return transformStringColumns(validColumns, this.newColumnNames, type(), s -> parseValue(parser, s));
     }
 
-    protected abstract Class<T> valueClass();
+    protected abstract Type type();
 
     protected abstract Function<CharSequence, T> createParser(Column[] selectedColumns);
 

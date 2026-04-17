@@ -21,6 +21,7 @@ import app.babylon.lang.Is;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.aggregation.AccumulatorDouble;
 import app.babylon.table.aggregation.Aggregate;
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.sorting.ComparatorInt;
 import app.babylon.table.sorting.SortInt;
 import app.babylon.text.BigDecimals;
@@ -82,7 +83,7 @@ public class Columns
             ColumnObject<String> strings = (ColumnObject<String>) co;
 
             Transformer<String, S> transformer = Transformer.of(s -> Strings.isEmpty(s) ? null : parser.apply(s),
-                    targetClass);
+                    Column.Type.get(targetClass));
 
             return strings.transform(transformer);
         }
@@ -382,8 +383,7 @@ public class Columns
             {
                 throw new IllegalStateException("Unsupported categorical column type for concat: " + type);
             }
-            Class<Object> typedValueClass = (Class<Object>) valueClass;
-            ColumnCategorical.Builder<Object> newColumn = ColumnCategorical.builder(outputColumnName, typedValueClass);
+            ColumnCategorical.Builder<Object> newColumn = ColumnCategorical.builder(outputColumnName, type);
             for (Column c : columns)
             {
                 ColumnCategorical<Object> cc = (ColumnCategorical<Object>) c;
@@ -409,9 +409,7 @@ public class Columns
             {
                 throw new IllegalStateException("Unsupported object column type for concat: " + type);
             }
-            Class<Object> typedValueClass = (Class<Object>) valueClass;
-            ColumnObject.Builder<Object> newColumn = ColumnObject.builder(outputColumnName,
-                    Column.Type.of(typedValueClass));
+            ColumnObject.Builder<Object> newColumn = ColumnObject.builder(outputColumnName, type);
 
             for (Column c : columns)
             {

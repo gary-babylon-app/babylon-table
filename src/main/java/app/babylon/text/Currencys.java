@@ -49,11 +49,7 @@ public final class Currencys
      */
     public static Currency parse(CharSequence s, int offset, int length)
     {
-        if (s == null)
-        {
-            return null;
-        }
-        if (length < 3)
+        if (s == null || length < 3)
         {
             return null;
         }

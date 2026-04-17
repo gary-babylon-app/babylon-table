@@ -105,7 +105,7 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
 
     public TablePlanRead withColumnType(ColumnName columnName, Class<?> valueClass)
     {
-        return withColumnType(columnName, Column.Type.of(ArgumentCheck.nonNull(valueClass)));
+        return withColumnType(columnName, Column.Type.get(ArgumentCheck.nonNull(valueClass)));
     }
 
     public Column.Type getColumnType(ColumnName columnName)

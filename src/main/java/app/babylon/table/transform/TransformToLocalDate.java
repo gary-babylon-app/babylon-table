@@ -17,6 +17,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.table.column.Transformer;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformToLocalDate extends TransformBase
 {
@@ -102,7 +103,7 @@ public class TransformToLocalDate extends TransformBase
                     ColumnName newColumnName = (newColumnNames == null) ? c.getName() : newColumnNames[i];
                     DateFormat dateFormat = effectiveFormats[i];
                     final Map<String, LocalDate> values = valuesByFormat.get(dateFormat);
-                    Transformer<String, LocalDate> transformer = Transformer.of(values::get, LocalDate.class,
+                    Transformer<String, LocalDate> transformer = Transformer.of(values::get, ColumnTypes.LOCALDATE,
                             newColumnName);
                     transformedColumns.add(cs.transform(transformer));
                 }

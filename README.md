@@ -1,5 +1,7 @@
 # babylon-table
 
+![Coverage](.github/badges/coverage.svg)
+
 babylon-table is a focused Java 21 columnar table library with no third-party runtime
 dependencies, offering filtering, grouping, aggregation, data transformations, and
 efficient CSV ingestion for both in-memory workflows and streaming-style execution

@@ -2,15 +2,21 @@ name: Build
 
 on:
   push:
+    paths-ignore:
+      - '.github/badges/coverage.svg'
   pull_request:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Amazon Corretto 21
         uses: actions/setup-java@v4
@@ -19,5 +25,80 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Build and run tests
-        run: mvn -B clean test
+      - name: Build, run tests, and generate JaCoCo report
+        run: mvn -B clean test jacoco:report
+
+      - name: Generate coverage badge
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const xmlPath = path.join(process.env.GITHUB_WORKSPACE, 'target/site/jacoco/jacoco.xml');
+            const xml = fs.readFileSync(xmlPath, 'utf8');
+            const matches = [...xml.matchAll(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/g)];
+            if (matches.length === 0) {
+              core.setFailed(`No top-level LINE counter found in ${xmlPath}`);
+              return;
+            }
+
+            const [, missedText, coveredText] = matches[matches.length - 1];
+            const missed = Number(missedText);
+            const covered = Number(coveredText);
+            const total = missed + covered;
+            const percent = total === 0 ? 100 : (covered * 100) / total;
+            const percentText = `${percent.toFixed(1)}%`;
+
+            let colorHex = '#e05d44';
+            if (percent >= 90) colorHex = '#4c1';
+            else if (percent >= 80) colorHex = '#97CA00';
+            else if (percent >= 70) colorHex = '#a4a61d';
+            else if (percent >= 60) colorHex = '#dfb317';
+            else if (percent >= 50) colorHex = '#fe7d37';
+
+            const label = 'coverage';
+            const labelWidth = 68;
+            const valueWidth = percentText.length * 7 + 16;
+            const totalWidth = labelWidth + valueWidth;
+            const valueX = labelWidth + valueWidth / 2;
+
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${totalWidth}" height="20" role="img" aria-label="${label}: ${percentText}">
+              <linearGradient id="smooth" x2="0" y2="100%">
+                <stop offset="0" stop-color="#fff" stop-opacity=".7"/>
+                <stop offset=".1" stop-color="#aaa" stop-opacity=".1"/>
+                <stop offset=".9" stop-color="#000" stop-opacity=".3"/>
+                <stop offset="1" stop-color="#000" stop-opacity=".5"/>
+              </linearGradient>
+              <clipPath id="round">
+                <rect width="${totalWidth}" height="20" rx="3" fill="#fff"/>
+              </clipPath>
+              <g clip-path="url(#round)">
+                <rect width="${labelWidth}" height="20" fill="#555"/>
+                <rect x="${labelWidth}" width="${valueWidth}" height="20" fill="${colorHex}"/>
+                <rect width="${totalWidth}" height="20" fill="url(#smooth)"/>
+              </g>
+              <g fill="#fff" text-anchor="middle" font-family="DejaVu Sans,Verdana,Geneva,sans-serif" font-size="11">
+                <text x="34" y="15" fill="#010101" fill-opacity=".3">${label}</text>
+                <text x="34" y="14">${label}</text>
+                <text x="${valueX}" y="15" fill="#010101" fill-opacity=".3">${percentText}</text>
+                <text x="${valueX}" y="14">${percentText}</text>
+              </g>
+            </svg>`;
+
+            const outputDir = path.join(process.env.GITHUB_WORKSPACE, '.github/badges');
+            fs.mkdirSync(outputDir, {recursive: true});
+            fs.writeFileSync(path.join(outputDir, 'coverage.svg'), svg, 'utf8');
+
+      - name: Commit coverage badge
+        if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch
+        run: |
+          if git diff --quiet -- .github/badges/coverage.svg; then
+            echo "Coverage badge unchanged"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/badges/coverage.svg
+          git commit -m "Update coverage badge"
+          git push

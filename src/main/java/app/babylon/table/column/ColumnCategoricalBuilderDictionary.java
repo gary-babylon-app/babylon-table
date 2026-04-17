@@ -83,6 +83,12 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
     }
 
     @Override
+    public Column.Type getType()
+    {
+        return this.type;
+    }
+
+    @Override
     public ColumnCategorical<T> build()
     {
         ensureActive();

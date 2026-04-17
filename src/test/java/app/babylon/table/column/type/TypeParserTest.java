@@ -2,9 +2,11 @@ package app.babylon.table.column.type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
 
@@ -46,7 +48,7 @@ class TypeParserTest
     void defaultPrimitiveParsersShouldWorkForCharSlice()
     {
         TypeParser<String> parser = CharSequence::toString;
-        char[] chars = "xx-12|345|6789012345|9.75|Beta-yy".toCharArray();
+        String chars = "xx-12|345|6789012345|9.75|Beta-yy";
 
         assertEquals((byte) -12, parser.parseByte(chars, 2, 3));
         assertEquals(345, parser.parseInt(chars, 6, 3));
@@ -59,7 +61,7 @@ class TypeParserTest
     void objectParserShouldWorkWithBigDecimals()
     {
         TypeParser<BigDecimal> parser = TypeParsers.BIG_DECIMAL;
-        char[] chars = "xx1234.50yy".toCharArray();
+        String chars = "xx1234.50yy";
 
         assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse("1234.50")));
         assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse(chars, 2, 7)));
@@ -71,7 +73,7 @@ class TypeParserTest
     void objectParserShouldWorkWithLocalDateYmdFallback()
     {
         TypeParser<LocalDate> parser = TypeParsers.LOCAL_DATE_YMD;
-        char[] chars = "xx2024-03-15yy".toCharArray();
+        String chars = "xx2024-03-15yy";
 
         assertEquals(LocalDate.of(2024, 3, 15), parser.parse("2024-03-15"));
         assertEquals(LocalDate.of(2024, 3, 15), parser.parse(chars, 2, 10));
@@ -84,8 +86,8 @@ class TypeParserTest
     {
         TypeParser<LocalDate> usParser = TypeParsers.localDate(app.babylon.table.transform.DateFormat.MDY);
         TypeParser<LocalDate> ukParser = TypeParsers.localDate(app.babylon.table.transform.DateFormat.DMY);
-        char[] usChars = "xx03/15/2024yy".toCharArray();
-        char[] ukChars = "xx15/03/2024yy".toCharArray();
+        String usChars = "xx03/15/2024yy";
+        String ukChars = "xx15/03/2024yy";
 
         assertEquals(LocalDate.of(2024, 3, 15), usParser.parse("03/15/2024"));
         assertEquals(LocalDate.of(2024, 3, 15), usParser.parse(usChars, 2, 10));
@@ -99,7 +101,7 @@ class TypeParserTest
     void enumParserShouldWrapSuppliedFunction()
     {
         TypeParser<Side> parser = TypeParsers.enumParser(Side::parse);
-        char[] chars = "xxBUYyy".toCharArray();
+        String chars = "xxBUYyy";
 
         assertEquals(Side.BUY, parser.parse("B"));
         assertEquals(Side.SELL, parser.parse("sell"));
@@ -113,7 +115,7 @@ class TypeParserTest
     void enumParserShouldProvideDefaultEnumValueOfFallbacks()
     {
         TypeParser<Side> parser = TypeParsers.enumParser(Side.class);
-        char[] chars = "xxBUYyy".toCharArray();
+        String chars = "xxBUYyy";
 
         assertEquals(Side.BUY, parser.parse("BUY"));
         assertEquals(Side.SELL, parser.parse(" sell "));
@@ -122,5 +124,34 @@ class TypeParserTest
         assertNull(parser.parse(""));
         assertNull(parser.parse("B"));
         assertNull(parser.parse("hold"));
+    }
+
+    @Test
+    void currencyParserShouldUseFastPathForCommonCurrencies()
+    {
+        TypeParser<Currency> parser = TypeParsers.CURRENCY;
+        String chars = "xx usd yy";
+
+        assertSame(Currency.getInstance("USD"), parser.parse("USD"));
+        assertSame(Currency.getInstance("EUR"), parser.parse(" eur "));
+        assertSame(Currency.getInstance("USD"), parser.parse(chars, 2, 5));
+        assertSame(Currency.getInstance("ZAR"), parser.parse("zar"));
+        assertSame(Currency.getInstance("SEK"), parser.parse("SEK"));
+        assertSame(Currency.getInstance("NOK"), parser.parse("nok"));
+        assertSame(Currency.getInstance("DKK"), parser.parse("DKK"));
+        assertSame(Currency.getInstance("SGD"), parser.parse("SGD"));
+        assertSame(Currency.getInstance("HKD"), parser.parse("hkd"));
+    }
+
+    @Test
+    void currencyParserShouldFallbackForOtherSupportedCurrenciesAndReturnNullForInvalid()
+    {
+        TypeParser<Currency> parser = TypeParsers.CURRENCY;
+
+        assertSame(Currency.getInstance("MXN"), parser.parse(" mxN "));
+        assertNull(parser.parse("CNH"));
+        assertNull(parser.parse("not-a-currency"));
+        assertNull(parser.parse(""));
+        assertNull(parser.parse((CharSequence) null));
     }
 }

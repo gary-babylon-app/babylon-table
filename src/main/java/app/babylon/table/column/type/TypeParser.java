@@ -28,19 +28,19 @@ public interface TypeParser<T>
     T parse(CharSequence s);
 
     /**
-     * Parses a slice of a character array into an object value.
+     * Parses a slice of a character sequence into an object value.
      *
-     * @param chars
-     *            the source characters
+     * @param s
+     *            the source text
      * @param offset
      *            the start index
      * @param length
      *            the slice length
      * @return the parsed value, or {@code null} when parsing fails
      */
-    default T parse(char[] chars, int offset, int length)
+    default T parse(CharSequence s, int offset, int length)
     {
-        return parse(new String(chars, offset, length));
+        return parse(s.subSequence(offset, offset + length));
     }
 
     /**
@@ -52,7 +52,7 @@ public interface TypeParser<T>
      */
     default byte parseByte(CharSequence s)
     {
-        int parsed = Integer.parseInt(s, 0, s.length(), 10);
+        int parsed = parseInt(s, 0, s.length());
         if (parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE)
         {
             throw new NumberFormatException("Value out of range for byte: " + s);
@@ -61,9 +61,9 @@ public interface TypeParser<T>
     }
 
     /**
-     * Parses a slice of a character array into a byte value.
+     * Parses a slice of a character sequence into a byte value.
      *
-     * @param chars
+     * @param s
      *            the source characters
      * @param offset
      *            the start index
@@ -71,12 +71,12 @@ public interface TypeParser<T>
      *            the slice length
      * @return the parsed byte
      */
-    default byte parseByte(char[] chars, int offset, int length)
+    default byte parseByte(CharSequence s, int offset, int length)
     {
-        int parsed = Integer.parseInt(new String(chars, offset, length));
+        int parsed = parseInt(s, offset, length);
         if (parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE)
         {
-            throw new NumberFormatException("Value out of range for byte: " + new String(chars, offset, length));
+            throw new NumberFormatException("Value out of range for byte: " + s.subSequence(offset, offset + length));
         }
         return (byte) parsed;
     }
@@ -90,23 +90,23 @@ public interface TypeParser<T>
      */
     default int parseInt(CharSequence s)
     {
-        return Integer.parseInt(s, 0, s.length(), 10);
+        return parseInt(s, 0, s.length());
     }
 
     /**
-     * Parses a slice of a character array into an int value.
+     * Parses a slice of a character sequence into an int value.
      *
-     * @param chars
-     *            the source characters
+     * @param s
+     *            the source text
      * @param offset
      *            the start index
      * @param length
      *            the slice length
      * @return the parsed int
      */
-    default int parseInt(char[] chars, int offset, int length)
+    default int parseInt(CharSequence s, int offset, int length)
     {
-        return Integer.parseInt(new String(chars, offset, length));
+        return Integer.parseInt(s, offset, offset + length, 10);
     }
 
     /**
@@ -118,23 +118,23 @@ public interface TypeParser<T>
      */
     default long parseLong(CharSequence s)
     {
-        return Long.parseLong(s, 0, s.length(), 10);
+        return parseLong(s, 0, s.length());
     }
 
     /**
-     * Parses a slice of a character array into a long value.
+     * Parses a slice of a character sequence into a long value.
      *
-     * @param chars
-     *            the source characters
+     * @param s
+     *            the source text
      * @param offset
      *            the start index
      * @param length
      *            the slice length
      * @return the parsed long
      */
-    default long parseLong(char[] chars, int offset, int length)
+    default long parseLong(CharSequence s, int offset, int length)
     {
-        return Long.parseLong(new String(chars, offset, length));
+        return Long.parseLong(s, offset, offset + length, 10);
     }
 
     /**
@@ -146,22 +146,22 @@ public interface TypeParser<T>
      */
     default double parseDouble(CharSequence s)
     {
-        return Double.parseDouble(s.toString());
+        return parseDouble(s, 0, s.length());
     }
 
     /**
-     * Parses a slice of a character array into a double value.
+     * Parses a slice of a character sequence into a double value.
      *
-     * @param chars
-     *            the source characters
+     * @param s
+     *            the source text
      * @param offset
      *            the start index
      * @param length
      *            the slice length
      * @return the parsed double
      */
-    default double parseDouble(char[] chars, int offset, int length)
+    default double parseDouble(CharSequence s, int offset, int length)
     {
-        return Double.parseDouble(new String(chars, offset, length));
+        return Double.parseDouble(s.subSequence(offset, offset + length).toString());
     }
 }

@@ -48,7 +48,8 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
         return this.name;
     }
 
-    Column.Type getType()
+    @Override
+    public Column.Type getType()
     {
         return this.type;
     }

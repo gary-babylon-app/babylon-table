@@ -263,15 +263,15 @@ public class RowCursorResultSet implements RowCursor
         }
 
         @Override
-        public char[] chars()
+        public int length()
         {
-            return ensureRowBuffer().chars();
+            return ensureRowBuffer().length();
         }
 
         @Override
-        public int end()
+        public char charAt(int index)
         {
-            return ensureRowBuffer().end();
+            return ensureRowBuffer().charAt(index);
         }
 
         @Override

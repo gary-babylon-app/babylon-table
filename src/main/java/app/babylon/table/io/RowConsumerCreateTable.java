@@ -10,7 +10,7 @@
 
 package app.babylon.table.io;
 
-import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,7 +22,6 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBuilder;
-import app.babylon.table.column.CharSliceBuilder;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
@@ -33,7 +32,7 @@ public final class RowConsumerCreateTable implements RowConsumer
     private final TableDescription tableDescription;
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private Column.Type[] columnTypes;
-    private CharSliceBuilder[] columnBuilders;
+    private ColumnBuilder[] columnBuilders;
 
     RowConsumerCreateTable(TableName tableName, TableDescription tableDescription,
             Map<ColumnName, Column.Type> explicitColumnTypes)
@@ -50,7 +49,7 @@ public final class RowConsumerCreateTable implements RowConsumer
     {
         ArgumentCheck.nonEmpty(columnNames);
         this.columnTypes = new Column.Type[columnNames.length];
-        this.columnBuilders = new CharSliceBuilder[columnNames.length];
+        this.columnBuilders = new ColumnBuilder[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
         {
             Column.Type columnType = effectiveColumnType(columnNames[i], this.explicitColumnTypes);
@@ -71,10 +70,9 @@ public final class RowConsumerCreateTable implements RowConsumer
         {
             return;
         }
-        char[] chars = rowValues.chars();
         for (int i = 0; i < columnCount; ++i)
         {
-            addValue(this.columnBuilders[i], chars, rowValues.start(i), rowValues.length(i));
+            addValue(this.columnBuilders[i], rowValues, rowValues.start(i), rowValues.length(i));
         }
     }
 
@@ -98,18 +96,18 @@ public final class RowConsumerCreateTable implements RowConsumer
             Map<ColumnName, Column.Type> explicitColumnTypes)
     {
         Column.Type columnType = explicitColumnTypes.get(columnName);
-        if (columnType == null)
+        if (columnType == null || columnType.getValueClass().equals(LocalDate.class))
         {
             return ColumnTypes.STRING;
         }
         return columnType;
     }
 
-    private static void addValue(CharSliceBuilder builder, char[] chars, int start, int length)
+    private static void addValue(ColumnBuilder builder, CharSequence chars, int start, int length)
     {
         if (length <= 0)
         {
-            builder.add(null, 0, 0);
+            builder.add((CharSequence) null, 0, 0);
             return;
         }
         builder.add(chars, start, length);

@@ -23,6 +23,7 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
     private static final double MOSTLY_UNIQUE_THRESHOLD = 0.90d;
 
     private final ColumnName name;
+    private final Column.Type type;
     private ColumnObject.Builder<T> arrayBuilder;
     private ColumnCategorical.Builder<T> dictionaryBuilder;
     private final Set<T> distinctSample;
@@ -33,8 +34,14 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
 
     ColumnObjectBuilderComposite(ColumnName columnName, Class<T> valueClass)
     {
-        this.arrayBuilder = new ColumnObjectBuilderArray<T>(columnName, valueClass);
-        this.dictionaryBuilder = new ColumnCategoricalBuilderDictionary<T>(columnName, Type.of(valueClass));
+        this(columnName, Type.of(valueClass));
+    }
+
+    ColumnObjectBuilderComposite(ColumnName columnName, Column.Type type)
+    {
+        this.type = ArgumentCheck.nonNull(type);
+        this.arrayBuilder = new ColumnObjectBuilderArray<T>(columnName, this.type);
+        this.dictionaryBuilder = new ColumnCategoricalBuilderDictionary<T>(columnName, this.type);
         this.name = ArgumentCheck.nonNull(arrayBuilder.getName());
         if (!this.name.equals(dictionaryBuilder.getName()))
         {
@@ -51,6 +58,12 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
     public ColumnName getName()
     {
         return this.name;
+    }
+
+    @Override
+    public Column.Type getType()
+    {
+        return this.type;
     }
 
     @Override

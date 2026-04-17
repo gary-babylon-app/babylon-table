@@ -39,7 +39,7 @@ class RowFixedWidthTest
         assertEquals(4, row.length(0));
         assertEquals(3, row.length(1));
         assertEquals(2, row.length(2));
-        assertEquals(9, row.end());
+        assertEquals(9, row.length());
         assertArrayEquals(new String[]
         {"ABCD", "XYZ", "12"}, values(row));
     }
@@ -68,7 +68,7 @@ class RowFixedWidthTest
         row.append("ABCD".toCharArray(), 0, 4).finish();
         row.clear().finish();
 
-        assertEquals(0, row.end());
+        assertEquals(0, row.length());
         assertTrue(row.isEmpty());
         assertFalse(row.isSet(0));
         assertFalse(row.isSet(1));
@@ -114,10 +114,10 @@ class RowFixedWidthTest
     private static String[] values(Row row)
     {
         String[] values = new String[row.size()];
-        char[] chars = row.chars();
         for (int i = 0; i < row.size(); ++i)
         {
-            values[i] = new String(chars, row.start(i), row.length(i));
+            int start = row.start(i);
+            values[i] = row.subSequence(start, start + row.length(i)).toString();
         }
         return values;
     }

@@ -120,7 +120,6 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
                 return;
             }
 
-            char[] chars = row.chars();
             RowKey groupKey = row.keyOf(this.groupByPositions);
             GroupAccumulators accumulators = this.accumulatorsByGroup.computeIfAbsent(groupKey,
                     k -> new GroupAccumulators(this.aggregatePositions.length));
@@ -132,7 +131,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
                 {
                     continue;
                 }
-                accumulators.accumulators[i].accept(chars, row.start(aggregatePosition), length);
+                accumulators.accumulators[i].accept(row, row.start(aggregatePosition), length);
             }
         }
 

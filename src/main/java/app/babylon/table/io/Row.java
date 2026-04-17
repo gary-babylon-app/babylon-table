@@ -13,7 +13,7 @@ package app.babylon.table.io;
 /**
  * Represents a parsed input row represented as a character slice.
  */
-public interface Row
+public interface Row extends CharSequence
 {
     int size();
 
@@ -21,13 +21,15 @@ public interface Row
 
     boolean isSet(int fieldIndex);
 
-    char[] chars();
-
-    int end();
-
     int start(int fieldIndex);
 
     int length(int fieldIndex);
+
+    @Override
+    default CharSequence subSequence(int start, int end)
+    {
+        return new RowBuffer.FieldCharSequence(this, start, end - start);
+    }
 
     RowKey keyOf(int[] fieldPositions);
 

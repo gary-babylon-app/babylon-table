@@ -12,12 +12,14 @@ package app.babylon.table.column.type;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Currency;
 import java.util.function.Function;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.transform.ColumnLocalDates;
 import app.babylon.table.transform.DateFormat;
 import app.babylon.text.BigDecimals;
+import app.babylon.text.Currencys;
 import app.babylon.text.Strings;
 
 public final class TypeParsers
@@ -25,6 +27,20 @@ public final class TypeParsers
     public static final TypeParser<String> STRING = s -> s == null ? null : s.toString();
     public static final TypeParser<BigDecimal> BIG_DECIMAL = BigDecimals::parse;
     public static final TypeParser<LocalDate> LOCAL_DATE_YMD = localDate(DateFormat.YMD);
+    public static final TypeParser<Currency> CURRENCY = new TypeParser<>()
+    {
+        @Override
+        public Currency parse(CharSequence s)
+        {
+            return Currencys.parse(s);
+        }
+
+        @Override
+        public Currency parse(CharSequence s, int offset, int length)
+        {
+            return Currencys.parse(s, offset, length);
+        }
+    };
 
     private TypeParsers()
     {

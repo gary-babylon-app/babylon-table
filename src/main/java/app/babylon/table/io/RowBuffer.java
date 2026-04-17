@@ -12,20 +12,26 @@ package app.babylon.table.io;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.CharBuffer;
 
 public final class RowBuffer implements Row
 {
     static final class FieldCharSequence implements CharSequence
     {
-        private final char[] chars;
+        private final CharSequence chars;
         private final int start;
         private final int length;
 
-        FieldCharSequence(char[] chars, int start, int length)
+        FieldCharSequence(CharSequence chars, int start, int length)
         {
             this.chars = chars;
             this.start = start;
             this.length = length;
+        }
+
+        FieldCharSequence(char[] chars, int start, int length)
+        {
+            this(CharBuffer.wrap(chars), start, length);
         }
 
         @Override
@@ -41,7 +47,7 @@ public final class RowBuffer implements Row
             {
                 throw new IndexOutOfBoundsException();
             }
-            return this.chars[this.start + index];
+            return this.chars.charAt(this.start + index);
         }
 
         @Override
@@ -57,7 +63,12 @@ public final class RowBuffer implements Row
         @Override
         public String toString()
         {
-            return new String(this.chars, this.start, this.length);
+            char[] text = new char[this.length];
+            for (int i = 0; i < this.length; ++i)
+            {
+                text[i] = this.chars.charAt(this.start + i);
+            }
+            return new String(text);
         }
     }
 
@@ -200,6 +211,22 @@ public final class RowBuffer implements Row
         return length(fieldIndex) > 0;
     }
 
+    @Override
+    public int length()
+    {
+        return this.charCount;
+    }
+
+    @Override
+    public char charAt(int index)
+    {
+        if (index < 0 || index >= this.charCount)
+        {
+            throw new IndexOutOfBoundsException();
+        }
+        return this.chars[index];
+    }
+
     public String getString(int fieldIndex)
     {
         int length = length(fieldIndex);
@@ -230,18 +257,6 @@ public final class RowBuffer implements Row
     public RowBuffer copy()
     {
         return new RowBuffer(this);
-    }
-
-    @Override
-    public char[] chars()
-    {
-        return this.chars;
-    }
-
-    @Override
-    public int end()
-    {
-        return this.charCount;
     }
 
     @Override

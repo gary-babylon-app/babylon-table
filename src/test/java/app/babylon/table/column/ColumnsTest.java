@@ -142,8 +142,8 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsIntType()
     {
-        CharSliceBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.INT);
-        builder.add("12".toCharArray(), 0, 2);
+        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.INT);
+        builder.add("12", 0, 2);
         builder.add(null, 0, 0);
 
         ColumnInt column = (ColumnInt) builder.build();
@@ -154,8 +154,8 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsByteType()
     {
-        CharSliceBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.BYTE);
-        builder.add("7".toCharArray(), 0, 1);
+        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.BYTE);
+        builder.add("7", 0, 1);
         builder.add(null, 0, 0);
 
         ColumnByte column = (ColumnByte) builder.build();
@@ -166,12 +166,36 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsLongType()
     {
-        CharSliceBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.LONG);
-        builder.add("123456789".toCharArray(), 0, 9);
+        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.LONG);
+        builder.add("123456789", 0, 9);
         builder.add(null, 0, 0);
 
         ColumnLong column = (ColumnLong) builder.build();
         assertEquals(123456789L, column.get(0));
+        assertFalse(column.isSet(1));
+    }
+
+    @Test
+    void newCharSliceBuilderSupportsStringType()
+    {
+        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.STRING);
+        builder.add("Alpha", 0, 5);
+        builder.add(null, 0, 0);
+
+        ColumnObject<String> column = (ColumnObject<String>) builder.build();
+        assertEquals("Alpha", column.get(0));
+        assertFalse(column.isSet(1));
+    }
+
+    @Test
+    void newCharSliceBuilderSupportsDecimalType()
+    {
+        ColumnBuilder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.DECIMAL);
+        builder.add("1234.50", 0, 7);
+        builder.add("bad", 0, 3);
+
+        ColumnObject<BigDecimal> column = (ColumnObject<BigDecimal>) builder.build();
+        assertEquals(0, new BigDecimal("1234.50").compareTo(column.get(0)));
         assertFalse(column.isSet(1));
     }
 

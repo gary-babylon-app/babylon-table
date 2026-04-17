@@ -100,13 +100,15 @@ public abstract class RowKey
             totalLength += row.length(position);
         }
         char[] chars = new char[totalLength];
-        char[] source = row.chars();
         int writeIndex = 0;
         for (int position : positions)
         {
             int length = row.length(position);
-            System.arraycopy(source, row.start(position), chars, writeIndex, length);
-            writeIndex += length;
+            int start = row.start(position);
+            for (int i = 0; i < length; ++i)
+            {
+                chars[writeIndex++] = row.charAt(start + i);
+            }
         }
         return chars;
     }
@@ -146,7 +148,11 @@ public abstract class RowKey
         {
             int length = row.length(position);
             this.chars = new char[length];
-            System.arraycopy(row.chars(), row.start(position), this.chars, 0, length);
+            int start = row.start(position);
+            for (int i = 0; i < length; ++i)
+            {
+                this.chars[i] = row.charAt(start + i);
+            }
         }
 
         private static RowKey1 of(Row row, int position)
@@ -253,9 +259,16 @@ public abstract class RowKey
             this.length0 = row.length(position0);
             int length1 = row.length(position1);
             this.chars = new char[this.length0 + length1];
-            char[] source = row.chars();
-            System.arraycopy(source, row.start(position0), this.chars, 0, this.length0);
-            System.arraycopy(source, row.start(position1), this.chars, this.length0, length1);
+            int start0 = row.start(position0);
+            int start1 = row.start(position1);
+            for (int i = 0; i < this.length0; ++i)
+            {
+                this.chars[i] = row.charAt(start0 + i);
+            }
+            for (int i = 0; i < length1; ++i)
+            {
+                this.chars[this.length0 + i] = row.charAt(start1 + i);
+            }
         }
 
         private static RowKey2 of(Row row, int position1, int position2)
@@ -379,10 +392,21 @@ public abstract class RowKey
             this.length2 = row.length(position1);
             this.length3 = row.length(position2);
             this.chars = new char[this.length1 + this.length2 + this.length3];
-            char[] source = row.chars();
-            System.arraycopy(source, row.start(position0), this.chars, 0, this.length1);
-            System.arraycopy(source, row.start(position1), this.chars, this.length1, this.length2);
-            System.arraycopy(source, row.start(position2), this.chars, this.length1 + this.length2, this.length3);
+            int start0 = row.start(position0);
+            int start1 = row.start(position1);
+            int start2 = row.start(position2);
+            for (int i = 0; i < this.length1; ++i)
+            {
+                this.chars[i] = row.charAt(start0 + i);
+            }
+            for (int i = 0; i < this.length2; ++i)
+            {
+                this.chars[this.length1 + i] = row.charAt(start1 + i);
+            }
+            for (int i = 0; i < this.length3; ++i)
+            {
+                this.chars[this.length1 + this.length2 + i] = row.charAt(start2 + i);
+            }
         }
 
         private static RowKey3 of(Row row, int position1, int position2, int position3)

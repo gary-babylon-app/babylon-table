@@ -360,7 +360,7 @@ public class ColumnDoubleTest
     {
         final ColumnName VALUES = ColumnName.of("values");
         ColumnDouble.Builder builder = (ColumnDouble.Builder) ColumnDouble.builder(VALUES);
-        char[] chars = "xx12.75yy".toCharArray();
+        String chars = "xx12.75yy";
         builder.add(chars, 2, 5);
         builder.add(chars, 0, 2);
         ColumnDouble column = builder.build();

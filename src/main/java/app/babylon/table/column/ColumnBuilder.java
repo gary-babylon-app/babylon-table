@@ -23,6 +23,22 @@ public interface ColumnBuilder
     public ColumnName getName();
 
     /**
+     * Appends a value directly from a character slice.
+     *
+     * @param chars
+     *            the source text
+     * @param start
+     *            the start offset
+     * @param length
+     *            the slice length
+     * @return this builder
+     */
+    default ColumnBuilder add(CharSequence chars, int start, int length)
+    {
+        throw new UnsupportedOperationException("Character-slice add not supported by " + getClass().getName());
+    }
+
+    /**
      * Materialises the current builder contents as an immutable column.
      *
      * @return the built column

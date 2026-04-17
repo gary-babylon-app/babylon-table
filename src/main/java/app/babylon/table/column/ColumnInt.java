@@ -27,7 +27,7 @@ public interface ColumnInt extends Column
     /**
      * Builder for nullable int columns.
      */
-    public static interface Builder extends ColumnBuilder, CharSliceBuilder
+    public static interface Builder extends ColumnBuilder
     {
         /**
          * Appends an int value.
@@ -38,7 +38,7 @@ public interface ColumnInt extends Column
          */
         Builder add(int x);
 
-        default Builder add(char[] chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int length)
         {
             if (chars == null || length == 0)
             {
@@ -46,7 +46,7 @@ public interface ColumnInt extends Column
             }
             try
             {
-                return add(Integer.parseInt(new String(chars, start, length)));
+                return add(TYPE.getParser().parseInt(chars, start, length));
             }
             catch (RuntimeException e)
             {

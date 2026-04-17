@@ -121,10 +121,10 @@ class RowCursorResultSetTest
     private static String[] values(Row row)
     {
         String[] values = new String[row.size()];
-        char[] chars = row.chars();
         for (int i = 0; i < row.size(); ++i)
         {
-            values[i] = new String(chars, row.start(i), row.length(i));
+            int start = row.start(i);
+            values[i] = row.subSequence(start, start + row.length(i)).toString();
         }
         return values;
     }

@@ -56,15 +56,15 @@ final class RowProjectedDefault implements RowProjected
     }
 
     @Override
-    public char[] chars()
+    public int length()
     {
-        return source().chars();
+        return source().length();
     }
 
     @Override
-    public int end()
+    public char charAt(int index)
     {
-        return source().end();
+        return source().charAt(index);
     }
 
     @Override
@@ -73,7 +73,7 @@ final class RowProjectedDefault implements RowProjected
         int sourceIndex = sourceIndex(fieldIndex);
         if (sourceIndex >= source().size())
         {
-            return source().end();
+            return source().length();
         }
         return source().start(sourceIndex);
     }
@@ -99,14 +99,13 @@ final class RowProjectedDefault implements RowProjected
     public Row copy()
     {
         RowBuffer copy = new RowBuffer();
-        char[] chars = chars();
         for (int i = 0; i < size(); ++i)
         {
             int start = start(i);
             int length = length(i);
             for (int j = 0; j < length; ++j)
             {
-                copy.append(chars[start + j]);
+                copy.append(charAt(start + j));
             }
             copy.finishField();
         }

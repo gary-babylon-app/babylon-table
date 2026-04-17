@@ -60,8 +60,8 @@ class RowBufferTest
         assertEquals(4, row.length(1));
         assertEquals(9, row.start(2));
         assertEquals(0, row.length(2));
-        assertEquals(9, row.end());
-        assertEquals("Alpha", new String(row.chars(), row.start(0), row.length(0)));
+        assertEquals(9, row.length());
+        assertEquals("Alpha", row.subSequence(row.start(0), row.start(0) + row.length(0)).toString());
     }
 
     @Test
@@ -80,11 +80,11 @@ class RowBufferTest
         assertEquals("Alpha", copy.getString(0));
         assertEquals("Beta", copy.getString(1));
         assertEquals(2, copy.size());
-        assertEquals(9, copy.end());
+        assertEquals(9, copy.length());
 
         row.clear();
         assertEquals(0, row.size());
-        assertEquals(0, row.end());
+        assertEquals(0, row.length());
         assertEquals("Alpha", copy.getString(0));
         assertEquals("Beta", copy.getString(1));
     }

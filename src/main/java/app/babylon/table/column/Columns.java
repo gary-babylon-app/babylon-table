@@ -31,78 +31,6 @@ import app.babylon.text.Strings;
 
 public class Columns
 {
-    private static final class CharSliceBuilderStringByDelegate implements CharSliceBuilder
-    {
-        private final ColumnObject.Builder<String> delegate;
-
-        private CharSliceBuilderStringByDelegate(ColumnObject.Builder<String> delegate)
-        {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public ColumnName getName()
-        {
-            return this.delegate.getName();
-        }
-
-        @Override
-        public CharSliceBuilder add(char[] chars, int start, int length)
-        {
-            if (chars == null || length == 0)
-            {
-                this.delegate.addNull();
-            }
-            else
-            {
-                this.delegate.add(new String(chars, start, length));
-            }
-            return this;
-        }
-
-        @Override
-        public ColumnObject<String> build()
-        {
-            return this.delegate.build();
-        }
-    }
-
-    private static final class CharSliceBuilderDecimalByDelegate implements CharSliceBuilder
-    {
-        private final ColumnObject.Builder<BigDecimal> delegate;
-
-        private CharSliceBuilderDecimalByDelegate(ColumnObject.Builder<BigDecimal> delegate)
-        {
-            this.delegate = delegate;
-        }
-
-        @Override
-        public ColumnName getName()
-        {
-            return this.delegate.getName();
-        }
-
-        @Override
-        public CharSliceBuilder add(char[] chars, int start, int length)
-        {
-            if (chars == null || length == 0)
-            {
-                this.delegate.addNull();
-            }
-            else
-            {
-                this.delegate.add(BigDecimals.parse(new String(chars, start, length)));
-            }
-            return this;
-        }
-
-        @Override
-        public ColumnObject<BigDecimal> build()
-        {
-            return this.delegate.build();
-        }
-    }
-
     public static boolean isStringColumn(Column column)
     {
         return column instanceof ColumnObject<?> && String.class.equals(column.getType().getValueClass());
@@ -210,7 +138,7 @@ public class Columns
         throw new IllegalArgumentException("Unsupported value class " + valueClass);
     }
 
-    public static CharSliceBuilder newCharSliceBuilder(ColumnName colName, Column.Type type)
+    public static ColumnBuilder newCharSliceBuilder(ColumnName colName, Column.Type type)
     {
         if (type == null)
         {
@@ -219,12 +147,11 @@ public class Columns
 
         if (ColumnTypes.STRING.equals(type))
         {
-            return new CharSliceBuilderStringByDelegate(
-                    ColumnObject.builder(colName, app.babylon.table.column.ColumnTypes.STRING));
+            return ColumnObject.builder(colName, app.babylon.table.column.ColumnTypes.STRING);
         }
         if (ColumnTypes.DECIMAL.equals(type))
         {
-            return new CharSliceBuilderDecimalByDelegate(ColumnObject.builderDecimal(colName));
+            return ColumnObject.builderDecimal(colName);
         }
         if (ColumnDouble.TYPE.equals(type))
         {

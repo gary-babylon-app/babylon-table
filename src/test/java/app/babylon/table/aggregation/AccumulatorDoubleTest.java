@@ -53,7 +53,7 @@ class AccumulatorDoubleTest
     void shouldAccumulateFromCharArray()
     {
         AccumulatorDouble accumulator = new AccumulatorDouble();
-        char[] chars = "xx12.5yy".toCharArray();
+        String chars = "xx12.5yy";
 
         accumulator.accept(chars, 2, 4);
 

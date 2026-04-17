@@ -21,6 +21,7 @@ import java.util.function.Predicate;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.Selection;
 
 /**
@@ -88,9 +89,18 @@ public interface ColumnObject<T> extends Column
     public static <T> Builder<T> builder(ColumnName name, Column.Type type, Mode mode)
     {
         Column.Type columnType = ArgumentCheck.nonNull(type);
-        @SuppressWarnings("unchecked")
-        Class<T> valueClass = (Class<T>) columnType.getValueClass();
-        return builderByClass(name, valueClass, mode);
+        if (columnType.isPrimitive())
+        {
+            throw new IllegalArgumentException(
+                    "Object builder requires non-primitive type: " + columnType.getValueClass().getName());
+        }
+        Mode resolvedMode = mode == null ? Mode.AUTO : mode;
+        return switch (resolvedMode)
+        {
+            case AUTO -> new ColumnObjectBuilderComposite<>(name, columnType);
+            case ARRAY -> new ColumnObjectBuilderArray<>(name, columnType);
+            case CATEGORICAL -> (Builder<T>) ColumnCategorical.builder(name, columnType);
+        };
     }
 
     static <T> Builder<T> builderByClass(ColumnName name, Class<T> clazz)
@@ -149,6 +159,8 @@ public interface ColumnObject<T> extends Column
         @Override
         public ColumnName getName();
 
+        public Column.Type getType();
+
         /**
          * Appends a value to the column.
          *
@@ -157,6 +169,31 @@ public interface ColumnObject<T> extends Column
          * @return this builder
          */
         public Builder<T> add(T x);
+
+        @Override
+        default Builder<T> add(CharSequence chars, int offset, int length)
+        {
+            if (chars == null || length == 0)
+            {
+                return addNull();
+            }
+            @SuppressWarnings("unchecked")
+            TypeParser<T> parser = (TypeParser<T>) getType().getParser();
+            if (parser == null)
+            {
+                return addNull();
+            }
+            T value = parser.parse(chars, offset, length);
+            if (value == null)
+            {
+                addNull();
+            }
+            else
+            {
+                add(value);
+            }
+            return this;
+        }
 
         @Override
         public ColumnObject<T> build();

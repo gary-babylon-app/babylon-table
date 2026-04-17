@@ -58,6 +58,27 @@ class ColumnObjectTest
     }
 
     @Test
+    void objectBuilderShouldAddFromCharSliceUsingTypeParser()
+    {
+        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builderDecimal(ColumnName.of("Amount"));
+        decimalBuilder.add("1234.50", 0, 7);
+        decimalBuilder.add("bad", 0, 3);
+
+        ColumnObject<BigDecimal> decimals = decimalBuilder.build();
+        assertEquals(0, new BigDecimal("1234.50").compareTo(decimals.get(0)));
+        assertFalse(decimals.isSet(1));
+
+        ColumnObject.Builder<LocalDate> dateBuilder = ColumnObject.builder(ColumnName.of("TradeDate"),
+                ColumnTypes.LOCALDATE, ColumnObject.Mode.ARRAY);
+        dateBuilder.add("2024-03-15", 0, 10);
+        dateBuilder.add("bad", 0, 3);
+
+        ColumnObject<LocalDate> dates = dateBuilder.build();
+        assertEquals(LocalDate.of(2024, 3, 15), dates.get(0));
+        assertFalse(dates.isSet(1));
+    }
+
+    @Test
     void stringViewsShouldRespectViewOrder()
     {
         final ColumnName TEST = ColumnName.of("TEST");

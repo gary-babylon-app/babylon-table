@@ -56,13 +56,13 @@ public class AccumulatorDouble implements DoubleConsumer
         this.m2 += delta * delta2;
     }
 
-    public void accept(char[] chars, int start, int length)
+    public void accept(CharSequence chars, int start, int length)
     {
         if (chars == null)
         {
             throw new IllegalArgumentException("chars must not be null");
         }
-        accept(Double.parseDouble(new String(chars, start, length)));
+        accept(Double.parseDouble(chars.subSequence(start, start + length).toString()));
     }
 
     public long getCount()

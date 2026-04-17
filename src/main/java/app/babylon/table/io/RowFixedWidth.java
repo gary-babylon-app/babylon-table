@@ -86,15 +86,19 @@ final class RowFixedWidth implements Row
     }
 
     @Override
-    public char[] chars()
+    public int length()
     {
-        return this.chars;
+        return this.end;
     }
 
     @Override
-    public int end()
+    public char charAt(int index)
     {
-        return this.end;
+        if (index < 0 || index >= this.end)
+        {
+            throw new IndexOutOfBoundsException();
+        }
+        return this.chars[index];
     }
 
     @Override

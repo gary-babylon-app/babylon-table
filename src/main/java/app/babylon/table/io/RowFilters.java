@@ -136,7 +136,7 @@ public final class RowFilters
 
     private static CharSequence fieldValue(Row row, int fieldIndex)
     {
-        return new RowBuffer.FieldCharSequence(row.chars(), row.start(fieldIndex), row.length(fieldIndex));
+        return row.subSequence(row.start(fieldIndex), row.start(fieldIndex) + row.length(fieldIndex));
     }
 
     private static int positionOf(ColumnName[] availableColumns, ColumnName requiredColumn)

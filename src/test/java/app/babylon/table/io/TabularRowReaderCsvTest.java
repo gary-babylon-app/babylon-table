@@ -259,8 +259,8 @@ class TabularRowReaderCsvTest
     {
         final ColumnName CITY = ColumnName.of("City");
         String csv = "" + "City,Temp\n" + "London,12\n" + "Paris,15\n" + "Rome,18\n";
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withRowFilter(
-                columnNames -> row -> !"Paris".equals(new String(row.chars(), row.start(0), row.length(0))));
+        TabularRowReaderCsv reader = new TabularRowReaderCsv().withRowFilter(columnNames -> row -> !"Paris"
+                .equals(row.subSequence(row.start(0), row.start(0) + row.length(0)).toString()));
 
         TableRead read = readTable(reader, csv, "row-filter.csv");
         TabularRowReader.Result result = read.result;

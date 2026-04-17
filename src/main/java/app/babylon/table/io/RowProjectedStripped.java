@@ -30,9 +30,8 @@ final class RowProjectedStripped implements RowProjected
     public RowProjectedStripped with(Row source)
     {
         this.source = ArgumentCheck.nonNull(source, "source must not be null");
-        char[] chars = source.chars();
         int sourceFieldCount = source.size();
-        int sourceEnd = source.end();
+        int sourceEnd = source.length();
         for (int i = 0; i < this.projectedIndexes.length; ++i)
         {
             int sourceIndex = this.projectedIndexes[i];
@@ -44,11 +43,11 @@ final class RowProjectedStripped implements RowProjected
             }
             int start = source.start(sourceIndex);
             int end = start + source.length(sourceIndex);
-            while (start < end && Character.isWhitespace(chars[start]))
+            while (start < end && Character.isWhitespace(source.charAt(start)))
             {
                 ++start;
             }
-            while (end > start && Character.isWhitespace(chars[end - 1]))
+            while (end > start && Character.isWhitespace(source.charAt(end - 1)))
             {
                 --end;
             }
@@ -84,15 +83,15 @@ final class RowProjectedStripped implements RowProjected
     }
 
     @Override
-    public char[] chars()
+    public int length()
     {
-        return source().chars();
+        return source().length();
     }
 
     @Override
-    public int end()
+    public char charAt(int index)
     {
-        return source().end();
+        return source().charAt(index);
     }
 
     @Override
@@ -117,14 +116,13 @@ final class RowProjectedStripped implements RowProjected
     public Row copy()
     {
         RowBuffer copy = new RowBuffer();
-        char[] chars = chars();
         for (int i = 0; i < size(); ++i)
         {
             int start = this.starts[i];
             int length = this.lengths[i];
             for (int j = 0; j < length; ++j)
             {
-                copy.append(chars[start + j]);
+                copy.append(charAt(start + j));
             }
             copy.finishField();
         }

@@ -27,7 +27,7 @@ public interface ColumnDouble extends Column
     /**
      * Builder for nullable double columns.
      */
-    public static interface Builder extends ColumnBuilder, CharSliceBuilder
+    public static interface Builder extends ColumnBuilder
     {
         /**
          * Appends a double value.
@@ -53,7 +53,7 @@ public interface ColumnDouble extends Column
             }
             try
             {
-                return add(Double.parseDouble(x.toString()));
+                return add(TYPE.getParser().parseDouble(x));
             }
             catch (RuntimeException e)
             {
@@ -73,7 +73,7 @@ public interface ColumnDouble extends Column
          *            the number of characters to parse
          * @return this builder
          */
-        default Builder add(char[] chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int length)
         {
             if (chars == null || length == 0)
             {
@@ -81,7 +81,7 @@ public interface ColumnDouble extends Column
             }
             try
             {
-                return add(Double.parseDouble(new String(chars, start, length)));
+                return add(TYPE.getParser().parseDouble(chars, start, length));
             }
             catch (RuntimeException e)
             {

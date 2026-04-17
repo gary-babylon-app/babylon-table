@@ -1,0 +1,167 @@
+/*
+ * Copyright 2026 Babylon Financial Technology
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ */
+
+package app.babylon.table.column.type;
+
+/**
+ * Parses textual values into a target typed value.
+ *
+ * @param <T>
+ *            the object value type produced by {@link #parse(CharSequence)}
+ */
+public interface TypeParser<T>
+{
+    /**
+     * Parses a whole character sequence into an object value.
+     *
+     * @param s
+     *            the source text
+     * @return the parsed value, or {@code null} when parsing fails
+     */
+    T parse(CharSequence s);
+
+    /**
+     * Parses a slice of a character array into an object value.
+     *
+     * @param chars
+     *            the source characters
+     * @param offset
+     *            the start index
+     * @param length
+     *            the slice length
+     * @return the parsed value, or {@code null} when parsing fails
+     */
+    default T parse(char[] chars, int offset, int length)
+    {
+        return parse(new String(chars, offset, length));
+    }
+
+    /**
+     * Parses a whole character sequence into a byte value.
+     *
+     * @param s
+     *            the source text
+     * @return the parsed byte
+     */
+    default byte parseByte(CharSequence s)
+    {
+        int parsed = Integer.parseInt(s, 0, s.length(), 10);
+        if (parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE)
+        {
+            throw new NumberFormatException("Value out of range for byte: " + s);
+        }
+        return (byte) parsed;
+    }
+
+    /**
+     * Parses a slice of a character array into a byte value.
+     *
+     * @param chars
+     *            the source characters
+     * @param offset
+     *            the start index
+     * @param length
+     *            the slice length
+     * @return the parsed byte
+     */
+    default byte parseByte(char[] chars, int offset, int length)
+    {
+        int parsed = Integer.parseInt(new String(chars, offset, length));
+        if (parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE)
+        {
+            throw new NumberFormatException("Value out of range for byte: " + new String(chars, offset, length));
+        }
+        return (byte) parsed;
+    }
+
+    /**
+     * Parses a whole character sequence into an int value.
+     *
+     * @param s
+     *            the source text
+     * @return the parsed int
+     */
+    default int parseInt(CharSequence s)
+    {
+        return Integer.parseInt(s, 0, s.length(), 10);
+    }
+
+    /**
+     * Parses a slice of a character array into an int value.
+     *
+     * @param chars
+     *            the source characters
+     * @param offset
+     *            the start index
+     * @param length
+     *            the slice length
+     * @return the parsed int
+     */
+    default int parseInt(char[] chars, int offset, int length)
+    {
+        return Integer.parseInt(new String(chars, offset, length));
+    }
+
+    /**
+     * Parses a whole character sequence into a long value.
+     *
+     * @param s
+     *            the source text
+     * @return the parsed long
+     */
+    default long parseLong(CharSequence s)
+    {
+        return Long.parseLong(s, 0, s.length(), 10);
+    }
+
+    /**
+     * Parses a slice of a character array into a long value.
+     *
+     * @param chars
+     *            the source characters
+     * @param offset
+     *            the start index
+     * @param length
+     *            the slice length
+     * @return the parsed long
+     */
+    default long parseLong(char[] chars, int offset, int length)
+    {
+        return Long.parseLong(new String(chars, offset, length));
+    }
+
+    /**
+     * Parses a whole character sequence into a double value.
+     *
+     * @param s
+     *            the source text
+     * @return the parsed double
+     */
+    default double parseDouble(CharSequence s)
+    {
+        return Double.parseDouble(s.toString());
+    }
+
+    /**
+     * Parses a slice of a character array into a double value.
+     *
+     * @param chars
+     *            the source characters
+     * @param offset
+     *            the start index
+     * @param length
+     *            the slice length
+     * @return the parsed double
+     */
+    default double parseDouble(char[] chars, int offset, int length)
+    {
+        return Double.parseDouble(new String(chars, offset, length));
+    }
+}

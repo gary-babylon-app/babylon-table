@@ -12,6 +12,7 @@ package app.babylon.table.column;
 
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.column.type.TypeParser;
 /**
  * Base contract for a named column of tabular data, including size, null-state,
  * comparison, projection, and row-level access operations.
@@ -48,6 +49,14 @@ public interface Column
          * @return the runtime value class
          */
         public Class<?> getValueClass();
+
+        /**
+         * Returns the parser associated with this logical type, or {@code null} when no
+         * default parser is known.
+         *
+         * @return the type parser, or {@code null}
+         */
+        public TypeParser<?> getParser();
 
         /**
          * Indicates whether the represented value class is a primitive Java type.

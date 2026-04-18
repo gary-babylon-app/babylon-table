@@ -131,7 +131,7 @@ class ColumnObjectArray<T> implements ColumnObject<T>
             Comparable<T> typedComparable = (Comparable<T>) comparable;
             return typedComparable.compareTo(b);
         }
-        return a.toString().compareTo(b.toString());
+        throw new RuntimeException("Column values are not Comparable: " + a.getClass().getName());
     }
 
     @Override
@@ -204,7 +204,7 @@ class ColumnObjectArray<T> implements ColumnObject<T>
                 Comparable<T> typedComparable = (Comparable<T>) comparable;
                 return typedComparable.compareTo(b);
             }
-            return a.toString().compareTo(b.toString());
+            throw new RuntimeException("Column values are not Comparable: " + a.getClass().getName());
         }
 
         @Override

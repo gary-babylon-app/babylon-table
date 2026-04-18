@@ -12,6 +12,7 @@ package app.babylon.table.column;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -217,6 +218,16 @@ public class Columns
         }
     }
 
+    public static <T> T max(ColumnObject<T> co)
+    {
+        return co.max();
+    }
+
+    public static <T> T min(ColumnObject<T> co)
+    {
+        return co.min();
+    }
+
     public static double aggregate(ColumnDouble cd, Aggregate aggregate)
     {
         AccumulatorDouble accumulator = new AccumulatorDouble();
@@ -258,58 +269,6 @@ public class Columns
             }
         }
         return sum.divide(new BigDecimal(n), mc);
-    }
-
-    private static <T extends Comparable<? super T>> T max(ColumnObject<T> co)
-    {
-        if (co.size() == 0)
-        {
-            throw new RuntimeException("Can not compute max on column with no values. " + co.getName());
-        }
-
-        T max = null;
-        for (int i = 0; i < co.size(); ++i)
-        {
-            if (co.isSet(i))
-            {
-                T v = co.get(i);
-                if (max == null)
-                {
-                    max = v;
-                }
-                else if (max.compareTo(v) < 0)
-                {
-                    max = v;
-                }
-            }
-        }
-        return max;
-    }
-
-    private static BigDecimal min(ColumnObject<BigDecimal> cd)
-    {
-        if (cd.size() == 0)
-        {
-            throw new RuntimeException("Can not compute min on column with no values. " + cd.getName());
-        }
-
-        BigDecimal min = null;
-        for (int i = 0; i < cd.size(); ++i)
-        {
-            if (cd.isSet(i))
-            {
-                BigDecimal v = cd.get(i);
-                if (min == null)
-                {
-                    min = v;
-                }
-                else if (min.compareTo(v) > 0)
-                {
-                    min = v;
-                }
-            }
-        }
-        return min;
     }
 
     public static ColumnDouble newDouble(ColumnName colName, double value, int size)

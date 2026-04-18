@@ -175,6 +175,94 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     public ColumnCategorical<T> view(ViewIndex rowIndex);
 
     @Override
+    default T max()
+    {
+        if (size() == 0)
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        if (isNoneSet())
+        {
+            return null;
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        Class<?> valueClass = getType().getValueClass();
+        if (!Comparable.class.isAssignableFrom(valueClass))
+        {
+            throw new RuntimeException("Column values are not Comparable: " + valueClass.getName());
+        }
+
+        int[] categoryCodes = getCategoryCodes(null);
+        T max = null;
+        for (int categoryCode : categoryCodes)
+        {
+            T value = getCategoryValue(categoryCode);
+            if (max == null)
+            {
+                max = value;
+            }
+            else
+            {
+                @SuppressWarnings("unchecked")
+                Comparable<T> comparable = (Comparable<T>) max;
+                if (comparable.compareTo(value) < 0)
+                {
+                    max = value;
+                }
+            }
+        }
+        return max;
+    }
+
+    @Override
+    default T min()
+    {
+        if (size() == 0)
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        if (isNoneSet())
+        {
+            return null;
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        Class<?> valueClass = getType().getValueClass();
+        if (!Comparable.class.isAssignableFrom(valueClass))
+        {
+            throw new RuntimeException("Column values are not Comparable: " + valueClass.getName());
+        }
+
+        int[] categoryCodes = getCategoryCodes(null);
+        T min = null;
+        for (int categoryCode : categoryCodes)
+        {
+            T value = getCategoryValue(categoryCode);
+            if (min == null)
+            {
+                min = value;
+            }
+            else
+            {
+                @SuppressWarnings("unchecked")
+                Comparable<T> comparable = (Comparable<T>) min;
+                if (comparable.compareTo(value) > 0)
+                {
+                    min = value;
+                }
+            }
+        }
+        return min;
+    }
+
+    @Override
     default String toString(int i)
     {
         return isSet(i) ? get(i).toString() : "";
@@ -233,20 +321,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
             Comparable<T> ac = (Comparable<T>) a;
             return ac.compareTo(b);
         }
-
-        if (a != null)
-        {
-            return a.toString().compareTo(b.toString());
-        }
-        else
-        {
-            if (b != null)
-            {
-                return -1;
-            }
-        }
-
-        throw new IllegalStateException("Unexpected state");
+        throw new RuntimeException("Column values are not Comparable: " + a.getClass().getName());
     }
 
     @Override

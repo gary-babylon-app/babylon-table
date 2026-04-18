@@ -33,6 +33,7 @@ import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.column.Transformer;
 import app.babylon.table.column.type.TypeParsers;
 
 class TableColumnarMapTest
@@ -177,6 +178,46 @@ class TableColumnarMapTest
         TableColumnar pruned = table.prune();
 
         assertSame(table, pruned);
+    }
+
+    @Test
+    void replaceShouldSwapNamedColumnsAndPreserveOrder()
+    {
+        final ColumnName STATUS = ColumnName.of("Status");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+
+        TableColumnar table = sampleTable();
+
+        ColumnObject.Builder<String> amountStrings = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
+        amountStrings.add("30.5");
+        amountStrings.add("40.0");
+        ColumnObject<BigDecimal> amounts = amountStrings.build()
+                .transform(Transformer.of(BigDecimal::new, ColumnTypes.DECIMAL));
+
+        ColumnCategorical.Builder<Status> statuses = ColumnCategorical.builder(STATUS, STATUS_TYPE);
+        statuses.add(Status.CLOSED);
+        statuses.add(Status.OPEN);
+
+        TableColumnar replaced = table.replace(amounts, statuses.build());
+
+        assertArrayEquals(table.getColumnNames(), replaced.getColumnNames());
+        assertEquals(new BigDecimal("30.5"), replaced.getDecimal(AMOUNT).get(0));
+        assertEquals(new BigDecimal("40.0"), replaced.getDecimal(AMOUNT).get(1));
+        assertEquals(Status.CLOSED, replaced.getEnum(STATUS).get(0));
+        assertEquals(Status.OPEN, replaced.getEnum(STATUS).get(1));
+        assertEquals(1, replaced.getInt(ColumnName.of("Id")).get(0));
+    }
+
+    @Test
+    void replaceShouldThrowWhenNamedColumnDoesNotExist()
+    {
+        TableColumnar table = sampleTable();
+
+        ColumnObject.Builder<String> missing = ColumnObject.builder(ColumnName.of("Missing"), ColumnTypes.STRING);
+        missing.add("x");
+        missing.add("y");
+
+        assertThrows(RuntimeException.class, () -> table.replace(missing.build()));
     }
 
     @Test

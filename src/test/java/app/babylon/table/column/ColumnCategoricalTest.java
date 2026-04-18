@@ -17,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -243,6 +244,26 @@ class ColumnCategoricalTest
 
         assertIterableEquals(List.of("X", "X", "X", "X"), constant.getAll(new ArrayList<>()));
         assertEquals(Set.of("X"), constant.getUniques(null));
+    }
+
+    @Test
+    void categoricalMinAndMaxShouldUseDictionaryAndHandleNullConstant()
+    {
+        final ColumnName S = ColumnName.of("S");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, ColumnTypes.STRING);
+        builder.add("B");
+        builder.add("A");
+        builder.add("C");
+        builder.add("A");
+
+        ColumnCategorical<String> column = builder.build();
+
+        assertEquals("C", column.max());
+        assertEquals("A", column.min());
+
+        ColumnCategorical<String> nullConstant = ColumnCategorical.constant(S, null, 3, ColumnTypes.STRING);
+        assertNull(nullConstant.max());
+        assertNull(nullConstant.min());
     }
 
     @Test

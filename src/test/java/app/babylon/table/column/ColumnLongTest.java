@@ -220,6 +220,19 @@ public class ColumnLongTest
     }
 
     @Test
+    public void longColumnsShouldExposeMinAndMax()
+    {
+        ColumnLong column = ColumnLong.builder(ColumnName.of("L")).add(42L).addNull().add(-9L).add(7L).build();
+
+        assertEquals(42L, column.max());
+        assertEquals(-9L, column.min());
+
+        ColumnLong nullConstant = ColumnLongConstant.createNull(ColumnName.of("L"), 2);
+        assertThrows(RuntimeException.class, nullConstant::max);
+        assertThrows(RuntimeException.class, nullConstant::min);
+    }
+
+    @Test
     public void longConstantViewShouldMaterializeNullRowsWhenRowIndexContainsGaps()
     {
         final ColumnName C = ColumnName.of("c");

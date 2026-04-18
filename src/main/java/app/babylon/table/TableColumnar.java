@@ -77,6 +77,8 @@ public interface TableColumnar extends Table
 
     public Iterable<Column> columns();
 
+    public TableColumnar replace(Column... x);
+
     public TableColumnar add(Column... x);
 
     public TableColumnar removeColumns(ColumnName... x);

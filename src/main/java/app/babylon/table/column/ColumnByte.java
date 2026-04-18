@@ -101,6 +101,70 @@ public interface ColumnByte extends Column
      */
     public byte[] toArray(byte[] x);
 
+    default byte max()
+    {
+        if (size() == 0 || isNoneSet())
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        boolean found = false;
+        byte max = 0;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                byte value = get(i);
+                if (!found || value > max)
+                {
+                    max = value;
+                    found = true;
+                }
+            }
+        }
+        if (!found)
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        return max;
+    }
+
+    default byte min()
+    {
+        if (size() == 0 || isNoneSet())
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        boolean found = false;
+        byte min = 0;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                byte value = get(i);
+                if (!found || value < min)
+                {
+                    min = value;
+                    found = true;
+                }
+            }
+        }
+        if (!found)
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        return min;
+    }
+
     @Override
     default int compare(int i, int j)
     {
@@ -177,6 +241,13 @@ public interface ColumnByte extends Column
         }
         return selection;
     }
+
+    /**
+     * Indicates whether the column represents the same value for every row.
+     *
+     * @return {@code true} when the column is constant
+     */
+    public boolean isConstant();
 
     /**
      * Indicates whether the byte values match the legacy XLS file signature.

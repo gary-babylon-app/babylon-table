@@ -20,8 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -105,6 +106,32 @@ class ColumnsTest
         assertFalse(decimals.isSet(1));
         assertFalse(decimals.isSet(2));
         assertEquals(0, new BigDecimal("-2.50").compareTo(decimals.get(3)));
+    }
+
+    @Test
+    void maxAndMinSupportComparableObjectColumns()
+    {
+        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(ColumnName.of("tradeDate"), ColumnTypes.LOCALDATE);
+        dates.add(LocalDate.of(2026, 4, 18));
+        dates.addNull();
+        dates.add(LocalDate.of(2026, 4, 16));
+        dates.add(LocalDate.of(2026, 4, 17));
+
+        ColumnObject<LocalDate> column = dates.build();
+
+        assertEquals(LocalDate.of(2026, 4, 18), Columns.max(column));
+        assertEquals(LocalDate.of(2026, 4, 16), Columns.min(column));
+    }
+
+    @Test
+    void maxAndMinThrowOnEmptyComparableObjectColumns()
+    {
+        ColumnObject.Builder<LocalDate> builder = ColumnObject.builder(ColumnName.of("tradeDate"),
+                ColumnTypes.LOCALDATE);
+        ColumnObject<LocalDate> dates = builder.build();
+
+        assertThrows(RuntimeException.class, () -> Columns.max(dates));
+        assertThrows(RuntimeException.class, () -> Columns.min(dates));
     }
 
     @Test

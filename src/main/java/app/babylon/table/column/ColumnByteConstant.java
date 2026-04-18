@@ -105,6 +105,12 @@ class ColumnByteConstant implements ColumnByte
     }
 
     @Override
+    public boolean isConstant()
+    {
+        return true;
+    }
+
+    @Override
     public ColumnByte copy(ColumnName x)
     {
         return this.isSet ? new ColumnByteConstant(x, this.value, this.size, true) : createNull(x, this.size);

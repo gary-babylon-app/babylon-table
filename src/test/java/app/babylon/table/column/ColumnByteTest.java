@@ -14,6 +14,7 @@ import app.babylon.table.ViewIndex;
 import app.babylon.table.selection.Selection;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -210,6 +211,20 @@ public class ColumnByteTest
         assertEquals((byte) 10, viewValues[2]);
         assertTrue(view.compare(2, 0) > 0);
         assertTrue(view.compare(1, 0) < 0);
+    }
+
+    @Test
+    public void byteColumnsShouldExposeMinAndMax()
+    {
+        ColumnByte column = ColumnByte.builder(ColumnName.of("B")).add((byte) 10).addNull().add((byte) -1).add((byte) 4)
+                .build();
+
+        assertEquals((byte) 10, column.max());
+        assertEquals((byte) -1, column.min());
+
+        ColumnByte nullConstant = ColumnByteConstant.createNull(ColumnName.of("B"), 2);
+        assertThrows(RuntimeException.class, nullConstant::max);
+        assertThrows(RuntimeException.class, nullConstant::min);
     }
 
     @Test

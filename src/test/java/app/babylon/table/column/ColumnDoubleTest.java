@@ -187,6 +187,19 @@ public class ColumnDoubleTest
     }
 
     @Test
+    public void doubleColumnsShouldExposeMinAndMax()
+    {
+        ColumnDouble column = ColumnDouble.builder(ColumnName.of("D")).add(1.5).addNull().add(-3.25).add(7.0).build();
+
+        assertEquals(7.0, column.max(), 1e-12);
+        assertEquals(-3.25, column.min(), 1e-12);
+
+        ColumnDouble nullConstant = ColumnDoubleConstant.createNull(ColumnName.of("D"), 2);
+        assertThrows(RuntimeException.class, nullConstant::max);
+        assertThrows(RuntimeException.class, nullConstant::min);
+    }
+
+    @Test
     public void doubleConstantViewShouldMaterializeNullRowsWhenRowIndexContainsGaps()
     {
         final ColumnName C = ColumnName.of("c");

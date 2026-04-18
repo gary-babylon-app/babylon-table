@@ -236,6 +236,76 @@ public interface ColumnObject<T> extends Column
         return get(size() - 1);
     }
 
+    default public T max()
+    {
+        if (size() == 0)
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        if (isNoneSet())
+        {
+            return null;
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        Class<?> valueClass = getType().getValueClass();
+        if (!Comparable.class.isAssignableFrom(valueClass))
+        {
+            throw new RuntimeException("Column values are not Comparable: " + valueClass.getName());
+        }
+
+        int maxIndex = -1;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                if (maxIndex < 0 || compare(maxIndex, i) < 0)
+                {
+                    maxIndex = i;
+                }
+            }
+        }
+        return maxIndex < 0 ? null : get(maxIndex);
+    }
+
+    default public T min()
+    {
+        if (size() == 0)
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        if (isNoneSet())
+        {
+            return null;
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        Class<?> valueClass = getType().getValueClass();
+        if (!Comparable.class.isAssignableFrom(valueClass))
+        {
+            throw new RuntimeException("Column values are not Comparable: " + valueClass.getName());
+        }
+
+        int minIndex = -1;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                if (minIndex < 0 || compare(minIndex, i) > 0)
+                {
+                    minIndex = i;
+                }
+            }
+        }
+        return minIndex < 0 ? null : get(minIndex);
+    }
+
     /**
      * Appends all set values to the supplied collection.
      *

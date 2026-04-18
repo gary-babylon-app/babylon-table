@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
@@ -34,6 +35,25 @@ import org.junit.jupiter.api.Test;
 
 class ColumnObjectTest
 {
+    private static final class NotComparable
+    {
+        private final String value;
+
+        private NotComparable(String value)
+        {
+            this.value = value;
+        }
+
+        @Override
+        public String toString()
+        {
+            return this.value;
+        }
+    }
+
+    private static final Column.Type NOT_COMPARABLE_TYPE = Column.Type.register(NotComparable.class,
+            app.babylon.table.column.type.TypeParsers.NULL);
+
     @Test
     void stringColumnsShouldFormatCompactToString()
     {
@@ -244,6 +264,44 @@ class ColumnObjectTest
         assertFalse(join.isSet(1));
         assertEquals("abc2", join.get(2));
         assertFalse(join.isConstant());
+    }
+
+    @Test
+    void objectCompareShouldThrowForNonComparableValues()
+    {
+        ColumnObject.Builder<NotComparable> builder = ColumnObject.builder(ColumnName.of("OBJ"), NOT_COMPARABLE_TYPE,
+                ColumnObject.Mode.ARRAY);
+        builder.add(new NotComparable("b"));
+        builder.add(new NotComparable("a"));
+
+        ColumnObject<NotComparable> column = builder.build();
+
+        assertThrows(RuntimeException.class, () -> column.compare(0, 1));
+    }
+
+    @Test
+    void objectMinAndMaxShouldUseNaturalOrderingAndReturnNullWhenAllUnset()
+    {
+        ColumnObject.Builder<LocalDate> builder = ColumnObject.builder(ColumnName.of("TradeDate"),
+                ColumnTypes.LOCALDATE, ColumnObject.Mode.ARRAY);
+        builder.add(LocalDate.of(2024, 3, 15));
+        builder.addNull();
+        builder.add(LocalDate.of(2024, 3, 12));
+        builder.add(LocalDate.of(2024, 3, 20));
+
+        ColumnObject<LocalDate> column = builder.build();
+
+        assertEquals(LocalDate.of(2024, 3, 20), column.max());
+        assertEquals(LocalDate.of(2024, 3, 12), column.min());
+
+        ColumnObject.Builder<LocalDate> nullBuilder = ColumnObject.builder(ColumnName.of("TradeDate"),
+                ColumnTypes.LOCALDATE, ColumnObject.Mode.ARRAY);
+        nullBuilder.addNull();
+        nullBuilder.addNull();
+        ColumnObject<LocalDate> allUnset = nullBuilder.build();
+
+        assertNull(allUnset.max());
+        assertNull(allUnset.min());
     }
 
     @Test

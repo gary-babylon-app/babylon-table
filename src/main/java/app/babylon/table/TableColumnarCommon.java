@@ -263,6 +263,44 @@ abstract class TableColumnarCommon implements TableColumnar
     }
 
     @Override
+    public TableColumnar replace(Column... x)
+    {
+        if (!Is.empty(x))
+        {
+            Map<ColumnName, Column> replacementsByName = new HashMap<>();
+            for (Column column : x)
+            {
+                if (column != null)
+                {
+                    ColumnName name = column.getName();
+                    if (!contains(name))
+                    {
+                        throw new RuntimeException("No column to replace with " + name);
+                    }
+                    replacementsByName.put(name, column);
+                }
+            }
+            if (replacementsByName.isEmpty())
+            {
+                return this;
+            }
+
+            Column[] columns = getColumns();
+            for (int i = 0; i < columns.length; ++i)
+            {
+                Column currentColumn = columns[i];
+                Column replacement = replacementsByName.get(currentColumn.getName());
+                if (replacement != null)
+                {
+                    columns[i] = replacement;
+                }
+            }
+            return new TableColumnarMap(getName(), getDescription(), columns);
+        }
+        return this;
+    }
+
+    @Override
     public TableColumnar add(Column... x)
     {
         if (!Is.empty(x))

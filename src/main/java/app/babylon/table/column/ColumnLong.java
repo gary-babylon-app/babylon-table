@@ -119,6 +119,70 @@ public interface ColumnLong extends Column
      */
     public long[] toArray(long[] x);
 
+    default long max()
+    {
+        if (size() == 0 || isNoneSet())
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        boolean found = false;
+        long max = 0L;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                long value = get(i);
+                if (!found || value > max)
+                {
+                    max = value;
+                    found = true;
+                }
+            }
+        }
+        if (!found)
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        return max;
+    }
+
+    default long min()
+    {
+        if (size() == 0 || isNoneSet())
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        boolean found = false;
+        long min = 0L;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                long value = get(i);
+                if (!found || value < min)
+                {
+                    min = value;
+                    found = true;
+                }
+            }
+        }
+        if (!found)
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        return min;
+    }
+
     @Override
     default int compare(int i, int j)
     {

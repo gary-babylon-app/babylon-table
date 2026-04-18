@@ -207,6 +207,19 @@ public class ColumnIntTest
     }
 
     @Test
+    public void intColumnsShouldExposeMinAndMax()
+    {
+        ColumnInt column = ColumnInt.builder(ColumnName.of("I")).add(7).addNull().add(-3).add(10).build();
+
+        assertEquals(10, column.max());
+        assertEquals(-3, column.min());
+
+        ColumnInt nullConstant = ColumnIntConstant.createNull(ColumnName.of("I"), 2);
+        assertThrows(RuntimeException.class, nullConstant::max);
+        assertThrows(RuntimeException.class, nullConstant::min);
+    }
+
+    @Test
     public void intConstantViewShouldMaterializeNullRowsWhenRowIndexContainsGaps()
     {
         final ColumnName C = ColumnName.of("c");

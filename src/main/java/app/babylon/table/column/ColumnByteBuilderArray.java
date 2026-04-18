@@ -243,6 +243,12 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         }
 
         @Override
+        public boolean isConstant()
+        {
+            return false;
+        }
+
+        @Override
         public void write(int b)
         {
             throw new UnsupportedOperationException("ColumnByteStream is immutable.");

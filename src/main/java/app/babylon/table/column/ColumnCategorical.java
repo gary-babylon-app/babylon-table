@@ -12,7 +12,6 @@ package app.babylon.table.column;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Locale;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -177,14 +176,11 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     @Override
     default T max()
     {
-        if (size() == 0)
+        if (size() == 0 || isNoneSet())
         {
             throw new RuntimeException("Can not compute max on column with no values. " + getName());
         }
-        if (isNoneSet())
-        {
-            return null;
-        }
+
         if (isConstant())
         {
             return get(0);
@@ -221,13 +217,9 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     @Override
     default T min()
     {
-        if (size() == 0)
+        if (size() == 0 || isNoneSet())
         {
             throw new RuntimeException("Can not compute min on column with no values. " + getName());
-        }
-        if (isNoneSet())
-        {
-            return null;
         }
         if (isConstant())
         {

@@ -54,6 +54,33 @@ class ColumnsTest
     }
 
     @Test
+    void columnIsEmptyShouldTreatZeroRowsAndAllUnsetAsEmpty()
+    {
+        ColumnObject.Builder<String> zeroRowsBuilder = ColumnObject.builder(ColumnName.of("values"),
+                ColumnTypes.STRING);
+        ColumnObject<String> zeroRows = zeroRowsBuilder.build();
+
+        ColumnObject.Builder<String> allUnsetBuilder = ColumnObject.builder(ColumnName.of("values"),
+                ColumnTypes.STRING);
+        allUnsetBuilder.addNull();
+        allUnsetBuilder.addNull();
+        ColumnObject<String> allUnset = allUnsetBuilder.build();
+
+        ColumnObject.Builder<String> someValuesBuilder = ColumnObject.builder(ColumnName.of("values"),
+                ColumnTypes.STRING);
+        someValuesBuilder.addNull();
+        someValuesBuilder.add("x");
+        ColumnObject<String> someValues = someValuesBuilder.build();
+
+        assertTrue(zeroRows.isEmpty());
+        assertTrue(allUnset.isEmpty());
+        assertFalse(someValues.isEmpty());
+        assertTrue(Columns.isEmpty(zeroRows));
+        assertTrue(Columns.isEmpty(allUnset));
+        assertFalse(Columns.isEmpty(someValues));
+    }
+
+    @Test
     void stringToTypeSupportsBigDecimal()
     {
         ColumnName amount = ColumnName.of("amount");

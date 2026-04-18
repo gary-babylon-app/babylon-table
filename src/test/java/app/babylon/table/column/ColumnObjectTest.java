@@ -280,7 +280,7 @@ class ColumnObjectTest
     }
 
     @Test
-    void objectMinAndMaxShouldUseNaturalOrderingAndReturnNullWhenAllUnset()
+    void objectMinAndMaxShouldUseNaturalOrderingAndThrowWhenAllUnset()
     {
         ColumnObject.Builder<LocalDate> builder = ColumnObject.builder(ColumnName.of("TradeDate"),
                 ColumnTypes.LOCALDATE, ColumnObject.Mode.ARRAY);
@@ -300,8 +300,8 @@ class ColumnObjectTest
         nullBuilder.addNull();
         ColumnObject<LocalDate> allUnset = nullBuilder.build();
 
-        assertNull(allUnset.max());
-        assertNull(allUnset.min());
+        assertThrows(RuntimeException.class, allUnset::max);
+        assertThrows(RuntimeException.class, allUnset::min);
     }
 
     @Test

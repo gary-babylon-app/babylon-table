@@ -103,7 +103,7 @@ public class Columns
         {
             return true;
         }
-        return column.isNoneSet();
+        return column.isEmpty();
     }
 
     public static Column.Builder newColumn(ColumnName colName, Column.Type type)

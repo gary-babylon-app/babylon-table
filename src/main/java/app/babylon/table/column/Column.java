@@ -211,6 +211,17 @@ public interface Column
     public boolean isNoneSet();
 
     /**
+     * Indicates whether the column has no set values, either because it has no rows
+     * or because every row is unset.
+     *
+     * @return {@code true} when the column is effectively empty
+     */
+    default public boolean isEmpty()
+    {
+        return size() == 0 || isNoneSet();
+    }
+
+    /**
      * Formats the value at the supplied row for display.
      *
      * @param i

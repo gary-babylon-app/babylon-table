@@ -10,8 +10,9 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.selection.Selection;
 import java.util.function.IntPredicate;
+
+import app.babylon.table.selection.Selection;
 
 /**
  * A column of nullable int values with efficient primitive access and
@@ -107,7 +108,7 @@ public interface ColumnInt extends Column
 
     default int max()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute max on column with no values. " + getName());
         }
@@ -139,7 +140,7 @@ public interface ColumnInt extends Column
 
     default int min()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute min on column with no values. " + getName());
         }

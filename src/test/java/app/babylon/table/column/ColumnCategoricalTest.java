@@ -18,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -247,7 +248,7 @@ class ColumnCategoricalTest
     }
 
     @Test
-    void categoricalMinAndMaxShouldUseDictionaryAndHandleNullConstant()
+    void categoricalMinAndMaxShouldUseDictionaryAndThrowOnNullConstant()
     {
         final ColumnName S = ColumnName.of("S");
         ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(S, ColumnTypes.STRING);
@@ -262,8 +263,8 @@ class ColumnCategoricalTest
         assertEquals("A", column.min());
 
         ColumnCategorical<String> nullConstant = ColumnCategorical.constant(S, null, 3, ColumnTypes.STRING);
-        assertNull(nullConstant.max());
-        assertNull(nullConstant.min());
+        assertThrows(RuntimeException.class, nullConstant::max);
+        assertThrows(RuntimeException.class, nullConstant::min);
     }
 
     @Test

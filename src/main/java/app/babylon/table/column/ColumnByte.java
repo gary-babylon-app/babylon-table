@@ -103,7 +103,7 @@ public interface ColumnByte extends Column
 
     default byte max()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute max on column with no values. " + getName());
         }
@@ -135,7 +135,7 @@ public interface ColumnByte extends Column
 
     default byte min()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute min on column with no values. " + getName());
         }

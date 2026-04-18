@@ -176,7 +176,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     @Override
     default T max()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute max on column with no values. " + getName());
         }
@@ -217,7 +217,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     @Override
     default T min()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute min on column with no values. " + getName());
         }

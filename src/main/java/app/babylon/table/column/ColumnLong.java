@@ -10,8 +10,9 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.selection.Selection;
 import java.util.function.LongPredicate;
+
+import app.babylon.table.selection.Selection;
 
 /**
  * A column of nullable long values with efficient primitive access and
@@ -121,7 +122,7 @@ public interface ColumnLong extends Column
 
     default long max()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute max on column with no values. " + getName());
         }
@@ -153,7 +154,7 @@ public interface ColumnLong extends Column
 
     default long min()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute min on column with no values. " + getName());
         }

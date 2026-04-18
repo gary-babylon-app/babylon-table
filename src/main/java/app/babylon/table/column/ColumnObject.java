@@ -238,13 +238,9 @@ public interface ColumnObject<T> extends Column
 
     default public T max()
     {
-        if (size() == 0)
+        if (size() == 0 || isNoneSet())
         {
             throw new RuntimeException("Can not compute max on column with no values. " + getName());
-        }
-        if (isNoneSet())
-        {
-            return null;
         }
         if (isConstant())
         {
@@ -273,13 +269,9 @@ public interface ColumnObject<T> extends Column
 
     default public T min()
     {
-        if (size() == 0)
+        if (size() == 0 || isNoneSet())
         {
             throw new RuntimeException("Can not compute min on column with no values. " + getName());
-        }
-        if (isNoneSet())
-        {
-            return null;
         }
         if (isConstant())
         {

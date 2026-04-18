@@ -10,8 +10,9 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.selection.Selection;
 import java.util.function.DoublePredicate;
+
+import app.babylon.table.selection.Selection;
 
 /**
  * A column of nullable double values with efficient primitive access and
@@ -142,7 +143,7 @@ public interface ColumnDouble extends Column
 
     default double max()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute max on column with no values. " + getName());
         }
@@ -174,7 +175,7 @@ public interface ColumnDouble extends Column
 
     default double min()
     {
-        if (size() == 0 || isNoneSet())
+        if (isEmpty())
         {
             throw new RuntimeException("Can not compute min on column with no values. " + getName());
         }

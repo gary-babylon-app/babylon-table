@@ -364,7 +364,7 @@ class ColumnCategoricalTest
         assertEquals(Currency.getInstance("BRL"), column.get(0));
         assertEquals(Currency.getInstance("BRL"), column.get(2));
         assertArrayEquals(new int[]
-        {1,2}, column.getCategoryCodes(null));
+        {1, 2}, column.getCategoryCodes(null));
     }
 
     @Test

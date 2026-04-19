@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.Selection;
 
 /**
@@ -28,27 +29,6 @@ import app.babylon.table.selection.Selection;
  */
 public interface ColumnCategorical<T> extends ColumnObject<T>
 {
-
-    /**
-     * Creates a constant categorical column with a type inferred from the value
-     * class.
-     *
-     * @param <T>
-     *            the value type
-     * @param name
-     *            the column name
-     * @param value
-     *            the repeated value, or {@code null}
-     * @param size
-     *            the number of rows
-     * @param valueClass
-     *            the runtime value class
-     * @return a constant categorical column
-     */
-    public static <T> ColumnCategorical<T> constant(ColumnName name, T value, int size, Class<T> valueClass)
-    {
-        return new ColumnCategoricalConstant<T>(name, value, size, valueClass);
-    }
 
     /**
      * Creates a constant categorical column using an explicit column type.
@@ -86,28 +66,60 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
 
         @Override
         ColumnCategorical<T> build();
+
+        /**
+         * Builds the categorical column by parsing each distinct source value through
+         * the supplied target type parser.
+         *
+         * This is the natural path for building a {@code ColumnCategorical<S>} from a
+         * string-like categorical builder when the target parser may still need to
+         * construct a {@link String}. The categorical dictionary can be parsed once
+         * during materialization, rather than first building an immutable
+         * {@code ColumnCategorical<String>} and then transforming that immutable column
+         * afterward.
+         *
+         * This is therefore preferred over {@link #build() build()} followed by
+         * {@link ColumnCategorical#transform(Transformer)} when the target values come
+         * from parsing the source categorical strings, because the parse work can be
+         * done during the build and the intermediate immutable string categorical
+         * column can be avoided.
+         *
+         * If the supplied target type is the same as the builder type, this behaves
+         * like {@link #build()} and returns the categorical column directly.
+         *
+         * @param <S>
+         *            the transformed value type
+         * @param transformedType
+         *            the target column type
+         * @return an immutable categorical column of the transformed type
+         */
+        default <S> ColumnCategorical<S> build(Column.Type transformedType)
+        {
+            Column.Type targetType = ArgumentCheck.nonNull(transformedType);
+            if (targetType.equals(getType()))
+            {
+                @SuppressWarnings("unchecked")
+                ColumnCategorical<S> built = (ColumnCategorical<S>) build();
+                return built;
+            }
+            Class<?> valueClass = getType().getValueClass();
+            if (!CharSequence.class.isAssignableFrom(valueClass))
+            {
+                throw new IllegalStateException(
+                        "Categorical parsed build requires CharSequence values, not " + valueClass.getName());
+            }
+            @SuppressWarnings("unchecked")
+            TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
+            @SuppressWarnings("unchecked")
+            Builder<CharSequence> source = (Builder<CharSequence>) this;
+            ColumnCategorical<CharSequence> built = source.build();
+            return built.transform(Transformer.of(parser::parse, targetType));
+        }
     }
 
-    /**
-     * Creates a categorical column builder for the supplied value class.
-     *
-     * @param <T>
-     *            the value type
-     * @param name
-     *            the column name
-     * @param clazz
-     *            the runtime value class
-     * @return a categorical column builder
-     */
-    public static <T> Builder<T> builder(ColumnName name, Class<T> clazz)
+    public static Builder<String> builder(ColumnName name)
     {
-        Class<T> valueClass = ArgumentCheck.nonNull(clazz);
-        if (valueClass.isPrimitive())
-        {
-            throw new IllegalArgumentException(
-                    "Categorical builder requires non-primitive class: " + valueClass.getName());
-        }
-        return new ColumnCategoricalBuilderDictionary<T>(name, Column.Type.get(valueClass));
+        return builder(name, ColumnTypes.STRING);
     }
 
     public static <T> Builder<T> builder(ColumnName name, Column.Type type)
@@ -143,11 +155,15 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     public T getCategoryValue(int categoryCode);
 
     /**
-     * Returns the distinct category codes used by the column.
+     * Returns the distinct category codes used by set values in the column.
+     *
+     * The null/unset category uses the internal code {@code 0}, but that code is
+     * not exposed by this method. Only codes associated with non-null categorical
+     * values are returned.
      *
      * @param x
      *            the destination array, or {@code null}
-     * @return an array of category codes
+     * @return an array of non-zero category codes for set values
      */
     public int[] getCategoryCodes(int[] x);
 

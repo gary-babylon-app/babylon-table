@@ -50,7 +50,7 @@ class TablePlanAggregateTest
 
         TablePlanAggregate plan = new TablePlanAggregate()
                 .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
-                .withColumnType(OBSERVATION, double.class);
+                .withColumnType(OBSERVATION, ColumnTypes.DOUBLE);
 
         assertEquals(ColumnTypes.STRING, plan.getColumnType(STATION));
         assertEquals(ColumnTypes.DOUBLE, plan.getColumnType(OBSERVATION));
@@ -72,7 +72,7 @@ class TablePlanAggregateTest
 
         TablePlanAggregate plan = new TablePlanAggregate()
                 .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
-                .withColumnType(TEMPERATURE, double.class).withTableName(TableName.of("StationSummary"))
+                .withColumnType(TEMPERATURE, ColumnTypes.DOUBLE).withTableName(TableName.of("StationSummary"))
                 .withGroupBy(STATION).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, SUM, Aggregate.SUM).withAggregate(TEMPERATURE, MIN, Aggregate.MIN)
                 .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN).withAggregate(TEMPERATURE, MAX, Aggregate.MAX);
@@ -114,8 +114,8 @@ class TablePlanAggregateTest
 
         TablePlanAggregate plan = new TablePlanAggregate()
                 .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
-                .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class).withGroupBy(STATION)
-                .withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
+                .withColumnType(TEMPERATURE, ColumnTypes.DOUBLE).withColumnType(HUMIDITY, ColumnTypes.DOUBLE)
+                .withGroupBy(STATION).withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
                 .withAggregate(HUMIDITY, MAX_HUMIDITY, Aggregate.MAX);
 
         TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(';')
@@ -151,7 +151,7 @@ class TablePlanAggregateTest
         TablePlanAggregate plan = new TablePlanAggregate()
                 .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
                 .withColumnType(COUNTRY, app.babylon.table.column.ColumnTypes.STRING)
-                .withColumnType(TEMPERATURE, double.class).withTableName(TableName.of("StationCountrySummary"))
+                .withColumnType(TEMPERATURE, ColumnTypes.DOUBLE).withTableName(TableName.of("StationCountrySummary"))
                 .withGroupBy(STATION, COUNTRY).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN);
 
@@ -205,7 +205,7 @@ class TablePlanAggregateTest
         TablePlanAggregate plan = new TablePlanAggregate().withTableName(TableName.of("StationCountrySummary"))
                 .withColumnType(STATION, app.babylon.table.column.ColumnTypes.STRING)
                 .withColumnType(COUNTRY, app.babylon.table.column.ColumnTypes.STRING)
-                .withColumnType(TEMPERATURE, double.class).withColumnType(HUMIDITY, double.class)
+                .withColumnType(TEMPERATURE, ColumnTypes.DOUBLE).withColumnType(HUMIDITY, ColumnTypes.DOUBLE)
                 .withGroupBy(STATION, COUNTRY).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, SUM, Aggregate.SUM).withAggregate(TEMPERATURE, MIN, Aggregate.MIN)
                 .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN).withAggregate(TEMPERATURE, MAX, Aggregate.MAX)

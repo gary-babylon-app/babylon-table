@@ -27,7 +27,7 @@ public class ColumnEnumImmutableTest
         A, B, C
     }
 
-    private static final Column.Type TEST_ENUM_TYPE = Column.Type.register(TestEnum.class, TypeParsers.NULL);
+    private static final Column.Type TEST_ENUM_TYPE = Column.Type.of(TestEnum.class, TypeParsers.NULL);
 
     @Test
     public void mutableIsConstantShouldTrackEqualAndUnequalSequences()

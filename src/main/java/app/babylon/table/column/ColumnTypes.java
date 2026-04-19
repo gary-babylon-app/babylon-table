@@ -20,18 +20,18 @@ import app.babylon.table.column.type.TypeParsers;
 public final class ColumnTypes
 {
     // @formatter:off
-    public static final Type BYTE          = Column.Type.register(byte.class,       TypeParsers.STRING);
-    public static final Type BYTE_OBJECT   = Column.Type.register(Byte.class,       TypeParsers.STRING);
-    public static final Type INT           = Column.Type.register(int.class,        TypeParsers.STRING);
-    public static final Type INT_OBJECT    = Column.Type.register(Integer.class,    TypeParsers.STRING);
-    public static final Type LONG          = Column.Type.register(long.class,       TypeParsers.STRING);
-    public static final Type LONG_OBJECT   = Column.Type.register(Long.class,       TypeParsers.STRING);
-    public static final Type DOUBLE        = Column.Type.register(double.class,     TypeParsers.STRING);
-    public static final Type DOUBLE_OBJECT = Column.Type.register(Double.class,     TypeParsers.STRING);
-    public static final Type STRING        = Column.Type.register(String.class,     TypeParsers.STRING);
-    public static final Type DECIMAL       = Column.Type.register(BigDecimal.class, TypeParsers.BIG_DECIMAL);
-    public static final Type LOCALDATE     = Column.Type.register(LocalDate.class,  TypeParsers.LOCAL_DATE_YMD);
-    public static final Type CURRENCY      = Column.Type.register(Currency.class,   TypeParsers.CURRENCY);
+    public static final Type BYTE          = Column.Type.of(byte.class,       TypeParsers.STRING);
+    public static final Type BYTE_OBJECT   = Column.Type.of(Byte.class,       TypeParsers.STRING);
+    public static final Type INT           = Column.Type.of(int.class,        TypeParsers.STRING);
+    public static final Type INT_OBJECT    = Column.Type.of(Integer.class,    TypeParsers.STRING);
+    public static final Type LONG          = Column.Type.of(long.class,       TypeParsers.STRING);
+    public static final Type LONG_OBJECT   = Column.Type.of(Long.class,       TypeParsers.STRING);
+    public static final Type DOUBLE        = Column.Type.of(double.class,     TypeParsers.STRING);
+    public static final Type DOUBLE_OBJECT = Column.Type.of(Double.class,     TypeParsers.STRING);
+    public static final Type STRING        = Column.Type.of(String.class,     TypeParsers.STRING);
+    public static final Type DECIMAL       = Column.Type.of(BigDecimal.class, TypeParsers.BIG_DECIMAL);
+    public static final Type LOCALDATE     = Column.Type.of(LocalDate.class,  TypeParsers.LOCAL_DATE_YMD);
+    public static final Type CURRENCY      = Column.Type.of(Currency.class,   TypeParsers.CURRENCY);
     // @formatter:on
 
     private ColumnTypes()

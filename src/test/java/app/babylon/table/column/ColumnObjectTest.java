@@ -51,7 +51,7 @@ class ColumnObjectTest
         }
     }
 
-    private static final Column.Type NOT_COMPARABLE_TYPE = Column.Type.register(NotComparable.class,
+    private static final Column.Type NOT_COMPARABLE_TYPE = Column.Type.of(NotComparable.class,
             app.babylon.table.column.type.TypeParsers.NULL);
 
     @Test

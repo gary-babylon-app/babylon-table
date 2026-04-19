@@ -43,7 +43,7 @@ class TableColumnarMapTest
         OPEN, CLOSED
     }
 
-    private static final Column.Type STATUS_TYPE = Column.Type.register(Status.class, TypeParsers.NULL);
+    private static final Column.Type STATUS_TYPE = Column.Type.of(Status.class, TypeParsers.NULL);
 
     private static TableColumnar sampleTable()
     {

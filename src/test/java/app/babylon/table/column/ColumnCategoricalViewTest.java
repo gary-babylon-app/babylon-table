@@ -25,7 +25,7 @@ public class ColumnCategoricalViewTest
         A, B
     }
 
-    private static final Column.Type E_TYPE = Column.Type.register(E.class, TypeParsers.NULL);
+    private static final Column.Type E_TYPE = Column.Type.of(E.class, TypeParsers.NULL);
 
     @Test
     public void categoryCode_usesViewRowMapping()

@@ -6,6 +6,7 @@ import java.util.Map;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.lang.Is;
 
@@ -15,7 +16,7 @@ public class TransformCreateConstant extends TransformBase
 
     private final ColumnName[] newColumnNames;
     private final Object[] newColumnValues;
-    private final Class<?>[] valueClasses;
+    private final Column.Type[] types;
 
     public TransformCreateConstant(ColumnName newColumnName, String newColumnValue)
     {
@@ -24,27 +25,27 @@ public class TransformCreateConstant extends TransformBase
         {newColumnName};
         this.newColumnValues = new Object[]
         {newColumnValue};
-        this.valueClasses = new Class<?>[]
-        {String.class};
+        this.types = new Column.Type[]
+        {ColumnTypes.STRING};
     }
 
-    public <T> TransformCreateConstant(Class<T> valueClass, ColumnName newColumnName, T newColumnValue)
+    public <T> TransformCreateConstant(Column.Type type, ColumnName newColumnName, T newColumnValue)
     {
         super(FUNCTION_NAME);
         this.newColumnNames = new ColumnName[]
         {newColumnName};
         this.newColumnValues = new Object[]
         {newColumnValue};
-        this.valueClasses = new Class<?>[]
-        {valueClass};
+        this.types = new Column.Type[]
+        {type};
     }
 
-    public TransformCreateConstant(ColumnName[] newColumnNames, Object[] newColumnValues, Class<?>[] valueClasses)
+    public TransformCreateConstant(ColumnName[] newColumnNames, Object[] newColumnValues, Column.Type[] types)
     {
         super(FUNCTION_NAME);
         this.newColumnNames = Arrays.copyOf(newColumnNames, newColumnNames.length);
         this.newColumnValues = Arrays.copyOf(newColumnValues, newColumnValues.length);
-        this.valueClasses = Arrays.copyOf(valueClasses, valueClasses.length);
+        this.types = Arrays.copyOf(types, types.length);
     }
 
     public static TransformCreateConstant of(String[] params)
@@ -69,7 +70,7 @@ public class TransformCreateConstant extends TransformBase
         Column[] newColumns = new Column[newColumnNames.length];
         for (int i = 0; i < newColumnNames.length; ++i)
         {
-            newColumns[i] = newConstantColumn(newColumnNames[i], newColumnValues[i], rowCount, valueClasses[i]);
+            newColumns[i] = newConstantColumn(newColumnNames[i], newColumnValues[i], rowCount, types[i]);
         }
         putColumns(columnsByName, newColumns);
     }
@@ -94,17 +95,17 @@ public class TransformCreateConstant extends TransformBase
         return builder.toString();
     }
 
-    private static Column newConstantColumn(ColumnName columnName, Object value, int rowCount, Class<?> valueClass)
+    private static Column newConstantColumn(ColumnName columnName, Object value, int rowCount, Column.Type type)
     {
-        return newConstantColumnTyped(columnName, value, rowCount, valueClass);
+        return newConstantColumnTyped(columnName, value, rowCount, type);
     }
 
     @SuppressWarnings(
     {"unchecked", "rawtypes"})
     private static <T> ColumnObject<T> newConstantColumnTyped(ColumnName columnName, Object value, int rowCount,
-            Class<?> valueClass)
+            Column.Type type)
     {
-        return Columns.newCategorical(columnName, (T) value, rowCount, (Class) valueClass);
+        return Columns.newCategorical(columnName, (T) value, rowCount, type);
     }
 
 }

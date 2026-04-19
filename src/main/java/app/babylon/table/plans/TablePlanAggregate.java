@@ -202,11 +202,6 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         return this;
     }
 
-    public TablePlanAggregate withColumnType(ColumnName columnName, Class<?> valueClass)
-    {
-        return withColumnType(columnName, Column.Type.get(ArgumentCheck.nonNull(valueClass)));
-    }
-
     public Column.Type getColumnType(ColumnName columnName)
     {
         return this.columnTypes.get(columnName);

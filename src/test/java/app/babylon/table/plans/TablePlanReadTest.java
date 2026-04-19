@@ -84,8 +84,8 @@ class TablePlanReadTest
         final ColumnName AMOUNT = ColumnName.of("Amount");
         final ColumnName NAME = ColumnName.of("Name");
 
-        TablePlanRead plan = new TablePlanRead().withColumnType(AMOUNT, double.class).withColumnType(NAME,
-                String.class);
+        TablePlanRead plan = new TablePlanRead().withColumnType(AMOUNT, ColumnTypes.DOUBLE).withColumnType(NAME,
+                ColumnTypes.STRING);
 
         assertEquals(app.babylon.table.column.ColumnTypes.DOUBLE, plan.getColumnType(AMOUNT));
         assertEquals(app.babylon.table.column.ColumnTypes.STRING, plan.getColumnType(NAME));
@@ -105,7 +105,7 @@ class TablePlanReadTest
 
         TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
         TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv"))
-                .withColumnType(AMOUNT, double.class).withTransform(new TransformToUpperCase(CODE));
+                .withColumnType(AMOUNT, ColumnTypes.DOUBLE).withTransform(new TransformToUpperCase(CODE));
 
         TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
 
@@ -129,7 +129,7 @@ class TablePlanReadTest
 
         TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
         TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv")).withColumnType(AMOUNT,
-                BigDecimal.class);
+                ColumnTypes.DECIMAL);
 
         TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
 

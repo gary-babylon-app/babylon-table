@@ -10,8 +10,11 @@
 
 package app.babylon.table.column;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Currency;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
@@ -30,16 +33,6 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
         this.value = value;
         this.size = size;
         this.type = ArgumentCheck.nonNull(type);
-        this.isAllSet = value != null;
-        this.isNoneSet = value == null;
-    }
-
-    public ColumnCategoricalConstant(ColumnName colName, T value, int size, Class<T> valueClass)
-    {
-        this.columnName = ArgumentCheck.nonNull(colName);
-        this.value = value;
-        this.size = size;
-        this.type = Type.get(ArgumentCheck.nonNull(valueClass));
         this.isAllSet = value != null;
         this.isNoneSet = value == null;
     }

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import app.babylon.table.ViewIndex;
+import app.babylon.table.column.type.TypeParser;
 
 class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder<T>
 {
@@ -102,6 +103,22 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         return new ColumnCategoricalDictionary<>(this);
     }
 
+    @Override
+    public <S> ColumnCategorical<S> build(Column.Type transformedType)
+    {
+        ensureActive();
+        Column.Type targetType = ArgumentCheck.nonNull(transformedType);
+        Class<?> valueClass = this.type.getValueClass();
+        if (!CharSequence.class.isAssignableFrom(valueClass))
+        {
+            throw new IllegalStateException(
+                    "Categorical parsed build requires CharSequence values, not " + valueClass.getName());
+        }
+        @SuppressWarnings("unchecked")
+        TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
+        return new ColumnCategoricalDictionary<S>(this, targetType, parser);
+    }
+
     private T get(int i)
     {
         return this.dictionaryEncoding.valueOf(this.codes.get(i));
@@ -176,7 +193,7 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         private final boolean allSet;
         private final boolean noneSet;
         private final CategoryCodeList categoricalList;
-        private final int[] activeCodes;
+        private final boolean denseActiveCodes;
 
         private ColumnCategoricalDictionary(ColumnCategoricalBuilderDictionary<T> builder)
         {
@@ -188,10 +205,90 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
             this.noneSet = builder.isNoneSet();
             this.dictionary = ArgumentCheck.nonNull(builder.detachDictionary());
             this.categoricalList = ArgumentCheck.nonNull(builder.detachCodes());
-            this.activeCodes = buildDenseActiveCodes(this.dictionary.length);
+            this.denseActiveCodes = true;
             if (this.size > this.categoricalList.size())
             {
                 throw new IllegalStateException("Size exceeds frozen code buffer size.");
+            }
+        }
+
+        private ColumnCategoricalDictionary(ColumnCategoricalBuilderDictionary<?> builder, Column.Type transformedType,
+                TypeParser<T> parser)
+        {
+            this.name = ArgumentCheck.nonNull(builder.name);
+            this.size = ArgumentCheck.nonNegative(builder.getSize());
+            this.type = ArgumentCheck.nonNull(transformedType);
+            boolean originalAllSet = builder.isAllSet();
+
+            Object[] sourceDictionary = ArgumentCheck.nonNull(builder.detachDictionary());
+            CategoryCodeList detachedCodes = ArgumentCheck.nonNull(builder.detachCodes());
+            int dictionarySize = sourceDictionary.length;
+            this.dictionary = new Object[dictionarySize];
+            boolean allLive = true;
+            boolean anyLive = false;
+            boolean remapRequired = false;
+
+            for (int oldCode = 1; oldCode < dictionarySize; ++oldCode)
+            {
+                CharSequence sourceValue = (CharSequence) sourceDictionary[oldCode];
+                T transformed = parser.parse(sourceValue);
+                this.dictionary[oldCode] = transformed;
+                boolean live = transformed != null;
+                allLive &= live;
+                anyLive |= live;
+                remapRequired |= !live;
+            }
+
+            if (remapRequired)
+            {
+                CategoryCodeList.Builder remappedCodes = CategoryCodeList.builder();
+                for (int i = 0; i < this.size; ++i)
+                {
+                    int oldCode = detachedCodes.get(i);
+                    if (oldCode < 0 || oldCode >= dictionarySize)
+                    {
+                        throw new IllegalStateException("Category code out of dictionary bounds.");
+                    }
+                    if (oldCode == 0)
+                    {
+                        remappedCodes.add(0);
+                    }
+                    else
+                    {
+                        remappedCodes.add(this.dictionary[oldCode] != null ? oldCode : 0);
+                    }
+                }
+                this.categoricalList = remappedCodes.build();
+            }
+            else
+            {
+                this.categoricalList = detachedCodes;
+            }
+
+            this.denseActiveCodes = !remapRequired;
+            this.allSet = originalAllSet && allLive;
+            this.noneSet = !anyLive;
+            if (this.noneSet)
+            {
+                this.constant = true;
+            }
+            else if (!this.allSet)
+            {
+                this.constant = false;
+            }
+            else if (dictionarySize <= 2)
+            {
+                this.constant = true;
+            }
+            else
+            {
+                // Parsing can be many-to-one even when no remap is required.
+                // For example, source categorical values "usd", "USD", "usd"
+                // may occupy dictionary codes 1 and 2, while both transformed
+                // values become the same Currency. In that case the dictionary
+                // still has more than one live non-null code, but the column is
+                // constant by value.
+                this.constant = allDenseValuesEqual(this.dictionary);
             }
         }
 
@@ -208,10 +305,10 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
                 this.type = xform.type();
                 this.dictionary = new Object[0];
                 this.categoricalList = CategoryCodeList.builder().build();
+                this.denseActiveCodes = true;
                 this.constant = true;
                 this.allSet = false;
                 this.noneSet = true;
-                this.activeCodes = new int[0];
                 return;
             }
 
@@ -224,8 +321,24 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
 
             this.type = xform.type();
             this.dictionary = new Object[dictionarySize];
-            boolean[] transformedOldCode = new boolean[dictionarySize];
-            boolean[] liveCodes = new boolean[dictionarySize];
+            boolean allLive = true;
+            boolean anyLive = false;
+            boolean remapRequired = false;
+            boolean denseActiveCodes = isDenseCategoryCodes(originalCategoryCodes);
+            for (int oldCode : originalCategoryCodes)
+            {
+                if (oldCode < 0 || oldCode >= dictionarySize)
+                {
+                    throw new IllegalStateException("Category code out of dictionary bounds.");
+                }
+                T transformed = xform.apply(original.getCategoryValue(oldCode));
+                this.dictionary[oldCode] = transformed;
+                boolean live = transformed != null;
+                allLive &= live;
+                anyLive |= live;
+                remapRequired |= !live;
+            }
+
             CategoryCodeList.Builder remappedCodes = CategoryCodeList.builder();
             for (int i = 0; i < n; ++i)
             {
@@ -235,28 +348,39 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
                     throw new IllegalStateException("Category code out of dictionary bounds.");
                 }
 
-                if (original.isSet(i))
-                {
-                    if (!transformedOldCode[oldCode])
-                    {
-                        T transformed = xform.apply(original.get(i));
-                        this.dictionary[oldCode] = transformed;
-                        transformedOldCode[oldCode] = true;
-                        liveCodes[oldCode] = transformed != null;
-                    }
-                    int remappedCode = this.dictionary[oldCode] == null ? 0 : oldCode;
-                    remappedCodes.add(remappedCode);
-                }
-                else
+                if (oldCode == 0)
                 {
                     remappedCodes.add(0);
                 }
+                else if (remapRequired)
+                {
+                    remappedCodes.add(this.dictionary[oldCode] != null ? oldCode : 0);
+                }
+                else
+                {
+                    remappedCodes.add(oldCode);
+                }
             }
             this.categoricalList = remappedCodes.build();
-            this.activeCodes = buildActiveCodes(liveCodes);
-            this.constant = isConstantByValue(this.dictionary, this.categoricalList, n);
-            this.allSet = !containsCodeZero(this.categoricalList, n);
-            this.noneSet = !containsNonZeroCode(this.categoricalList, n);
+            this.denseActiveCodes = !remapRequired && denseActiveCodes;
+            this.allSet = original.isAllSet() && allLive;
+            this.noneSet = !anyLive;
+            if (this.noneSet)
+            {
+                this.constant = true;
+            }
+            else if (!this.allSet)
+            {
+                this.constant = false;
+            }
+            else if (originalCategoryCodes.length <= 1)
+            {
+                this.constant = true;
+            }
+            else
+            {
+                this.constant = allUsedValuesEqual(this.dictionary, originalCategoryCodes);
+            }
         }
 
         @Override
@@ -306,11 +430,41 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         @Override
         public int[] getCategoryCodes(int[] x)
         {
-            if (x == null || x.length != this.activeCodes.length)
+            if (this.denseActiveCodes)
             {
-                x = new int[this.activeCodes.length];
+                int activeCodeCount = Math.max(this.dictionary.length - 1, 0);
+                if (x == null || x.length != activeCodeCount)
+                {
+                    x = new int[activeCodeCount];
+                }
+                for (int code = 1; code < this.dictionary.length; ++code)
+                {
+                    x[code - 1] = code;
+                }
+                return x;
             }
-            System.arraycopy(this.activeCodes, 0, x, 0, this.activeCodes.length);
+
+            int activeCodeCount = 0;
+            for (int code = 1; code < this.dictionary.length; ++code)
+            {
+                if (this.dictionary[code] != null)
+                {
+                    ++activeCodeCount;
+                }
+            }
+            if (x == null || x.length != activeCodeCount)
+            {
+                x = new int[activeCodeCount];
+            }
+            int i = 0;
+            for (int code = 1; code < this.dictionary.length; ++code)
+            {
+                if (this.dictionary[code] != null)
+                {
+                    x[i] = code;
+                    ++i;
+                }
+            }
             return x;
         }
 
@@ -358,9 +512,20 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
             {
                 x = new ArrayList<T>();
             }
-            for (int code : this.activeCodes)
+            if (this.denseActiveCodes)
             {
-                x.add((T) this.dictionary[code]);
+                for (int code = 1; code < this.dictionary.length; ++code)
+                {
+                    x.add((T) this.dictionary[code]);
+                }
+                return x;
+            }
+            for (int code = 1; code < this.dictionary.length; ++code)
+            {
+                if (this.dictionary[code] != null)
+                {
+                    x.add((T) this.dictionary[code]);
+                }
             }
             return x;
         }
@@ -371,45 +536,40 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
             return new ColumnCategoricalDictionary<S>(this, transformer);
         }
 
-        private static boolean isConstantByValue(Object[] dictionary, CategoryCodeList codes, int size)
+        private static boolean allDenseValuesEqual(Object[] dictionary)
         {
-            if (size <= 1)
+            if (dictionary.length <= 2)
             {
                 return true;
             }
-            boolean firstSet = codes.get(0) != 0;
-            Object first = firstSet ? dictionary[codes.get(0)] : null;
-            for (int i = 1; i < size; ++i)
+            Object first = dictionary[1];
+            for (int code = 2; code < dictionary.length; ++code)
             {
-                boolean set = codes.get(i) != 0;
-                if (set != firstSet)
+                Object value = dictionary[code];
+                if (first == null ? value != null : !first.equals(value))
                 {
                     return false;
-                }
-                if (set)
-                {
-                    Object v = dictionary[codes.get(i)];
-                    if (first == null ? v != null : !first.equals(v))
-                    {
-                        return false;
-                    }
                 }
             }
             return true;
         }
 
-        private static int[] buildDenseActiveCodes(int dictionarySize)
+        private static boolean allUsedValuesEqual(Object[] dictionary, int[] usedCodes)
         {
-            if (dictionarySize <= 1)
+            if (usedCodes.length <= 1)
             {
-                return new int[0];
+                return true;
             }
-            int[] codes = new int[dictionarySize - 1];
-            for (int i = 1; i < dictionarySize; ++i)
+            Object first = dictionary[usedCodes[0]];
+            for (int i = 1; i < usedCodes.length; ++i)
             {
-                codes[i - 1] = i;
+                Object value = dictionary[usedCodes[i]];
+                if (first == null ? value != null : !first.equals(value))
+                {
+                    return false;
+                }
             }
-            return codes;
+            return true;
         }
 
         private static int maximumCode(int[] categoryCodes)
@@ -422,51 +582,16 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
             return max;
         }
 
-        private static int[] buildActiveCodes(boolean[] liveCodes)
+        private static boolean isDenseCategoryCodes(int[] categoryCodes)
         {
-            int n = 0;
-            for (int i = 1; i < liveCodes.length; ++i)
+            for (int i = 0; i < categoryCodes.length; ++i)
             {
-                if (liveCodes[i])
+                if (categoryCodes[i] != i + 1)
                 {
-                    ++n;
+                    return false;
                 }
             }
-            int[] codes = new int[n];
-            int j = 0;
-            for (int i = 1; i < liveCodes.length; ++i)
-            {
-                if (liveCodes[i])
-                {
-                    codes[j] = i;
-                    ++j;
-                }
-            }
-            return codes;
-        }
-
-        private static boolean containsCodeZero(CategoryCodeList codes, int size)
-        {
-            for (int i = 0; i < size; ++i)
-            {
-                if (codes.get(i) == 0)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private static boolean containsNonZeroCode(CategoryCodeList codes, int size)
-        {
-            for (int i = 0; i < size; ++i)
-            {
-                if (codes.get(i) != 0)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return true;
         }
 
     }

@@ -101,12 +101,10 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
         int n = activeSize();
         @SuppressWarnings("unchecked")
         T constantValue = n == 0 ? null : (T) this.values[0];
-        @SuppressWarnings("unchecked")
-        Class<T> valueClass = (Class<T>) this.type.getValueClass();
         if (n > 0 && activeIsConstant())
         {
             detachValues();
-            return ColumnCategorical.constant(getName(), constantValue, n, valueClass);
+            return ColumnCategorical.constant(getName(), constantValue, n, this.type);
         }
         return new ColumnObjectArray<>(this);
     }

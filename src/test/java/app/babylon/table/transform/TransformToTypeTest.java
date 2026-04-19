@@ -31,7 +31,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(Integer.class, FROM, Integer::parseInt, TO));
+        TableColumnar transformed = table
+                .apply(new TransformToType<>(ColumnTypes.INT_OBJECT, FROM, Integer::parseInt, TO));
 
         assertTrue(transformed.get(TO) instanceof ColumnCategorical<?>);
         ColumnCategorical<Integer> ints = transformed.getCategorical(TO, ColumnTypes.INT_OBJECT);
@@ -52,8 +53,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
-                "From", "To", "CATEGORICAL", "FIRST_IN"));
+        TableColumnar transformed = table.apply(TransformToType.of(ColumnTypes.INT_OBJECT,
+                TransformToTypeTest::parseWordNumber, "From", "To", "CATEGORICAL", "FIRST_IN"));
 
         ColumnCategorical<Integer> ints = transformed.getCategorical(TO, ColumnTypes.INT_OBJECT);
         assertEquals(Integer.valueOf(1), ints.get(0));
@@ -71,8 +72,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
-                "From", "To", "ARRAY", "LAST_IN"));
+        TableColumnar transformed = table.apply(TransformToType.of(ColumnTypes.INT_OBJECT,
+                TransformToTypeTest::parseWordNumber, "From", "To", "ARRAY", "LAST_IN"));
 
         ColumnObject<Integer> ints = transformed.getObject(TO, ColumnTypes.INT_OBJECT);
         assertEquals(Integer.valueOf(2), ints.get(0));
@@ -90,8 +91,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(TransformToType.of(Integer.class, TransformToTypeTest::parseWordNumber,
-                "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
+        TableColumnar transformed = table.apply(TransformToType.of(ColumnTypes.INT_OBJECT,
+                TransformToTypeTest::parseWordNumber, "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
 
         ColumnCategorical<Integer> ints = transformed.getCategorical(TO, ColumnTypes.INT_OBJECT);
         assertEquals(Integer.valueOf(1), ints.get(0));
@@ -109,7 +110,7 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(Integer.class, Integer::parseInt, FROM));
+        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.INT_OBJECT, Integer::parseInt, FROM));
 
         ColumnObject<Integer> ints = transformed.getObject(FROM, ColumnTypes.INT_OBJECT);
         assertEquals(Integer.valueOf(1), ints.get(0));
@@ -128,7 +129,7 @@ public class TransformToTypeTest
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
         TableColumnar transformed = table
-                .apply(new TransformToType<>(Integer.class, ColumnObject.Mode.ARRAY, Integer::parseInt, FROM));
+                .apply(new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.ARRAY, Integer::parseInt, FROM));
 
         assertFalse(transformed.get(FROM) instanceof ColumnCategorical<?>);
         ColumnObject<Integer> ints = transformed.getObject(FROM, ColumnTypes.INT_OBJECT);
@@ -145,7 +146,7 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(Integer.class, ColumnObject.Mode.AUTO,
+        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.AUTO,
                 TransformParseMode.LAST_IN, TransformToTypeTest::parseWordNumber, FROM));
 
         ColumnObject<Integer> ints = transformed.getObject(FROM, ColumnTypes.INT_OBJECT);
@@ -164,8 +165,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table
-                .apply(new TransformToType<>(Integer.class, ColumnObject.Mode.ARRAY, FROM, Integer::parseInt, TO));
+        TableColumnar transformed = table.apply(
+                new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.ARRAY, FROM, Integer::parseInt, TO));
 
         assertFalse(transformed.get(TO) instanceof ColumnCategorical<?>);
         assertEquals(Integer.valueOf(1), transformed.getObject(TO, ColumnTypes.INT_OBJECT).get(0));
@@ -183,8 +184,9 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(Integer.class, ColumnObject.Mode.CATEGORICAL,
-                TransformParseMode.FIRST_IN, FROM, TransformToTypeTest::parseWordNumber, TO));
+        TableColumnar transformed = table
+                .apply(new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.CATEGORICAL,
+                        TransformParseMode.FIRST_IN, FROM, TransformToTypeTest::parseWordNumber, TO));
 
         assertEquals(Integer.valueOf(1), transformed.getCategorical(TO, ColumnTypes.INT_OBJECT).get(0));
     }
@@ -199,8 +201,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), source);
 
-        TableColumnar transformed = table
-                .apply(new TransformToType<>(Integer.class, ColumnObject.Mode.CATEGORICAL, Integer::parseInt, VALUES));
+        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.INT_OBJECT,
+                ColumnObject.Mode.CATEGORICAL, Integer::parseInt, VALUES));
 
         assertSame(source, transformed.get(VALUES));
     }
@@ -208,7 +210,7 @@ public class TransformToTypeTest
     @Test
     public void shouldReturnNullFromFactoryWhenParamsAreMissing()
     {
-        assertNull(TransformToType.of(Integer.class, Integer::parseInt, "From"));
+        assertNull(TransformToType.of(ColumnTypes.INT_OBJECT, Integer::parseInt, "From"));
     }
 
     private static Integer parseWordNumber(String s)

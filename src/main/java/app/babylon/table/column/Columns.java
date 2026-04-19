@@ -62,16 +62,18 @@ public class Columns
         return m;
     }
 
-    public static <S> ColumnObject<S> stringToType(Column column, Function<String, S> parser, Class<S> targetClass)
+    public static <S> ColumnObject<S> stringToType(Column column, Function<String, S> parser, Column.Type targetType)
     {
         if (!(column instanceof ColumnObject<?> co))
         {
             return null;
         }
 
+        Column.Type type = app.babylon.lang.ArgumentCheck.nonNull(targetType);
+
         Class<?> valueClass = column.getType().getValueClass();
 
-        if (targetClass.equals(valueClass))
+        if (type.getValueClass().equals(valueClass))
         {
             @SuppressWarnings("unchecked")
             ColumnObject<S> typed = (ColumnObject<S>) co;
@@ -83,8 +85,7 @@ public class Columns
             @SuppressWarnings("unchecked")
             ColumnObject<String> strings = (ColumnObject<String>) co;
 
-            Transformer<String, S> transformer = Transformer.of(s -> Strings.isEmpty(s) ? null : parser.apply(s),
-                    Column.Type.get(targetClass));
+            Transformer<String, S> transformer = Transformer.of(s -> Strings.isEmpty(s) ? null : parser.apply(s), type);
 
             return strings.transform(transformer);
         }
@@ -94,7 +95,7 @@ public class Columns
 
     public static ColumnObject<BigDecimal> stringToDecimal(Column column)
     {
-        return stringToType(column, BigDecimals::parse, BigDecimal.class);
+        return stringToType(column, BigDecimals::parse, ColumnTypes.DECIMAL);
     }
 
     public static boolean isEmpty(Column column)
@@ -195,9 +196,9 @@ public class Columns
         return ColumnCategorical.constant(colName, value, size, app.babylon.table.column.ColumnTypes.STRING);
     }
 
-    public static <T> ColumnCategorical<T> newCategorical(ColumnName colName, T value, int size, Class<T> valueClass)
+    public static <T> ColumnCategorical<T> newCategorical(ColumnName colName, T value, int size, Column.Type type)
     {
-        return new ColumnCategoricalConstant<T>(colName, value, size, valueClass);
+        return new ColumnCategoricalConstant<T>(colName, value, size, type);
     }
 
     public static BigDecimal aggregate(ColumnObject<BigDecimal> cd, Aggregate aggregate)

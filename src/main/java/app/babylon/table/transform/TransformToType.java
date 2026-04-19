@@ -24,18 +24,18 @@ public class TransformToType<T> extends TransformBase
     private final ColumnObject.Mode mode;
     private final TransformParseMode parseMode;
 
-    public TransformToType(Class<T> valueClass, Function<String, T> parser, ColumnName... columnNames)
+    public TransformToType(Column.Type type, Function<String, T> parser, ColumnName... columnNames)
     {
-        this(valueClass, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, parser, columnNames);
+        this(type, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, parser, columnNames);
     }
 
-    public TransformToType(Class<T> valueClass, ColumnObject.Mode mode, Function<String, T> parser,
+    public TransformToType(Column.Type type, ColumnObject.Mode mode, Function<String, T> parser,
             ColumnName... columnNames)
     {
-        this(valueClass, mode, TransformParseMode.EXACT, parser, columnNames);
+        this(type, mode, TransformParseMode.EXACT, parser, columnNames);
     }
 
-    public TransformToType(Class<T> valueClass, ColumnObject.Mode mode, TransformParseMode parseMode,
+    public TransformToType(Column.Type type, ColumnObject.Mode mode, TransformParseMode parseMode,
             Function<String, T> parser, ColumnName... columnNames)
     {
         super(FUNCTION_NAME);
@@ -44,22 +44,22 @@ public class TransformToType<T> extends TransformBase
         this.newColumnNames = null;
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
         this.parseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
-        this.type = Column.Type.get(ArgumentCheck.nonNull(valueClass));
+        this.type = ArgumentCheck.nonNull(type);
     }
 
-    public TransformToType(Class<T> valueClass, ColumnName columnName, Function<String, T> parser,
+    public TransformToType(Column.Type type, ColumnName columnName, Function<String, T> parser,
             ColumnName newColumnName)
     {
-        this(valueClass, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, columnName, parser, newColumnName);
+        this(type, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, columnName, parser, newColumnName);
     }
 
-    public TransformToType(Class<T> valueClass, ColumnObject.Mode mode, ColumnName columnName,
-            Function<String, T> parser, ColumnName newColumnName)
+    public TransformToType(Column.Type type, ColumnObject.Mode mode, ColumnName columnName, Function<String, T> parser,
+            ColumnName newColumnName)
     {
-        this(valueClass, mode, TransformParseMode.EXACT, columnName, parser, newColumnName);
+        this(type, mode, TransformParseMode.EXACT, columnName, parser, newColumnName);
     }
 
-    public TransformToType(Class<T> valueClass, ColumnObject.Mode mode, TransformParseMode parseMode,
+    public TransformToType(Column.Type type, ColumnObject.Mode mode, TransformParseMode parseMode,
             ColumnName columnName, Function<String, T> parser, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
@@ -70,10 +70,10 @@ public class TransformToType<T> extends TransformBase
         {ArgumentCheck.nonNull(newColumnName)};
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
         this.parseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
-        this.type = Column.Type.get(ArgumentCheck.nonNull(valueClass));
+        this.type = ArgumentCheck.nonNull(type);
     }
 
-    public static <T> TransformToType<T> of(Class<T> valueClass, Function<String, T> parser, String... params)
+    public static <T> TransformToType<T> of(Column.Type type, Function<String, T> parser, String... params)
     {
         if (!Is.empty(params) && params.length >= 2)
         {
@@ -85,7 +85,7 @@ public class TransformToType<T> extends TransformBase
             TransformParseMode parseMode = (params.length >= 4 && !Strings.isEmpty(params[3]))
                     ? TransformParseMode.parse(params[3])
                     : TransformParseMode.EXACT;
-            return new TransformToType<>(valueClass, mode, parseMode, from, parser, to);
+            return new TransformToType<>(type, mode, parseMode, from, parser, to);
         }
         return null;
     }

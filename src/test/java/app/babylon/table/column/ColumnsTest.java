@@ -90,7 +90,7 @@ class ColumnsTest
         strings.addNull();
         strings.add("-2.50");
 
-        ColumnObject<BigDecimal> decimals = Columns.stringToType(strings.build(), BigDecimal::new, BigDecimal.class);
+        ColumnObject<BigDecimal> decimals = Columns.stringToType(strings.build(), BigDecimal::new, ColumnTypes.DECIMAL);
 
         assertEquals(4, decimals.size());
         assertEquals(0, new BigDecimal("1.25").compareTo(decimals.get(0)));
@@ -102,7 +102,7 @@ class ColumnsTest
         existingBuilder.add(new BigDecimal("7.25"));
         ColumnObject<BigDecimal> existing = existingBuilder.build();
 
-        ColumnObject<BigDecimal> same = Columns.stringToType(existing, BigDecimal::new, BigDecimal.class);
+        ColumnObject<BigDecimal> same = Columns.stringToType(existing, BigDecimal::new, ColumnTypes.DECIMAL);
 
         assertSame(existing, same);
     }
@@ -113,7 +113,7 @@ class ColumnsTest
         ColumnInt.Builder ints = ColumnInt.builder(ColumnName.of("values"));
         ints.add(1);
 
-        assertNull(Columns.stringToType(ints.build(), BigDecimal::new, BigDecimal.class));
+        assertNull(Columns.stringToType(ints.build(), BigDecimal::new, ColumnTypes.DECIMAL));
     }
 
     @Test
@@ -289,7 +289,8 @@ class ColumnsTest
     @Test
     void newCategoricalCreatesConstantCategoricalColumn()
     {
-        ColumnCategorical<String> categorical = Columns.newCategorical(ColumnName.of("values"), "ABC", 3, String.class);
+        ColumnCategorical<String> categorical = Columns.newCategorical(ColumnName.of("values"), "ABC", 3,
+                ColumnTypes.STRING);
 
         assertEquals(3, categorical.size());
         assertEquals("ABC", categorical.get(0));

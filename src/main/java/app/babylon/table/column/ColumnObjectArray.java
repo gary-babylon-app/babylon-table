@@ -143,9 +143,7 @@ class ColumnObjectArray<T> implements ColumnObject<T>
     @Override
     public Column getAsColumn(int i)
     {
-        @SuppressWarnings("unchecked")
-        Class<T> valueClass = (Class<T>) this.type.getValueClass();
-        return ColumnCategorical.constant(getName(), get(i), 1, valueClass);
+        return ColumnCategorical.constant(getName(), get(i), 1, this.type);
     }
 
     @Override
@@ -216,9 +214,7 @@ class ColumnObjectArray<T> implements ColumnObject<T>
         @Override
         public Column getAsColumn(int i)
         {
-            @SuppressWarnings("unchecked")
-            Class<T> valueClass = (Class<T>) getType().getValueClass();
-            return ColumnCategorical.constant(getName(), get(i), 1, valueClass);
+            return ColumnCategorical.constant(getName(), get(i), 1, getType());
         }
 
         @Override

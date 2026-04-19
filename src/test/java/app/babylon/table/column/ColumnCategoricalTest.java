@@ -10,25 +10,26 @@
 
 package app.babylon.table.column;
 
-import app.babylon.table.ViewIndex;
-import app.babylon.table.selection.Selection;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Currency;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParsers;
+import app.babylon.table.selection.Selection;
 
 class ColumnCategoricalTest
 {
@@ -42,8 +43,8 @@ class ColumnCategoricalTest
         A, B
     }
 
-    private static final Column.Type E_TYPE = Column.Type.register(E.class, TypeParsers.NULL);
-    private static final Column.Type SAMPLE_TYPE = Column.Type.register(Sample.class, TypeParsers.NULL);
+    private static final Column.Type E_TYPE = Column.Type.of(E.class, TypeParsers.NULL);
+    private static final Column.Type SAMPLE_TYPE = Column.Type.of(Sample.class, TypeParsers.NULL);
 
     @Test
     void categoricalViewsShouldRespectNullRowsAndCategoryMapping()
@@ -120,10 +121,10 @@ class ColumnCategoricalTest
         builder.add("1");
         builder.add("x");
         ColumnCategorical<String> column = builder.build();
-        Column.Type.register(Object.class, app.babylon.table.column.type.TypeParsers.NULL);
+        Column.Type objectType = Column.Type.of(Object.class, app.babylon.table.column.type.TypeParsers.NULL);
 
         ColumnCategorical<Object> transformed = column
-                .transform(Transformer.of(s -> "1".equals(s) ? Integer.valueOf(1) : s, Column.Type.get(Object.class)));
+                .transform(Transformer.of(s -> "1".equals(s) ? Integer.valueOf(1) : s, objectType));
 
         assertEquals(Object.class, transformed.getType().getValueClass());
         assertEquals(Integer.valueOf(1), transformed.get(0));
@@ -265,6 +266,105 @@ class ColumnCategoricalTest
         ColumnCategorical<String> nullConstant = ColumnCategorical.constant(S, null, 3, ColumnTypes.STRING);
         assertThrows(RuntimeException.class, nullConstant::max);
         assertThrows(RuntimeException.class, nullConstant::min);
+    }
+
+    @Test
+    void categoricalBuilderShouldBuildParsedColumnFromDictionary()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, ColumnTypes.STRING);
+        builder.add("10.5");
+        builder.add("20.0");
+        builder.add("10.5");
+        builder.add("bad");
+        builder.addNull();
+
+        ColumnCategorical<BigDecimal> column = builder.build(ColumnTypes.DECIMAL);
+
+        assertEquals(ColumnTypes.DECIMAL, column.getType());
+        assertEquals(0, new BigDecimal("10.5").compareTo(column.get(0)));
+        assertEquals(0, new BigDecimal("20.0").compareTo(column.get(1)));
+        assertEquals(0, new BigDecimal("10.5").compareTo(column.get(2)));
+        assertFalse(column.isSet(3));
+        assertFalse(column.isSet(4));
+        assertArrayEquals(new int[]
+        {1, 2}, column.getCategoryCodes(null));
+    }
+
+    @Test
+    void categoricalBuilderShouldBuildCurrencyColumnFromDictionary()
+    {
+        final ColumnName CCY = ColumnName.of("Currency");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(CCY);
+        builder.add("BRL");
+        builder.add("MXN");
+        builder.add("BRL");
+        builder.add("PLN");
+
+        ColumnCategorical<Currency> column = builder.build(ColumnTypes.CURRENCY);
+
+        assertEquals(ColumnTypes.CURRENCY, column.getType());
+        assertEquals(Currency.getInstance("BRL"), column.get(0));
+        assertEquals(Currency.getInstance("MXN"), column.get(1));
+        assertEquals(Currency.getInstance("BRL"), column.get(2));
+        assertEquals(Currency.getInstance("PLN"), column.get(3));
+        assertArrayEquals(new int[]
+        {1, 2, 3}, column.getCategoryCodes(null));
+    }
+
+    @Test
+    void categoricalBuilderShouldKeepUnsetRowsWhenBuildingCurrencyColumn()
+    {
+        final ColumnName CCY = ColumnName.of("Currency");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(CCY);
+        builder.add("BRL");
+        builder.addNull();
+        builder.add("bad");
+        builder.add("MXN");
+
+        ColumnCategorical<Currency> column = builder.build(ColumnTypes.CURRENCY);
+
+        assertEquals(Currency.getInstance("BRL"), column.get(0));
+        assertFalse(column.isSet(1));
+        assertFalse(column.isSet(2));
+        assertEquals(Currency.getInstance("MXN"), column.get(3));
+    }
+
+    @Test
+    void categoricalBuilderShouldNotBeConstantWhenCurrencyTransformLeavesMixedSetAndUnsetRows()
+    {
+        final ColumnName CCY = ColumnName.of("Currency");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(CCY, ColumnTypes.STRING);
+        builder.add("BRL");
+        builder.add("hello");
+        builder.addNull();
+
+        ColumnCategorical<Currency> column = builder.build(ColumnTypes.CURRENCY);
+
+        assertFalse(column.isConstant());
+        assertFalse(column.isAllSet());
+        assertFalse(column.isNoneSet());
+        assertEquals(Currency.getInstance("BRL"), column.get(0));
+        assertFalse(column.isSet(1));
+        assertFalse(column.isSet(2));
+    }
+
+    @Test
+    void categoricalBuilderShouldBuildConstantCurrencyColumn()
+    {
+        final ColumnName CCY = ColumnName.of("Currency");
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(CCY, ColumnTypes.STRING);
+        builder.add("brl");
+        builder.add("BRL");
+        builder.add("BRL");
+
+        ColumnCategorical<Currency> column = builder.build(ColumnTypes.CURRENCY);
+
+        assertTrue(column.isConstant());
+        assertEquals(Currency.getInstance("BRL"), column.get(0));
+        assertEquals(Currency.getInstance("BRL"), column.get(2));
+        assertArrayEquals(new int[]
+        {1,2}, column.getCategoryCodes(null));
     }
 
     @Test

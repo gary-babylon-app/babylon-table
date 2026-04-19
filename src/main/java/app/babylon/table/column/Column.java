@@ -10,8 +10,6 @@
 
 package app.babylon.table.column;
 
-import java.util.concurrent.ConcurrentHashMap;
-
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
@@ -63,11 +61,8 @@ public interface Column
      */
     public static interface Type
     {
-        ConcurrentHashMap<Class<?>, Type> TYPES = new ConcurrentHashMap<>();
-
         /**
-         * Creates and registers a column type descriptor from its runtime value class
-         * and parser.
+         * Creates a column type descriptor from its runtime value class and parser.
          *
          * @param valueClass
          *            the Java class represented by the column type
@@ -75,11 +70,11 @@ public interface Column
          *            the parser associated with this type
          * @return the created column type descriptor
          */
-        public static Type register(Class<?> valueClass, TypeParser<?> parser)
+        public static Type of(Class<?> valueClass, TypeParser<?> parser)
         {
             final Class<?> resolvedValueClass = ArgumentCheck.nonNull(valueClass);
             final TypeParser<?> resolvedParser = ArgumentCheck.nonNull(parser);
-            Type type = new Type()
+            return new Type()
             {
                 @Override
                 public Class<?> getValueClass()
@@ -120,25 +115,6 @@ public interface Column
                     return simpleName.isEmpty() ? this.getValueClass().getName() : simpleName;
                 }
             };
-            TYPES.put(type.getValueClass(), type);
-            return type;
-        }
-
-        /**
-         * Returns the registered column type for the supplied value class.
-         *
-         * @param valueClass
-         *            the runtime value class
-         * @return the registered column type
-         */
-        public static Type get(Class<?> valueClass)
-        {
-            Type type = TYPES.get(ArgumentCheck.nonNull(valueClass));
-            if (type == null)
-            {
-                throw new IllegalArgumentException("No column type registered for " + valueClass.getName());
-            }
-            return type;
         }
 
         /**

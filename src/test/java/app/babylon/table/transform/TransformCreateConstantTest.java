@@ -51,8 +51,8 @@ class TransformCreateConstantTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), names.build());
 
-        TableColumnar transformed = table
-                .apply(new TransformCreateConstant(BigDecimal.class, AMOUNT, new BigDecimal("1.25")));
+        TableColumnar transformed = table.apply(new TransformCreateConstant(
+                app.babylon.table.column.ColumnTypes.DECIMAL, AMOUNT, new BigDecimal("1.25")));
 
         ColumnObject<BigDecimal> amount = transformed.getDecimal(AMOUNT);
         assertEquals(0, new BigDecimal("1.25").compareTo(amount.get(0)));

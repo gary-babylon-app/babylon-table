@@ -118,6 +118,51 @@ public final class Strings
         return s == null || s.length() == 0;
     }
 
+    public static int indexOf(CharSequence s, char c)
+    {
+        return s == null ? -1 : indexOf(s, 0, s.length(), c);
+    }
+
+    public static int indexOf(CharSequence s, int start, int length, char c)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            if (s.charAt(i) == c)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int lastIndexOf(CharSequence s, char c)
+    {
+        return s == null ? -1 : lastIndexOf(s, 0, s.length(), c);
+    }
+
+    public static int lastIndexOf(CharSequence s, int start, int length, char c)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        for (int i = start + length - 1; i >= start; --i)
+        {
+            if (s.charAt(i) == c)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static boolean isWholeNumber(CharSequence s)
     {
         if (isEmpty(s))
@@ -175,43 +220,17 @@ public final class Strings
     }
 
     /**
-     * Unicode-aware edge stripping (like {@link String#strip()}) plus additional
-     * ingestion cleanup characters.
+     * Unicode-aware edge stripping equivalent to {@link String#strip()} for
+     * {@link CharSequence}.
      */
-    public static String stripx(CharSequence s)
+    public static CharSequence strip(CharSequence s)
     {
-        if (s == null)
-        {
-            return null;
-        }
-        if (s.length() == 0)
-        {
-            return s.toString();
-        }
-
-        int start = 0;
-        int end = s.length() - 1;
-
-        while (start <= end && isStrippable(s.charAt(start)))
-        {
-            start++;
-        }
-
-        while (end >= start && isStrippable(s.charAt(end)))
-        {
-            end--;
-        }
-
-        if (start == 0 && end == s.length() - 1)
-        {
-            return s.toString();
-        }
-        return s.subSequence(start, end + 1).toString();
+        return s == null ? null : strip(s, 0, s.length());
     }
 
-    public static String stripx(char[] chars, int start, int length)
+    public static CharSequence strip(CharSequence s, int start, int length)
     {
-        if (chars == null)
+        if (s == null)
         {
             return null;
         }
@@ -220,15 +239,21 @@ public final class Strings
             return "";
         }
 
-        int actualStart = start;
-        int actualEnd = start + length - 1;
+        int end = start + length - 1;
+        if (!Character.isWhitespace(s.charAt(start)) && !Character.isWhitespace(s.charAt(end)))
+        {
+            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+        }
 
-        while (actualStart <= actualEnd && isStrippable(chars[actualStart]))
+        int actualStart = start;
+        int actualEnd = end;
+
+        while (actualStart <= actualEnd && Character.isWhitespace(s.charAt(actualStart)))
         {
             actualStart++;
         }
 
-        while (actualEnd >= actualStart && isStrippable(chars[actualEnd]))
+        while (actualEnd >= actualStart && Character.isWhitespace(s.charAt(actualEnd)))
         {
             actualEnd--;
         }
@@ -237,7 +262,61 @@ public final class Strings
         {
             return "";
         }
-        return new String(chars, actualStart, actualEnd - actualStart + 1);
+        if (actualStart == start && actualEnd == end)
+        {
+            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+        }
+        return s.subSequence(actualStart, actualEnd + 1);
+    }
+
+    /**
+     * Unicode-aware edge stripping (like {@link String#strip()}) plus additional
+     * ingestion cleanup characters.
+     */
+    public static CharSequence stripx(CharSequence s)
+    {
+        return s == null ? null : stripx(s, 0, s.length());
+    }
+
+    public static CharSequence stripx(CharSequence s, int start, int length)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        if (length <= 0)
+        {
+            return "";
+        }
+
+        int end = start + length - 1;
+        if (!isStrippable(s.charAt(start)) && !isStrippable(s.charAt(end)))
+        {
+            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+        }
+
+        int actualStart = start;
+        int actualEnd = end;
+
+        while (actualStart <= actualEnd && isStrippable(s.charAt(actualStart)))
+        {
+            actualStart++;
+        }
+
+        while (actualEnd >= actualStart && isStrippable(s.charAt(actualEnd)))
+        {
+            actualEnd--;
+        }
+
+        if (actualStart > actualEnd)
+        {
+            return "";
+        }
+        if (actualStart == start && actualEnd == end)
+        {
+            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+        }
+        return s.subSequence(actualStart, actualEnd + 1);
     }
 
     private static boolean isStrippable(char c)

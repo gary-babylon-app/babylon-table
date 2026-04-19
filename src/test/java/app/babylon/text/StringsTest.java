@@ -13,6 +13,7 @@ package app.babylon.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -72,6 +73,26 @@ public class StringsTest
         assertTrue(Strings.isEmpty(""));
         assertFalse(Strings.isEmpty(" "));
         assertFalse(Strings.isEmpty("abc"));
+    }
+
+    @Test
+    public void indexOfShouldFindHyphenInWholeSequenceAndSlices()
+    {
+        assertEquals(5, Strings.indexOf("trade-date", '-'));
+        assertEquals(-1, Strings.indexOf("tradedate", '-'));
+        assertEquals(7, Strings.indexOf("xxtrade-dateyy", 2, 10, '-'));
+        assertEquals(-1, Strings.indexOf("xxtrade-dateyy", 0, 2, '-'));
+        assertEquals(-1, Strings.indexOf(null, '-'));
+    }
+
+    @Test
+    public void lastIndexOfShouldFindLastHyphenInWholeSequenceAndSlices()
+    {
+        assertEquals(10, Strings.lastIndexOf("trade-date-end", '-'));
+        assertEquals(-1, Strings.lastIndexOf("tradedate", '-'));
+        assertEquals(12, Strings.lastIndexOf("xxtrade-date-endyy", 2, 14, '-'));
+        assertEquals(7, Strings.lastIndexOf("xxtrade-date-endyy", 2, 10, '-'));
+        assertEquals(-1, Strings.lastIndexOf(null, '-'));
     }
 
     @Test
@@ -156,24 +177,40 @@ public class StringsTest
     }
 
     @Test
-    public void stripxShouldTrimWhitespaceAndIngestionCharacters()
+    public void stripShouldTrimWhitespaceOnly()
     {
-        assertNull(Strings.stripx((CharSequence) null));
-        assertEquals("", Strings.stripx(""));
-        assertEquals("abc", Strings.stripx("abc"));
-        assertEquals("abc", Strings.stripx("  abc  "));
-        assertEquals("abc", Strings.stripx("\uFEFF abc \u200B"));
-        assertEquals("", Strings.stripx(" \u00A0\u200B "));
+        String plain = "abc";
+
+        assertNull(Strings.strip((CharSequence) null));
+        assertEquals("", Strings.strip(""));
+        assertSame(plain, Strings.strip(plain));
+        assertEquals("abc", Strings.strip("  abc  "));
+        assertEquals("abc", Strings.strip("\n\tabc\r"));
+        assertEquals("\uFEFF abc \u200B", Strings.strip("\uFEFF abc \u200B"));
+        assertEquals("", Strings.strip(" \n\t "));
     }
 
     @Test
-    public void stripxCharArrayShouldTrimRequestedSlice()
+    public void stripShouldTrimRequestedSlice()
     {
-        char[] chars = "xx \uFEFFabc\u200B yy".toCharArray();
+        CharSequence s = "xx  abc  yy";
 
-        assertNull(Strings.stripx(null, 0, 0));
-        assertEquals("", Strings.stripx(chars, 0, 0));
-        assertEquals("abc", Strings.stripx(chars, 2, 7));
-        assertEquals("", Strings.stripx("   ".toCharArray(), 0, 3));
+        assertEquals("", Strings.strip(s, 0, 0));
+        assertEquals("abc", Strings.strip(s, 2, 7));
+        assertEquals("abc", Strings.strip("xx\nabc\ryy", 2, 5));
+        assertEquals("\uFEFFabc", Strings.strip("xx\uFEFFabc yy", 2, 5));
+    }
+
+    @Test
+    public void stripxShouldTrimWhitespaceAndIngestionCharacters()
+    {
+        String plain = "abc";
+
+        assertNull(Strings.stripx((CharSequence) null));
+        assertEquals("", Strings.stripx(""));
+        assertSame(plain, Strings.stripx(plain));
+        assertEquals("abc", Strings.stripx("  abc  "));
+        assertEquals("abc", Strings.stripx("\uFEFF abc \u200B"));
+        assertEquals("", Strings.stripx(" \u00A0\u200B "));
     }
 }

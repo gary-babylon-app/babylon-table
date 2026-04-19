@@ -158,16 +158,16 @@ public class TabularRowReaderResultSet extends TabularRowReaderCommon<TabularRow
 
     private String resolveHeaderName(ResultSetMetaData metaData, int columnIndex) throws SQLException
     {
-        String label = Strings.stripx(metaData.getColumnLabel(columnIndex));
+        CharSequence label = Strings.stripx(metaData.getColumnLabel(columnIndex));
         if (!Strings.isEmpty(label))
         {
-            return label;
+            return label.toString();
         }
 
-        String name = Strings.stripx(metaData.getColumnName(columnIndex));
+        CharSequence name = Strings.stripx(metaData.getColumnName(columnIndex));
         if (!Strings.isEmpty(name))
         {
-            return name;
+            return name.toString();
         }
         return "Column" + columnIndex;
     }

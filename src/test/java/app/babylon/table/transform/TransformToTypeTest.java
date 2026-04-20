@@ -48,7 +48,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
         strings.add("ignore 1 here");
         strings.add("missing");
 
@@ -68,7 +68,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
         strings.add("1 ignore 2");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
@@ -86,7 +86,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
         strings.add("ignore 1 here");
         strings.add("1 and 2");
 
@@ -123,7 +123,7 @@ public class TransformToTypeTest
     {
         final ColumnName FROM = ColumnName.of("From");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
         strings.add("1");
         strings.add("2");
 
@@ -142,7 +142,7 @@ public class TransformToTypeTest
     {
         final ColumnName FROM = ColumnName.of("From");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
         strings.add("1 ignore 2");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
@@ -160,7 +160,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
         strings.add("1");
         strings.add("2");
 
@@ -180,7 +180,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
         strings.add("ignore 1 here");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());

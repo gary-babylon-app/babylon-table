@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformToDecimalAbsTest
 {
@@ -23,8 +24,7 @@ class TransformToDecimalAbsTest
     void applyShouldConvertToAbsoluteDecimalValues()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("-1.25");
         builder.add("$-2,000.00");
         builder.addNull();
@@ -42,8 +42,7 @@ class TransformToDecimalAbsTest
     {
         final ColumnName AMOUNT = ColumnName.of("Amount");
         final ColumnName ABSOLUTE = ColumnName.of("Absolute");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("-12.5");
         builder.add("$1,234.50");
         ColumnObject<String> source = builder.build();

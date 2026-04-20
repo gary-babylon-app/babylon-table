@@ -17,6 +17,7 @@ import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformToIntTest
 {
@@ -24,8 +25,7 @@ class TransformToIntTest
     void applyShouldConvertPlainStringColumnAndLeaveUnparseableValuesUnset()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("1");
         builder.add("1 2");
         builder.add("abc");
@@ -55,8 +55,7 @@ class TransformToIntTest
     void applyShouldConvertCategoricalStringColumnToPrimitiveIntColumn()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("10");
         builder.add("bad");
         builder.add("10");
@@ -80,13 +79,11 @@ class TransformToIntTest
         final ColumnName OTHER = ColumnName.of("OTHER");
         final ColumnName EXISTING = ColumnName.of("EXISTING");
         final ColumnName PARSED = ColumnName.of("PARSED");
-        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         amountBuilder.add("1");
         amountBuilder.add("2");
 
-        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER, ColumnTypes.STRING);
         otherBuilder.add("x");
         otherBuilder.add("y");
 

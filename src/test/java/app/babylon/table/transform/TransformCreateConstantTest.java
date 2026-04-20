@@ -15,6 +15,7 @@ import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformCreateConstantTest
 {
@@ -24,7 +25,7 @@ class TransformCreateConstantTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName COUNTRY = ColumnName.of("Country");
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("A");
         names.add("B");
 
@@ -44,15 +45,15 @@ class TransformCreateConstantTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName AMOUNT = ColumnName.of("Amount");
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("A");
         names.add("B");
         names.add("C");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), names.build());
 
-        TableColumnar transformed = table.apply(new TransformCreateConstant(
-                app.babylon.table.column.ColumnTypes.DECIMAL, AMOUNT, new BigDecimal("1.25")));
+        TableColumnar transformed = table
+                .apply(new TransformCreateConstant(ColumnTypes.DECIMAL, AMOUNT, new BigDecimal("1.25")));
 
         ColumnObject<BigDecimal> amount = transformed.getDecimal(AMOUNT);
         assertEquals(0, new BigDecimal("1.25").compareTo(amount.get(0)));

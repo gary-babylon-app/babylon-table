@@ -11,6 +11,7 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformRightTest
 {
@@ -20,7 +21,7 @@ public class TransformRightTest
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName RIGHT = ColumnName.of("Right");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, ColumnTypes.STRING);
         strings.add("ABC123");
         strings.add("XY");
         strings.addNull();

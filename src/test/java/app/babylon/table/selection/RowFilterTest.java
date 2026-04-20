@@ -19,6 +19,7 @@ import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -33,7 +34,7 @@ class RowFilterTest
     void filterShouldWorkForObjectColumns()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -102,7 +103,7 @@ class RowFilterTest
     void filterShouldComposeAndShortCircuit()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -127,7 +128,7 @@ class RowFilterTest
     void filterShouldComposeOr()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -146,7 +147,7 @@ class RowFilterTest
     void filterShouldComposeNot()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Amy");
@@ -165,7 +166,7 @@ class RowFilterTest
     void filterShouldReturnEmptyTableInsteadOfNullWhenNoRowsMatch()
     {
         final ColumnName NAME = ColumnName.of("NAME");
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
 

@@ -17,6 +17,7 @@ import java.util.Map;
 
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -30,13 +31,11 @@ class DateFormatInferenceTest
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
         final ColumnName SETTLE_DATE = ColumnName.of("settle_date");
-        ColumnObject.Builder<String> ambiguous = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> ambiguous = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         ambiguous.add("01/02/2026");
         ambiguous.add("03/02/2026");
 
-        ColumnObject.Builder<String> clearDmy = ColumnObject.builder(SETTLE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> clearDmy = ColumnObject.builder(SETTLE_DATE, ColumnTypes.STRING);
         clearDmy.add("15/02/2026");
         clearDmy.add("16/02/2026");
 
@@ -54,12 +53,11 @@ class DateFormatInferenceTest
     {
         final ColumnName START_DATE = ColumnName.of("start_date");
         final ColumnName END_DATE = ColumnName.of("end_date");
-        ColumnObject.Builder<String> dmy = ColumnObject.builder(START_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> dmy = ColumnObject.builder(START_DATE, ColumnTypes.STRING);
         dmy.add("15/02/2026");
         dmy.add("16/02/2026");
 
-        ColumnObject.Builder<String> ymd = ColumnObject.builder(END_DATE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> ymd = ColumnObject.builder(END_DATE, ColumnTypes.STRING);
         ymd.add("2026-03-01");
         ymd.add("2026-03-02");
 
@@ -77,13 +75,11 @@ class DateFormatInferenceTest
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
         final ColumnName SETTLE_DATE = ColumnName.of("settle_date");
-        ColumnObject.Builder<String> tradeDates = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> tradeDates = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         tradeDates.add("15/02/2026");
         tradeDates.add("16/02/2026");
 
-        ColumnObject.Builder<String> settleDates = ColumnObject.builder(SETTLE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> settleDates = ColumnObject.builder(SETTLE_DATE, ColumnTypes.STRING);
         settleDates.add("17/02/2026");
         settleDates.add("18/02/2026");
 
@@ -101,8 +97,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldRecogniseExcelDate()
     {
         final ColumnName PAYMENT_DATE = ColumnName.of("payment_date");
-        ColumnObject.Builder<String> excel = ColumnObject.builder(PAYMENT_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> excel = ColumnObject.builder(PAYMENT_DATE, ColumnTypes.STRING);
         excel.add("45200");
         excel.add("45201");
 
@@ -118,8 +113,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldRecogniseExcelDateTime()
     {
         final ColumnName BOOKING_DATE = ColumnName.of("booking_date");
-        ColumnObject.Builder<String> excel = ColumnObject.builder(BOOKING_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> excel = ColumnObject.builder(BOOKING_DATE, ColumnTypes.STRING);
         excel.add("45436.2980092593");
         excel.add("45437.5000000000");
 
@@ -135,7 +129,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldReturnUnknownForExcelDateTimeWithoutDateNameHint()
     {
         final ColumnName VALUE = ColumnName.of("value");
-        ColumnObject.Builder<String> excel = ColumnObject.builder(VALUE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> excel = ColumnObject.builder(VALUE, ColumnTypes.STRING);
         excel.add("45436.2980092593");
         excel.add("45437.5000000000");
 
@@ -151,8 +145,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldReturnUnknownForEmptyColumn()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> empty = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> empty = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         empty.addNull();
         empty.add("   ");
 
@@ -168,8 +161,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldRecogniseAlphaMonthDates()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         alpha.add("01-Jan-2026");
         alpha.addNull();
         alpha.add("   ");
@@ -187,8 +179,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldRecogniseCompactNumericYmdDates()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> compact = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> compact = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         compact.add("20260228");
         compact.add("20240229");
 
@@ -204,8 +195,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldReturnUnknownForInvalidCompactLeapDay()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> compact = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> compact = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         compact.add("20230229");
         compact.add("20230230");
 
@@ -221,8 +211,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldRecogniseCompactAlphaMonthDates()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         alpha.add("01Jan2026");
         alpha.add("14Feb2026");
 
@@ -238,8 +227,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldVerifyAlphaMonthYmdAgainstDominantYmdColumn()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> ymd = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> ymd = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         ymd.add("2026-03-01");
         ymd.add("2026-03-02");
         ymd.add("2026-Mar-03");
@@ -256,8 +244,7 @@ class DateFormatInferenceTest
     void inferFormatShouldRecogniseMdyWhenOnlyThatFormatIsValid()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> mdy = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> mdy = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         mdy.add("12/31/2026");
         mdy.add("11/30/2026");
 
@@ -270,8 +257,7 @@ class DateFormatInferenceTest
     void inferFormatShouldReturnUnknownWhenBestCandidateFailsFullVerification()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> mixed = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> mixed = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         for (int i = 0; i < 128; ++i)
         {
             mixed.add("12/31/2026");
@@ -290,8 +276,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldRecogniseSingleDigitDayAlphaMonthDates()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         alpha.add("1Jan2026");
         alpha.add("9Feb2026");
 
@@ -307,8 +292,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldAllowSingleDigitNumericDayMonth()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> numeric = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> numeric = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         numeric.add("1-1-2026");
         numeric.add("13-1-2026");
 
@@ -324,8 +308,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldReturnUnknownForNoisyMixedColumn()
     {
         final ColumnName DATE_MIXED = ColumnName.of("date_mixed");
-        ColumnObject.Builder<String> noisy = ColumnObject.builder(DATE_MIXED,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> noisy = ColumnObject.builder(DATE_MIXED, ColumnTypes.STRING);
         noisy.add("01/02/2026");
         noisy.add("2026-03-01");
         noisy.add("abc");
@@ -342,8 +325,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldReturnUnknownForInvalidAlphaMonthText()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> alpha = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         alpha.add("01-Xxx-2026");
         alpha.add("14-Xxx-2026");
 
@@ -359,8 +341,7 @@ class DateFormatInferenceTest
     void inferFormatsShouldFallbackWhenSampleWinnerFailsFullColumnVerification()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> mixed = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> mixed = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
 
         for (int i = 1; i <= 90; ++i)
         {
@@ -390,8 +371,7 @@ class DateFormatInferenceTest
     void inferFormatShouldInferSingleColumnDirectly()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> dates = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> dates = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         dates.add("2026-03-01");
         dates.addNull();
         dates.add("2026-03-02");
@@ -497,8 +477,7 @@ class DateFormatInferenceTest
         assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("2026////01"), DateFormat.DMY));
 
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
-        ColumnObject.Builder<String> empty = ColumnObject.builder(TRADE_DATE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> empty = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         empty.addNull();
         empty.add("   ");
 

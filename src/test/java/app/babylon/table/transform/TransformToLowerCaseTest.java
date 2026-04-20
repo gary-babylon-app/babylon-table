@@ -12,6 +12,7 @@ import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformToLowerCaseTest
 {
@@ -20,7 +21,7 @@ public class TransformToLowerCaseTest
     {
         final ColumnName NAME = ColumnName.of("Name");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, ColumnTypes.STRING);
         strings.add("ALICE");
         strings.add("Bob");
         strings.add("");
@@ -43,8 +44,7 @@ public class TransformToLowerCaseTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName LOWER = ColumnName.of("Lower");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(NAME, ColumnTypes.STRING);
         strings.add("ALICE");
         strings.add("ALICE");
         strings.add("Bob");

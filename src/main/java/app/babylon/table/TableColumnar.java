@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.IntPredicate;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
@@ -164,7 +165,7 @@ public interface TableColumnar extends Table
     default public TableColumnar filter(RowFilter filter)
     {
         RowFilter f = ArgumentCheck.nonNull(filter);
-        java.util.function.IntPredicate predicate = f.bind(this);
+        IntPredicate predicate = f.bind(this);
         Selection selection = new Selection("filtered");
         for (int i = 0; i < getRowCount(); ++i)
         {

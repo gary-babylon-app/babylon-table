@@ -155,11 +155,11 @@ class TableColumnarMapTest
     {
         final ColumnName A_2 = ColumnName.of("A");
         final ColumnName EMPTY = ColumnName.of("EMPTY");
-        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, ColumnTypes.STRING);
         a.add("a0");
         a.add("a1");
 
-        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, ColumnTypes.STRING);
         empty.addNull();
         empty.addNull();
 
@@ -239,7 +239,7 @@ class TableColumnarMapTest
         final ColumnName A_2 = ColumnName.of("A");
         final ColumnName B_2 = ColumnName.of("B");
 
-        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, ColumnTypes.STRING);
         ColumnInt.Builder b = ColumnInt.builder(B_2);
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), a.build(), b.build());
@@ -257,12 +257,12 @@ class TableColumnarMapTest
         final ColumnName ID = ColumnName.of("id");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<String> ids = ColumnObject.builder(ID, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> ids = ColumnObject.builder(ID, ColumnTypes.STRING);
         ids.add("A");
         ids.add("B");
         ids.add("B");
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Bob duplicate");
@@ -288,7 +288,7 @@ class TableColumnarMapTest
         ids.add(2);
         ids.add(2);
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Bob duplicate");
@@ -314,7 +314,7 @@ class TableColumnarMapTest
         ids.add(200L);
         ids.add(200L);
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Bob");
         names.add("Bob duplicate");
@@ -335,13 +335,12 @@ class TableColumnarMapTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.DECIMAL);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, ColumnTypes.DECIMAL);
         amounts.add(new BigDecimal("1.0"));
         amounts.add(new BigDecimal("1.00"));
         amounts.add(new BigDecimal("2.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
         names.add("Alice duplicate");
         names.add("Bob");
@@ -363,13 +362,12 @@ class TableColumnarMapTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.DECIMAL);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, ColumnTypes.DECIMAL);
         amounts.add(new BigDecimal("0.0"));
         amounts.add(new BigDecimal("0.00"));
         amounts.add(new BigDecimal("1.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Zero");
         names.add("Zero duplicate");
         names.add("One");
@@ -391,13 +389,12 @@ class TableColumnarMapTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.DECIMAL);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, ColumnTypes.DECIMAL);
         amounts.add(new BigDecimal("1000.0"));
         amounts.add(new BigDecimal("1000"));
         amounts.add(new BigDecimal("2000"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Thousand");
         names.add("Thousand duplicate");
         names.add("Two thousand");
@@ -419,13 +416,12 @@ class TableColumnarMapTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.DECIMAL);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, ColumnTypes.DECIMAL);
         amounts.addNull();
         amounts.addNull();
         amounts.add(new BigDecimal("1.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Null");
         names.add("Null duplicate");
         names.add("One");
@@ -446,12 +442,11 @@ class TableColumnarMapTest
         final ColumnName AMOUNT = ColumnName.of("amount");
         final ColumnName NAME = ColumnName.of("name");
 
-        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.DECIMAL);
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builder(AMOUNT, ColumnTypes.DECIMAL);
         amounts.addNull();
         amounts.add(new BigDecimal("0.0"));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Null");
         names.add("Zero");
 

@@ -13,6 +13,7 @@ package app.babylon.table;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,12 +26,12 @@ public class TableColumnarViewTest
     {
         final ColumnName A_2 = ColumnName.of("A");
         final ColumnName B_2 = ColumnName.of("B");
-        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, ColumnTypes.STRING);
         a.add("a0");
         a.add("a1");
         a.add("a2");
 
-        ColumnObject.Builder<String> b = ColumnObject.builder(B_2, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> b = ColumnObject.builder(B_2, ColumnTypes.STRING);
         b.add("b0");
         b.add("b1");
         b.add("b2");
@@ -96,11 +97,11 @@ public class TableColumnarViewTest
     {
         final ColumnName A_2 = ColumnName.of("A");
         final ColumnName EMPTY = ColumnName.of("EMPTY");
-        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> a = ColumnObject.builder(A_2, ColumnTypes.STRING);
         a.add("a0");
         a.add("a1");
 
-        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> empty = ColumnObject.builder(EMPTY, ColumnTypes.STRING);
         empty.addNull();
         empty.addNull();
 

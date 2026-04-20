@@ -5,6 +5,7 @@ import java.util.Map;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.lang.Is;
 import app.babylon.table.ToStringSettings;
 
@@ -44,8 +45,7 @@ public class TransformConcat extends TransformBase
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn, ColumnTypes.STRING);
         Column[] columns = new Column[this.sourceColumns.length];
         String[] values = new String[this.sourceColumns.length];
         ToStringSettings settings = ToStringSettings.standard();

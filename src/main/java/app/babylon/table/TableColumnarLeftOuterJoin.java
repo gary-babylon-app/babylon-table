@@ -12,8 +12,10 @@ package app.babylon.table;
 
 import app.babylon.lang.ArgumentCheck;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -41,7 +43,7 @@ class TableColumnarLeftOuterJoin extends TableColumnarCommon
         this.right = ArgumentCheck.nonNull(right);
         this.rowIndex = ArgumentCheck.nonNull(rowIndex);
         this.rightColumnsToAdd = ArgumentCheck.nonNull(rightColumnsToAdd);
-        this.rightColumnNames = java.util.Set.of(rightColumnsToAdd);
+        this.rightColumnNames = Set.of(rightColumnsToAdd);
         this.rightColumnViews = new ConcurrentHashMap<>();
     }
 
@@ -129,7 +131,7 @@ class TableColumnarLeftOuterJoin extends TableColumnarCommon
 
             TableColumnar reducedLeft = this.left
                     .removeColumns(columnsToRemove.toArray(new ColumnName[columnsToRemove.size()]));
-            java.util.List<ColumnName> remainingRightColumns = new java.util.ArrayList<>();
+            List<ColumnName> remainingRightColumns = new ArrayList<>();
             for (ColumnName rightColumn : this.rightColumnsToAdd)
             {
                 if (!columnsToRemove.contains(rightColumn))

@@ -142,8 +142,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             ColumnObject.Builder<String>[] groupByBuilders = new ColumnObject.Builder[this.plan.groupByColumns.size()];
             for (int i = 0; i < groupByBuilders.length; ++i)
             {
-                groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i),
-                        app.babylon.table.column.ColumnTypes.STRING);
+                groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i), ColumnTypes.STRING);
             }
             Column.Builder[] aggregateBuilders = newAggregateBuilders(this.plan);
             for (Map.Entry<RowKey, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())

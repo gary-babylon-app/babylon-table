@@ -183,7 +183,7 @@ public class Columns
 
     public static ColumnObject<BigDecimal> newDecimal(ColumnName colName, BigDecimal value, int size)
     {
-        return ColumnCategorical.constant(colName, value, size, app.babylon.table.column.ColumnTypes.DECIMAL);
+        return ColumnCategorical.constant(colName, value, size, ColumnTypes.DECIMAL);
     }
 
     public static ColumnInt newInt(ColumnName colName, int value, int size)
@@ -198,7 +198,7 @@ public class Columns
 
     public static ColumnObject<String> newString(ColumnName colName, String value, int size)
     {
-        return ColumnCategorical.constant(colName, value, size, app.babylon.table.column.ColumnTypes.STRING);
+        return ColumnCategorical.constant(colName, value, size, ColumnTypes.STRING);
     }
 
     public static <T> ColumnCategorical<T> newCategorical(ColumnName colName, T value, int size, Column.Type type)

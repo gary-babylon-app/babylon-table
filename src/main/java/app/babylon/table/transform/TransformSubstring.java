@@ -8,6 +8,7 @@ import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
@@ -47,8 +48,7 @@ public class TransformSubstring extends TransformBase
         {
             return;
         }
-        ColumnObject.Builder<String> newColumnBuilder = ColumnObject.builder(this.newColumnName,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> newColumnBuilder = ColumnObject.builder(this.newColumnName, ColumnTypes.STRING);
 
         for (int i = 0; i < column.size(); ++i)
         {

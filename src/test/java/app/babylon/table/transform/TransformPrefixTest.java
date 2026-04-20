@@ -12,6 +12,7 @@ import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformPrefixTest
 {
@@ -19,7 +20,7 @@ public class TransformPrefixTest
     public void shouldPrependPrefix()
     {
         final ColumnName CODE = ColumnName.of("Code");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, ColumnTypes.STRING);
         strings.add("ABC");
         strings.add("");
         strings.addNull();
@@ -37,7 +38,7 @@ public class TransformPrefixTest
     public void shouldReplaceExistingColumnWhenNewColumnNameIsOmitted()
     {
         final ColumnName CODE = ColumnName.of("Code");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CODE, ColumnTypes.STRING);
         strings.add("ABC");
         strings.add("XYZ");
 
@@ -53,8 +54,7 @@ public class TransformPrefixTest
     public void shouldPreserveCategoricalShape()
     {
         final ColumnName CODE = ColumnName.of("Code");
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(CODE,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(CODE, ColumnTypes.STRING);
         strings.add("ABC");
         strings.add("ABC");
         strings.add("XYZ");

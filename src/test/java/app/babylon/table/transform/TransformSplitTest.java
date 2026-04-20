@@ -11,6 +11,7 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformSplitTest
 {
@@ -22,7 +23,7 @@ public class TransformSplitTest
         final ColumnName MIDDLE = ColumnName.of("Middle");
         final ColumnName RIGHT = ColumnName.of("Right");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(PAIR, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(PAIR, ColumnTypes.STRING);
         strings.add("A|B|C");
         strings.add("D||F");
         strings.add("G|H");

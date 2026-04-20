@@ -389,8 +389,7 @@ public class ColumnDoubleTest
     {
         final ColumnName STATION = ColumnName.of("station");
         final ColumnName TEMPERATURE = ColumnName.of("temperature");
-        ColumnCategorical.Builder<String> stationBuilder = ColumnCategorical.builder(STATION,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> stationBuilder = ColumnCategorical.builder(STATION, ColumnTypes.STRING);
         stationBuilder.add("A");
         stationBuilder.add("A");
         stationBuilder.add("B");

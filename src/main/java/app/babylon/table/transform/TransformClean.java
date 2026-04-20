@@ -6,6 +6,7 @@ import java.util.Map;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.ToStringSettings;
 
 public class TransformClean extends TransformBase
@@ -29,8 +30,7 @@ public class TransformClean extends TransformBase
         {
             return;
         }
-        ColumnObject.Builder<String> cleanedColumn = ColumnObject.builder(this.columnToClean,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> cleanedColumn = ColumnObject.builder(this.columnToClean, ColumnTypes.STRING);
         ToStringSettings settings = ToStringSettings.standard();
 
         for (int i = 0; i < column.size(); i++)

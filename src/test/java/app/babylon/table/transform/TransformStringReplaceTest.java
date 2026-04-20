@@ -12,6 +12,7 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformStringReplaceTest
 {
@@ -20,7 +21,7 @@ class TransformStringReplaceTest
     {
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName OUT = ColumnName.of("Out");
-        ColumnObject.Builder<String> codes = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> codes = ColumnObject.builder(CODE, ColumnTypes.STRING);
         codes.add("AA-01");
         codes.add("XX");
         codes.addNull();

@@ -9,6 +9,7 @@ import java.util.Map;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
@@ -74,8 +75,7 @@ public class TransformStringReplaceAll extends TransformBase
         {
             return;
         }
-        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName, ColumnTypes.STRING);
         Map<String, String> old2New = new HashMap<>();
 
         for (int i = 0; i < column.size(); ++i)

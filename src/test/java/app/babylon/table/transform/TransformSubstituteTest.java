@@ -12,6 +12,7 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformSubstituteTest
 {
@@ -21,7 +22,7 @@ class TransformSubstituteTest
         final ColumnName STATUS = ColumnName.of("Status");
         final ColumnName NORMALISED = ColumnName.of("Normalised");
 
-        ColumnObject.Builder<String> status = ColumnObject.builder(STATUS, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> status = ColumnObject.builder(STATUS, ColumnTypes.STRING);
         status.add("A");
         status.add("B");
         status.add("C");
@@ -47,7 +48,7 @@ class TransformSubstituteTest
         final ColumnName VALUE = ColumnName.of("Value");
         final ColumnName MISSING = ColumnName.of("Missing");
         final ColumnName NEW = ColumnName.of("New");
-        ColumnObject.Builder<String> value = ColumnObject.builder(VALUE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> value = ColumnObject.builder(VALUE, ColumnTypes.STRING);
         value.add("x");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), value.build());

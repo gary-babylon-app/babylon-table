@@ -9,6 +9,7 @@ import java.util.Map;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.lang.Is;
 import app.babylon.text.Split;
 
@@ -57,7 +58,7 @@ public class TransformSplit extends TransformBase
         ColumnObject.Builder<String>[] newColumns = new ColumnObject.Builder[splitColumnNames.length];
         for (int i = 0; i < splitColumnNames.length; ++i)
         {
-            newColumns[i] = ColumnObject.builder(splitColumnNames[i], app.babylon.table.column.ColumnTypes.STRING);
+            newColumns[i] = ColumnObject.builder(splitColumnNames[i], ColumnTypes.STRING);
         }
         for (int i = 0; i < toSplit.size(); ++i)
         {

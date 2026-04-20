@@ -8,6 +8,7 @@ import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformToString extends TransformBase
 {
@@ -54,8 +55,7 @@ public class TransformToString extends TransformBase
             {
                 Column c = validColumns[i];
                 ColumnName newColumnName = newColumnNames.getOrDefault(c.getName(), c.getName());
-                ColumnObject.Builder<String> cc = ColumnObject.builder(newColumnName,
-                        app.babylon.table.column.ColumnTypes.STRING);
+                ColumnObject.Builder<String> cc = ColumnObject.builder(newColumnName, ColumnTypes.STRING);
                 for (int j = 0; j < c.size(); ++j)
                 {
                     cc.add(c.toString(j));

@@ -11,6 +11,7 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformCopyTest
 {
@@ -20,8 +21,7 @@ public class TransformCopyTest
         final ColumnName SYMBOL = ColumnName.of("Symbol");
         final ColumnName SYMBOL_COPY = ColumnName.of("SymbolCopy");
 
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(SYMBOL,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(SYMBOL, ColumnTypes.STRING);
         builder.add("VEVE");
         builder.add("SGLN");
         builder.add("VEVE");

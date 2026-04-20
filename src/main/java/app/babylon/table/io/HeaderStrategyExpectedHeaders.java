@@ -28,7 +28,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
 
     public HeaderStrategyExpectedHeaders(int scanLimit)
     {
-        this(scanLimit, java.util.List.of());
+        this(scanLimit, List.of());
     }
 
     public HeaderStrategyExpectedHeaders(int scanLimit, ColumnName... expectedHeaders)

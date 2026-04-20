@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TablesToStringTest
 {
@@ -116,8 +117,8 @@ class TablesToStringTest
     {
         final ColumnName FIRST = ColumnName.of(firstName);
         final ColumnName SECOND = ColumnName.of(secondName);
-        ColumnObject.Builder<String> first = ColumnObject.builder(FIRST, app.babylon.table.column.ColumnTypes.STRING);
-        ColumnObject.Builder<String> second = ColumnObject.builder(SECOND, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> first = ColumnObject.builder(FIRST, ColumnTypes.STRING);
+        ColumnObject.Builder<String> second = ColumnObject.builder(SECOND, ColumnTypes.STRING);
         for (String[] row : rows)
         {
             first.add(row[0]);
@@ -132,8 +133,7 @@ class TablesToStringTest
         for (int i = 0; i < columns.length; ++i)
         {
             final ColumnName COLUMN = ColumnName.of("C" + i);
-            ColumnObject.Builder<String> builder = ColumnObject.builder(COLUMN,
-                    app.babylon.table.column.ColumnTypes.STRING);
+            ColumnObject.Builder<String> builder = ColumnObject.builder(COLUMN, ColumnTypes.STRING);
             for (int row = 0; row < 30; ++row)
             {
                 builder.add("r" + row + "c" + i);

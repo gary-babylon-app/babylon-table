@@ -15,6 +15,7 @@ import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformExtractTest
 {
@@ -23,8 +24,7 @@ public class TransformExtractTest
     {
         final ColumnName DESCRIPTION = ColumnName.of("Description");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION, ColumnTypes.STRING);
         strings.add("ABC (VEVE)");
         strings.add("No match");
         strings.addNull();
@@ -44,8 +44,7 @@ public class TransformExtractTest
     {
         final ColumnName DESCRIPTION = ColumnName.of("Description");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION, ColumnTypes.STRING);
         strings.add("ABC (VEVE)");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
@@ -63,8 +62,7 @@ public class TransformExtractTest
         final ColumnName DESCRIPTION = ColumnName.of("Description");
         final ColumnName SYMBOL = ColumnName.of("Symbol");
 
-        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(DESCRIPTION,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> strings = ColumnCategorical.builder(DESCRIPTION, ColumnTypes.STRING);
         strings.add("ABC (VEVE)");
         strings.add("ABC (VEVE)");
         strings.addNull();
@@ -89,8 +87,8 @@ public class TransformExtractTest
         final ColumnName DESCRIPTION = ColumnName.of("Description");
         final ColumnName SYMBOL = ColumnName.of("Symbol");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION,
-                app.babylon.table.column.ColumnTypes.STRING, ColumnObject.Mode.ARRAY);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION, ColumnTypes.STRING,
+                ColumnObject.Mode.ARRAY);
         strings.add("ABC (VEVE)");
         strings.addNull();
         strings.add("XYZ (SGLN)");

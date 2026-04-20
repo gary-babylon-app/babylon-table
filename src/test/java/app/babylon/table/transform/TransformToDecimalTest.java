@@ -19,6 +19,7 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformToDecimalTest
 {
@@ -31,8 +32,7 @@ class TransformToDecimalTest
     void applyShouldConvertPlainStringColumnAndLeaveUnparseableValuesUnset()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("1.25");
         builder.add("1.2 3");
         builder.add("abc");
@@ -55,8 +55,7 @@ class TransformToDecimalTest
     {
         final ColumnName AMOUNT = ColumnName.of("Amount");
         final ColumnName PARSED = ColumnName.of("Parsed");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("-12.5");
         builder.add("$1,234.50");
         ColumnObject<String> source = builder.build();
@@ -92,8 +91,7 @@ class TransformToDecimalTest
     void applyShouldPreserveCategoricalShapeAndMapInvalidValuesToCategoryZero()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("10");
         builder.add("bad");
         builder.add("10");
@@ -125,8 +123,7 @@ class TransformToDecimalTest
     void applyShouldReturnAllInvalidCategoricalValuesAsNullCategoryZero()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("bad");
         builder.add("worse");
         builder.add("bad");
@@ -150,8 +147,7 @@ class TransformToDecimalTest
     void viewOnDecimalTransformShouldExposeOnlyLiveDecimalCodes()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> builder = ColumnCategorical.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("10");
         builder.add("bad");
         builder.add("10");
@@ -184,13 +180,11 @@ class TransformToDecimalTest
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
         final ColumnName OTHER = ColumnName.of("OTHER");
         final ColumnName EXISTING = ColumnName.of("EXISTING");
-        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         amountBuilder.add("1");
         amountBuilder.add("2");
 
-        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER, ColumnTypes.STRING);
         otherBuilder.add("x");
         otherBuilder.add("y");
 
@@ -218,8 +212,7 @@ class TransformToDecimalTest
     void applyShouldAcceptScientificNotation()
     {
         final ColumnName AMOUNT = ColumnName.of("AMOUNT");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         builder.add("1e6");
         builder.add("1E-6");
         ColumnObject<String> source = builder.build();

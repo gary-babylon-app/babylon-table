@@ -9,6 +9,7 @@ import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
@@ -91,8 +92,7 @@ public class TransformSubstitute extends TransformBase
             return;
         }
         ColumnObject<String> stringColumn = Columns.asStringColumn(column);
-        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName,
-                app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.newColumnName, ColumnTypes.STRING);
         for (int i = 0; i < stringColumn.size(); ++i)
         {
             String s = stringColumn.get(i);

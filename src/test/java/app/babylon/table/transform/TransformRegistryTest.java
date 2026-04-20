@@ -10,6 +10,7 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformRegistryTest
 {
@@ -29,7 +30,7 @@ class TransformRegistryTest
         assertEquals(null, registry.create("Missing", "Code"));
         assertEquals(null, registry.create(" ", "Code"));
 
-        ColumnObject.Builder<String> code = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> code = ColumnObject.builder(CODE, ColumnTypes.STRING);
         code.add("A");
         TableColumnar table = Tables.newTable(TableName.of("t"), code.build());
 
@@ -58,14 +59,14 @@ class TransformRegistryTest
 
     private static ColumnObject<String> constantColumn(ColumnName name, String value)
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(name, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(name, ColumnTypes.STRING);
         builder.add(value);
         return builder.build();
     }
 
     private static ColumnObject<String> emptyColumn(ColumnName name)
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(name, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(name, ColumnTypes.STRING);
         builder.addNull();
         return builder.build();
     }

@@ -169,15 +169,24 @@ public final class RowCursorCsv implements RowCursor
     {
         try
         {
+            if (this.rowFilter == null)
+            {
+                if (this.rowStream.next())
+                {
+                    this.currentRow = this.projectedRow.with(this.rowStream.current());
+                    return true;
+                }
+                this.currentRow = null;
+                return false;
+            }
             while (this.rowStream.next())
             {
                 Row row = this.projectedRow.with(this.rowStream.current());
-                if (this.rowFilter != null && !this.rowFilter.test(row))
+                if (this.rowFilter.test(row))
                 {
-                    continue;
+                    this.currentRow = row;
+                    return true;
                 }
-                this.currentRow = row;
-                return true;
             }
             this.currentRow = null;
             return false;

@@ -17,8 +17,9 @@ class HeaderStrategyExpectedHeadersTest
     @Test
     void shouldExposeConfiguredHeadersAndRejectInvalidLimit()
     {
-        HeaderStrategyExpectedHeaders strategy = new HeaderStrategyExpectedHeaders(3, ColumnName.of("Date"),
-                ColumnName.of("Price"));
+        final ColumnName DATE = ColumnName.of("Date");
+        final ColumnName PRICE = ColumnName.of("Price");
+        HeaderStrategyExpectedHeaders strategy = new HeaderStrategyExpectedHeaders(3, DATE, PRICE);
 
         Collection<ColumnName> actual = strategy.getExpectedHeaders(new ArrayList<>());
 
@@ -30,8 +31,10 @@ class HeaderStrategyExpectedHeadersTest
     @Test
     void detectFoundHeadersShouldMatchExpectedNames() throws IOException
     {
-        HeaderStrategyExpectedHeaders strategy = new HeaderStrategyExpectedHeaders(4, ColumnName.of("Date"),
-                ColumnName.of("Symbol"), ColumnName.of("Price"));
+        final ColumnName DATE = ColumnName.of("Date");
+        final ColumnName SYMBOL = ColumnName.of("Symbol");
+        final ColumnName PRICE = ColumnName.of("Price");
+        HeaderStrategyExpectedHeaders strategy = new HeaderStrategyExpectedHeaders(4, DATE, SYMBOL, PRICE);
         HeaderDetection detection = strategy
                 .detectFoundHeaders(HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("metadata", "value"),
                         HeaderStrategyTestSupport.row("Date", "Symbol", "Price"),
@@ -45,8 +48,9 @@ class HeaderStrategyExpectedHeadersTest
     void detectFoundHeadersShouldThrowForMissingConfigOrNoMatch()
     {
         HeaderStrategyExpectedHeaders unconfigured = new HeaderStrategyExpectedHeaders(3);
-        HeaderStrategyExpectedHeaders strategy = new HeaderStrategyExpectedHeaders(2, ColumnName.of("Date"),
-                ColumnName.of("Price"));
+        final ColumnName DATE = ColumnName.of("Date");
+        final ColumnName PRICE = ColumnName.of("Price");
+        HeaderStrategyExpectedHeaders strategy = new HeaderStrategyExpectedHeaders(2, DATE, PRICE);
 
         assertThrows(RuntimeException.class, () -> unconfigured.detectFoundHeaders(
                 HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("Date", "Price")), null));

@@ -21,8 +21,8 @@ import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
-import app.babylon.table.column.Column.Builder;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 
@@ -54,7 +54,17 @@ public final class RowConsumerCreateTable implements RowConsumer
         {
             Column.Type columnType = effectiveColumnType(columnNames[i], this.explicitColumnTypes);
             this.columnTypes[i] = columnType;
-            this.columnBuilders[i] = Columns.newCharSliceBuilder(columnNames[i], columnType);
+            if (columnType.isPrimitive())
+            {
+                this.columnBuilders[i] = Columns.newBuilder(columnNames[i], columnType);
+            }
+            else
+            {
+                // we can optimise a bit here for huge tables where String creation causes
+                // pressure or very fast parsers
+                // but use String for now in the builder.
+                this.columnBuilders[i] = Columns.newColumn(columnNames[i]);
+            }
         }
     }
 
@@ -78,7 +88,23 @@ public final class RowConsumerCreateTable implements RowConsumer
 
     public TableColumnar build()
     {
-        return Tables.newTable(this.tableName, this.tableDescription, this.columnBuilders);
+        Column[] columns = new Column[this.columnBuilders.length];
+        for (int i = 0; i < columns.length; ++i)
+        {
+            Column.Builder colBuilder = columnBuilders[i];
+            ColumnName colName = colBuilder.getName();
+            Column.Type type = this.explicitColumnTypes.getOrDefault(colName, ColumnTypes.STRING);
+            if (colBuilder instanceof ColumnObject.Builder<?> objectBuilder)
+            {
+                // Very convenient and fast transformation from string
+                columns[i] = objectBuilder.build(type);
+            }
+            else
+            {
+                columns[i] = colBuilder.build();
+            }
+        }
+        return Tables.newTable(this.tableName, this.tableDescription, columns);
     }
 
     public static RowConsumerCreateTable create(TableName tableName)

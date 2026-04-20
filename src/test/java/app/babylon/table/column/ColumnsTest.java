@@ -31,8 +31,8 @@ class ColumnsTest
     @Test
     void frequencyMapCountsSetValues()
     {
-        ColumnName city = ColumnName.of("city");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(city, ColumnTypes.STRING);
+        final ColumnName CITY = ColumnName.of("city");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CITY, ColumnTypes.STRING);
         strings.add("London");
         strings.add("Paris");
         strings.add("London");
@@ -56,18 +56,16 @@ class ColumnsTest
     @Test
     void columnIsEmptyShouldTreatZeroRowsAndAllUnsetAsEmpty()
     {
-        ColumnObject.Builder<String> zeroRowsBuilder = ColumnObject.builder(ColumnName.of("values"),
-                ColumnTypes.STRING);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnObject.Builder<String> zeroRowsBuilder = ColumnObject.builder(VALUES, ColumnTypes.STRING);
         ColumnObject<String> zeroRows = zeroRowsBuilder.build();
 
-        ColumnObject.Builder<String> allUnsetBuilder = ColumnObject.builder(ColumnName.of("values"),
-                ColumnTypes.STRING);
+        ColumnObject.Builder<String> allUnsetBuilder = ColumnObject.builder(VALUES, ColumnTypes.STRING);
         allUnsetBuilder.addNull();
         allUnsetBuilder.addNull();
         ColumnObject<String> allUnset = allUnsetBuilder.build();
 
-        ColumnObject.Builder<String> someValuesBuilder = ColumnObject.builder(ColumnName.of("values"),
-                ColumnTypes.STRING);
+        ColumnObject.Builder<String> someValuesBuilder = ColumnObject.builder(VALUES, ColumnTypes.STRING);
         someValuesBuilder.addNull();
         someValuesBuilder.add("x");
         ColumnObject<String> someValues = someValuesBuilder.build();
@@ -83,8 +81,8 @@ class ColumnsTest
     @Test
     void stringToTypeSupportsBigDecimal()
     {
-        ColumnName amount = ColumnName.of("amount");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(amount, ColumnTypes.STRING);
+        final ColumnName AMOUNT = ColumnName.of("amount");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         strings.add("1.25");
         strings.add("");
         strings.addNull();
@@ -98,7 +96,7 @@ class ColumnsTest
         assertFalse(decimals.isSet(2));
         assertEquals(0, new BigDecimal("-2.50").compareTo(decimals.get(3)));
 
-        ColumnObject.Builder<BigDecimal> existingBuilder = ColumnObject.builderDecimal(amount);
+        ColumnObject.Builder<BigDecimal> existingBuilder = ColumnObject.builderDecimal(AMOUNT);
         existingBuilder.add(new BigDecimal("7.25"));
         ColumnObject<BigDecimal> existing = existingBuilder.build();
 
@@ -110,7 +108,8 @@ class ColumnsTest
     @Test
     void stringToTypeReturnsNullForNonObjectColumns()
     {
-        ColumnInt.Builder ints = ColumnInt.builder(ColumnName.of("values"));
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnInt.Builder ints = ColumnInt.builder(VALUES);
         ints.add(1);
 
         assertNull(Columns.stringToType(ints.build(), BigDecimal::new, ColumnTypes.DECIMAL));
@@ -119,8 +118,8 @@ class ColumnsTest
     @Test
     void stringToDecimalSupportsFormattedDecimalText()
     {
-        ColumnName amount = ColumnName.of("amount");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(amount, ColumnTypes.STRING);
+        final ColumnName AMOUNT = ColumnName.of("amount");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         strings.add("1,234.50");
         strings.add("");
         strings.addNull();
@@ -138,7 +137,8 @@ class ColumnsTest
     @Test
     void maxAndMinSupportComparableObjectColumns()
     {
-        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(ColumnName.of("tradeDate"), ColumnTypes.LOCALDATE);
+        final ColumnName TRADE_DATE = ColumnName.of("tradeDate");
+        ColumnObject.Builder<LocalDate> dates = ColumnObject.builder(TRADE_DATE, ColumnTypes.LOCALDATE);
         dates.add(LocalDate.of(2026, 4, 18));
         dates.addNull();
         dates.add(LocalDate.of(2026, 4, 16));
@@ -153,8 +153,8 @@ class ColumnsTest
     @Test
     void maxAndMinThrowOnEmptyComparableObjectColumns()
     {
-        ColumnObject.Builder<LocalDate> builder = ColumnObject.builder(ColumnName.of("tradeDate"),
-                ColumnTypes.LOCALDATE);
+        final ColumnName TRADE_DATE = ColumnName.of("tradeDate");
+        ColumnObject.Builder<LocalDate> builder = ColumnObject.builder(TRADE_DATE, ColumnTypes.LOCALDATE);
         ColumnObject<LocalDate> dates = builder.build();
 
         assertThrows(RuntimeException.class, () -> Columns.max(dates));
@@ -164,7 +164,8 @@ class ColumnsTest
     @Test
     void newColumnSupportsIntType()
     {
-        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.INT);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.INT);
 
         assertInstanceOf(ColumnInt.Builder.class, builder);
     }
@@ -172,7 +173,8 @@ class ColumnsTest
     @Test
     void newColumnSupportsDoubleType()
     {
-        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.DOUBLE);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.DOUBLE);
 
         assertInstanceOf(ColumnDouble.Builder.class, builder);
     }
@@ -180,7 +182,8 @@ class ColumnsTest
     @Test
     void newColumnSupportsLongType()
     {
-        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.LONG);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.LONG);
 
         assertInstanceOf(ColumnLong.Builder.class, builder);
     }
@@ -188,7 +191,8 @@ class ColumnsTest
     @Test
     void newColumnSupportsByteType()
     {
-        Column.Builder builder = Columns.newColumn(ColumnName.of("values"), ColumnTypes.BYTE);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.BYTE);
 
         assertInstanceOf(ColumnByte.Builder.class, builder);
     }
@@ -196,7 +200,8 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsIntType()
     {
-        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.INT);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.INT);
         builder.add("12", 0, 2);
         builder.add(null, 0, 0);
 
@@ -208,7 +213,8 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsByteType()
     {
-        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.BYTE);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.BYTE);
         builder.add("7", 0, 1);
         builder.add(null, 0, 0);
 
@@ -220,7 +226,8 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsLongType()
     {
-        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.LONG);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.LONG);
         builder.add("123456789", 0, 9);
         builder.add(null, 0, 0);
 
@@ -232,7 +239,8 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsStringType()
     {
-        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.STRING);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.STRING);
         builder.add("Alpha", 0, 5);
         builder.add(null, 0, 0);
 
@@ -244,7 +252,8 @@ class ColumnsTest
     @Test
     void newCharSliceBuilderSupportsDecimalType()
     {
-        Column.Builder builder = Columns.newCharSliceBuilder(ColumnName.of("values"), ColumnTypes.DECIMAL);
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.DECIMAL);
         builder.add("1234.50", 0, 7);
         builder.add("bad", 0, 3);
 
@@ -256,7 +265,8 @@ class ColumnsTest
     @Test
     void newIntCreatesConstantIntColumn()
     {
-        ColumnInt ints = Columns.newInt(ColumnName.of("values"), 7, 3);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnInt ints = Columns.newInt(VALUES, 7, 3);
 
         assertEquals(3, ints.size());
         assertEquals(7, ints.get(0));
@@ -267,7 +277,8 @@ class ColumnsTest
     @Test
     void newDoubleCreatesConstantDoubleColumn()
     {
-        ColumnDouble doubles = Columns.newDouble(ColumnName.of("values"), 1.5d, 3);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnDouble doubles = Columns.newDouble(VALUES, 1.5d, 3);
 
         assertEquals(3, doubles.size());
         assertEquals(1.5d, doubles.get(0), 1e-12);
@@ -278,7 +289,8 @@ class ColumnsTest
     @Test
     void newStringCreatesConstantStringColumn()
     {
-        ColumnObject<String> strings = Columns.newString(ColumnName.of("values"), "ABC", 3);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnObject<String> strings = Columns.newString(VALUES, "ABC", 3);
 
         assertEquals(3, strings.size());
         assertEquals("ABC", strings.get(0));
@@ -289,8 +301,8 @@ class ColumnsTest
     @Test
     void newCategoricalCreatesConstantCategoricalColumn()
     {
-        ColumnCategorical<String> categorical = Columns.newCategorical(ColumnName.of("values"), "ABC", 3,
-                ColumnTypes.STRING);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnCategorical<String> categorical = Columns.newCategorical(VALUES, "ABC", 3, ColumnTypes.STRING);
 
         assertEquals(3, categorical.size());
         assertEquals("ABC", categorical.get(0));
@@ -301,8 +313,8 @@ class ColumnsTest
     @Test
     void sortUsesColumnNaturalOrderAndReturnsView()
     {
-        ColumnName city = ColumnName.of("city");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(city, ColumnTypes.STRING, ColumnObject.Mode.ARRAY);
+        final ColumnName CITY = ColumnName.of("city");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(CITY, ColumnTypes.STRING, ColumnObject.Mode.ARRAY);
         strings.add("Zurich");
         strings.addNull();
         strings.add("Amsterdam");
@@ -319,8 +331,8 @@ class ColumnsTest
     @Test
     void sortUsesCustomComparator()
     {
-        ColumnName values = ColumnName.of("values");
-        ColumnInt.Builder ints = ColumnInt.builder(values);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnInt.Builder ints = ColumnInt.builder(VALUES);
         ints.add(1);
         ints.add(3);
         ints.add(2);
@@ -336,11 +348,11 @@ class ColumnsTest
     @Test
     void concatKeepsCategoricalColumnsCategorical()
     {
-        ColumnName city = ColumnName.of("city");
-        ColumnCategorical.Builder<String> left = ColumnCategorical.builder(city, ColumnTypes.STRING);
+        final ColumnName CITY = ColumnName.of("city");
+        ColumnCategorical.Builder<String> left = ColumnCategorical.builder(CITY, ColumnTypes.STRING);
         left.add("London");
         left.addNull();
-        ColumnCategorical.Builder<String> right = ColumnCategorical.builder(city, ColumnTypes.STRING);
+        ColumnCategorical.Builder<String> right = ColumnCategorical.builder(CITY, ColumnTypes.STRING);
         right.add("Paris");
         right.add("Rome");
 
@@ -349,7 +361,7 @@ class ColumnsTest
         ColumnCategorical<?> categorical = assertInstanceOf(ColumnCategorical.class, result);
         assertArrayEquals(new String[]
         {"London", null, "Paris", "Rome"}, values((ColumnObject<String>) categorical));
-        assertEquals(city, result.getName());
+        assertEquals(CITY, result.getName());
     }
 
     @Test
@@ -367,11 +379,11 @@ class ColumnsTest
     @Test
     void concatSupportsMixedStringBackingsWhenValueClassMatches()
     {
-        ColumnName city = ColumnName.of("city");
-        ColumnCategorical.Builder<String> categorical = ColumnCategorical.builder(city, ColumnTypes.STRING);
+        final ColumnName CITY = ColumnName.of("city");
+        ColumnCategorical.Builder<String> categorical = ColumnCategorical.builder(CITY, ColumnTypes.STRING);
         categorical.add("London");
 
-        ColumnObject.Builder<String> objects = ColumnObject.builder(city, ColumnTypes.STRING, ColumnObject.Mode.ARRAY);
+        ColumnObject.Builder<String> objects = ColumnObject.builder(CITY, ColumnTypes.STRING, ColumnObject.Mode.ARRAY);
         objects.add("Paris");
         objects.addNull();
 
@@ -385,34 +397,34 @@ class ColumnsTest
     @Test
     void concatRejectsDifferentValueClasses()
     {
-        ColumnName values = ColumnName.of("values");
-        ColumnObject.Builder<String> strings = ColumnObject.builder(values, ColumnTypes.STRING);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(VALUES, ColumnTypes.STRING);
         strings.add("A");
 
-        ColumnInt.Builder ints = ColumnInt.builder(values);
+        ColumnInt.Builder ints = ColumnInt.builder(VALUES);
         ints.add(1);
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> Columns.concat(List.of(strings.build(), ints.build())));
 
         assertEquals("Cannot concat different column types: " + ColumnTypes.STRING + " and " + ColumnTypes.INT
-                + " for column " + values, ex.getMessage());
+                + " for column " + VALUES, ex.getMessage());
     }
 
     @Test
     void concatSupportsIntColumns()
     {
-        ColumnName values = ColumnName.of("values");
-        ColumnInt.Builder left = ColumnInt.builder(values);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnInt.Builder left = ColumnInt.builder(VALUES);
         left.add(10);
         left.addNull();
-        ColumnInt.Builder right = ColumnInt.builder(values);
+        ColumnInt.Builder right = ColumnInt.builder(VALUES);
         right.add(-3);
 
         Column result = Columns.concat(List.of(left.build(), right.build()));
 
         ColumnInt ints = assertInstanceOf(ColumnInt.class, result);
-        assertEquals(values, ints.getName());
+        assertEquals(VALUES, ints.getName());
         assertEquals(3, ints.size());
         assertEquals(10, ints.get(0));
         assertEquals(-3, ints.get(2));
@@ -424,17 +436,17 @@ class ColumnsTest
     @Test
     void concatSupportsLongColumns()
     {
-        ColumnName values = ColumnName.of("values");
-        ColumnLong.Builder left = ColumnLong.builder(values);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnLong.Builder left = ColumnLong.builder(VALUES);
         left.add(100L);
-        ColumnLong.Builder right = ColumnLong.builder(values);
+        ColumnLong.Builder right = ColumnLong.builder(VALUES);
         right.addNull();
         right.add(200L);
 
         Column result = Columns.concat(List.of(left.build(), right.build()));
 
         ColumnLong longs = assertInstanceOf(ColumnLong.class, result);
-        assertEquals(values, longs.getName());
+        assertEquals(VALUES, longs.getName());
         assertEquals(3, longs.size());
         assertEquals(100L, longs.get(0));
         assertEquals("", longs.toString(1));
@@ -444,17 +456,17 @@ class ColumnsTest
     @Test
     void concatSupportsDoubleColumns()
     {
-        ColumnName values = ColumnName.of("values");
-        ColumnDouble.Builder left = ColumnDouble.builder(values);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnDouble.Builder left = ColumnDouble.builder(VALUES);
         left.add(1.5d);
-        ColumnDouble.Builder right = ColumnDouble.builder(values);
+        ColumnDouble.Builder right = ColumnDouble.builder(VALUES);
         right.addNull();
         right.add(-2.25d);
 
         Column result = Columns.concat(List.of(left.build(), right.build()));
 
         ColumnDouble doubles = assertInstanceOf(ColumnDouble.class, result);
-        assertEquals(values, doubles.getName());
+        assertEquals(VALUES, doubles.getName());
         assertEquals(3, doubles.size());
         assertEquals(1.5d, doubles.get(0), 1e-12);
         assertEquals("", doubles.toString(1));
@@ -464,17 +476,17 @@ class ColumnsTest
     @Test
     void concatSupportsByteColumns()
     {
-        ColumnName values = ColumnName.of("values");
-        ColumnByte.Builder left = ColumnByte.builder(values);
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnByte.Builder left = ColumnByte.builder(VALUES);
         left.add((byte) 7);
-        ColumnByte.Builder right = ColumnByte.builder(values);
+        ColumnByte.Builder right = ColumnByte.builder(VALUES);
         right.addNull();
         right.add((byte) -1);
 
         Column result = Columns.concat(List.of(left.build(), right.build()));
 
         ColumnByte bytes = assertInstanceOf(ColumnByte.class, result);
-        assertEquals(values, bytes.getName());
+        assertEquals(VALUES, bytes.getName());
         assertEquals(3, bytes.size());
         assertEquals((byte) 7, bytes.get(0));
         assertEquals("", bytes.toString(1));

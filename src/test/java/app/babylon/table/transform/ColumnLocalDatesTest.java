@@ -37,6 +37,7 @@ class ColumnLocalDatesTest
     void shouldRecogniseDateColumnsAndComputeMinimum()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
+        final ColumnName QUANTITY = ColumnName.of("quantity");
         ColumnObject.Builder<String> strings = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         strings.add("2026-03-01");
         strings.add("2026-03-02");
@@ -45,7 +46,7 @@ class ColumnLocalDatesTest
         dates.add(LocalDate.of(2026, 3, 2));
         dates.add(LocalDate.of(2026, 3, 1));
 
-        ColumnObject.Builder<Integer> ints = ColumnObject.builder(ColumnName.of("quantity"), ColumnTypes.INT_OBJECT);
+        ColumnObject.Builder<Integer> ints = ColumnObject.builder(QUANTITY, ColumnTypes.INT_OBJECT);
         ints.add(1);
         ColumnObject<String> stringDates = strings.build();
         ColumnObject<LocalDate> localDates = dates.build();

@@ -25,6 +25,7 @@ class RowCursorCsvTest
     @Test
     void shouldDetectHeadersAndIterateDataRows()
     {
+        final ColumnName DATE = ColumnName.of("Date");
         String csv = "" + "Meta,Value\n" + "Date,Description,Amount\n" + "2026-01-01,Coffee,3.50\n"
                 + "2026-01-02,Salary,1000.00\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
@@ -35,7 +36,7 @@ class RowCursorCsvTest
             ColumnDefinition[] columns = rowCursort.columns();
 
             assertEquals(3, columns.length);
-            assertEquals(ColumnName.of("Date"), columns[0].name());
+            assertEquals(DATE, columns[0].name());
             assertEquals(null, columns[0].type());
 
             assertTrue(rowCursort.next());
@@ -57,15 +58,17 @@ class RowCursorCsvTest
     @Test
     void shouldExposeExplicitCsvColumnTypes()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName TEMP = ColumnName.of("Temp");
         String csv = "City,Temp\nLondon,12\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
-                .withColumnType(ColumnName.of("Temp"), ColumnTypes.INT_OBJECT).build();
+                .withColumnType(TEMP, ColumnTypes.INT_OBJECT).build();
 
         try (RowCursor rowCursor = source.openRows())
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(CITY, columns[0].name());
             assertEquals(null, columns[0].type());
             assertEquals(ColumnTypes.INT_OBJECT, columns[1].type());
         }
@@ -78,15 +81,17 @@ class RowCursorCsvTest
     @Test
     void shouldExposeExplicitCsvColumnTypesFromMap()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName TEMP = ColumnName.of("Temp");
         String csv = "City,Temp\nLondon,12.5\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
-                .withColumnTypes(Map.of(ColumnName.of("Temp"), ColumnTypes.DOUBLE_OBJECT)).build();
+                .withColumnTypes(Map.of(TEMP, ColumnTypes.DOUBLE_OBJECT)).build();
 
         try (RowCursor rowCursor = source.openRows())
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(CITY, columns[0].name());
             assertEquals(null, columns[0].type());
             assertEquals(ColumnTypes.DOUBLE_OBJECT, columns[1].type());
         }
@@ -99,6 +104,8 @@ class RowCursorCsvTest
     @Test
     void shouldDetectUtf16LeWithoutBom()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName TEMP = ColumnName.of("Temp");
         byte[] bytes = "City,Temp\nLondon,12\n".getBytes(StandardCharsets.UTF_16LE);
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(TestStreamSources.fromBytes(bytes, "rows.csv"))
                 .build();
@@ -107,8 +114,8 @@ class RowCursorCsvTest
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
-            assertEquals(ColumnName.of("Temp"), columns[1].name());
+            assertEquals(CITY, columns[0].name());
+            assertEquals(TEMP, columns[1].name());
 
             assertTrue(rowCursor.next());
             assertArrayEquals(new String[]
@@ -124,6 +131,8 @@ class RowCursorCsvTest
     @Test
     void shouldAutoDetectCommaAndDoubleQuote()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName NOTE = ColumnName.of("Note");
         String csv = "City,Note\nParis,\"Price,12\"\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
                 .build();
@@ -132,8 +141,8 @@ class RowCursorCsvTest
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
-            assertEquals(ColumnName.of("Note"), columns[1].name());
+            assertEquals(CITY, columns[0].name());
+            assertEquals(NOTE, columns[1].name());
 
             assertTrue(rowCursor.next());
             assertArrayEquals(new String[]
@@ -149,6 +158,8 @@ class RowCursorCsvTest
     @Test
     void shouldReadSemicolonAndSingleQuoteWhenConfigured()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName NOTE = ColumnName.of("Note");
         String csv = "City;Note\nParis;'Price;12'\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
                 .withSeparator(';').withQuote('\'').build();
@@ -157,8 +168,8 @@ class RowCursorCsvTest
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
-            assertEquals(ColumnName.of("Note"), columns[1].name());
+            assertEquals(CITY, columns[0].name());
+            assertEquals(NOTE, columns[1].name());
 
             assertTrue(rowCursor.next());
             assertArrayEquals(new String[]
@@ -174,6 +185,8 @@ class RowCursorCsvTest
     @Test
     void shouldFallbackToWindows1252WhenUtf8IsInvalid()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName NOTE = ColumnName.of("Note");
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(TestStreamSources.fromBytes(bytes, "rows.csv"))
                 .build();
@@ -182,8 +195,8 @@ class RowCursorCsvTest
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
-            assertEquals(ColumnName.of("Note"), columns[1].name());
+            assertEquals(CITY, columns[0].name());
+            assertEquals(NOTE, columns[1].name());
 
             assertTrue(rowCursor.next());
             assertArrayEquals(new String[]
@@ -199,6 +212,9 @@ class RowCursorCsvTest
     @Test
     void shouldReadFixedWidthRowsWhenConfigured()
     {
+        final ColumnName COLUMN_1 = ColumnName.of("Column1");
+        final ColumnName COLUMN_2 = ColumnName.of("Column2");
+        final ColumnName COLUMN_3 = ColumnName.of("Column3");
         String text = "ABC12XYZ\nDEF34UVW\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(text, "rows.txt"))
                 .withFixedWidths(new int[]
@@ -208,9 +224,9 @@ class RowCursorCsvTest
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("Column1"), columns[0].name());
-            assertEquals(ColumnName.of("Column2"), columns[1].name());
-            assertEquals(ColumnName.of("Column3"), columns[2].name());
+            assertEquals(COLUMN_1, columns[0].name());
+            assertEquals(COLUMN_2, columns[1].name());
+            assertEquals(COLUMN_3, columns[2].name());
 
             assertTrue(rowCursor.next());
             assertArrayEquals(new String[]
@@ -231,6 +247,8 @@ class RowCursorCsvTest
     @Test
     void shouldTreatNullFixedWidthsAsRegularDelimitedCsv()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName NOTE = ColumnName.of("Note");
         String csv = "City,Note\nParis,\"Price,12\"\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
                 .withFixedWidths(null).build();
@@ -239,8 +257,8 @@ class RowCursorCsvTest
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
-            assertEquals(ColumnName.of("Note"), columns[1].name());
+            assertEquals(CITY, columns[0].name());
+            assertEquals(NOTE, columns[1].name());
 
             assertTrue(rowCursor.next());
             assertArrayEquals(new String[]
@@ -256,6 +274,8 @@ class RowCursorCsvTest
     @Test
     void shouldUseConfiguredCharsetWhenAutoDetectEncodingIsDisabled()
     {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName NOTE = ColumnName.of("Note");
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(TestStreamSources.fromBytes(bytes, "rows.csv"))
                 .withCharset(java.nio.charset.Charset.forName("windows-1252")).withAutoDetectEncoding(false).build();
@@ -264,8 +284,8 @@ class RowCursorCsvTest
         {
             ColumnDefinition[] columns = rowCursor.columns();
 
-            assertEquals(ColumnName.of("City"), columns[0].name());
-            assertEquals(ColumnName.of("Note"), columns[1].name());
+            assertEquals(CITY, columns[0].name());
+            assertEquals(NOTE, columns[1].name());
 
             assertTrue(rowCursor.next());
             assertArrayEquals(new String[]

@@ -86,7 +86,8 @@ public class ColumnLongTest
     @Test
     public void builderShouldCreateLongConstantWhenAllValuesAreSetAndEqual()
     {
-        ColumnLong.Builder builder = ColumnLong.builder(ColumnName.of("L"));
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L);
         builder.add(7L);
         builder.add(7L);
         builder.add(7L);
@@ -99,7 +100,8 @@ public class ColumnLongTest
     @Test
     public void builderWithInitialSizeShouldBuildLongColumn()
     {
-        ColumnLong.Builder builder = ColumnLong.builder(ColumnName.of("L"), 2);
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L, 2);
         builder.add(5L);
         builder.add(6L);
 
@@ -113,7 +115,8 @@ public class ColumnLongTest
     @Test
     public void builderShouldNotCreateLongConstantWhenNullsArePresent()
     {
-        ColumnLong.Builder builder = ColumnLong.builder(ColumnName.of("L"));
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong.Builder builder = ColumnLong.builder(L);
         builder.add(7L);
         builder.addNull();
         builder.add(7L);
@@ -222,12 +225,13 @@ public class ColumnLongTest
     @Test
     public void longColumnsShouldExposeMinAndMax()
     {
-        ColumnLong column = ColumnLong.builder(ColumnName.of("L")).add(42L).addNull().add(-9L).add(7L).build();
+        final ColumnName L = ColumnName.of("L");
+        ColumnLong column = ColumnLong.builder(L).add(42L).addNull().add(-9L).add(7L).build();
 
         assertEquals(42L, column.max());
         assertEquals(-9L, column.min());
 
-        ColumnLong nullConstant = ColumnLongConstant.createNull(ColumnName.of("L"), 2);
+        ColumnLong nullConstant = ColumnLongConstant.createNull(L, 2);
         assertThrows(RuntimeException.class, nullConstant::max);
         assertThrows(RuntimeException.class, nullConstant::min);
     }

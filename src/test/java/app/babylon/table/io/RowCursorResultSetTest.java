@@ -24,6 +24,7 @@ class RowCursorResultSetTest
     @Test
     void shouldExposeMetadataColumnsWithOptionalTypes()
     {
+        final ColumnName CITY = ColumnName.of("City");
         RowCursorResultSet supplier = new RowCursorResultSet(resultSet(new String[]
         {"City", "Amount", "Count"}, new String[]
         {"City", "Amount", "Count"}, new int[]
@@ -34,7 +35,7 @@ class RowCursorResultSetTest
 
         ColumnDefinition[] columns = supplier.columns();
 
-        assertEquals(ColumnName.of("City"), columns[0].name());
+        assertEquals(CITY, columns[0].name());
         assertEquals(ColumnTypes.STRING, columns[0].type());
         assertEquals(ColumnTypes.DECIMAL, columns[1].type());
         assertEquals(ColumnTypes.INT, columns[2].type());

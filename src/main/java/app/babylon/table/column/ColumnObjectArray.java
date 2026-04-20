@@ -10,9 +10,11 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
+import java.util.Objects;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.column.type.TypeParser;
 
 class ColumnObjectArray<T> implements ColumnObject<T>
 {
@@ -26,24 +28,61 @@ class ColumnObjectArray<T> implements ColumnObject<T>
 
     ColumnObjectArray(ColumnObjectBuilderArray<T> builder)
     {
-        this(builder.getName(), builder.getType(), builder.activeSize(), builder.activeIsConstant(),
-                builder.activeIsAllSet(), builder.activeIsNoneSet(), builder.detachValues());
-    }
-
-    ColumnObjectArray(ColumnName name, Column.Type type, int size, boolean isConstant, boolean isAllSet,
-            boolean isNoneSet, Object[] values)
-    {
-        this.name = ArgumentCheck.nonNull(name);
-        this.type = ArgumentCheck.nonNull(type);
-        this.values = ArgumentCheck.nonNull(values);
-        this.size = ArgumentCheck.nonNegative(size);
-        if (size > values.length)
+        this.name = ArgumentCheck.nonNull(builder.getName());
+        this.type = ArgumentCheck.nonNull(builder.getType());
+        this.size = ArgumentCheck.nonNegative(builder.activeSize());
+        this.isConstant = builder.activeIsConstant();
+        this.isAllSet = builder.activeIsAllSet();
+        this.isNoneSet = builder.activeIsNoneSet();
+        this.values = ArgumentCheck.nonNull(builder.detachValues());
+        if (this.size > this.values.length)
         {
             throw new IllegalArgumentException("Size exceeds values length.");
         }
-        this.isConstant = isConstant;
-        this.isAllSet = isAllSet;
-        this.isNoneSet = isNoneSet;
+    }
+
+    ColumnObjectArray(ColumnObjectBuilderArray<?> builder, Column.Type transformedType)
+    {
+        this.name = ArgumentCheck.nonNull(builder.getName());
+        this.type = ArgumentCheck.nonNull(transformedType);
+        this.size = ArgumentCheck.nonNegative(builder.activeSize());
+        @SuppressWarnings("unchecked")
+        TypeParser<T> parser = (TypeParser<T>) this.type.getParser();
+        this.values = ArgumentCheck.nonNull(builder.detachValues());
+
+        boolean transformedConstant = true;
+        boolean hasAnySet = false;
+        boolean hasAnyUnset = false;
+        T previousValue = null;
+        boolean previousAssigned = false;
+
+        for (int i = 0; i < this.size; ++i)
+        {
+            CharSequence sourceValue = (CharSequence) this.values[i];
+            T transformed = sourceValue == null ? null : parser.parse(sourceValue);
+            this.values[i] = transformed;
+            if (transformed == null)
+            {
+                hasAnyUnset = true;
+            }
+            else
+            {
+                hasAnySet = true;
+            }
+            if (transformedConstant && previousAssigned)
+            {
+                transformedConstant = Objects.equals(previousValue, transformed);
+            }
+            previousValue = transformed;
+            previousAssigned = true;
+        }
+        if (this.size > this.values.length)
+        {
+            throw new IllegalArgumentException("Size exceeds values length.");
+        }
+        this.isConstant = transformedConstant;
+        this.isAllSet = !hasAnyUnset;
+        this.isNoneSet = !hasAnySet;
     }
 
     @SuppressWarnings("unchecked")

@@ -3,18 +3,19 @@ package app.babylon.table.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.math.BigDecimal;
+
+import org.junit.jupiter.api.Test;
+
+import app.babylon.table.TableColumnar;
+import app.babylon.table.TableName;
+import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
-import app.babylon.table.TableColumnar;
-import app.babylon.table.TableName;
-import app.babylon.table.Tables;
-import app.babylon.table.column.Column;
-import org.junit.jupiter.api.Test;
 
 public class TransformToTypeTest
 {
@@ -24,7 +25,7 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM);
         strings.add("1");
         strings.add("2");
         strings.add("1");
@@ -32,13 +33,13 @@ public class TransformToTypeTest
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
         TableColumnar transformed = table
-                .apply(new TransformToType<>(ColumnTypes.INT_OBJECT, FROM, Integer::parseInt, TO));
+                .apply(new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.CATEGORICAL, FROM, TO));
 
         assertTrue(transformed.get(TO) instanceof ColumnCategorical<?>);
-        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, ColumnTypes.INT_OBJECT);
-        assertEquals(Integer.valueOf(1), ints.get(0));
-        assertEquals(Integer.valueOf(2), ints.get(1));
-        assertEquals(Integer.valueOf(1), ints.get(2));
+        ColumnCategorical<BigDecimal> decimals = transformed.getCategorical(TO, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("1"), decimals.get(0));
+        assertEquals(new BigDecimal("2"), decimals.get(1));
+        assertEquals(new BigDecimal("1"), decimals.get(2));
     }
 
     @Test
@@ -48,17 +49,17 @@ public class TransformToTypeTest
         final ColumnName TO = ColumnName.of("To");
 
         ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
-        strings.add("ignore one here");
+        strings.add("ignore 1 here");
         strings.add("missing");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(TransformToType.of(ColumnTypes.INT_OBJECT,
-                TransformToTypeTest::parseWordNumber, "From", "To", "CATEGORICAL", "FIRST_IN"));
+        TableColumnar transformed = table
+                .apply(TransformToType.of(ColumnTypes.DECIMAL, "From", "To", "CATEGORICAL", "FIRST_IN"));
 
-        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, ColumnTypes.INT_OBJECT);
-        assertEquals(Integer.valueOf(1), ints.get(0));
-        assertFalse(ints.isSet(1));
+        ColumnCategorical<BigDecimal> decimals = transformed.getCategorical(TO, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("1"), decimals.get(0));
+        assertFalse(decimals.isSet(1));
     }
 
     @Test
@@ -68,15 +69,15 @@ public class TransformToTypeTest
         final ColumnName TO = ColumnName.of("To");
 
         ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
-        strings.add("one ignore two");
+        strings.add("1 ignore 2");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(TransformToType.of(ColumnTypes.INT_OBJECT,
-                TransformToTypeTest::parseWordNumber, "From", "To", "ARRAY", "LAST_IN"));
+        TableColumnar transformed = table
+                .apply(TransformToType.of(ColumnTypes.DECIMAL, "From", "To", "ARRAY", "LAST_IN"));
 
-        ColumnObject<Integer> ints = transformed.getObject(TO, ColumnTypes.INT_OBJECT);
-        assertEquals(Integer.valueOf(2), ints.get(0));
+        ColumnObject<BigDecimal> decimals = transformed.getObject(TO, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("2"), decimals.get(0));
     }
 
     @Test
@@ -86,17 +87,17 @@ public class TransformToTypeTest
         final ColumnName TO = ColumnName.of("To");
 
         ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
-        strings.add("ignore one here");
-        strings.add("one and two");
+        strings.add("ignore 1 here");
+        strings.add("1 and 2");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(TransformToType.of(ColumnTypes.INT_OBJECT,
-                TransformToTypeTest::parseWordNumber, "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
+        TableColumnar transformed = table
+                .apply(TransformToType.of(ColumnTypes.DECIMAL, "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
 
-        ColumnCategorical<Integer> ints = transformed.getCategorical(TO, ColumnTypes.INT_OBJECT);
-        assertEquals(Integer.valueOf(1), ints.get(0));
-        assertFalse(ints.isSet(1));
+        ColumnCategorical<BigDecimal> decimals = transformed.getCategorical(TO, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("1"), decimals.get(0));
+        assertFalse(decimals.isSet(1));
     }
 
     @Test
@@ -104,17 +105,17 @@ public class TransformToTypeTest
     {
         final ColumnName FROM = ColumnName.of("From");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM);
         strings.add("1");
         strings.add("");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.INT_OBJECT, Integer::parseInt, FROM));
+        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.DECIMAL, FROM));
 
-        ColumnObject<Integer> ints = transformed.getObject(FROM, ColumnTypes.INT_OBJECT);
-        assertEquals(Integer.valueOf(1), ints.get(0));
-        assertFalse(ints.isSet(1));
+        ColumnObject<BigDecimal> decimals = transformed.getObject(FROM, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("1"), decimals.get(0));
+        assertFalse(decimals.isSet(1));
     }
 
     @Test
@@ -129,11 +130,11 @@ public class TransformToTypeTest
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
         TableColumnar transformed = table
-                .apply(new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.ARRAY, Integer::parseInt, FROM));
+                .apply(new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.ARRAY, FROM));
 
         assertFalse(transformed.get(FROM) instanceof ColumnCategorical<?>);
-        ColumnObject<Integer> ints = transformed.getObject(FROM, ColumnTypes.INT_OBJECT);
-        assertEquals(Integer.valueOf(2), ints.get(1));
+        ColumnObject<BigDecimal> decimals = transformed.getObject(FROM, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("2"), decimals.get(1));
     }
 
     @Test
@@ -142,15 +143,15 @@ public class TransformToTypeTest
         final ColumnName FROM = ColumnName.of("From");
 
         ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
-        strings.add("one ignore two");
+        strings.add("1 ignore 2");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.AUTO,
-                TransformParseMode.LAST_IN, TransformToTypeTest::parseWordNumber, FROM));
+        TableColumnar transformed = table.apply(
+                new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.AUTO, TransformParseMode.LAST_IN, FROM));
 
-        ColumnObject<Integer> ints = transformed.getObject(FROM, ColumnTypes.INT_OBJECT);
-        assertEquals(Integer.valueOf(2), ints.get(0));
+        ColumnObject<BigDecimal> decimals = transformed.getObject(FROM, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("2"), decimals.get(0));
     }
 
     @Test
@@ -165,12 +166,12 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(
-                new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.ARRAY, FROM, Integer::parseInt, TO));
+        TableColumnar transformed = table
+                .apply(new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.ARRAY, FROM, TO));
 
         assertFalse(transformed.get(TO) instanceof ColumnCategorical<?>);
-        assertEquals(Integer.valueOf(1), transformed.getObject(TO, ColumnTypes.INT_OBJECT).get(0));
-        assertEquals(Integer.valueOf(2), transformed.getObject(TO, ColumnTypes.INT_OBJECT).get(1));
+        assertEquals(new BigDecimal("1"), transformed.getObject(TO, ColumnTypes.DECIMAL).get(0));
+        assertEquals(new BigDecimal("2"), transformed.getObject(TO, ColumnTypes.DECIMAL).get(1));
     }
 
     @Test
@@ -180,46 +181,19 @@ public class TransformToTypeTest
         final ColumnName TO = ColumnName.of("To");
 
         ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, app.babylon.table.column.ColumnTypes.STRING);
-        strings.add("ignore one here");
+        strings.add("ignore 1 here");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table
-                .apply(new TransformToType<>(ColumnTypes.INT_OBJECT, ColumnObject.Mode.CATEGORICAL,
-                        TransformParseMode.FIRST_IN, FROM, TransformToTypeTest::parseWordNumber, TO));
+        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.DECIMAL,
+                ColumnObject.Mode.CATEGORICAL, TransformParseMode.FIRST_IN, FROM, TO));
 
-        assertEquals(Integer.valueOf(1), transformed.getCategorical(TO, ColumnTypes.INT_OBJECT).get(0));
-    }
-
-    @Test
-    public void shouldReturnSameTypedColumnWhenNameAndModeAlreadyMatch()
-    {
-        final ColumnName VALUES = ColumnName.of("Values");
-        ColumnCategorical.Builder<Integer> ints = ColumnCategorical.builder(VALUES, ColumnTypes.INT_OBJECT);
-        ints.add(1);
-        ColumnObject<Integer> source = ints.build();
-
-        TableColumnar table = Tables.newTable(TableName.of("t"), source);
-
-        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.INT_OBJECT,
-                ColumnObject.Mode.CATEGORICAL, Integer::parseInt, VALUES));
-
-        assertSame(source, transformed.get(VALUES));
+        assertEquals(new BigDecimal("1"), transformed.getCategorical(TO, ColumnTypes.DECIMAL).get(0));
     }
 
     @Test
     public void shouldReturnNullFromFactoryWhenParamsAreMissing()
     {
-        assertNull(TransformToType.of(ColumnTypes.INT_OBJECT, Integer::parseInt, "From"));
-    }
-
-    private static Integer parseWordNumber(String s)
-    {
-        return switch (s)
-        {
-            case "one" -> 1;
-            case "two" -> 2;
-            default -> null;
-        };
+        assertNull(TransformToType.of(ColumnTypes.DECIMAL, "From"));
     }
 }

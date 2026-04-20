@@ -54,6 +54,11 @@ public interface Column
          * @return the built column
          */
         public Column build();
+
+        // default public Column build(Column.Type type)
+        // {
+        // return build();
+        // }
     }
 
     /**

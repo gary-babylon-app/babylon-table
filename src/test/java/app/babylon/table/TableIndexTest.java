@@ -14,16 +14,18 @@ class TableIndexTest
     @Test
     void shouldExposeIndexedTableAndResolveRows()
     {
-        ColumnObject.Builder<String> code = ColumnObject.builder(ColumnName.of("Code"), ColumnTypes.STRING);
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName NAME = ColumnName.of("Name");
+        ColumnObject.Builder<String> code = ColumnObject.builder(CODE, ColumnTypes.STRING);
         code.add("A");
         code.add("B");
 
-        ColumnObject.Builder<String> name = ColumnObject.builder(ColumnName.of("Name"), ColumnTypes.STRING);
+        ColumnObject.Builder<String> name = ColumnObject.builder(NAME, ColumnTypes.STRING);
         name.add("Alpha");
         name.add("Beta");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), code.build(), name.build());
-        TableIndex index = new TableIndex(table, ColumnName.of("Code"), ColumnName.of("Name"));
+        TableIndex index = new TableIndex(table, CODE, NAME);
 
         assertSame(table, index.getTable());
         assertEquals(0, index.index("A", "Alpha"));

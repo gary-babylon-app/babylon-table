@@ -45,15 +45,16 @@ class TransformSubstituteTest
     void shouldLeaveMissingStringColumnUnchanged()
     {
         final ColumnName VALUE = ColumnName.of("Value");
+        final ColumnName MISSING = ColumnName.of("Missing");
+        final ColumnName NEW = ColumnName.of("New");
         ColumnObject.Builder<String> value = ColumnObject.builder(VALUE, app.babylon.table.column.ColumnTypes.STRING);
         value.add("x");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), value.build());
 
-        TableColumnar transformed = table.apply(
-                new TransformSubstitute(ColumnName.of("Missing"), ColumnName.of("New"), java.util.Map.of("x", "y")));
+        TableColumnar transformed = table.apply(new TransformSubstitute(MISSING, NEW, java.util.Map.of("x", "y")));
 
-        assertFalse(transformed.contains(ColumnName.of("New")));
+        assertFalse(transformed.contains(NEW));
     }
 
     @Test

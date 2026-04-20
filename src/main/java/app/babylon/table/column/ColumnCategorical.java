@@ -17,7 +17,6 @@ import java.util.function.Predicate;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
-import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.Selection;
 
 /**
@@ -74,7 +73,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
          * This is the natural path for building a {@code ColumnCategorical<S>} from a
          * string-like categorical builder when the target parser may still need to
          * construct a {@link String}. The categorical dictionary can be parsed once
-         * during materialization, rather than first building an immutable
+         * during materialisation, rather than first building an immutable
          * {@code ColumnCategorical<String>} and then transforming that immutable column
          * afterward.
          *
@@ -93,28 +92,29 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
          *            the target column type
          * @return an immutable categorical column of the transformed type
          */
-        default <S> ColumnCategorical<S> build(Column.Type transformedType)
-        {
-            Column.Type targetType = ArgumentCheck.nonNull(transformedType);
-            if (targetType.equals(getType()))
-            {
-                @SuppressWarnings("unchecked")
-                ColumnCategorical<S> built = (ColumnCategorical<S>) build();
-                return built;
-            }
-            Class<?> valueClass = getType().getValueClass();
-            if (!CharSequence.class.isAssignableFrom(valueClass))
-            {
-                throw new IllegalStateException(
-                        "Categorical parsed build requires CharSequence values, not " + valueClass.getName());
-            }
-            @SuppressWarnings("unchecked")
-            TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
-            @SuppressWarnings("unchecked")
-            Builder<CharSequence> source = (Builder<CharSequence>) this;
-            ColumnCategorical<CharSequence> built = source.build();
-            return built.transform(Transformer.of(parser::parse, targetType));
-        }
+        <S> ColumnCategorical<S> build(Column.Type transformedType);
+        // {
+        // Column.Type targetType = ArgumentCheck.nonNull(transformedType);
+        // if (targetType.equals(getType()))
+        // {
+        // @SuppressWarnings("unchecked")
+        // ColumnCategorical<S> built = (ColumnCategorical<S>) build();
+        // return built;
+        // }
+        // Class<?> valueClass = getType().getValueClass();
+        // if (!CharSequence.class.isAssignableFrom(valueClass))
+        // {
+        // throw new IllegalStateException(
+        // "Categorical parsed build requires CharSequence values, not " +
+        // valueClass.getName());
+        // }
+        // @SuppressWarnings("unchecked")
+        // TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
+        // @SuppressWarnings("unchecked")
+        // Builder<CharSequence> source = (Builder<CharSequence>) this;
+        // ColumnCategorical<CharSequence> built = source.build();
+        // return built.transform(Transformer.of(parser::parse, targetType));
+        // }
     }
 
     public static Builder<String> builder(ColumnName name)

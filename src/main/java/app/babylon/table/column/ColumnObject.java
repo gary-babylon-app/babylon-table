@@ -174,6 +174,42 @@ public interface ColumnObject<T> extends Column
         public ColumnObject<T> build();
 
         /**
+         * Builds the object column by parsing each distinct source value through the
+         * supplied target type parser.
+         * 
+         * If the supplied target type is the same as the builder type, this behaves
+         * like {@link #build()} and returns the column directly.
+         *
+         * @param <S>
+         *            the transformed value type
+         * @param transformedType
+         *            the target column type
+         * @return an immutable categorical column of the transformed type
+         */
+        <S> ColumnObject<S> build(Column.Type transformedType);
+        // {
+        // Column.Type targetType = ArgumentCheck.nonNull(transformedType);
+        // if (targetType.equals(getType()))
+        // {
+        // @SuppressWarnings("unchecked")
+        // ColumnCategorical<S> built = (ColumnCategorical<S>) build();
+        // return built;
+        // }
+        // Class<?> valueClass = getType().getValueClass();
+        // if (!CharSequence.class.isAssignableFrom(valueClass))
+        // {
+        // throw new IllegalStateException(
+        // "Categorical parsed build requires CharSequence values, not " +
+        // valueClass.getName());
+        // }
+        // @SuppressWarnings("unchecked")
+        // TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
+        // @SuppressWarnings("unchecked")
+        // Builder<CharSequence> builder = (Builder<CharSequence>) this;
+        // ColumnObject<CharSequence> built = builder.build();
+        // return built.transform(Transformer.of(parser::parse, targetType));
+        // }
+        /**
          * Appends an unset row.
          *
          * @return this builder

@@ -12,7 +12,6 @@ package app.babylon.table.column;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import app.babylon.lang.Is;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.aggregation.AccumulatorDouble;
 import app.babylon.table.aggregation.Aggregate;
-import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.sorting.ComparatorInt;
 import app.babylon.table.sorting.SortInt;
 import app.babylon.text.BigDecimals;
@@ -107,7 +105,11 @@ public class Columns
         return column.isEmpty();
     }
 
-    public static Column.Builder newColumn(ColumnName colName, Column.Type type)
+    public static Column.Builder newColumn(ColumnName colName)
+    {
+        return newBuilder(colName, ColumnTypes.STRING);
+    }
+    public static Column.Builder newBuilder(ColumnName colName, Column.Type type)
     {
         if (type == null)
         {
@@ -141,40 +143,43 @@ public class Columns
         throw new IllegalArgumentException("Unsupported value class " + valueClass);
     }
 
-    public static Column.Builder newCharSliceBuilder(ColumnName colName, Column.Type type)
-    {
-        if (type == null)
-        {
-            throw new RuntimeException("Unsupported type null");
-        }
-
-        if (ColumnTypes.STRING.equals(type))
-        {
-            return ColumnObject.builder(colName, app.babylon.table.column.ColumnTypes.STRING);
-        }
-        if (ColumnTypes.DECIMAL.equals(type))
-        {
-            return ColumnObject.builderDecimal(colName);
-        }
-        if (ColumnDouble.TYPE.equals(type))
-        {
-            return ColumnDouble.builder(colName);
-        }
-        if (ColumnInt.TYPE.equals(type))
-        {
-            return ColumnInt.builder(colName);
-        }
-        if (ColumnLong.TYPE.equals(type))
-        {
-            return ColumnLong.builder(colName);
-        }
-        if (ColumnByte.TYPE.equals(type))
-        {
-            return ColumnByte.builder(colName);
-        }
-        Class<?> valueClass = type.getValueClass();
-        throw new IllegalArgumentException("Unsupported char-slice builder type " + valueClass);
-    }
+    // public static Column.Builder newCharSliceBuilder(ColumnName colName,
+    // Column.Type type)
+    // {
+    // if (type == null)
+    // {
+    // throw new RuntimeException("Unsupported type null");
+    // }
+    //
+    // if (ColumnTypes.STRING.equals(type))
+    // {
+    // return ColumnObject.builder(colName,
+    // app.babylon.table.column.ColumnTypes.STRING);
+    // }
+    // if (ColumnTypes.DECIMAL.equals(type))
+    // {
+    // return ColumnObject.builderDecimal(colName);
+    // }
+    // if (ColumnDouble.TYPE.equals(type))
+    // {
+    // return ColumnDouble.builder(colName);
+    // }
+    // if (ColumnInt.TYPE.equals(type))
+    // {
+    // return ColumnInt.builder(colName);
+    // }
+    // if (ColumnLong.TYPE.equals(type))
+    // {
+    // return ColumnLong.builder(colName);
+    // }
+    // if (ColumnByte.TYPE.equals(type))
+    // {
+    // return ColumnByte.builder(colName);
+    // }
+    // Class<?> valueClass = type.getValueClass();
+    // throw new IllegalArgumentException("Unsupported char-slice builder type " +
+    // valueClass);
+    // }
 
     public static ColumnObject<BigDecimal> newDecimal(ColumnName colName, BigDecimal value, int size)
     {

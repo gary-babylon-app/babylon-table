@@ -26,10 +26,10 @@ class ColumnTypesTest
         assertEquals(String.class, ColumnTypes.STRING.getValueClass());
         assertEquals(BigDecimal.class, ColumnTypes.DECIMAL.getValueClass());
         assertEquals(LocalDate.class, ColumnTypes.LOCALDATE.getValueClass());
-        assertEquals(TypeParsers.STRING, ColumnTypes.BYTE.getParser());
-        assertEquals(TypeParsers.STRING, ColumnTypes.INT.getParser());
-        assertEquals(TypeParsers.STRING, ColumnTypes.LONG.getParser());
-        assertEquals(TypeParsers.STRING, ColumnTypes.DOUBLE.getParser());
+        assertEquals(TypeParsers.BYTE, ColumnTypes.BYTE.getParser());
+        assertEquals(TypeParsers.INT, ColumnTypes.INT.getParser());
+        assertEquals(TypeParsers.LONG, ColumnTypes.LONG.getParser());
+        assertEquals(TypeParsers.DOUBLE, ColumnTypes.DOUBLE.getParser());
         assertEquals(TypeParsers.STRING, ColumnTypes.STRING.getParser());
         assertEquals(TypeParsers.BIG_DECIMAL, ColumnTypes.DECIMAL.getParser());
         assertEquals(TypeParsers.LOCAL_DATE_YMD, ColumnTypes.LOCALDATE.getParser());

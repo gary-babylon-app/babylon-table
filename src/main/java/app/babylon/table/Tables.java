@@ -200,7 +200,7 @@ public class Tables
         Column.Builder[] builders = new Column.Builder[rightColumns.length];
         for (int i = 0; i < rightColumns.length; ++i)
         {
-            builders[i] = Columns.newColumn(rightColumns[i].getName(), rightColumns[i].getType());
+            builders[i] = Columns.newBuilder(rightColumns[i].getName(), rightColumns[i].getType());
         }
 
         Column[] leftKeyColumns = left.getColumns(leftKeys);

@@ -98,6 +98,19 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
     }
 
     @Override
+    public <S> ColumnObject<S> build(Column.Type transformedType)
+    {
+        ensureActive();
+        if (!this.decided)
+        {
+            decideAtCurrentSample();
+        }
+        ColumnObject<S> builtColumn = activeBuilder().build(transformedType);
+        this.built = true;
+        return builtColumn;
+    }
+
+    @Override
     public int size()
     {
         ensureActive();

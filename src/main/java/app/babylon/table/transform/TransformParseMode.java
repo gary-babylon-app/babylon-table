@@ -3,21 +3,22 @@ package app.babylon.table.transform;
 import java.util.function.Function;
 
 import app.babylon.text.Sentence;
+import app.babylon.text.Strings;
 
 public enum TransformParseMode
 {
     EXACT, FIRST_IN, LAST_IN, ONLY_ONE_IN;
 
-    public static TransformParseMode parse(String s)
+    public static TransformParseMode parse(CharSequence s)
     {
         if (s == null)
         {
             return EXACT;
         }
-        return valueOf(s.trim().toUpperCase());
+        return valueOf(Strings.strip(s).toString().toUpperCase());
     }
 
-    public <T> T apply(Function<String, T> parser, String value)
+    public <T> T apply(Function<CharSequence, T> parser, String value)
     {
         Function<CharSequence, T> sentenceParser = s -> parser.apply(s == null ? null : s.toString());
         return switch (this)

@@ -24,6 +24,7 @@ class RowSourceResultSetTest
     @Test
     void shouldOpenRowsByExecutingPreparedStatementAndCloseOwnedResultSet() throws Exception
     {
+        final ColumnName CITY = ColumnName.of("City");
         AtomicBoolean executed = new AtomicBoolean(false);
         AtomicBoolean closed = new AtomicBoolean(false);
         ResultSet resultSet = resultSet(new String[]
@@ -42,7 +43,7 @@ class RowSourceResultSetTest
         {
             assertTrue(executed.get());
             ColumnDefinition[] columns = supplier.columns();
-            assertEquals(ColumnName.of("City"), columns[0].name());
+            assertEquals(CITY, columns[0].name());
             assertEquals(ColumnTypes.DECIMAL, columns[1].type());
             assertTrue(supplier.next());
             Row row = supplier.current();

@@ -39,11 +39,12 @@ class HeaderStrategyAutoTest
     @Test
     void detectShouldFilterSelectedColumns() throws IOException
     {
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName PRICE = ColumnName.of("Price");
         HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
-        HeaderDetection detection = strategy.detect(
-                HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("Trade Date", "", "Price"),
-                        HeaderStrategyTestSupport.row("2026-01-02", "", "10.25")),
-                Set.of(ColumnName.of("TradeDate"), ColumnName.of("Price")));
+        HeaderDetection detection = strategy
+                .detect(HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("Trade Date", "", "Price"),
+                        HeaderStrategyTestSupport.row("2026-01-02", "", "10.25")), Set.of(TRADE_DATE, PRICE));
 
         assertArrayEquals(new String[]
         {"Trade Date", "Column2", "Price"}, detection.getHeadersFound());

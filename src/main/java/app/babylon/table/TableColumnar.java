@@ -49,6 +49,12 @@ public interface TableColumnar extends Table
 
     public Column get(ColumnName x);
 
+    default public Column.Type getType(ColumnName x)
+    {
+        Column column = get(x);
+        return column == null ? null : column.getType();
+    }
+
     public boolean contains(ColumnName x);
 
     public Collection<ColumnName> getColumnNames(Collection<ColumnName> x);

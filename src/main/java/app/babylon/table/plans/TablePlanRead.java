@@ -103,6 +103,17 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         return this;
     }
 
+    public TablePlanRead withColumnTypes(Column.Type columnType, ColumnName... columnNames)
+    {
+        Column.Type type = ArgumentCheck.nonNull(columnType);
+        ColumnName[] names = ArgumentCheck.nonEmpty(columnNames);
+        for (ColumnName columnName : names)
+        {
+            withColumnType(columnName, type);
+        }
+        return this;
+    }
+
     public Column.Type getColumnType(ColumnName columnName)
     {
         return this.columnTypes.get(columnName);

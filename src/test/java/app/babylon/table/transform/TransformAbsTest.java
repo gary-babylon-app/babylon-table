@@ -26,7 +26,7 @@ class TransformAbsTest
     @Test
     void applyColumnShouldTakeAbsoluteValues()
     {
-        ColumnName amount = ColumnName.of("Amount");
+        final ColumnName amount = ColumnName.of("Amount");
         ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builderDecimal(amount);
         amounts.add(new BigDecimal("-2.5"));
         amounts.addNull();
@@ -44,8 +44,8 @@ class TransformAbsTest
     @Test
     void applyMapShouldUseColumnApply()
     {
-        ColumnName amount = ColumnName.of("Amount");
-        ColumnName absAmount = ColumnName.of("AbsAmount");
+        final ColumnName amount = ColumnName.of("Amount");
+        final ColumnName absAmount = ColumnName.of("AbsAmount");
         ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builderDecimal(amount);
         amounts.add(new BigDecimal("-2.5"));
         amounts.addNull();
@@ -61,8 +61,8 @@ class TransformAbsTest
     @Test
     void factoriesShouldCreateWorkingTransforms()
     {
-        ColumnName amount = ColumnName.of("Amount");
-        ColumnName absAmount = ColumnName.of("AbsAmount");
+        final ColumnName amount = ColumnName.of("Amount");
+        final ColumnName absAmount = ColumnName.of("AbsAmount");
         ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builderDecimal(amount);
         amounts.add(new BigDecimal("-7.50"));
         ColumnObject<BigDecimal> source = amounts.build();

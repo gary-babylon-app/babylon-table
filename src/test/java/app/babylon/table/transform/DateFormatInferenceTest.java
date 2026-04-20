@@ -496,7 +496,8 @@ class DateFormatInferenceTest
         assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("2026-Mar-03"), DateFormat.MDY));
         assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("2026////01"), DateFormat.DMY));
 
-        ColumnObject.Builder<String> empty = ColumnObject.builder(ColumnName.of("trade_date"),
+        final ColumnName TRADE_DATE = ColumnName.of("trade_date");
+        ColumnObject.Builder<String> empty = ColumnObject.builder(TRADE_DATE,
                 app.babylon.table.column.ColumnTypes.STRING);
         empty.addNull();
         empty.add("   ");

@@ -12,26 +12,6 @@ import org.junit.jupiter.api.Test;
 
 class TypeParserTest
 {
-    private enum Side
-    {
-        BUY, SELL;
-
-        private static Side parse(CharSequence s)
-        {
-            if (s == null)
-            {
-                return null;
-            }
-            String text = s.toString().strip().toUpperCase();
-            return switch (text)
-            {
-                case "B", "BUY" -> BUY;
-                case "S", "SELL" -> SELL;
-                default -> null;
-            };
-        }
-    }
-
     @Test
     void defaultPrimitiveParsersShouldWorkForCharSequence()
     {
@@ -70,6 +50,18 @@ class TypeParserTest
     }
 
     @Test
+    void boxedPrimitiveParsersShouldReturnTypedValues()
+    {
+        assertEquals(Byte.valueOf((byte) 12), TypeParsers.BYTE.parse("12"));
+        assertEquals(Integer.valueOf(345), TypeParsers.INT.parse("345"));
+        assertEquals(Long.valueOf(6789012345L), TypeParsers.LONG.parse("6789012345"));
+        assertEquals(Double.valueOf(9.75d), TypeParsers.DOUBLE.parse("9.75"));
+        assertEquals(Integer.valueOf(345), TypeParsers.INT.parse("xx345yy", 2, 3));
+        assertNull(TypeParsers.INT.parse(""));
+        assertNull(TypeParsers.LONG.parse((CharSequence) null));
+    }
+
+    @Test
     void objectParserShouldWorkWithLocalDateYmdFallback()
     {
         TypeParser<LocalDate> parser = TypeParsers.LOCAL_DATE_YMD;
@@ -95,35 +87,6 @@ class TypeParserTest
         assertEquals(LocalDate.of(2024, 3, 15), ukParser.parse(ukChars, 2, 10));
         assertNull(usParser.parse("15/03/2024"));
         assertNull(ukParser.parse("03/15/2024"));
-    }
-
-    @Test
-    void enumParserShouldWrapSuppliedFunction()
-    {
-        TypeParser<Side> parser = TypeParsers.enumParser(Side::parse);
-        String chars = "xxBUYyy";
-
-        assertEquals(Side.BUY, parser.parse("B"));
-        assertEquals(Side.SELL, parser.parse("sell"));
-        assertEquals(Side.BUY, parser.parse(chars, 2, 3));
-        assertNull(parser.parse((CharSequence) null));
-        assertNull(parser.parse(""));
-        assertNull(parser.parse("hold"));
-    }
-
-    @Test
-    void enumParserShouldProvideDefaultEnumValueOfFallbacks()
-    {
-        TypeParser<Side> parser = TypeParsers.enumParser(Side.class);
-        String chars = "xxBUYyy";
-
-        assertEquals(Side.BUY, parser.parse("BUY"));
-        assertEquals(Side.SELL, parser.parse(" sell "));
-        assertEquals(Side.BUY, parser.parse(chars, 2, 3));
-        assertNull(parser.parse((CharSequence) null));
-        assertNull(parser.parse(""));
-        assertNull(parser.parse("B"));
-        assertNull(parser.parse("hold"));
     }
 
     @Test

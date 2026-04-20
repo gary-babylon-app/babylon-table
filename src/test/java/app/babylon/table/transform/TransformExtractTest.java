@@ -121,8 +121,9 @@ public class TransformExtractTest
     @Test
     public void factoriesShouldRejectNullInputs()
     {
+        final ColumnName DESCRIPTION = ColumnName.of("Description");
         assertNull(TransformExtract.of((ColumnName) null, Pattern.compile("x")));
-        assertNull(TransformExtract.of(ColumnName.of("Description"), null));
+        assertNull(TransformExtract.of(DESCRIPTION, null));
         assertNull(TransformExtract.of(new String[0]));
     }
 }

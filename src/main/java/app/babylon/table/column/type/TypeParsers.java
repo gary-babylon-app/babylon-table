@@ -13,7 +13,6 @@ package app.babylon.table.column.type;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Currency;
-import java.util.function.Function;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.transform.ColumnLocalDates;
@@ -26,6 +25,62 @@ public final class TypeParsers
 {
     public static final TypeParser<Object> NULL = s -> null;
     public static final TypeParser<String> STRING = s -> s == null ? null : s.toString();
+    public static final TypeParser<Byte> BYTE = new TypeParser<>()
+    {
+        @Override
+        public Byte parse(CharSequence s)
+        {
+            return Strings.isEmpty(s) ? null : parseByte(s);
+        }
+
+        @Override
+        public Byte parse(CharSequence s, int offset, int length)
+        {
+            return s == null || length <= 0 ? null : parseByte(s, offset, length);
+        }
+    };
+    public static final TypeParser<Integer> INT = new TypeParser<>()
+    {
+        @Override
+        public Integer parse(CharSequence s)
+        {
+            return Strings.isEmpty(s) ? null : parseInt(s);
+        }
+
+        @Override
+        public Integer parse(CharSequence s, int offset, int length)
+        {
+            return s == null || length <= 0 ? null : parseInt(s, offset, length);
+        }
+    };
+    public static final TypeParser<Long> LONG = new TypeParser<>()
+    {
+        @Override
+        public Long parse(CharSequence s)
+        {
+            return Strings.isEmpty(s) ? null : parseLong(s);
+        }
+
+        @Override
+        public Long parse(CharSequence s, int offset, int length)
+        {
+            return s == null || length <= 0 ? null : parseLong(s, offset, length);
+        }
+    };
+    public static final TypeParser<Double> DOUBLE = new TypeParser<>()
+    {
+        @Override
+        public Double parse(CharSequence s)
+        {
+            return Strings.isEmpty(s) ? null : parseDouble(s);
+        }
+
+        @Override
+        public Double parse(CharSequence s, int offset, int length)
+        {
+            return s == null || length <= 0 ? null : parseDouble(s, offset, length);
+        }
+    };
     public static final TypeParser<BigDecimal> BIG_DECIMAL = BigDecimals::parse;
     public static final TypeParser<LocalDate> LOCAL_DATE_YMD = localDate(DateFormat.YMD);
     public static final TypeParser<Currency> CURRENCY = new TypeParser<>()
@@ -51,55 +106,5 @@ public final class TypeParsers
     {
         DateFormat x = ArgumentCheck.nonNull(format);
         return s -> ColumnLocalDates.stringToDate(s, x);
-    }
-
-    public static <E extends Enum<E>> TypeParser<E> enumParser(Function<CharSequence, E> parser)
-    {
-        Function<CharSequence, E> x = ArgumentCheck.nonNull(parser);
-        return s -> Strings.isEmpty(s) ? null : x.apply(s);
-    }
-
-    public static <E extends Enum<E>> TypeParser<E> enumParser(Class<E> enumClass)
-    {
-        Class<E> x = ArgumentCheck.nonNull(enumClass);
-        return s -> parseEnum(x, s);
-    }
-
-    public static <E extends Enum<E>> E parseEnum(Class<E> enumClass, CharSequence s)
-    {
-        Class<E> x = ArgumentCheck.nonNull(enumClass);
-        if (Strings.isEmpty(s))
-        {
-            return null;
-        }
-        String text = s.toString().strip();
-        if (text.isEmpty())
-        {
-            return null;
-        }
-        try
-        {
-            return Enum.valueOf(x, text);
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Fall through to the normalized lookups below.
-        }
-        try
-        {
-            return Enum.valueOf(x, text.toLowerCase());
-        }
-        catch (IllegalArgumentException e)
-        {
-            // Fall through to the normalized lookups below.
-        }
-        try
-        {
-            return Enum.valueOf(x, text.toUpperCase());
-        }
-        catch (IllegalArgumentException e)
-        {
-            return null;
-        }
     }
 }

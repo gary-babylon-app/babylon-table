@@ -110,6 +110,31 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
     }
 
     @Override
+    public <S> ColumnObject<S> build(Column.Type transformedType)
+    {
+        ensureActive();
+        Column.Type targetType = ArgumentCheck.nonNull(transformedType);
+        if (targetType.equals(this.type))
+        {
+            @SuppressWarnings("unchecked")
+            ColumnObject<S> built = (ColumnObject<S>) build();
+            return built;
+        }
+        Class<?> valueClass = this.type.getValueClass();
+        if (!CharSequence.class.isAssignableFrom(valueClass))
+        {
+            throw new IllegalStateException("Parsed build requires CharSequence values, not " + valueClass.getName());
+        }
+
+        ColumnObjectArray<S> transformed = new ColumnObjectArray<>(this, targetType);
+        if (transformed.size() > 0 && transformed.isConstant())
+        {
+            return ColumnCategorical.constant(getName(), transformed.get(0), transformed.size(), targetType);
+        }
+        return transformed;
+    }
+
+    @Override
     public String toString()
     {
         ensureActive();

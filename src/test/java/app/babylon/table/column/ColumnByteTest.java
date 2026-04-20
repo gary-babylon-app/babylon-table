@@ -47,7 +47,8 @@ public class ColumnByteTest
     @Test
     public void builderShouldCreateByteConstantWhenAllValuesAreSetAndEqual()
     {
-        ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("B"));
+        final ColumnName B = ColumnName.of("B");
+        ColumnByte.Builder builder = ColumnByte.builder(B);
         builder.add((byte) 7);
         builder.add((byte) 7);
         builder.add((byte) 7);
@@ -60,7 +61,8 @@ public class ColumnByteTest
     @Test
     public void builderShouldNotCreateByteConstantWhenNullsArePresent()
     {
-        ColumnByte.Builder builder = ColumnByte.builder(ColumnName.of("B"));
+        final ColumnName B = ColumnName.of("B");
+        ColumnByte.Builder builder = ColumnByte.builder(B);
         builder.add((byte) 7);
         builder.addNull();
         builder.add((byte) 7);
@@ -167,14 +169,15 @@ public class ColumnByteTest
 
         ViewIndex rowIndex = ViewIndex.builder().add(2).addNull().add(0).build();
         ColumnByte view = (ColumnByte) column.view(rowIndex);
-        ColumnByte copy = view.copy(ColumnName.of("COPY"));
+        final ColumnName COPY = ColumnName.of("COPY");
+        ColumnByte copy = view.copy(COPY);
 
         assertEquals(3, view.size());
         assertEquals("3", view.toString(0));
         assertFalse(view.isSet(1));
         assertEquals("1", view.toString(2));
 
-        assertEquals(ColumnName.of("COPY"), copy.getName());
+        assertEquals(COPY, copy.getName());
         assertEquals(3, copy.size());
         assertEquals("3", copy.toString(0));
         assertFalse(copy.isSet(1));
@@ -216,13 +219,13 @@ public class ColumnByteTest
     @Test
     public void byteColumnsShouldExposeMinAndMax()
     {
-        ColumnByte column = ColumnByte.builder(ColumnName.of("B")).add((byte) 10).addNull().add((byte) -1).add((byte) 4)
-                .build();
+        final ColumnName B = ColumnName.of("B");
+        ColumnByte column = ColumnByte.builder(B).add((byte) 10).addNull().add((byte) -1).add((byte) 4).build();
 
         assertEquals((byte) 10, column.max());
         assertEquals((byte) -1, column.min());
 
-        ColumnByte nullConstant = ColumnByteConstant.createNull(ColumnName.of("B"), 2);
+        ColumnByte nullConstant = ColumnByteConstant.createNull(B, 2);
         assertThrows(RuntimeException.class, nullConstant::max);
         assertThrows(RuntimeException.class, nullConstant::min);
     }
@@ -230,7 +233,8 @@ public class ColumnByteTest
     @Test
     public void getAsColumnShouldPreserveSetValueAndNullState()
     {
-        ColumnByte column = ColumnByte.builder(ColumnName.of("B")).add((byte) 4).addNull().add((byte) 9).build();
+        final ColumnName B = ColumnName.of("B");
+        ColumnByte column = ColumnByte.builder(B).add((byte) 4).addNull().add((byte) 9).build();
 
         ColumnByte first = (ColumnByte) column.getAsColumn(0);
         ColumnByte second = (ColumnByte) column.getAsColumn(1);
@@ -296,8 +300,10 @@ public class ColumnByteTest
     @Test
     public void byteConstantShouldSupportCompareForSetAndNullCases()
     {
-        ColumnByteConstant setConstant = new ColumnByteConstant(ColumnName.of("B"), (byte) 7, 3, true);
-        ColumnByteConstant nullConstant = ColumnByteConstant.createNull(ColumnName.of("N"), 3);
+        final ColumnName B = ColumnName.of("B");
+        final ColumnName N = ColumnName.of("N");
+        ColumnByteConstant setConstant = new ColumnByteConstant(B, (byte) 7, 3, true);
+        ColumnByteConstant nullConstant = ColumnByteConstant.createNull(N, 3);
 
         assertTrue(setConstant.compare(0, 0) == 0);
         assertTrue(setConstant.compare(1, 2) == 0);
@@ -308,20 +314,24 @@ public class ColumnByteTest
     @Test
     public void byteConstantShouldSupportCopyAndGetAsColumn()
     {
-        ColumnByteConstant setConstant = new ColumnByteConstant(ColumnName.of("B"), (byte) 7, 3, true);
-        ColumnByteConstant nullConstant = ColumnByteConstant.createNull(ColumnName.of("N"), 3);
+        final ColumnName B = ColumnName.of("B");
+        final ColumnName N = ColumnName.of("N");
+        final ColumnName COPY = ColumnName.of("COPY");
+        final ColumnName COPY_NULL = ColumnName.of("COPY_NULL");
+        ColumnByteConstant setConstant = new ColumnByteConstant(B, (byte) 7, 3, true);
+        ColumnByteConstant nullConstant = ColumnByteConstant.createNull(N, 3);
 
-        ColumnByte copied = setConstant.copy(ColumnName.of("COPY"));
-        ColumnByte copiedNull = nullConstant.copy(ColumnName.of("COPY_NULL"));
+        ColumnByte copied = setConstant.copy(COPY);
+        ColumnByte copiedNull = nullConstant.copy(COPY_NULL);
         ColumnByte single = (ColumnByte) setConstant.getAsColumn(1);
         ColumnByte singleNull = (ColumnByte) nullConstant.getAsColumn(1);
 
-        assertEquals(ColumnName.of("COPY"), copied.getName());
+        assertEquals(COPY, copied.getName());
         assertEquals(3, copied.size());
         assertEquals("7", copied.toString(0));
         assertTrue(copied.isAllSet());
 
-        assertEquals(ColumnName.of("COPY_NULL"), copiedNull.getName());
+        assertEquals(COPY_NULL, copiedNull.getName());
         assertEquals(3, copiedNull.size());
         assertFalse(copiedNull.isSet(0));
 
@@ -337,7 +347,8 @@ public class ColumnByteTest
     @Test
     public void columnsNewByteShouldCreateByteConstant()
     {
-        ColumnByte constant = Columns.newByte(ColumnName.of("B"), (byte) 9, 3);
+        final ColumnName B = ColumnName.of("B");
+        ColumnByte constant = Columns.newByte(B, (byte) 9, 3);
 
         assertEquals(3, constant.size());
         assertEquals("9", constant.toString(0));

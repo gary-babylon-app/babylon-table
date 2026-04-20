@@ -14,13 +14,14 @@ class ColumnsComparatorTest
     @Test
     void comparesBoxedRowIndexes()
     {
-        ColumnObject.Builder<String> names = ColumnObject.builder(ColumnName.of("Name"), ColumnTypes.STRING);
+        final ColumnName NAME = ColumnName.of("Name");
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Paris");
         names.add("Berlin");
         names.add("Rome");
 
         TableColumnar table = Tables.newTable(TableName.of("t"), new TableDescription(""), names.build());
-        ColumnsComparator comparator = new ColumnsComparator(table, ColumnName.of("Name"));
+        ColumnsComparator comparator = new ColumnsComparator(table, NAME);
 
         assertTrue(comparator.compare(Integer.valueOf(0), Integer.valueOf(1)) > 0);
         assertTrue(comparator.compare(Integer.valueOf(1), Integer.valueOf(2)) < 0);

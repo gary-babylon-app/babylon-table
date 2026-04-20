@@ -114,10 +114,10 @@ class TablesToStringTest
 
     private static TableColumnar table(String firstName, String secondName, String[]... rows)
     {
-        ColumnObject.Builder<String> first = ColumnObject.builder(ColumnName.of(firstName),
-                app.babylon.table.column.ColumnTypes.STRING);
-        ColumnObject.Builder<String> second = ColumnObject.builder(ColumnName.of(secondName),
-                app.babylon.table.column.ColumnTypes.STRING);
+        final ColumnName FIRST = ColumnName.of(firstName);
+        final ColumnName SECOND = ColumnName.of(secondName);
+        ColumnObject.Builder<String> first = ColumnObject.builder(FIRST, app.babylon.table.column.ColumnTypes.STRING);
+        ColumnObject.Builder<String> second = ColumnObject.builder(SECOND, app.babylon.table.column.ColumnTypes.STRING);
         for (String[] row : rows)
         {
             first.add(row[0]);
@@ -131,7 +131,8 @@ class TablesToStringTest
         app.babylon.table.column.Column[] columns = new app.babylon.table.column.Column[10];
         for (int i = 0; i < columns.length; ++i)
         {
-            ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("C" + i),
+            final ColumnName COLUMN = ColumnName.of("C" + i);
+            ColumnObject.Builder<String> builder = ColumnObject.builder(COLUMN,
                     app.babylon.table.column.ColumnTypes.STRING);
             for (int row = 0; row < 30; ++row)
             {

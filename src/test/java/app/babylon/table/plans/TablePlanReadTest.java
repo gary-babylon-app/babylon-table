@@ -21,6 +21,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
+import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
 
@@ -38,42 +39,26 @@ import app.babylon.table.io.HeaderStrategyNoHeaders;
 import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.RowSourceResultSet;
 import app.babylon.table.io.TabularRowReaderCsv;
-import app.babylon.table.transform.TransformAfter;
-import app.babylon.table.transform.TransformPrefix;
-import app.babylon.table.transform.TransformToUpperCase;
 
 class TablePlanReadTest
 {
     @Test
-    void shouldApplyTransformsInInsertionOrder()
-    {
-        final ColumnName CODE = ColumnName.of("Code");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
-        builder.add("A/B");
-
-        TablePlanRead plan = new TablePlanRead().withTransform(new TransformAfter(CODE, CODE, "/"))
-                .withTransform(new TransformPrefix("X-", CODE));
-
-        TableColumnar table = plan.execute(TableName.of("Codes"), builder.build());
-
-        assertEquals("X-B", table.getString(CODE).get(0));
-    }
-
-    @Test
     void shouldUseConfiguredOutputMetadataWhenExecutingExistingTable()
     {
         final ColumnName CODE = ColumnName.of("Code");
-        ColumnObject.Builder<String> builder = ColumnObject.builder(CODE, app.babylon.table.column.ColumnTypes.STRING);
+        final TableName SOURCE = TableName.of("Source");
+        final TableDescription SOURCE_DESCRIPTION = new TableDescription("Source description");
+        final TableName BUILT = TableName.of("Built");
+        final TableDescription BUILT_DESCRIPTION = new TableDescription("Built description");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(CODE, ColumnTypes.STRING);
         builder.add("ABC");
 
-        TableColumnar source = Tables.newTable(TableName.of("Source"), new TableDescription("Source description"),
-                builder.build());
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("Built"))
-                .withTableDescription(new TableDescription("Built description"));
+        TableColumnar source = Tables.newTable(SOURCE, SOURCE_DESCRIPTION, builder.build());
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT).withTableDescription(BUILT_DESCRIPTION);
 
         TableColumnar built = plan.execute(source);
 
-        assertEquals(TableName.of("Built"), built.getName());
+        assertEquals(BUILT, built.getName());
         assertEquals("Built description", built.getDescription().getValue());
         assertEquals("ABC", built.getString(CODE).get(0));
     }
@@ -87,16 +72,17 @@ class TablePlanReadTest
         TablePlanRead plan = new TablePlanRead().withColumnType(AMOUNT, ColumnTypes.DOUBLE).withColumnType(NAME,
                 ColumnTypes.STRING);
 
-        assertEquals(app.babylon.table.column.ColumnTypes.DOUBLE, plan.getColumnType(AMOUNT));
-        assertEquals(app.babylon.table.column.ColumnTypes.STRING, plan.getColumnType(NAME));
+        assertEquals(ColumnTypes.DOUBLE, plan.getColumnType(AMOUNT));
+        assertEquals(ColumnTypes.STRING, plan.getColumnType(NAME));
         assertEquals(2, plan.getColumnTypes().size());
     }
 
     @Test
-    void shouldReadFromCsvDataSourceUsingPlanTypesAndTransforms()
+    void shouldReadFromCsvDataSourceUsingPlanTypes()
     {
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_CSV = TableName.of("BuiltFromCsv");
         String csv = """
                         Code,Amount
                         abc,10.5
@@ -104,14 +90,17 @@ class TablePlanReadTest
                 """;
 
         TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv"))
-                .withColumnType(AMOUNT, ColumnTypes.DOUBLE).withTransform(new TransformToUpperCase(CODE));
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withColumnType(AMOUNT,
+                ColumnTypes.DOUBLE);
 
         TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
 
-        assertEquals(TableName.of("BuiltFromCsv"), table.getName());
-        assertEquals("ABC", table.getString(CODE).get(0));
-        assertEquals("XYZ", table.getString(CODE).get(1));
+        assertEquals(BUILT_FROM_CSV, table.getName());
+        assertEquals(ColumnTypes.STRING, table.getType(CODE));
+        assertEquals(ColumnTypes.DOUBLE, table.getType(AMOUNT));
+        ColumnObject<String> codes = table.getString(CODE);
+        assertEquals("abc", codes.get(0));
+        assertEquals("xyz", codes.get(1));
         assertEquals(10.5d, table.getDouble(AMOUNT).get(0));
         assertEquals(20.0d, table.getDouble(AMOUNT).get(1));
     }
@@ -121,6 +110,7 @@ class TablePlanReadTest
     {
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_CSV = TableName.of("BuiltFromCsv");
         String csv = """
                 Code,Amount
                 abc,10.50
@@ -128,15 +118,72 @@ class TablePlanReadTest
                 """;
 
         TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv")).withColumnType(AMOUNT,
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withColumnType(AMOUNT,
                 ColumnTypes.DECIMAL);
 
         TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
 
-        assertEquals(TableName.of("BuiltFromCsv"), table.getName());
-        assertEquals("abc", table.getString(CODE).get(0));
-        assertEquals(0, new BigDecimal("10.50").compareTo(table.getDecimal(AMOUNT).get(0)));
-        assertFalse(table.getDecimal(AMOUNT).isSet(1));
+        assertEquals(BUILT_FROM_CSV, table.getName());
+        assertEquals(ColumnTypes.STRING, table.getType(CODE));
+        assertEquals(ColumnTypes.DECIMAL, table.getType(AMOUNT));
+        ColumnObject<String> codes = table.getString(CODE);
+        ColumnObject<BigDecimal> amounts = table.getDecimal(AMOUNT);
+        assertEquals("abc", codes.get(0));
+        assertEquals(0, new BigDecimal("10.50").compareTo(amounts.get(0)));
+        assertFalse(amounts.isSet(1));
+    }
+
+    @Test
+    void shouldReadConstantCurrencyAndNotionalWithVaryingAmounts()
+    {
+        final ColumnName CCY = ColumnName.of("Currency");
+        final ColumnName NOTIONAL = ColumnName.of("Notional");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        final BigDecimal EXPECTED_NOTIONAL = new BigDecimal("100000000");
+        String csv = """
+                Currency,Notional,Amount
+                USD,100000000,1000000
+                USD,100000000,1200000
+                USD,100000000,1400000
+                USD,100000000,1600000
+                USD,100000000,1800000
+                USD,100000000,2000000
+                USD,100000000,2200000
+                USD,100000000,2400000
+                USD,100000000,2600000
+                USD,100000000,2800000
+                """;
+
+        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
+        // @formatter:off
+        TablePlanRead plan = new TablePlanRead()
+                                .withTableName(CASHFLOWS)
+                                .withColumnType(CCY, ColumnTypes.CURRENCY)
+                                .withColumnTypes(ColumnTypes.DECIMAL, NOTIONAL, AMOUNT);
+        // @formatter:on
+
+        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(ColumnTypes.CURRENCY, table.getType(CCY));
+        assertEquals(ColumnTypes.DECIMAL, table.getType(NOTIONAL));
+        assertEquals(ColumnTypes.DECIMAL, table.getType(AMOUNT));
+
+        ColumnObject<Currency> currency = table.getObject(CCY, ColumnTypes.CURRENCY);
+        ColumnObject<BigDecimal> notional = table.getDecimal(NOTIONAL);
+        ColumnObject<BigDecimal> amounts = table.getDecimal(AMOUNT);
+
+        assertEquals(10, table.getRowCount());
+        assertTrue(currency.isConstant());
+        assertTrue(notional.isConstant());
+        assertFalse(amounts.isConstant());
+
+        assertEquals(Currency.getInstance("USD"), currency.get(0));
+        assertEquals(0, EXPECTED_NOTIONAL.compareTo(notional.get(0)));
+        assertEquals(0, EXPECTED_NOTIONAL.compareTo(notional.get(9)));
+        assertEquals(0, new BigDecimal("1000000").compareTo(amounts.get(0)));
+        assertEquals(0, new BigDecimal("2800000").compareTo(amounts.get(9)));
     }
 
     @Test
@@ -145,11 +192,11 @@ class TablePlanReadTest
         final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_CSV = TableName.of("BuiltFromCsv");
         String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
 
         TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromCsv"))
-                .withIncludeResourceName(RESOURCE_NAME);
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withIncludeResourceName(RESOURCE_NAME);
 
         TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
 
@@ -167,11 +214,12 @@ class TablePlanReadTest
         final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
 
         RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
                 .build();
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"))
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE)
                 .withIncludeResourceName(RESOURCE_NAME);
 
         TableColumnar table = plan.execute(rowSource);
@@ -190,11 +238,12 @@ class TablePlanReadTest
         final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "Code,Amount\n";
 
         RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
                 .build();
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"))
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE)
                 .withIncludeResourceName(RESOURCE_NAME);
 
         TableColumnar table = plan.execute(rowSource);
@@ -209,23 +258,26 @@ class TablePlanReadTest
     }
 
     @Test
-    void shouldReadFromRowSourceUsingSupplierTypesAndTransforms()
+    void shouldReadFromRowSourceUsingSupplierTypes()
     {
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
 
         StreamSource streamSource = StreamSources.fromString(csv, "values.csv");
         RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(streamSource)
                 .withColumnType(AMOUNT, ColumnTypes.DOUBLE).build();
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"))
-                .withTransform(new TransformToUpperCase(CODE));
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE);
 
         TableColumnar table = plan.execute(rowSource);
 
-        assertEquals(TableName.of("BuiltFromRowSource"), table.getName());
-        assertEquals("ABC", table.getString(CODE).get(0));
-        assertEquals("XYZ", table.getString(CODE).get(1));
+        assertEquals(BUILT_FROM_ROW_SOURCE, table.getName());
+        assertEquals(ColumnTypes.STRING, table.getType(CODE));
+        assertEquals(ColumnTypes.DOUBLE, table.getType(AMOUNT));
+        ColumnObject<String> codes = table.getString(CODE);
+        assertEquals("abc", codes.get(0));
+        assertEquals("xyz", codes.get(1));
         assertEquals(10.5d, table.getDouble(AMOUNT).get(0));
         assertEquals(20.0d, table.getDouble(AMOUNT).get(1));
     }
@@ -235,13 +287,14 @@ class TablePlanReadTest
     {
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "Code,Amount,\nabc,10.5,\ndef,\nxyz,20.0,\n";
 
         RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
                 .withHeaderStrategy(new HeaderStrategyExplicitRow(0)).withColumnType(AMOUNT, ColumnTypes.DECIMAL)
                 .build();
 
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"));
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE);
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -265,12 +318,13 @@ class TablePlanReadTest
         final ColumnName COLUMN_1 = ColumnName.of("Column1");
         final ColumnName COLUMN_2 = ColumnName.of("Column2");
         final ColumnName COLUMN_3 = ColumnName.of("Column3");
+        final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "abc,10.5,\nxyz,20.0,\n";
 
         RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
                 .withHeaderStrategy(new HeaderStrategyNoHeaders(10)).build();
 
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromRowSource"));
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE);
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -294,6 +348,7 @@ class TablePlanReadTest
     {
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_RESULT_SET = TableName.of("BuiltFromResultSet");
         PreparedStatement preparedStatement = preparedStatement(resultSet(new String[]
         {"Code", "Amount"}, new String[]
         {"Code", "Amount"}, new int[]
@@ -303,16 +358,19 @@ class TablePlanReadTest
                 {"xyz", "20.00"}}));
         RowSourceResultSet rowSource = RowSourceResultSet.builder().withPreparedStatement(preparedStatement)
                 .withName("TradesQuery").build();
-        TablePlanRead plan = new TablePlanRead().withTableName(TableName.of("BuiltFromResultSet"))
-                .withTransform(new TransformToUpperCase(CODE));
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_RESULT_SET);
 
         TableColumnar table = plan.execute(rowSource);
 
-        assertEquals(TableName.of("BuiltFromResultSet"), table.getName());
-        assertEquals("ABC", table.getString(CODE).get(0));
-        assertEquals("XYZ", table.getString(CODE).get(1));
-        assertEquals(0, new BigDecimal("10.50").compareTo(table.getDecimal(AMOUNT).get(0)));
-        assertEquals(0, new BigDecimal("20.00").compareTo(table.getDecimal(AMOUNT).get(1)));
+        assertEquals(BUILT_FROM_RESULT_SET, table.getName());
+        assertEquals(ColumnTypes.STRING, table.getType(CODE));
+        assertEquals(ColumnTypes.DECIMAL, table.getType(AMOUNT));
+        ColumnObject<String> codes = table.getString(CODE);
+        ColumnObject<BigDecimal> amounts = table.getDecimal(AMOUNT);
+        assertEquals("abc", codes.get(0));
+        assertEquals("xyz", codes.get(1));
+        assertEquals(0, new BigDecimal("10.50").compareTo(amounts.get(0)));
+        assertEquals(0, new BigDecimal("20.00").compareTo(amounts.get(1)));
     }
 
     private static PreparedStatement preparedStatement(ResultSet resultSet)

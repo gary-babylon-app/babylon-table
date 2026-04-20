@@ -256,7 +256,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         for (int i = 0; i < groupByBuilders.length; ++i)
         {
             Column groupColumn = sourceTable.get(this.groupByColumns.get(i));
-            groupByBuilders[i] = (ColumnObject.Builder<Object>) Columns.newColumn(groupColumn.getName(),
+            groupByBuilders[i] = (ColumnObject.Builder<Object>) Columns.newBuilder(groupColumn.getName(),
                     groupColumn.getType());
         }
 

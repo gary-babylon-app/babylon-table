@@ -19,9 +19,11 @@ class TransformRegistryTest
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName OUT = ColumnName.of("Out");
 
-        TransformRegistry registry = TransformRegistry.builder()
-                .register("Copy", params -> new TransformCopy(ColumnName.of(params[0]), ColumnName.of(params[1])))
-                .build();
+        TransformRegistry registry = TransformRegistry.builder().register("Copy", params -> {
+            final ColumnName FROM = ColumnName.of(params[0]);
+            final ColumnName TO = ColumnName.of(params[1]);
+            return new TransformCopy(FROM, TO);
+        }).build();
 
         assertTrue(registry.create("Copy", "Code", "Out") instanceof TransformCopy);
         assertEquals(null, registry.create("Missing", "Code"));
@@ -43,9 +45,11 @@ class TransformRegistryTest
     @Test
     void toBuilderShouldCarryRegistrationsForward()
     {
-        TransformRegistry base = TransformRegistry.builder()
-                .register("Copy", params -> new TransformCopy(ColumnName.of(params[0]), ColumnName.of(params[1])))
-                .build();
+        TransformRegistry base = TransformRegistry.builder().register("Copy", params -> {
+            final ColumnName FROM = ColumnName.of(params[0]);
+            final ColumnName TO = ColumnName.of(params[1]);
+            return new TransformCopy(FROM, TO);
+        }).build();
 
         TransformRegistry copy = base.toBuilder().registerAll(base).build();
 

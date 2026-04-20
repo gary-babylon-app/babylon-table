@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -69,8 +70,8 @@ class ColumnObjectTest
     @Test
     void objectBuilderToStringShouldNotBeEmptyWhenAValueIsSet()
     {
-        ColumnObject.Builder<String> builder = ColumnObject.builder(ColumnName.of("Test"), ColumnTypes.STRING,
-                ColumnObject.Mode.ARRAY);
+        final ColumnName TEST = ColumnName.of("Test");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(TEST, ColumnTypes.STRING, ColumnObject.Mode.ARRAY);
         builder.add("value");
         builder.addNull();
 
@@ -80,7 +81,9 @@ class ColumnObjectTest
     @Test
     void objectBuilderShouldAddFromCharSliceUsingTypeParser()
     {
-        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builderDecimal(ColumnName.of("Amount"));
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builderDecimal(AMOUNT);
         decimalBuilder.add("1234.50", 0, 7);
         decimalBuilder.add("bad", 0, 3);
 
@@ -88,14 +91,55 @@ class ColumnObjectTest
         assertEquals(0, new BigDecimal("1234.50").compareTo(decimals.get(0)));
         assertFalse(decimals.isSet(1));
 
-        ColumnObject.Builder<LocalDate> dateBuilder = ColumnObject.builder(ColumnName.of("TradeDate"),
-                ColumnTypes.LOCALDATE, ColumnObject.Mode.ARRAY);
+        ColumnObject.Builder<LocalDate> dateBuilder = ColumnObject.builder(TRADE_DATE, ColumnTypes.LOCALDATE,
+                ColumnObject.Mode.ARRAY);
         dateBuilder.add("2024-03-15", 0, 10);
         dateBuilder.add("bad", 0, 3);
 
         ColumnObject<LocalDate> dates = dateBuilder.build();
         assertEquals(LocalDate.of(2024, 3, 15), dates.get(0));
         assertFalse(dates.isSet(1));
+    }
+
+    @Test
+    void objectArrayBuilderShouldBuildToTypeUsingTargetParser()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING,
+                ColumnObject.Mode.ARRAY);
+        builder.add("10.50");
+        builder.add("bad");
+        builder.addNull();
+        builder.add("3.00");
+
+        ColumnObject<BigDecimal> decimals = builder.build(ColumnTypes.DECIMAL);
+
+        assertFalse(decimals instanceof ColumnCategorical<?>);
+        assertEquals(0, new BigDecimal("10.50").compareTo(decimals.get(0)));
+        assertFalse(decimals.isSet(1));
+        assertFalse(decimals.isSet(2));
+        assertEquals(0, new BigDecimal("3.00").compareTo(decimals.get(3)));
+        assertFalse(decimals.isAllSet());
+        assertFalse(decimals.isNoneSet());
+    }
+
+    @Test
+    void objectArrayBuilderShouldUseConstantFastPathWhenParsedValuesAreConstant()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING,
+                ColumnObject.Mode.ARRAY);
+        builder.add("7.25");
+        builder.add("7.25");
+        builder.add("7.25");
+
+        ColumnObject<BigDecimal> decimals = builder.build(ColumnTypes.DECIMAL);
+
+        assertTrue(decimals instanceof ColumnCategorical<?>);
+        assertTrue(decimals.isConstant());
+        assertTrue(decimals.isAllSet());
+        assertSame(ColumnTypes.DECIMAL, decimals.getType());
+        assertEquals(0, new BigDecimal("7.25").compareTo(decimals.get(0)));
     }
 
     @Test
@@ -231,7 +275,7 @@ class ColumnObjectTest
         assertTrue(new BigDecimal("2.5").compareTo(Columns.aggregate(cd, Aggregate.MEAN)) == 0);
         assertNull(Columns.aggregate(ColumnObject.builderDecimal(TEST).add(BigDecimal.ONE).build(), Aggregate.COUNT));
 
-        ColumnObject.Builder<BigDecimal> originalBuilder = ColumnObject.builderDecimal(ColumnName.of("TEST"));
+        ColumnObject.Builder<BigDecimal> originalBuilder = ColumnObject.builderDecimal(TEST);
         originalBuilder.add(BigDecimals.parse("1.42"));
         originalBuilder.add(BigDecimals.parse("100,100.32"));
         originalBuilder.add(BigDecimals.parse(""));
@@ -269,7 +313,8 @@ class ColumnObjectTest
     @Test
     void objectCompareShouldThrowForNonComparableValues()
     {
-        ColumnObject.Builder<NotComparable> builder = ColumnObject.builder(ColumnName.of("OBJ"), NOT_COMPARABLE_TYPE,
+        final ColumnName OBJ = ColumnName.of("OBJ");
+        ColumnObject.Builder<NotComparable> builder = ColumnObject.builder(OBJ, NOT_COMPARABLE_TYPE,
                 ColumnObject.Mode.ARRAY);
         builder.add(new NotComparable("b"));
         builder.add(new NotComparable("a"));
@@ -282,8 +327,9 @@ class ColumnObjectTest
     @Test
     void objectMinAndMaxShouldUseNaturalOrderingAndThrowWhenAllUnset()
     {
-        ColumnObject.Builder<LocalDate> builder = ColumnObject.builder(ColumnName.of("TradeDate"),
-                ColumnTypes.LOCALDATE, ColumnObject.Mode.ARRAY);
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        ColumnObject.Builder<LocalDate> builder = ColumnObject.builder(TRADE_DATE, ColumnTypes.LOCALDATE,
+                ColumnObject.Mode.ARRAY);
         builder.add(LocalDate.of(2024, 3, 15));
         builder.addNull();
         builder.add(LocalDate.of(2024, 3, 12));
@@ -294,8 +340,8 @@ class ColumnObjectTest
         assertEquals(LocalDate.of(2024, 3, 20), column.max());
         assertEquals(LocalDate.of(2024, 3, 12), column.min());
 
-        ColumnObject.Builder<LocalDate> nullBuilder = ColumnObject.builder(ColumnName.of("TradeDate"),
-                ColumnTypes.LOCALDATE, ColumnObject.Mode.ARRAY);
+        ColumnObject.Builder<LocalDate> nullBuilder = ColumnObject.builder(TRADE_DATE, ColumnTypes.LOCALDATE,
+                ColumnObject.Mode.ARRAY);
         nullBuilder.addNull();
         nullBuilder.addNull();
         ColumnObject<LocalDate> allUnset = nullBuilder.build();

@@ -175,8 +175,8 @@ public class ColumnNameTest
     @Test
     public void testStringAndHashRepresentCanonicalIdentity()
     {
-        ColumnName left = ColumnName.of("trade-date");
-        ColumnName right = ColumnName.of("Trade Date");
+        final ColumnName left = ColumnName.of("trade-date");
+        final ColumnName right = ColumnName.of("Trade Date");
 
         assertEquals("TradeDate", left.toString());
         assertEquals(left.hashCode(), right.hashCode());
@@ -187,7 +187,7 @@ public class ColumnNameTest
     @Test
     public void testSqlAndCamelCaseConversions()
     {
-        ColumnName cn = ColumnName.of("trade date 20");
+        final ColumnName cn = ColumnName.of("trade date 20");
 
         assertEquals("TradeDate20", cn.toCamelCaseUpper());
         assertEquals("tradeDate20", cn.toCamelCase());
@@ -198,7 +198,9 @@ public class ColumnNameTest
     @Test
     public void testToWordsAndToStringArrayReuseProvidedCollection()
     {
-        ColumnName cn = ColumnName.of("tradeDate20");
+        final ColumnName TRADE_DATE = ColumnName.of("Trade Date");
+        final ColumnName SETTLE_DATE = ColumnName.of("SettleDate");
+        final ColumnName cn = ColumnName.of("tradeDate20");
         Collection<String> words = new ArrayList<>();
 
         Collection<String> returned = cn.toWords(words);
@@ -206,8 +208,7 @@ public class ColumnNameTest
         assertSame(words, returned);
         assertEquals(List.of("Trade", "Date20"), new ArrayList<>(returned));
 
-        String[] values = ColumnName
-                .toStringArray(Arrays.asList(ColumnName.of("Trade Date"), ColumnName.of("SettleDate")));
+        String[] values = ColumnName.toStringArray(Arrays.asList(TRADE_DATE, SETTLE_DATE));
         assertEquals("TradeDate", values[0]);
         assertEquals("SettleDate", values[1]);
         assertNull(ColumnName.toStringArray(null));

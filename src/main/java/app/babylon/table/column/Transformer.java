@@ -13,6 +13,8 @@ package app.babylon.table.column;
 import java.util.function.Function;
 
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.transform.TransformParseMode;
+import app.babylon.text.Strings;
 
 /**
  * Transforms individual column values from one type to another while carrying
@@ -55,5 +57,25 @@ public interface Transformer<T, S> extends Function<T, S>
                 return f.apply(t);
             }
         };
+    }
+
+    @SuppressWarnings("unchecked")
+    static <S> Transformer<String, S> parser(Column.Type type, TransformParseMode parseMode)
+    {
+        return parser(type, parseMode, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    static <S> Transformer<String, S> parser(Column.Type type, TransformParseMode parseMode, ColumnName columnName)
+    {
+        Column.Type targetType = ArgumentCheck.nonNull(type);
+        TransformParseMode resolvedParseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
+        return of(s -> {
+            if (Strings.isEmpty(s))
+            {
+                return null;
+            }
+            return resolvedParseMode.apply(x -> (S) targetType.getParser().parse(x), s);
+        }, targetType, columnName);
     }
 }

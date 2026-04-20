@@ -2,7 +2,6 @@ package app.babylon.table.transform;
 
 import java.util.Map;
 import java.util.function.Function;
-
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
@@ -19,27 +18,24 @@ public class TransformToType<T> extends TransformBase
 
     private final ColumnName[] columnNames;
     private final ColumnName[] newColumnNames;
-    private final Function<String, T> parser;
     private final Column.Type type;
     private final ColumnObject.Mode mode;
     private final TransformParseMode parseMode;
 
-    public TransformToType(Column.Type type, Function<String, T> parser, ColumnName... columnNames)
+    public TransformToType(Column.Type type, ColumnName... columnNames)
     {
-        this(type, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, parser, columnNames);
+        this(type, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, columnNames);
     }
 
-    public TransformToType(Column.Type type, ColumnObject.Mode mode, Function<String, T> parser,
-            ColumnName... columnNames)
+    public TransformToType(Column.Type type, ColumnObject.Mode mode, ColumnName... columnNames)
     {
-        this(type, mode, TransformParseMode.EXACT, parser, columnNames);
+        this(type, mode, TransformParseMode.EXACT, columnNames);
     }
 
     public TransformToType(Column.Type type, ColumnObject.Mode mode, TransformParseMode parseMode,
-            Function<String, T> parser, ColumnName... columnNames)
+            ColumnName... columnNames)
     {
         super(FUNCTION_NAME);
-        this.parser = ArgumentCheck.nonNull(parser);
         this.columnNames = ArgumentCheck.nonEmpty(columnNames);
         this.newColumnNames = null;
         this.mode = mode == null ? ColumnObject.Mode.AUTO : mode;
@@ -50,20 +46,18 @@ public class TransformToType<T> extends TransformBase
     public TransformToType(Column.Type type, ColumnName columnName, Function<String, T> parser,
             ColumnName newColumnName)
     {
-        this(type, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, columnName, parser, newColumnName);
+        this(type, ColumnObject.Mode.AUTO, TransformParseMode.EXACT, columnName, newColumnName);
     }
 
-    public TransformToType(Column.Type type, ColumnObject.Mode mode, ColumnName columnName, Function<String, T> parser,
-            ColumnName newColumnName)
+    public TransformToType(Column.Type type, ColumnObject.Mode mode, ColumnName columnName, ColumnName newColumnName)
     {
-        this(type, mode, TransformParseMode.EXACT, columnName, parser, newColumnName);
+        this(type, mode, TransformParseMode.EXACT, columnName, newColumnName);
     }
 
     public TransformToType(Column.Type type, ColumnObject.Mode mode, TransformParseMode parseMode,
-            ColumnName columnName, Function<String, T> parser, ColumnName newColumnName)
+            ColumnName columnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.parser = ArgumentCheck.nonNull(parser);
         this.columnNames = new ColumnName[]
         {ArgumentCheck.nonNull(columnName)};
         this.newColumnNames = new ColumnName[]
@@ -73,7 +67,7 @@ public class TransformToType<T> extends TransformBase
         this.type = ArgumentCheck.nonNull(type);
     }
 
-    public static <T> TransformToType<T> of(Column.Type type, Function<String, T> parser, String... params)
+    public static <T> TransformToType<T> of(Column.Type type, String... params)
     {
         if (!Is.empty(params) && params.length >= 2)
         {
@@ -85,7 +79,7 @@ public class TransformToType<T> extends TransformBase
             TransformParseMode parseMode = (params.length >= 4 && !Strings.isEmpty(params[3]))
                     ? TransformParseMode.parse(params[3])
                     : TransformParseMode.EXACT;
-            return new TransformToType<>(type, mode, parseMode, from, parser, to);
+            return new TransformToType<>(type, mode, parseMode, from, to);
         }
         return null;
     }
@@ -107,40 +101,17 @@ public class TransformToType<T> extends TransformBase
             {
                 ColumnObject<String> stringColumn = Columns.asStringColumn(column);
                 ColumnName newColumnName = (newColumnNames == null) ? column.getName() : newColumnNames[i];
-                if (mode == ColumnObject.Mode.AUTO)
-                {
-                    transformedColumns[i] = rebuild(stringColumn, newColumnName, mode, this::parseValue);
-                }
-                else
-                {
-                    transformedColumns[i] = sourceMatchesMode(stringColumn, mode)
-                            ? stringColumn.transform(transformer(newColumnName))
-                            : rebuild(stringColumn, newColumnName, mode, this::parseValue);
-                }
-            }
-            else if (type.getValueClass().equals(column.getType().getValueClass()))
-            {
-                @SuppressWarnings("unchecked")
-                ColumnObject<T> typedColumn = (ColumnObject<T>) column;
-                ColumnName newColumnName = (newColumnNames == null) ? column.getName() : newColumnNames[i];
-                if (newColumnName.equals(column.getName())
-                        && (mode == ColumnObject.Mode.AUTO || sourceMatchesMode(typedColumn, mode)))
-                {
-                    transformedColumns[i] = column;
-                }
-                else if (sourceMatchesMode(typedColumn, mode))
-                {
-                    transformedColumns[i] = column.copy(newColumnName);
-                }
-                else
-                {
-                    transformedColumns[i] = rebuild(typedColumn, newColumnName, mode, Function.identity());
-                }
+                Transformer<String, T> transformer = transformer(newColumnName);
+                boolean canTransformCategorical = mode == ColumnObject.Mode.CATEGORICAL
+                        && stringColumn instanceof ColumnCategorical<?>;
+                transformedColumns[i] = canTransformCategorical
+                        ? stringColumn.transform(transformer)
+                        : rebuild(stringColumn, newColumnName, mode, transformer);
             }
             else
             {
-                throw new RuntimeException(
-                        "Cannot convert to " + type.getValueClass().getSimpleName() + " from " + column.getName());
+                throw new RuntimeException("Can only convert String columns to " + type.getValueClass().getSimpleName()
+                        + ": " + column.getName());
             }
         }
         putColumns(columnsByName, transformedColumns);
@@ -156,16 +127,16 @@ public class TransformToType<T> extends TransformBase
         };
     }
 
-    private <S> ColumnObject<T> rebuild(ColumnObject<S> input, ColumnName newColumnName, ColumnObject.Mode mode,
-            Function<? super S, ? extends T> mapper)
+    private ColumnObject<T> rebuild(ColumnObject<String> input, ColumnName newColumnName, ColumnObject.Mode mode,
+            Transformer<String, T> transformer)
     {
         ColumnObject.Builder<T> transformed = ColumnObject.builder(newColumnName, type, mode);
         for (int j = 0; j < input.size(); ++j)
         {
             if (input.isSet(j))
             {
-                S s = input.get(j);
-                transformed.add(s == null ? null : mapper.apply(s));
+                String s = input.get(j);
+                transformed.add(s == null ? null : transformer.apply(s));
             }
             else
             {
@@ -177,12 +148,7 @@ public class TransformToType<T> extends TransformBase
 
     private Transformer<String, T> transformer(ColumnName newColumnName)
     {
-        return Transformer.of(this::parseValue, type, newColumnName);
-    }
-
-    private T parseValue(String s)
-    {
-        return Strings.isEmpty(s) ? null : parseMode.apply(parser, s);
+        return Transformer.parser(type, this.parseMode, newColumnName);
     }
 
 }

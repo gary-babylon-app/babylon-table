@@ -134,6 +134,7 @@ public class SelectionsTest
     @Test
     public void methodsShouldRejectNullArguments()
     {
+        final ColumnName NAME = ColumnName.of("Name");
         assertThrows(RuntimeException.class, () -> Selections.eq(null, "x"));
         assertThrows(RuntimeException.class, () -> Selections.ne(null, "x"));
         assertThrows(RuntimeException.class, () -> Selections.in(null, new String[]
@@ -141,7 +142,7 @@ public class SelectionsTest
         assertThrows(RuntimeException.class, () -> Selections.nin(null, new String[]
         {"x"}));
 
-        ColumnObject.Builder<String> names = ColumnObject.builder(ColumnName.of("Name"), ColumnTypes.STRING);
+        ColumnObject.Builder<String> names = ColumnObject.builder(NAME, ColumnTypes.STRING);
         names.add("Alice");
 
         assertThrows(RuntimeException.class, () -> Selections.in(names.build(), null));

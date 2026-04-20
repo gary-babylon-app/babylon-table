@@ -86,7 +86,8 @@ public class ColumnIntTest
     @Test
     public void builderShouldCreateIntConstantWhenAllValuesAreSetAndEqual()
     {
-        ColumnInt.Builder builder = ColumnInt.builder(ColumnName.of("I"));
+        final ColumnName I = ColumnName.of("I");
+        ColumnInt.Builder builder = ColumnInt.builder(I);
         builder.add(7);
         builder.add(7);
         builder.add(7);
@@ -99,7 +100,8 @@ public class ColumnIntTest
     @Test
     public void builderShouldNotCreateIntConstantWhenNullsArePresent()
     {
-        ColumnInt.Builder builder = ColumnInt.builder(ColumnName.of("I"));
+        final ColumnName I = ColumnName.of("I");
+        ColumnInt.Builder builder = ColumnInt.builder(I);
         builder.add(7);
         builder.addNull();
         builder.add(7);
@@ -209,12 +211,13 @@ public class ColumnIntTest
     @Test
     public void intColumnsShouldExposeMinAndMax()
     {
-        ColumnInt column = ColumnInt.builder(ColumnName.of("I")).add(7).addNull().add(-3).add(10).build();
+        final ColumnName I = ColumnName.of("I");
+        ColumnInt column = ColumnInt.builder(I).add(7).addNull().add(-3).add(10).build();
 
         assertEquals(10, column.max());
         assertEquals(-3, column.min());
 
-        ColumnInt nullConstant = ColumnIntConstant.createNull(ColumnName.of("I"), 2);
+        ColumnInt nullConstant = ColumnIntConstant.createNull(I, 2);
         assertThrows(RuntimeException.class, nullConstant::max);
         assertThrows(RuntimeException.class, nullConstant::min);
     }

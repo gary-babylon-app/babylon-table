@@ -51,6 +51,7 @@ class TableColumnarMapTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName AMOUNT = ColumnName.of("Amount");
         final ColumnName STATUS = ColumnName.of("Status");
+        final ColumnName MISSING = ColumnName.of("Missing");
 
         ColumnInt.Builder ids = ColumnInt.builder(ID);
         ids.add(1);
@@ -78,6 +79,7 @@ class TableColumnarMapTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName AMOUNT = ColumnName.of("Amount");
         final ColumnName STATUS = ColumnName.of("Status");
+        final ColumnName MISSING = ColumnName.of("Missing");
 
         TableColumnar table = sampleTable();
 
@@ -90,11 +92,11 @@ class TableColumnarMapTest
         assertSame(table.getDecimal(AMOUNT), table.getObject(AMOUNT, ColumnTypes.DECIMAL));
         assertSame(table.getEnum(STATUS), table.getCategorical(STATUS));
         assertSame(table.getEnum(STATUS), table.getCategorical(STATUS, STATUS_TYPE));
-        assertNull(table.getString(ColumnName.of("Missing")));
-        assertNull(table.getDouble(ColumnName.of("Missing")));
-        assertNull(table.getLong(ColumnName.of("Missing")));
-        assertNull(table.getInt(ColumnName.of("Missing")));
-        assertNull(table.getCategorical(ColumnName.of("Missing")));
+        assertNull(table.getString(MISSING));
+        assertNull(table.getDouble(MISSING));
+        assertNull(table.getLong(MISSING));
+        assertNull(table.getInt(MISSING));
+        assertNull(table.getCategorical(MISSING));
 
         List<ColumnName> names = new ArrayList<>();
         table.getColumnNames(names);
@@ -183,6 +185,7 @@ class TableColumnarMapTest
     @Test
     void replaceShouldSwapNamedColumnsAndPreserveOrder()
     {
+        final ColumnName ID = ColumnName.of("Id");
         final ColumnName STATUS = ColumnName.of("Status");
         final ColumnName AMOUNT = ColumnName.of("Amount");
 
@@ -205,15 +208,16 @@ class TableColumnarMapTest
         assertEquals(new BigDecimal("40.0"), replaced.getDecimal(AMOUNT).get(1));
         assertEquals(Status.CLOSED, replaced.getEnum(STATUS).get(0));
         assertEquals(Status.OPEN, replaced.getEnum(STATUS).get(1));
-        assertEquals(1, replaced.getInt(ColumnName.of("Id")).get(0));
+        assertEquals(1, replaced.getInt(ID).get(0));
     }
 
     @Test
     void replaceShouldThrowWhenNamedColumnDoesNotExist()
     {
+        final ColumnName MISSING = ColumnName.of("Missing");
         TableColumnar table = sampleTable();
 
-        ColumnObject.Builder<String> missing = ColumnObject.builder(ColumnName.of("Missing"), ColumnTypes.STRING);
+        ColumnObject.Builder<String> missing = ColumnObject.builder(MISSING, ColumnTypes.STRING);
         missing.add("x");
         missing.add("y");
 

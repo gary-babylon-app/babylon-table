@@ -15,16 +15,32 @@ import java.util.Map;
 
 import app.babylon.table.TableColumnar;
 
+/**
+ * Grouping result keyed by group values and holding one table view per group.
+ */
 public class GroupBy
 {
     private final Map<GroupKey, TableColumnar> groupedTables;
 
+    /**
+     * Creates a grouping result from grouped tables.
+     *
+     * @param groupedTables
+     *            grouped table map
+     */
     public GroupBy(Map<GroupKey, TableColumnar> groupedTables)
     {
         this.groupedTables = new HashMap<>(groupedTables);
 
     }
 
+    /**
+     * Copies the grouped tables into the supplied destination map.
+     *
+     * @param x
+     *            destination map or {@code null}
+     * @return destination map containing the grouped tables
+     */
     public Map<GroupKey, TableColumnar> getGroupedTables(Map<GroupKey, TableColumnar> x)
     {
         if (x == null)

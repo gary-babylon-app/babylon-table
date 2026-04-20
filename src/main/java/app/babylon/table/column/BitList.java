@@ -17,28 +17,63 @@ import java.util.BitSet;
  */
 public interface BitList
 {
+    /**
+     * Creates a mutable bit-list builder.
+     *
+     * @return new builder
+     */
     static Builder builder()
     {
         return new Builder();
     }
 
+    /**
+     * Returns the bit value at the supplied index.
+     *
+     * @param i
+     *            zero-based index
+     * @return bit value
+     */
     boolean get(int i);
 
+    /**
+     * Returns the number of bits.
+     *
+     * @return bit-list size
+     */
     int size();
 
+    /**
+     * Returns an immutable copy of this bit list.
+     *
+     * @return copied bit list
+     */
     BitList copy();
 
+    /**
+     * Mutable builder for {@link BitList}.
+     */
     final class Builder
     {
         private BitSet bits;
         private int size;
 
+        /**
+         * Creates an empty builder.
+         */
         public Builder()
         {
             this.bits = new BitSet();
             this.size = 0;
         }
 
+        /**
+         * Appends a bit value.
+         *
+         * @param value
+         *            value to append
+         * @return this builder
+         */
         public Builder add(boolean value)
         {
             ensureActive();
@@ -54,18 +89,35 @@ public interface BitList
             return this;
         }
 
+        /**
+         * Returns the bit currently stored at the supplied index.
+         *
+         * @param i
+         *            zero-based index
+         * @return bit value
+         */
         public boolean get(int i)
         {
             ensureActive();
             return this.bits.get(i);
         }
 
+        /**
+         * Returns the number of appended values.
+         *
+         * @return builder size
+         */
         public int size()
         {
             ensureActive();
             return this.size;
         }
 
+        /**
+         * Builds the immutable bit list and transfers ownership.
+         *
+         * @return immutable bit list
+         */
         public BitList build()
         {
             ensureActive();

@@ -141,6 +141,11 @@ public interface ColumnDouble extends Column
      */
     public double[] toArray(double[] x);
 
+    /**
+     * Returns the maximum set value in the column.
+     *
+     * @return maximum set value
+     */
     default double max()
     {
         if (isEmpty())
@@ -173,6 +178,11 @@ public interface ColumnDouble extends Column
         return max;
     }
 
+    /**
+     * Returns the minimum set value in the column.
+     *
+     * @return minimum set value
+     */
     default double min()
     {
         if (isEmpty())

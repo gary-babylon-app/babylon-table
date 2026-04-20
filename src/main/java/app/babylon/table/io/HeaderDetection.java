@@ -12,6 +12,10 @@ package app.babylon.table.io;
 
 import app.babylon.lang.ArgumentCheck;
 
+/**
+ * Result of header detection, including the found headers and any selected
+ * subset.
+ */
 public class HeaderDetection
 {
     private final String[] headersFound;
@@ -19,16 +23,25 @@ public class HeaderDetection
     private final String[] selectedHeaders;
     private final int[] selectedPositions;
 
+    /**
+     * Creates a detection with the supplied headers and no synthetic flag.
+     */
     public HeaderDetection(String[] headersFound)
     {
         this(headersFound, false);
     }
 
+    /**
+     * Creates a detection with the supplied headers.
+     */
     public HeaderDetection(String[] headersFound, boolean syntheticHeaders)
     {
         this(headersFound, syntheticHeaders, headersFound, identityPositions(headersFound.length));
     }
 
+    /**
+     * Creates a full detection result.
+     */
     public HeaderDetection(String[] headersFound, boolean syntheticHeaders, String[] selectedHeaders,
             int[] selectedPositions)
     {
@@ -38,16 +51,25 @@ public class HeaderDetection
         this.selectedPositions = ArgumentCheck.nonNull(selectedPositions);
     }
 
+    /**
+     * Returns the headers found in the source.
+     */
     public String[] getHeadersFound()
     {
         return this.headersFound;
     }
 
+    /**
+     * Returns the selected output headers.
+     */
     public String[] getSelectedHeaders()
     {
         return this.selectedHeaders;
     }
 
+    /**
+     * Returns the source positions of the selected headers.
+     */
     public int[] getSelectedPositions()
     {
         return this.selectedPositions;
@@ -63,6 +85,10 @@ public class HeaderDetection
         return positions;
     }
 
+    /**
+     * Returns whether the headers were synthesized rather than read from the
+     * source.
+     */
     public boolean isSyntheticHeaders()
     {
         return this.syntheticHeaders;

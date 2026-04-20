@@ -12,10 +12,31 @@ package app.babylon.table.transform;
 
 import java.util.Locale;
 
+/**
+ * Supported date token orderings and special date encodings.
+ */
 public enum DateFormat
 {
-    DMY, YMD, MDY, ExcelLocalDate, ExcelLocalDateTime, Unknown;
+    /** Day-month-year order. */
+    DMY,
+    /** Year-month-day order. */
+    YMD,
+    /** Month-day-year order. */
+    MDY,
+    /** Excel serial date without time. */
+    ExcelLocalDate,
+    /** Excel serial date/time value. */
+    ExcelLocalDateTime,
+    /** Unknown or ambiguous format. */
+    Unknown;
 
+    /**
+     * Parses a named date format such as {@code DMY}, {@code MDY}, or {@code YMD}.
+     *
+     * @param s
+     *            source text
+     * @return parsed date format or {@code null}
+     */
     public static DateFormat parse(String s)
     {
         if (s == null || s.isBlank())

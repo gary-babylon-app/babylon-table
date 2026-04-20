@@ -16,5 +16,14 @@ package app.babylon.table.sorting;
 @FunctionalInterface
 public interface ComparatorInt
 {
+    /**
+     * Compares two primitive ints.
+     *
+     * @param a
+     *            first value
+     * @param b
+     *            second value
+     * @return comparison result
+     */
     int compare(int a, int b);
 }

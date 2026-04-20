@@ -17,20 +17,35 @@ import java.util.Currency;
 import app.babylon.table.column.Column.Type;
 import app.babylon.table.column.type.TypeParsers;
 
+/**
+ * Standard built-in column types.
+ */
 public final class ColumnTypes
 {
     // @formatter:off
+    /** Primitive byte type. */
     public static final Type BYTE          = Column.Type.of(byte.class,       TypeParsers.BYTE);
+    /** Boxed byte type. */
     public static final Type BYTE_OBJECT   = Column.Type.of(Byte.class,       TypeParsers.BYTE);
+    /** Primitive int type. */
     public static final Type INT           = Column.Type.of(int.class,        TypeParsers.INT);
+    /** Boxed int type. */
     public static final Type INT_OBJECT    = Column.Type.of(Integer.class,    TypeParsers.INT);
+    /** Primitive long type. */
     public static final Type LONG          = Column.Type.of(long.class,       TypeParsers.LONG);
+    /** Boxed long type. */
     public static final Type LONG_OBJECT   = Column.Type.of(Long.class,       TypeParsers.LONG);
+    /** Primitive double type. */
     public static final Type DOUBLE        = Column.Type.of(double.class,     TypeParsers.DOUBLE);
+    /** Boxed double type. */
     public static final Type DOUBLE_OBJECT = Column.Type.of(Double.class,     TypeParsers.DOUBLE);
+    /** String type. */
     public static final Type STRING        = Column.Type.of(String.class,     TypeParsers.STRING);
+    /** BigDecimal type. */
     public static final Type DECIMAL       = Column.Type.of(BigDecimal.class, TypeParsers.BIG_DECIMAL);
+    /** LocalDate type. */
     public static final Type LOCALDATE     = Column.Type.of(LocalDate.class,  TypeParsers.LOCAL_DATE_YMD);
+    /** Currency type. */
     public static final Type CURRENCY      = Column.Type.of(Currency.class,   TypeParsers.CURRENCY);
     // @formatter:on
 

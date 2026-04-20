@@ -26,16 +26,35 @@ import app.babylon.table.sorting.SortInt;
 import app.babylon.text.BigDecimals;
 import app.babylon.text.Strings;
 
-//import app.babylon.BigDecimals;
-//import app.babylon.BigDecimals;
-
+/**
+ * Utility methods for common column construction, conversion, aggregation, and
+ * reshaping operations.
+ */
 public class Columns
 {
+    private Columns()
+    {
+    }
+
+    /**
+     * Returns whether the column stores strings.
+     *
+     * @param column
+     *            column to inspect
+     * @return {@code true} when the column is a string object column
+     */
     public static boolean isStringColumn(Column column)
     {
         return column instanceof ColumnObject<?> && String.class.equals(column.getType().getValueClass());
     }
 
+    /**
+     * Casts a generic column to a string column.
+     *
+     * @param column
+     *            column to cast
+     * @return string column view
+     */
     @SuppressWarnings("unchecked")
     public static ColumnObject<String> asStringColumn(Column column)
     {
@@ -46,6 +65,15 @@ public class Columns
         return (ColumnObject<String>) column;
     }
 
+    /**
+     * Builds a frequency map of set values in an object column.
+     *
+     * @param c
+     *            source column
+     * @param <T>
+     *            value type
+     * @return value frequency map
+     */
     public static <T> Map<T, Integer> frequencyMap(ColumnObject<T> c)
     {
         Map<T, Integer> m = new HashMap<>();
@@ -60,6 +88,19 @@ public class Columns
         return m;
     }
 
+    /**
+     * Converts a string column to another object type using the supplied parser.
+     *
+     * @param column
+     *            source column
+     * @param parser
+     *            string parser
+     * @param targetType
+     *            target type
+     * @param <S>
+     *            target value type
+     * @return converted column or {@code null}
+     */
     public static <S> ColumnObject<S> stringToType(Column column, Function<String, S> parser, Column.Type targetType)
     {
         if (!(column instanceof ColumnObject<?> co))
@@ -91,11 +132,25 @@ public class Columns
         return null;
     }
 
+    /**
+     * Converts a string column to decimals.
+     *
+     * @param column
+     *            source column
+     * @return decimal column or {@code null}
+     */
     public static ColumnObject<BigDecimal> stringToDecimal(Column column)
     {
         return stringToType(column, BigDecimals::parse, ColumnTypes.DECIMAL);
     }
 
+    /**
+     * Returns whether the column has no rows.
+     *
+     * @param column
+     *            column to inspect
+     * @return {@code true} when empty
+     */
     public static boolean isEmpty(Column column)
     {
         if (column == null || column.size() == 0)
@@ -105,10 +160,26 @@ public class Columns
         return column.isEmpty();
     }
 
+    /**
+     * Creates a default string column builder.
+     *
+     * @param colName
+     *            column name
+     * @return new builder
+     */
     public static Column.Builder newColumn(ColumnName colName)
     {
         return newBuilder(colName, ColumnTypes.STRING);
     }
+    /**
+     * Creates a builder suitable for the supplied type.
+     *
+     * @param colName
+     *            column name
+     * @param type
+     *            target type
+     * @return new builder
+     */
     public static Column.Builder newBuilder(ColumnName colName, Column.Type type)
     {
         if (type == null)
@@ -181,31 +252,57 @@ public class Columns
     // valueClass);
     // }
 
+    /**
+     * Creates a constant decimal column.
+     *
+     * @param colName
+     *            column name
+     * @param value
+     *            constant value
+     * @param size
+     *            row count
+     * @return constant decimal column
+     */
     public static ColumnObject<BigDecimal> newDecimal(ColumnName colName, BigDecimal value, int size)
     {
         return ColumnCategorical.constant(colName, value, size, ColumnTypes.DECIMAL);
     }
 
+    /**
+     * Creates a constant int column.
+     */
     public static ColumnInt newInt(ColumnName colName, int value, int size)
     {
         return new ColumnIntConstant(colName, value, size);
     }
 
+    /**
+     * Creates a constant byte column.
+     */
     public static ColumnByte newByte(ColumnName colName, byte value, int size)
     {
         return new ColumnByteConstant(colName, value, size);
     }
 
+    /**
+     * Creates a constant string column.
+     */
     public static ColumnObject<String> newString(ColumnName colName, String value, int size)
     {
         return ColumnCategorical.constant(colName, value, size, ColumnTypes.STRING);
     }
 
+    /**
+     * Creates a constant categorical column.
+     */
     public static <T> ColumnCategorical<T> newCategorical(ColumnName colName, T value, int size, Column.Type type)
     {
         return new ColumnCategoricalConstant<T>(colName, value, size, type);
     }
 
+    /**
+     * Computes an aggregate over a decimal column.
+     */
     public static BigDecimal aggregate(ColumnObject<BigDecimal> cd, Aggregate aggregate)
     {
         switch (aggregate)
@@ -224,16 +321,25 @@ public class Columns
         }
     }
 
+    /**
+     * Returns the maximum set value in an object column.
+     */
     public static <T> T max(ColumnObject<T> co)
     {
         return co.max();
     }
 
+    /**
+     * Returns the minimum set value in an object column.
+     */
     public static <T> T min(ColumnObject<T> co)
     {
         return co.min();
     }
 
+    /**
+     * Computes an aggregate over a double column.
+     */
     public static double aggregate(ColumnDouble cd, Aggregate aggregate)
     {
         AccumulatorDouble accumulator = new AccumulatorDouble();
@@ -277,21 +383,33 @@ public class Columns
         return sum.divide(new BigDecimal(n), mc);
     }
 
+    /**
+     * Creates a constant double column.
+     */
     public static ColumnDouble newDouble(ColumnName colName, double value, int size)
     {
         return new ColumnDoubleConstant(colName, value, size);
     }
 
+    /**
+     * Returns a row view of the supplied column.
+     */
     public static <T extends Enum<T>> Column newView(Column c, ViewIndex rowIndex)
     {
         return c.view(rowIndex);
     }
 
+    /**
+     * Returns a sorted view using the column's natural row comparison.
+     */
     public static Column sort(Column column)
     {
         return sort(column, column::compare);
     }
 
+    /**
+     * Returns a sorted view using the supplied row comparator.
+     */
     public static Column sort(Column column, ComparatorInt comparator)
     {
         if (column == null)
@@ -315,11 +433,17 @@ public class Columns
         return column.view(rowIndexBuilder.build());
     }
 
+    /**
+     * Returns a string-column view.
+     */
     public static ColumnObject<String> newStringView(ColumnObject<String> c, ViewIndex rowIndex)
     {
         return asStringColumn(c.view(rowIndex));
     }
 
+    /**
+     * Concatenates multiple columns of the same logical type.
+     */
     @SuppressWarnings("unchecked")
     public static Column concat(List<Column> columns)
     {
@@ -501,6 +625,9 @@ public class Columns
         return true;
     }
 
+    /**
+     * Returns a short preview string for a column.
+     */
     public static String toString(Column column)
     {
         StringBuilder builder = new StringBuilder();

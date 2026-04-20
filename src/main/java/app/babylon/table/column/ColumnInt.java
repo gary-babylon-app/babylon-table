@@ -106,6 +106,11 @@ public interface ColumnInt extends Column
      */
     public int[] toArray(int[] x);
 
+    /**
+     * Returns the maximum set value in the column.
+     *
+     * @return maximum set value
+     */
     default int max()
     {
         if (isEmpty())
@@ -138,6 +143,11 @@ public interface ColumnInt extends Column
         return max;
     }
 
+    /**
+     * Returns the minimum set value in the column.
+     *
+     * @return minimum set value
+     */
     default int min()
     {
         if (isEmpty())

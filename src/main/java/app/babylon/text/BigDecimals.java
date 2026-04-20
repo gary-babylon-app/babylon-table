@@ -13,8 +13,15 @@ package app.babylon.text;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
+/**
+ * Parsing and extraction helpers for decimal text values.
+ */
 public final class BigDecimals
 {
+    /**
+     * Prepared decimal text together with formatting flags discovered during
+     * normalisation.
+     */
     public static final class PreparedDecimal
     {
         private final String normalizedNumberText;
@@ -28,16 +35,31 @@ public final class BigDecimals
             this.negativeBracket = negativeBracket;
         }
 
+        /**
+         * Returns the normalised decimal text ready for parsing.
+         *
+         * @return normalised decimal text
+         */
         public String normalizedNumberText()
         {
             return this.normalizedNumberText;
         }
 
+        /**
+         * Returns whether the original text used a percent sign.
+         *
+         * @return {@code true} when the original value was a percentage
+         */
         public boolean isPercent()
         {
             return this.percent;
         }
 
+        /**
+         * Returns whether the original text used bracketed negatives.
+         *
+         * @return {@code true} when the original value was wrapped in brackets
+         */
         public boolean isNegativeBracket()
         {
             return this.negativeBracket;
@@ -48,6 +70,13 @@ public final class BigDecimals
     {
     }
 
+    /**
+     * Returns whether the supplied text could represent a decimal.
+     *
+     * @param s
+     *            text to inspect
+     * @return {@code true} when the text can be normalised as a decimal
+     */
     public static boolean isDecimal(CharSequence s)
     {
         if (s == null)
@@ -72,6 +101,13 @@ public final class BigDecimals
         return !Strings.isEmpty(s);
     }
 
+    /**
+     * Removes commas from a simple numeric string, leaving other text unchanged.
+     *
+     * @param s
+     *            text to normalise
+     * @return comma-free text or the original value when no safe cleanup applies
+     */
     public static String removeCommas(String s)
     {
         if (s == null)
@@ -103,6 +139,13 @@ public final class BigDecimals
         return new String(clean, 0, countCleanChars);
     }
 
+    /**
+     * Parses a decimal value from the supplied text.
+     *
+     * @param s
+     *            text to parse
+     * @return parsed decimal or {@code null}
+     */
     public static BigDecimal parse(CharSequence s)
     {
         if (s == null)
@@ -112,6 +155,13 @@ public final class BigDecimals
         return parsePrepared(prepare(s.toString()));
     }
 
+    /**
+     * Parses a {@link Double} from the supplied text.
+     *
+     * @param s
+     *            text to parse
+     * @return parsed double or {@code null}
+     */
     public static Double parseDouble(CharSequence s)
     {
         if (s == null)
@@ -121,6 +171,13 @@ public final class BigDecimals
         return parseDoublePrepared(prepare(s.toString()));
     }
 
+    /**
+     * Extracts a single decimal value from a sentence-like string.
+     *
+     * @param sentence
+     *            source text
+     * @return parsed decimal or {@code null} if none or more than one are found
+     */
     public static BigDecimal extract(CharSequence sentence)
     {
         if (Strings.isEmpty(sentence))
@@ -144,6 +201,13 @@ public final class BigDecimals
         return extracted;
     }
 
+    /**
+     * Extracts a single double value from a sentence-like string.
+     *
+     * @param sentence
+     *            source text
+     * @return parsed double or {@code null} if none or more than one are found
+     */
     public static Double extractDouble(CharSequence sentence)
     {
         if (Strings.isEmpty(sentence))
@@ -167,6 +231,13 @@ public final class BigDecimals
         return extracted;
     }
 
+    /**
+     * Normalises a decimal candidate before final parsing.
+     *
+     * @param s
+     *            text to prepare
+     * @return prepared decimal metadata or {@code null}
+     */
     public static PreparedDecimal prepare(CharSequence s)
     {
         if (s == null)

@@ -101,6 +101,11 @@ public interface ColumnByte extends Column
      */
     public byte[] toArray(byte[] x);
 
+    /**
+     * Returns the maximum set value in the column.
+     *
+     * @return maximum set value
+     */
     default byte max()
     {
         if (isEmpty())
@@ -133,6 +138,11 @@ public interface ColumnByte extends Column
         return max;
     }
 
+    /**
+     * Returns the minimum set value in the column.
+     *
+     * @return minimum set value
+     */
     default byte min()
     {
         if (isEmpty())

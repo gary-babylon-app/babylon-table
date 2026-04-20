@@ -25,12 +25,24 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 
+/**
+ * Utilities for grouping tables by categorical columns.
+ */
 public final class GroupBys
 {
     private GroupBys()
     {
     }
 
+    /**
+     * Groups a table by one or more categorical columns.
+     *
+     * @param table
+     *            source table
+     * @param x
+     *            grouping columns
+     * @return grouping result
+     */
     public static GroupBy groupBy(TableColumnar table, ColumnName... x)
     {
         ArgumentCheck.nonEmpty(x);

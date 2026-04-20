@@ -21,6 +21,9 @@ import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.text.Strings;
 
+/**
+ * Canonical, case-insensitive table column name.
+ */
 public final class ColumnName implements Comparable<ColumnName>
 {
     private static final Pattern P_DIACRITICS = Pattern.compile("\\p{M}+");
@@ -36,6 +39,13 @@ public final class ColumnName implements Comparable<ColumnName>
 
     // ---------- Factories ----------
 
+    /**
+     * Creates a column name from raw text.
+     *
+     * @param s
+     *            source text
+     * @return column name
+     */
     public static ColumnName of(String s)
     {
         if (Strings.isEmpty(s))
@@ -45,11 +55,25 @@ public final class ColumnName implements Comparable<ColumnName>
         return new ColumnName(s);
     }
 
+    /**
+     * Parses a column name, returning {@code null} for empty text.
+     *
+     * @param s
+     *            source text
+     * @return parsed column name or {@code null}
+     */
     public static ColumnName parse(CharSequence s)
     {
         return Strings.isEmpty(s) ? null : of(s.toString());
     }
 
+    /**
+     * Converts a collection of strings into column names.
+     *
+     * @param v
+     *            source names
+     * @return column-name array
+     */
     public static ColumnName[] of(Collection<String> v)
     {
         if (Is.empty(v))
@@ -65,11 +89,27 @@ public final class ColumnName implements Comparable<ColumnName>
         return c;
     }
 
+    /**
+     * Converts an array of strings into column names.
+     *
+     * @param v
+     *            source names
+     * @return column-name array
+     */
     public static ColumnName[] of(String[] v)
     {
         return of(v, 0);
     }
 
+    /**
+     * Converts a tail slice of a string array into column names.
+     *
+     * @param v
+     *            source names
+     * @param startIndex
+     *            first index to include
+     * @return column-name array
+     */
     public static ColumnName[] of(String[] v, int startIndex)
     {
         if (Is.empty(v) || (v.length - startIndex) <= 0)
@@ -131,11 +171,21 @@ public final class ColumnName implements Comparable<ColumnName>
         return value;
     }
 
+    /**
+     * Returns the exported display value of the column name.
+     *
+     * @return display value
+     */
     public String getValue()
     {
         return value;
     }
 
+    /**
+     * Returns the canonical comparison key.
+     *
+     * @return canonical key
+     */
     public String getCanonical()
     {
         return canonical;
@@ -167,6 +217,11 @@ public final class ColumnName implements Comparable<ColumnName>
         return this.canonical.compareTo(o.canonical);
     }
 
+    /**
+     * Returns a snake-case representation of the name.
+     *
+     * @return snake-case text
+     */
     public String toSnake()
     {
         StringBuilder result = new StringBuilder();
@@ -197,6 +252,13 @@ public final class ColumnName implements Comparable<ColumnName>
         return result.toString();
     }
 
+    /**
+     * Splits the name into camel-case words.
+     *
+     * @param words
+     *            destination collection or {@code null}
+     * @return destination collection containing the words
+     */
     public Collection<String> toWords(Collection<String> words)
     {
         if (words == null)
@@ -230,6 +292,11 @@ public final class ColumnName implements Comparable<ColumnName>
         return words;
     }
 
+    /**
+     * Returns a SQL-friendly identifier for the name.
+     *
+     * @return quoted SQL identifier
+     */
     public String toSqlIdentifier()
     {
         String snake = toSnake();
@@ -255,21 +322,45 @@ public final class ColumnName implements Comparable<ColumnName>
         return "`" + snake + "`";
     }
 
+    /**
+     * Returns the CamelUpper representation of the name.
+     *
+     * @return CamelUpper text
+     */
     public String toCamelCaseUpper()
     {
         return value;
     }
 
+    /**
+     * Returns the camelCase representation of the name.
+     *
+     * @return camelCase text
+     */
     public String toCamelCase()
     {
         return value.substring(0, 1).toLowerCase(Locale.ROOT) + value.substring(1, value.length());
     }
 
+    /**
+     * Returns the canonical cleaned form of arbitrary column-name text.
+     *
+     * @param s
+     *            source text
+     * @return cleaned canonical key
+     */
     public static String clean(String s)
     {
         return Strings.isEmpty(s) ? "" : buildCanonicalKey(s);
     }
 
+    /**
+     * Converts column names back to their exported string values.
+     *
+     * @param x
+     *            source column names
+     * @return string values or {@code null}
+     */
     public static String[] toStringArray(Collection<ColumnName> x)
     {
         if (x == null)

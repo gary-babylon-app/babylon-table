@@ -26,6 +26,13 @@ public final class Currencys
     {
     }
 
+    /**
+     * Parses a currency from the whole character sequence.
+     *
+     * @param s
+     *            source text
+     * @return parsed currency or {@code null}
+     */
     public static Currency parse(CharSequence s)
     {
         return s == null ? null : parse(s, 0, s.length());

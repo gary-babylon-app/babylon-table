@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Locale;
 
+/**
+ * Lightweight facts extracted from a date candidate string.
+ */
 public final class DateValueFacts
 {
     private final String text;
@@ -94,6 +97,13 @@ public final class DateValueFacts
         this.isDecimal = isDecimalLocal;
     }
 
+    /**
+     * Builds date facts from the supplied text.
+     *
+     * @param value
+     *            text to inspect
+     * @return extracted facts or {@code null}
+     */
     public static DateValueFacts from(CharSequence value)
     {
         if (value == null)
@@ -108,41 +118,66 @@ public final class DateValueFacts
         return new DateValueFacts(stripped);
     }
 
+    /**
+     * Returns the stripped source text.
+     */
     public String text()
     {
         return this.text;
     }
 
+    /**
+     * Returns the stripped text length.
+     */
     public int size()
     {
         return this.size;
     }
 
+    /**
+     * Returns whether the stripped text contains digits only.
+     */
     public boolean onlyDigits()
     {
         return this.onlyDigits;
     }
 
+    /**
+     * Returns whether the text also looks like a decimal number.
+     */
     public boolean isDecimal()
     {
         return this.isDecimal;
     }
 
+    /**
+     * Returns the number of alphabetic characters.
+     */
     public int alphaCount()
     {
         return this.alphaCount;
     }
 
+    /**
+     * Returns whether the text contains commas.
+     */
     public boolean hasCommas()
     {
         return this.commaCount > 0;
     }
 
+    /**
+     * Returns whether the text contains periods.
+     */
     public boolean hasPeriods()
     {
         return this.periodCount > 0;
     }
 
+    /**
+     * Returns whether the text has token shapes that disqualify it from the date
+     * heuristics.
+     */
     public boolean invalidForDateTokens()
     {
         if (this.commaCount > 0 || this.periodCount > 0)
@@ -152,6 +187,9 @@ public final class DateValueFacts
         return this.alphaCount > 3;
     }
 
+    /**
+     * Returns whether the value looks like an Excel serial date.
+     */
     public boolean isExcelLocalDate()
     {
         if (this.size != 5 || !this.onlyDigits)
@@ -162,11 +200,17 @@ public final class DateValueFacts
         return dateValue >= 25569L && dateValue <= 109575L;
     }
 
+    /**
+     * Returns whether the value looks like an Excel serial date/time.
+     */
     public boolean isExcelLocalDateTime()
     {
         return this.isDecimal;
     }
 
+    /**
+     * Splits a natural-language date into three chronological fields.
+     */
     public String[] naturalDateSplit()
     {
         String s = this.text;
@@ -261,6 +305,9 @@ public final class DateValueFacts
         return chronoFields;
     }
 
+    /**
+     * Parses three numeric groups from the source text.
+     */
     public int[] parseThreeNumberGroups()
     {
         String s = this.text;
@@ -419,6 +466,13 @@ public final class DateValueFacts
         return Integer.valueOf(negative ? -value : value);
     }
 
+    /**
+     * Converts the captured text to a local date using the supplied format.
+     *
+     * @param format
+     *            date token order
+     * @return parsed local date or {@code null}
+     */
     public LocalDate toLocalDate(DateFormat format)
     {
 

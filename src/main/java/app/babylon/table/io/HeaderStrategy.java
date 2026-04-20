@@ -25,13 +25,30 @@ import app.babylon.text.Strings;
  */
 public interface HeaderStrategy
 {
+    /** Default number of rows to scan when inferring headers. */
     int DEFAULT_SCAN_LIMIT = 25;
 
+    /**
+     * Returns the maximum number of rows to scan during header detection.
+     *
+     * @return scan limit
+     */
     default int getScanLimit()
     {
         return DEFAULT_SCAN_LIMIT;
     }
 
+    /**
+     * Detects headers and optional selected columns from a markable row stream.
+     *
+     * @param rowStream
+     *            row stream to inspect
+     * @param selectedColumns
+     *            requested selected columns
+     * @return detected header information
+     * @throws IOException
+     *             if stream inspection fails
+     */
     default HeaderDetection detect(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns) throws IOException
     {
         HeaderDetection foundDetection = detectFoundHeaders(rowStream, selectedColumns);
@@ -67,6 +84,17 @@ public interface HeaderStrategy
                 toIntArray(selectedPositions));
     }
 
+    /**
+     * Detects the raw headers present in the source.
+     *
+     * @param rowStream
+     *            row stream to inspect
+     * @param selectedColumns
+     *            requested selected columns
+     * @return detected raw header information
+     * @throws IOException
+     *             if stream inspection fails
+     */
     HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns) throws IOException;
 
     private static HeaderDetection normalise(HeaderDetection detection)

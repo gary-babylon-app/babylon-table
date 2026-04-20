@@ -10,8 +10,18 @@
 
 package app.babylon.table.column;
 
+/**
+ * Primitive predicate for byte values.
+ */
 @FunctionalInterface
 public interface BytePredicate
 {
+    /**
+     * Tests the supplied byte value.
+     *
+     * @param value
+     *            value to test
+     * @return predicate result
+     */
     boolean test(byte value);
 }

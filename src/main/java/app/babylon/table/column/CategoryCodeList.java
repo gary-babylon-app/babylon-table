@@ -20,35 +20,104 @@ import java.util.Arrays;
  */
 public interface CategoryCodeList
 {
+    /** Largest category code that fits in an unsigned byte. */
     int BYTE_MAX_VALUE = 0xFF;
+    /** Largest category code that fits in an unsigned char. */
     int CHAR_MAX_VALUE = 0xFFFF;
 
+    /**
+     * Creates a mutable builder for category codes.
+     *
+     * @return new builder
+     */
     static Builder builder()
     {
         return new BuilderInt();
     }
 
+    /**
+     * Returns the number of stored category codes.
+     *
+     * @return code count
+     */
     int size();
 
+    /**
+     * Returns the code at the supplied index.
+     *
+     * @param i
+     *            zero-based index
+     * @return category code
+     */
     int get(int i);
 
+    /**
+     * Copies the codes into an int array.
+     *
+     * @param x
+     *            destination array or {@code null}
+     * @return array of category codes
+     */
     int[] toArray(int[] x);
 
+    /**
+     * Returns an immutable copy of this code list.
+     *
+     * @return copied code list
+     */
     CategoryCodeList copy();
 
+    /**
+     * Mutable builder for {@link CategoryCodeList}.
+     */
     interface Builder
     {
+        /**
+         * Appends one category code.
+         *
+         * @param x
+         *            category code to append
+         * @return this builder
+         */
         Builder add(int x);
 
+        /**
+         * Appends all supplied category codes.
+         *
+         * @param x
+         *            category codes to append
+         * @return this builder
+         */
         Builder addAll(int[] x);
 
+        /**
+         * Returns the number of appended codes.
+         *
+         * @return builder size
+         */
         int size();
 
+        /**
+         * Returns the appended code at the supplied index.
+         *
+         * @param i
+         *            zero-based index
+         * @return category code
+         */
         int get(int i);
 
+        /**
+         * Builds the immutable category code list.
+         *
+         * @return immutable category code list
+         */
         CategoryCodeList build();
     }
 
+    /**
+     * Builder implementation that stores incoming codes as ints before compacting
+     * to the smallest suitable representation.
+     */
     final class BuilderInt implements Builder
     {
         private int[] values;

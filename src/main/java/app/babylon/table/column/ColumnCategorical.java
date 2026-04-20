@@ -70,7 +70,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
          * Builds the categorical column by parsing each distinct source value through
          * the supplied target type parser.
          *
-         * This is the natural path for building a {@code ColumnCategorical<S>} from a
+         * This is the natural path for building a typed categorical column from a
          * string-like categorical builder when the target parser may still need to
          * construct a {@link String}. The categorical dictionary can be parsed once
          * during materialisation, rather than first building an immutable
@@ -86,8 +86,6 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
          * If the supplied target type is the same as the builder type, this behaves
          * like {@link #build()} and returns the categorical column directly.
          *
-         * @param <S>
-         *            the transformed value type
          * @param transformedType
          *            the target column type
          * @return an immutable categorical column of the transformed type
@@ -117,11 +115,29 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
         // }
     }
 
+    /**
+     * Creates a string categorical builder.
+     *
+     * @param name
+     *            column name
+     * @return categorical builder
+     */
     public static Builder<String> builder(ColumnName name)
     {
         return builder(name, ColumnTypes.STRING);
     }
 
+    /**
+     * Creates a categorical builder for the supplied non-primitive type.
+     *
+     * @param name
+     *            column name
+     * @param type
+     *            categorical value type
+     * @param <T>
+     *            categorical value type
+     * @return categorical builder
+     */
     public static <T> Builder<T> builder(ColumnName name, Column.Type type)
     {
         Column.Type columnType = ArgumentCheck.nonNull(type);

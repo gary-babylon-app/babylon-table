@@ -10,7 +10,23 @@
 
 package app.babylon.table.aggregation;
 
+/**
+ * Supported aggregate calculations.
+ */
 public enum Aggregate
 {
-    COUNT, SUM, MAX, MIN, MEAN, VARIANCE, VARIANCE_SAMPLE;
+    /** Number of set values. */
+    COUNT,
+    /** Sum of set values. */
+    SUM,
+    /** Maximum set value. */
+    MAX,
+    /** Minimum set value. */
+    MIN,
+    /** Arithmetic mean of set values. */
+    MEAN,
+    /** Population variance of set values. */
+    VARIANCE,
+    /** Sample variance of set values. */
+    VARIANCE_SAMPLE;
 }

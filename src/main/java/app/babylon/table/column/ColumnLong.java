@@ -120,6 +120,11 @@ public interface ColumnLong extends Column
      */
     public long[] toArray(long[] x);
 
+    /**
+     * Returns the maximum set value in the column.
+     *
+     * @return maximum set value
+     */
     default long max()
     {
         if (isEmpty())
@@ -152,6 +157,11 @@ public interface ColumnLong extends Column
         return max;
     }
 
+    /**
+     * Returns the minimum set value in the column.
+     *
+     * @return minimum set value
+     */
     default long min()
     {
         if (isEmpty())

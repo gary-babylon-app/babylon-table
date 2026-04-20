@@ -14,12 +14,22 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnObject;
 import java.time.LocalDate;
 
+/**
+ * Local-date helpers for string and typed date columns.
+ */
 public final class ColumnLocalDates
 {
     private ColumnLocalDates()
     {
     }
 
+    /**
+     * Parses a date using the default YMD interpretation.
+     *
+     * @param x
+     *            source text
+     * @return parsed date or {@code null}
+     */
     public static LocalDate stringToDate(CharSequence x)
     {
         DateValueFacts facts = DateValueFacts.from(x);
@@ -31,6 +41,15 @@ public final class ColumnLocalDates
         return facts.toLocalDate(DateFormat.YMD);
     }
 
+    /**
+     * Parses a date using the supplied format.
+     *
+     * @param x
+     *            source text
+     * @param format
+     *            date format to use
+     * @return parsed date or {@code null}
+     */
     public static LocalDate stringToDate(CharSequence x, DateFormat format)
     {
         DateValueFacts facts = DateValueFacts.from(x);
@@ -42,11 +61,26 @@ public final class ColumnLocalDates
         return facts.toLocalDate(format);
     }
 
+    /**
+     * Returns whether every set value in the string column looks like a date.
+     *
+     * @param c
+     *            string column to inspect
+     * @return {@code true} when the column has a known inferred date format
+     */
     public static boolean isAllDates(ColumnObject<String> c)
     {
         return DateFormatInference.inferFormat(c) != DateFormat.Unknown;
     }
 
+    /**
+     * Returns whether the column is already local-date typed or can be inferred as
+     * local-date text.
+     *
+     * @param column
+     *            column to inspect
+     * @return {@code true} when the column represents local dates
+     */
     public static boolean isLocalDate(Column column)
     {
         if (column instanceof ColumnObject<?> && LocalDate.class.equals(column.getType().getValueClass()))
@@ -62,6 +96,13 @@ public final class ColumnLocalDates
         return false;
     }
 
+    /**
+     * Returns the minimum set value in a local-date column.
+     *
+     * @param column
+     *            local-date column
+     * @return minimum set date
+     */
     public static LocalDate getMinimum(ColumnObject<LocalDate> column)
     {
         if (column == null || column.size() == 0)

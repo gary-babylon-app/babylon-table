@@ -38,7 +38,12 @@ public interface ColumnObject<T> extends Column
      */
     public enum Mode
     {
-        AUTO, CATEGORICAL, ARRAY;
+        /** Let the builder choose the most suitable representation. */
+        AUTO,
+        /** Use dictionary encoding when building the column. */
+        CATEGORICAL,
+        /** Use direct array storage when building the column. */
+        ARRAY;
 
         /**
          * Parses a mode name, defaulting to {@link #AUTO} when the text is blank.
@@ -138,6 +143,11 @@ public interface ColumnObject<T> extends Column
         @Override
         public ColumnName getName();
 
+        /**
+         * Returns the object column type produced by this builder.
+         *
+         * @return builder type
+         */
         public Column.Type getType();
 
         /**
@@ -180,11 +190,9 @@ public interface ColumnObject<T> extends Column
          * If the supplied target type is the same as the builder type, this behaves
          * like {@link #build()} and returns the column directly.
          *
-         * @param <S>
-         *            the transformed value type
          * @param transformedType
          *            the target column type
-         * @return an immutable categorical column of the transformed type
+         * @return an immutable column of the transformed type
          */
         Column build(Column.Type transformedType);
         // {
@@ -272,6 +280,11 @@ public interface ColumnObject<T> extends Column
         return get(size() - 1);
     }
 
+    /**
+     * Returns the maximum set value in the column.
+     *
+     * @return maximum set value
+     */
     default public T max()
     {
         if (size() == 0 || isNoneSet())
@@ -303,6 +316,11 @@ public interface ColumnObject<T> extends Column
         return maxIndex < 0 ? null : get(maxIndex);
     }
 
+    /**
+     * Returns the minimum set value in the column.
+     *
+     * @return minimum set value
+     */
     default public T min()
     {
         if (size() == 0 || isNoneSet())

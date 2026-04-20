@@ -21,6 +21,9 @@ import java.util.Map;
 
 import app.babylon.table.column.ColumnObject;
 
+/**
+ * Heuristics for inferring a consistent date format from string columns.
+ */
 public final class DateFormatInference
 {
     private static final long EXCEL_MIN = 25569L;
@@ -35,6 +38,14 @@ public final class DateFormatInference
     {
     }
 
+    /**
+     * Infers one date format per supplied column, optionally using a dominant
+     * format to fill ambiguous columns.
+     *
+     * @param columns
+     *            string columns to inspect
+     * @return inferred formats, never {@code null}
+     */
     public static DateFormat[] inferFormats(ColumnObject<String>[] columns)
     {
         ColumnObject<String>[] cols = ArgumentCheck.nonNull(columns, "columns must not be null");
@@ -155,16 +166,40 @@ public final class DateFormatInference
         return new ColumnInference(DateFormat.Unknown, 0.0d);
     }
 
+    /**
+     * Infers the best date format for one string column.
+     *
+     * @param column
+     *            string column to inspect
+     * @return inferred format or {@link DateFormat#Unknown}
+     */
     public static DateFormat inferFormat(ColumnObject<String> column)
     {
         return inferColumn(column).format();
     }
 
+    /**
+     * Returns whether the value looks like any recognised date.
+     *
+     * @param value
+     *            text to inspect
+     * @return {@code true} when the value looks date-like
+     */
     public static boolean isLikelyDate(CharSequence value)
     {
         return isLikelyDate(value, false);
     }
 
+    /**
+     * Returns whether the value looks date-like, optionally biasing toward date
+     * interpretation when the column name suggests it contains dates.
+     *
+     * @param value
+     *            text to inspect
+     * @param isDateName
+     *            whether the surrounding column name suggests date content
+     * @return {@code true} when the value looks date-like
+     */
     public static boolean isLikelyDate(CharSequence value, boolean isDateName)
     {
         DateValueFacts valueFacts = DateValueFacts.from(value);
@@ -175,6 +210,13 @@ public final class DateFormatInference
         return !candidatesForValue(valueFacts, isDateName).isEmpty();
     }
 
+    /**
+     * Returns whether the value is a strict integer literal.
+     *
+     * @param value
+     *            text to inspect
+     * @return {@code true} when the value is a strict integer
+     */
     public static boolean isStrictInteger(CharSequence value)
     {
         if (value == null)
@@ -208,6 +250,13 @@ public final class DateFormatInference
         return true;
     }
 
+    /**
+     * Returns whether the value is a strict decimal literal.
+     *
+     * @param value
+     *            text to inspect
+     * @return {@code true} when the value is a strict decimal
+     */
     public static boolean isStrictDecimal(CharSequence value)
     {
         if (value == null)

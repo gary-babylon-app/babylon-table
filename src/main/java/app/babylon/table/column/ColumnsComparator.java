@@ -16,15 +16,35 @@ import java.util.Comparator;
 
 import app.babylon.table.TableColumnar;
 
+/**
+ * Row comparator that compares table rows by a sequence of columns.
+ */
 public class ColumnsComparator implements Comparator<Integer>
 {
     private Column[] columns;
 
+    /**
+     * Creates a comparator over the supplied table columns.
+     *
+     * @param table
+     *            source table
+     * @param x
+     *            columns to compare in order
+     */
     public ColumnsComparator(TableColumnar table, ColumnName... x)
     {
         this.columns = ArgumentCheck.nonNull(table.getColumns(x));
     }
 
+    /**
+     * Compares two row indexes.
+     *
+     * @param row1
+     *            first row index
+     * @param row2
+     *            second row index
+     * @return comparison result
+     */
     public int compareRows(int row1, int row2)
     {
         int result = 0;

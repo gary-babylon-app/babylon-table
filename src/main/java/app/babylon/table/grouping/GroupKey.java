@@ -20,26 +20,60 @@ import java.util.Arrays;
  */
 public interface GroupKey extends Comparable<GroupKey>
 {
+    /**
+     * Creates a group key from ordered key components.
+     *
+     * @param elements
+     *            key components
+     * @return group key
+     */
     static GroupKey of(Object... elements)
     {
         ArgumentCheck.nonEmpty(elements);
         return new ElementsGroupKey(elements);
     }
 
+    /**
+     * Returns one key component.
+     *
+     * @param i
+     *            component index
+     * @return key component
+     */
     Object getComponent(int i);
 
+    /**
+     * Returns the number of key components.
+     *
+     * @return component count
+     */
     int size();
 
+    /**
+     * Returns the first key component.
+     *
+     * @return first component
+     */
     default Object getFirst()
     {
         return getComponent(0);
     }
 
+    /**
+     * Returns the second key component.
+     *
+     * @return second component
+     */
     default Object getSecond()
     {
         return getComponent(1);
     }
 
+    /**
+     * Returns the last key component.
+     *
+     * @return last component
+     */
     default Object getLast()
     {
         return getComponent(size() - 1);
@@ -82,6 +116,9 @@ public interface GroupKey extends Comparable<GroupKey>
         return Integer.compare(s1, s2);
     }
 
+    /**
+     * Concrete group-key implementation backed by an object array.
+     */
     final class ElementsGroupKey implements GroupKey
     {
         private final Object[] elements;

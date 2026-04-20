@@ -19,11 +19,26 @@ import app.babylon.text.Strings;
 /**
  * Transforms individual column values from one type to another while carrying
  * the target column type and optional output column name.
+ *
+ * @param <T>
+ *            source value type
+ * @param <S>
+ *            transformed value type
  */
 public interface Transformer<T, S> extends Function<T, S>
 {
+    /**
+     * Returns the target column type produced by this transformer.
+     *
+     * @return target column type
+     */
     public Column.Type type();
 
+    /**
+     * Returns the output column name, or {@code null} to keep the source name.
+     *
+     * @return output column name or {@code null}
+     */
     public ColumnName columnName();
 
     static <T, S> Transformer<T, S> of(Function<? super T, ? extends S> function, Column.Type type)

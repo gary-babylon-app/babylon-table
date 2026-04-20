@@ -38,6 +38,7 @@ import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.io.HeaderStrategyExplicitRow;
 import app.babylon.table.io.HeaderStrategyNoHeaders;
+import app.babylon.table.io.RowFilters;
 import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.RowSourceResultSet;
 import app.babylon.table.io.TabularRowReaderCsv;
@@ -502,6 +503,99 @@ class TablePlanReadTest
         assertEquals("xyz", codes.get(1));
         assertEquals(10.5d, table.getDouble(AMOUNT).get(0));
         assertEquals(20.0d, table.getDouble(AMOUNT).get(1));
+    }
+
+    @Test
+    void shouldReadSelectedAndRenamedColumnsFromRowSource()
+    {
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final ColumnName IDENTIFIER = ColumnName.of("Identifier");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                Code,Amount,Unused
+                abc,10.5,x
+                xyz,20.0,y
+                """;
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withSelectedColumns(CODE, AMOUNT).withColumnRename(CODE, IDENTIFIER)
+                .withColumnType(AMOUNT, ColumnTypes.DOUBLE).build();
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(2, table.getColumnCount());
+        assertEquals(IDENTIFIER, table.getColumnNames()[0]);
+        assertEquals(AMOUNT, table.getColumnNames()[1]);
+        assertEquals(ColumnTypes.STRING, table.getType(IDENTIFIER));
+        assertEquals(ColumnTypes.DOUBLE, table.getType(AMOUNT));
+        assertEquals("abc", table.getString(IDENTIFIER).get(0));
+        assertEquals("xyz", table.getString(IDENTIFIER).get(1));
+        assertEquals(10.5d, table.getDouble(AMOUNT).get(0));
+        assertEquals(20.0d, table.getDouble(AMOUNT).get(1));
+    }
+
+    @Test
+    void shouldApplyRowFilterBeforeReadingTable()
+    {
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                Code,Amount
+                abc,10.5
+                ,
+                xyz,20.0
+                """;
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withRowFilter(RowFilters.excludeEmpty(CODE, AMOUNT)).build();
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(2, table.getRowCount());
+        assertEquals("abc", table.getString(CODE).get(0));
+        assertEquals("xyz", table.getString(CODE).get(1));
+        assertEquals("10.5", table.getString(AMOUNT).get(0));
+        assertEquals("20.0", table.getString(AMOUNT).get(1));
+    }
+
+    @Test
+    void shouldReadSelectedRenamedAndFilteredColumnsWithExplicitHeaderRow()
+    {
+        final ColumnName TRADE_CODE = ColumnName.of("TradeCode");
+        final ColumnName NOTIONAL = ColumnName.of("Notional");
+        final ColumnName ID = ColumnName.of("Id");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                ignored,ignored,ignored
+                TradeCode,Notional,Comment
+                T1,100,keep
+                ,200,drop
+                T3,300,keep
+                """;
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withHeaderStrategy(new HeaderStrategyExplicitRow(1)).withSelectedColumns(TRADE_CODE, NOTIONAL)
+                .withColumnRename(TRADE_CODE, ID).withRowFilter(RowFilters.excludeEmpty(ID))
+                .withColumnType(NOTIONAL, ColumnTypes.INT).build();
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(2, table.getColumnCount());
+        assertEquals(ID, table.getColumnNames()[0]);
+        assertEquals(NOTIONAL, table.getColumnNames()[1]);
+        assertEquals(ColumnTypes.STRING, table.getType(ID));
+        assertEquals(ColumnTypes.INT, table.getType(NOTIONAL));
+        assertEquals(2, table.getRowCount());
+        assertEquals("T1", table.getString(ID).get(0));
+        assertEquals("T3", table.getString(ID).get(1));
+        assertEquals(100, table.getInt(NOTIONAL).get(0));
+        assertEquals(300, table.getInt(NOTIONAL).get(1));
     }
 
     @Test

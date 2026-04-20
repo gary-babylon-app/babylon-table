@@ -72,6 +72,36 @@ public final class RowSourceCsv implements RowSource
             return this;
         }
 
+        public Builder withSelectedColumn(ColumnName columnName)
+        {
+            this.rowCursorBuilder.withSelectedColumn(columnName);
+            return this;
+        }
+
+        public Builder withSelectedColumns(ColumnName... columnNames)
+        {
+            this.rowCursorBuilder.withSelectedColumns(columnNames);
+            return this;
+        }
+
+        public Builder withColumnRename(ColumnName original, ColumnName newName)
+        {
+            this.rowCursorBuilder.withColumnRename(original, newName);
+            return this;
+        }
+
+        public Builder withColumnRenames(Map<ColumnName, ColumnName> renames)
+        {
+            this.rowCursorBuilder.withColumnRenames(renames);
+            return this;
+        }
+
+        public Builder withRowFilter(RowFilter rowFilter)
+        {
+            this.rowCursorBuilder.withRowFilter(rowFilter);
+            return this;
+        }
+
         public Builder withSeparator(char separator)
         {
             this.rowCursorBuilder.withSeparator(separator);

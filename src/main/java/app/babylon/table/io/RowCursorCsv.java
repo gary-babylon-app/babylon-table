@@ -17,11 +17,17 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import app.babylon.io.StreamSourceProbe;
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
 import app.babylon.table.TableException;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnDefinition;
@@ -48,7 +54,9 @@ public final class RowCursorCsv implements RowCursor
     private final LineReader lineReader;
     private final RowStreamMarkable rowStream;
     private final RowProjected projectedRow;
+    private final Predicate<Row> rowFilter;
     private final ColumnDefinition[] columnDefinitions;
+    private Row currentRow;
 
     RowCursorCsv(InputStream inputStream, Builder builder)
     {
@@ -83,9 +91,13 @@ public final class RowCursorCsv implements RowCursor
                     : new LineReaderCSV(reader, toReaderOptions(format));
             this.rowStream = new RowStreamBuffered(this.lineReader);
 
-            HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, null);
+            HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, builder.selectedColumns);
             this.projectedRow = createProjectedRow(headerDetection);
-            this.columnDefinitions = toColumnDefinitions(headerDetection.getSelectedHeaders());
+            ColumnName[] projectedColumnNames = createProjectedColumnNames(headerDetection.getSelectedHeaders(),
+                    builder);
+            this.columnDefinitions = toColumnDefinitions(headerDetection.getSelectedHeaders(), projectedColumnNames);
+            this.rowFilter = builder.rowFilter == null ? null : builder.rowFilter.bind(projectedColumnNames);
+            this.currentRow = null;
             this.rowStream.reset();
         }
         catch (IOException | RuntimeException e)
@@ -157,7 +169,18 @@ public final class RowCursorCsv implements RowCursor
     {
         try
         {
-            return this.rowStream.next();
+            while (this.rowStream.next())
+            {
+                Row row = this.projectedRow.with(this.rowStream.current());
+                if (this.rowFilter != null && !this.rowFilter.test(row))
+                {
+                    continue;
+                }
+                this.currentRow = row;
+                return true;
+            }
+            this.currentRow = null;
+            return false;
         }
         catch (IOException e)
         {
@@ -168,8 +191,7 @@ public final class RowCursorCsv implements RowCursor
     @Override
     public Row current()
     {
-        Row row = this.rowStream.current();
-        return this.projectedRow == null ? row : this.projectedRow.with(row);
+        return ArgumentCheck.nonNull(this.currentRow, "current row is not available until next() succeeds");
     }
 
     @Override
@@ -191,14 +213,14 @@ public final class RowCursorCsv implements RowCursor
         return options;
     }
 
-    private ColumnDefinition[] toColumnDefinitions(String[] headers)
+    private ColumnDefinition[] toColumnDefinitions(String[] sourceHeaders, ColumnName[] projectedColumnNames)
     {
-        ColumnDefinition[] definitions = new ColumnDefinition[headers.length];
-        for (int i = 0; i < headers.length; ++i)
+        ColumnDefinition[] definitions = new ColumnDefinition[sourceHeaders.length];
+        for (int i = 0; i < sourceHeaders.length; ++i)
         {
-            ColumnName columnName = ColumnName.of(headers[i]);
-            Column.Type explicitType = this.explicitColumnTypes.get(columnName);
-            definitions[i] = new ColumnDefinition(columnName, explicitType);
+            ColumnName sourceColumnName = ColumnName.of(sourceHeaders[i]);
+            Column.Type explicitType = this.explicitColumnTypes.get(sourceColumnName);
+            definitions[i] = new ColumnDefinition(projectedColumnNames[i], explicitType);
         }
         return definitions;
     }
@@ -208,6 +230,17 @@ public final class RowCursorCsv implements RowCursor
         return this.stripping
                 ? new RowProjectedStripped(headerDetection.getSelectedPositions())
                 : new RowProjectedDefault(headerDetection.getSelectedPositions());
+    }
+
+    private static ColumnName[] createProjectedColumnNames(String[] sourceHeaders, Builder builder)
+    {
+        ColumnName[] columnNames = new ColumnName[sourceHeaders.length];
+        for (int i = 0; i < sourceHeaders.length; ++i)
+        {
+            ColumnName originalColumnName = ColumnName.of(sourceHeaders[i]);
+            columnNames[i] = builder.columnRenames.getOrDefault(originalColumnName, originalColumnName);
+        }
+        return columnNames;
     }
 
     private boolean isFixedWidths()
@@ -274,7 +307,11 @@ public final class RowCursorCsv implements RowCursor
     public static final class Builder
     {
         private final Map<ColumnName, Column.Type> explicitColumnTypes;
+        private final Set<ColumnName> selectedColumns;
+        private final Map<ColumnName, ColumnName> columnRenames;
+        private final Set<ColumnName> renamedTargets;
         private HeaderStrategy headerStrategy;
+        private RowFilter rowFilter;
         private boolean stripping;
         private char separator;
         private char quote;
@@ -285,7 +322,11 @@ public final class RowCursorCsv implements RowCursor
         private Builder()
         {
             this.explicitColumnTypes = new LinkedHashMap<>();
+            this.selectedColumns = new LinkedHashSet<>();
+            this.columnRenames = new LinkedHashMap<>();
+            this.renamedTargets = new HashSet<>();
             this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
+            this.rowFilter = null;
             this.stripping = true;
             this.separator = ',';
             this.quote = '"';
@@ -297,6 +338,65 @@ public final class RowCursorCsv implements RowCursor
         public Builder withHeaderStrategy(HeaderStrategy headerStrategy)
         {
             this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
+            return this;
+        }
+
+        public Builder withSelectedColumn(ColumnName columnName)
+        {
+            this.selectedColumns.add(ArgumentCheck.nonNull(columnName));
+            return this;
+        }
+
+        public Builder withSelectedColumns(ColumnName... columnNames)
+        {
+            if (!Is.empty(columnNames))
+            {
+                this.selectedColumns.addAll(Arrays.asList(columnNames));
+            }
+            return this;
+        }
+
+        public Builder withSelectedColumns(Collection<ColumnName> columnNames)
+        {
+            if (!Is.empty(columnNames))
+            {
+                this.selectedColumns.addAll(columnNames);
+            }
+            return this;
+        }
+
+        public Builder withColumnRename(ColumnName original, ColumnName newName)
+        {
+            ColumnName originalChecked = ArgumentCheck.nonNull(original);
+            ColumnName newNameChecked = ArgumentCheck.nonNull(newName);
+            if (this.columnRenames.containsKey(originalChecked))
+            {
+                throw new IllegalArgumentException("Rename failed, column " + originalChecked + " already renamed");
+            }
+            if (this.renamedTargets.contains(newNameChecked))
+            {
+                throw new IllegalArgumentException("Rename failed, target column " + newNameChecked + " already used");
+            }
+            this.columnRenames.put(originalChecked, newNameChecked);
+            this.renamedTargets.add(newNameChecked);
+            return this;
+        }
+
+        public Builder withColumnRenames(Map<ColumnName, ColumnName> renames)
+        {
+            if (!Is.empty(renames))
+            {
+                for (Map.Entry<ColumnName, ColumnName> entry : renames.entrySet())
+                {
+                    withColumnRename(entry.getKey(), entry.getValue());
+                }
+            }
+            return this;
+        }
+
+        public Builder withRowFilter(RowFilter rowFilter)
+        {
+            this.rowFilter = ArgumentCheck.nonNull(rowFilter);
             return this;
         }
 
@@ -390,6 +490,7 @@ public final class RowCursorCsv implements RowCursor
         {
             Builder copy = new Builder();
             copy.headerStrategy = this.headerStrategy;
+            copy.rowFilter = this.rowFilter;
             copy.stripping = this.stripping;
             copy.separator = this.separator;
             copy.quote = this.quote;
@@ -399,6 +500,9 @@ public final class RowCursorCsv implements RowCursor
             copy.charset = this.charset;
             copy.autoDetectEncoding = this.autoDetectEncoding;
             copy.explicitColumnTypes.putAll(this.explicitColumnTypes);
+            copy.selectedColumns.addAll(this.selectedColumns);
+            copy.columnRenames.putAll(this.columnRenames);
+            copy.renamedTargets.addAll(this.renamedTargets);
             return copy;
         }
 

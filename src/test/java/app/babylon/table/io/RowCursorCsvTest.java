@@ -245,6 +245,65 @@ class RowCursorCsvTest
     }
 
     @Test
+    void shouldSelectAndRenameProjectedColumns()
+    {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName TEMP = ColumnName.of("Temp");
+        final ColumnName LOCATION = ColumnName.of("Location");
+        String csv = "City,Temp,Note\nParis,12,Sunny\n";
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
+                .withSelectedColumns(CITY, TEMP).withColumnRename(CITY, LOCATION)
+                .withColumnType(TEMP, ColumnTypes.INT_OBJECT).build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            ColumnDefinition[] columns = rowCursor.columns();
+
+            assertEquals(2, columns.length);
+            assertEquals(LOCATION, columns[0].name());
+            assertEquals(null, columns[0].type());
+            assertEquals(TEMP, columns[1].name());
+            assertEquals(ColumnTypes.INT_OBJECT, columns[1].type());
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"Paris", "12"}, values(rowCursor.current()));
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void shouldFilterRowsUsingConfiguredRowFilter()
+    {
+        final ColumnName CITY = ColumnName.of("City");
+        final ColumnName ISIN = ColumnName.of("Isin");
+        String csv = "City,Isin\nLondon,GB0001\nParis,\nRome,IT0001\n";
+        RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))
+                .withRowFilter(RowFilters.excludeEmpty(ISIN)).build();
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"London", "GB0001"}, values(rowCursor.current()));
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"Rome", "IT0001"}, values(rowCursor.current()));
+
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     void shouldTreatNullFixedWidthsAsRegularDelimitedCsv()
     {
         final ColumnName CITY = ColumnName.of("City");

@@ -17,20 +17,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Predicate;
 
 import app.babylon.io.StreamSourceProbe;
 import app.babylon.lang.ArgumentCheck;
-import app.babylon.lang.Is;
 import app.babylon.table.TableException;
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 
 /**
@@ -39,11 +30,10 @@ import app.babylon.table.column.ColumnName;
  * Instances are created by a configured {@link RowSourceCsv} and own the CSV
  * reader resources for the lifetime of iteration.
  */
-public final class RowCursorCsv implements RowCursor
+public final class RowCursorCsv extends RowCursorLineReaderCommon
 {
     private static final Charset LEGACY_CSV_FALLBACK = Charset.forName("windows-1252");
 
-    private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private final HeaderStrategy headerStrategy;
     private final boolean stripping;
     private final char separator;
@@ -51,17 +41,10 @@ public final class RowCursorCsv implements RowCursor
     private final int[] fixedWidths;
     private final Charset charset;
     private final boolean autoDetectEncoding;
-    private final LineReader lineReader;
-    private final RowStreamMarkable rowStream;
-    private final RowProjected projectedRow;
-    private final Predicate<Row> rowFilter;
-    private final ColumnDefinition[] columnDefinitions;
-    private Row currentRow;
 
     RowCursorCsv(InputStream inputStream, Builder builder)
     {
-        BufferedInputStream bufferedInputStream = toBufferedStream(ArgumentCheck.nonNull(inputStream));
-        this.explicitColumnTypes = new LinkedHashMap<>(ArgumentCheck.nonNull(builder).explicitColumnTypes);
+        super(createLineReader(ArgumentCheck.nonNull(inputStream), builder), builder);
         this.headerStrategy = ArgumentCheck.nonNull(builder.headerStrategy);
         this.stripping = builder.stripping;
         this.separator = builder.separator;
@@ -71,51 +54,6 @@ public final class RowCursorCsv implements RowCursor
                 : Arrays.copyOf(builder.fixedWidths, builder.fixedWidths.length);
         this.charset = ArgumentCheck.nonNull(builder.charset);
         this.autoDetectEncoding = builder.autoDetectEncoding;
-
-        try
-        {
-            StreamSourceProbe probe = StreamSourceProbe.of(bufferedInputStream, "stream.csv");
-            if (probe.isXls() || probe.isXlsx() || probe.isPdf() || probe.isZip())
-            {
-                throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
-            }
-
-            int bomLength = resolveBomLength(probe);
-            CsvFormat format = this.autoDetectEncoding
-                    ? CsvFormatProbe.detect(bufferedInputStream, "stream.csv", LEGACY_CSV_FALLBACK, this.separator,
-                            this.quote)
-                    : new CsvFormat(resolveCharset(probe), this.separator, this.quote, 1.0d);
-            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, format.charset(), bomLength);
-            this.lineReader = isFixedWidths()
-                    ? new LineReaderCSVFixedWidth(reader, toReaderOptions(format))
-                    : new LineReaderCSV(reader, toReaderOptions(format));
-            this.rowStream = new RowStreamBuffered(this.lineReader);
-
-            HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, builder.selectedColumns);
-            this.projectedRow = createProjectedRow(headerDetection);
-            ColumnName[] projectedColumnNames = createProjectedColumnNames(headerDetection.getSelectedHeaders(),
-                    builder);
-            this.columnDefinitions = toColumnDefinitions(headerDetection.getSelectedHeaders(), projectedColumnNames);
-            this.rowFilter = builder.rowFilter == null ? null : builder.rowFilter.bind(projectedColumnNames);
-            this.currentRow = null;
-            this.rowStream.reset();
-        }
-        catch (IOException | RuntimeException e)
-        {
-            try
-            {
-                bufferedInputStream.close();
-            }
-            catch (IOException closeException)
-            {
-                e.addSuppressed(closeException);
-            }
-            if (e instanceof RuntimeException runtimeException)
-            {
-                throw runtimeException;
-            }
-            throw new TableException("Failed to prepare CSV row supplier.", e);
-        }
     }
 
     public static Builder builder()
@@ -158,100 +96,6 @@ public final class RowCursorCsv implements RowCursor
         return this.autoDetectEncoding;
     }
 
-    @Override
-    public ColumnDefinition[] columns()
-    {
-        return Arrays.copyOf(this.columnDefinitions, this.columnDefinitions.length);
-    }
-
-    @Override
-    public boolean next()
-    {
-        try
-        {
-            if (this.rowFilter == null)
-            {
-                if (this.rowStream.next())
-                {
-                    this.currentRow = this.projectedRow.with(this.rowStream.current());
-                    return true;
-                }
-                this.currentRow = null;
-                return false;
-            }
-            while (this.rowStream.next())
-            {
-                Row row = this.projectedRow.with(this.rowStream.current());
-                if (this.rowFilter.test(row))
-                {
-                    this.currentRow = row;
-                    return true;
-                }
-            }
-            this.currentRow = null;
-            return false;
-        }
-        catch (IOException e)
-        {
-            throw new TableException("Failed to read CSV row.", e);
-        }
-    }
-
-    @Override
-    public Row current()
-    {
-        return ArgumentCheck.nonNull(this.currentRow, "current row is not available until next() succeeds");
-    }
-
-    @Override
-    public void close() throws IOException
-    {
-        this.lineReader.close();
-    }
-
-    private TabularRowReaderCsv toReaderOptions(CsvFormat format)
-    {
-        TabularRowReaderCsv options = new TabularRowReaderCsv();
-        options.withHeaderStrategy(this.headerStrategy);
-        options.withStripping(this.stripping);
-        options.withSeparator(format.separator());
-        options.withQuote(format.quote());
-        options.withFixedWidths(this.fixedWidths);
-        options.withCharset(format.charset());
-        options.withAutoDetectEncoding(this.autoDetectEncoding);
-        return options;
-    }
-
-    private ColumnDefinition[] toColumnDefinitions(String[] sourceHeaders, ColumnName[] projectedColumnNames)
-    {
-        ColumnDefinition[] definitions = new ColumnDefinition[sourceHeaders.length];
-        for (int i = 0; i < sourceHeaders.length; ++i)
-        {
-            ColumnName sourceColumnName = ColumnName.of(sourceHeaders[i]);
-            Column.Type explicitType = this.explicitColumnTypes.get(sourceColumnName);
-            definitions[i] = new ColumnDefinition(projectedColumnNames[i], explicitType);
-        }
-        return definitions;
-    }
-
-    private RowProjected createProjectedRow(HeaderDetection headerDetection)
-    {
-        return this.stripping
-                ? new RowProjectedStripped(headerDetection.getSelectedPositions())
-                : new RowProjectedDefault(headerDetection.getSelectedPositions());
-    }
-
-    private static ColumnName[] createProjectedColumnNames(String[] sourceHeaders, Builder builder)
-    {
-        ColumnName[] columnNames = new ColumnName[sourceHeaders.length];
-        for (int i = 0; i < sourceHeaders.length; ++i)
-        {
-            ColumnName originalColumnName = ColumnName.of(sourceHeaders[i]);
-            columnNames[i] = builder.columnRenames.getOrDefault(originalColumnName, originalColumnName);
-        }
-        return columnNames;
-    }
-
     private boolean isFixedWidths()
     {
         return this.fixedWidths != null && this.fixedWidths.length > 0;
@@ -269,6 +113,58 @@ public final class RowCursorCsv implements RowCursor
     private int resolveBomLength(StreamSourceProbe probe)
     {
         return this.autoDetectEncoding ? probe.bomLengthBytes() : 0;
+    }
+
+    private static LineReader createLineReader(InputStream inputStream, Builder builder)
+    {
+        BufferedInputStream bufferedInputStream = toBufferedStream(inputStream);
+        try
+        {
+            StreamSourceProbe probe = StreamSourceProbe.of(bufferedInputStream, "stream.csv");
+            if (probe.isXls() || probe.isXlsx() || probe.isPdf() || probe.isZip())
+            {
+                throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
+            }
+
+            int bomLength = builder.resolveBomLength(probe);
+            CsvFormat format = builder.autoDetectEncoding
+                    ? CsvFormatProbe.detect(bufferedInputStream, "stream.csv", LEGACY_CSV_FALLBACK, builder.separator,
+                            builder.quote)
+                    : new CsvFormat(builder.resolveCharset(probe), builder.separator, builder.quote, 1.0d);
+            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, format.charset(), bomLength);
+            return builder.isFixedWidths()
+                    ? new LineReaderCSVFixedWidth(reader, toReaderOptions(builder, format))
+                    : new LineReaderCSV(reader, toReaderOptions(builder, format));
+        }
+        catch (IOException | RuntimeException e)
+        {
+            try
+            {
+                bufferedInputStream.close();
+            }
+            catch (IOException closeException)
+            {
+                e.addSuppressed(closeException);
+            }
+            if (e instanceof RuntimeException runtimeException)
+            {
+                throw runtimeException;
+            }
+            throw new TableException("Failed to prepare CSV row supplier.", e);
+        }
+    }
+
+    private static TabularRowReaderCsv toReaderOptions(Builder builder, CsvFormat format)
+    {
+        TabularRowReaderCsv options = new TabularRowReaderCsv();
+        options.withHeaderStrategy(builder.headerStrategy);
+        options.withStripping(builder.stripping);
+        options.withSeparator(format.separator());
+        options.withQuote(format.quote());
+        options.withFixedWidths(builder.fixedWidths);
+        options.withCharset(format.charset());
+        options.withAutoDetectEncoding(builder.autoDetectEncoding);
+        return options;
     }
 
     private static BufferedCharReader createBufferedCharReader(InputStream inputStream, Charset charset, int bomLength)
@@ -313,15 +209,8 @@ public final class RowCursorCsv implements RowCursor
         }
     }
 
-    public static final class Builder
+    public static final class Builder extends RowCursorLineReaderCommon.BuilderBase<Builder>
     {
-        private final Map<ColumnName, Column.Type> explicitColumnTypes;
-        private final Set<ColumnName> selectedColumns;
-        private final Map<ColumnName, ColumnName> columnRenames;
-        private final Set<ColumnName> renamedTargets;
-        private HeaderStrategy headerStrategy;
-        private RowFilter rowFilter;
-        private boolean stripping;
         private char separator;
         private char quote;
         private int[] fixedWidths;
@@ -330,13 +219,7 @@ public final class RowCursorCsv implements RowCursor
 
         private Builder()
         {
-            this.explicitColumnTypes = new LinkedHashMap<>();
-            this.selectedColumns = new LinkedHashSet<>();
-            this.columnRenames = new LinkedHashMap<>();
-            this.renamedTargets = new HashSet<>();
-            this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
-            this.rowFilter = null;
-            this.stripping = true;
+            super();
             this.separator = ',';
             this.quote = '"';
             this.fixedWidths = null;
@@ -344,80 +227,9 @@ public final class RowCursorCsv implements RowCursor
             this.autoDetectEncoding = true;
         }
 
-        public Builder withHeaderStrategy(HeaderStrategy headerStrategy)
-        {
-            this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
-            return this;
-        }
-
-        public Builder withSelectedColumn(ColumnName columnName)
-        {
-            this.selectedColumns.add(ArgumentCheck.nonNull(columnName));
-            return this;
-        }
-
-        public Builder withSelectedColumns(ColumnName... columnNames)
-        {
-            if (!Is.empty(columnNames))
-            {
-                this.selectedColumns.addAll(Arrays.asList(columnNames));
-            }
-            return this;
-        }
-
-        public Builder withSelectedColumns(Collection<ColumnName> columnNames)
-        {
-            if (!Is.empty(columnNames))
-            {
-                this.selectedColumns.addAll(columnNames);
-            }
-            return this;
-        }
-
-        public Builder withColumnRename(ColumnName original, ColumnName newName)
-        {
-            ColumnName originalChecked = ArgumentCheck.nonNull(original);
-            ColumnName newNameChecked = ArgumentCheck.nonNull(newName);
-            if (this.columnRenames.containsKey(originalChecked))
-            {
-                throw new IllegalArgumentException("Rename failed, column " + originalChecked + " already renamed");
-            }
-            if (this.renamedTargets.contains(newNameChecked))
-            {
-                throw new IllegalArgumentException("Rename failed, target column " + newNameChecked + " already used");
-            }
-            this.columnRenames.put(originalChecked, newNameChecked);
-            this.renamedTargets.add(newNameChecked);
-            return this;
-        }
-
-        public Builder withColumnRenames(Map<ColumnName, ColumnName> renames)
-        {
-            if (!Is.empty(renames))
-            {
-                for (Map.Entry<ColumnName, ColumnName> entry : renames.entrySet())
-                {
-                    withColumnRename(entry.getKey(), entry.getValue());
-                }
-            }
-            return this;
-        }
-
-        public Builder withRowFilter(RowFilter rowFilter)
-        {
-            this.rowFilter = ArgumentCheck.nonNull(rowFilter);
-            return this;
-        }
-
         public Builder withSeparator(char separator)
         {
             this.separator = separator;
-            return this;
-        }
-
-        public Builder withStripping(boolean stripping)
-        {
-            this.stripping = stripping;
             return this;
         }
 
@@ -445,62 +257,10 @@ public final class RowCursorCsv implements RowCursor
             return this;
         }
 
-        /**
-         * Specifies a source-side column type for this CSV cursor.
-         * <p>
-         * This type becomes part of the cursor schema returned by
-         * {@link RowCursor#columns()} and can therefore influence which builder the row
-         * consumer chooses before any rows are read.
-         * <p>
-         * For categorical text columns, this is typically only worth doing when the
-         * direct parser is materially better than first building the string dictionary.
-         *
-         * @param columnName
-         *            the source column name
-         * @param columnType
-         *            the source-side column type
-         * @return this builder
-         */
-        public Builder withColumnType(ColumnName columnName, Column.Type columnType)
-        {
-            this.explicitColumnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
-            return this;
-        }
-
-        /**
-         * Specifies source-side column types to expose through
-         * {@link RowCursor#columns()}.
-         * <p>
-         * These types are consumed before rows are read, so they can select a more
-         * direct builder and bypass intermediate string materialization when the type
-         * has an efficient slice-based parser.
-         * <p>
-         * In normal categorical-text cases, it is often still preferable to leave the
-         * source as {@code STRING} and let the row consumer build the natural string
-         * dictionary.
-         *
-         * @param columnTypes
-         *            source-side column types keyed by column name
-         * @return this builder
-         */
-        public Builder withColumnTypes(Map<ColumnName, Column.Type> columnTypes)
-        {
-            if (columnTypes != null)
-            {
-                for (Map.Entry<ColumnName, Column.Type> entry : columnTypes.entrySet())
-                {
-                    withColumnType(entry.getKey(), entry.getValue());
-                }
-            }
-            return this;
-        }
-
         Builder copy()
         {
             Builder copy = new Builder();
-            copy.headerStrategy = this.headerStrategy;
-            copy.rowFilter = this.rowFilter;
-            copy.stripping = this.stripping;
+            copyCommonTo(copy);
             copy.separator = this.separator;
             copy.quote = this.quote;
             copy.fixedWidths = this.fixedWidths == null
@@ -508,11 +268,32 @@ public final class RowCursorCsv implements RowCursor
                     : Arrays.copyOf(this.fixedWidths, this.fixedWidths.length);
             copy.charset = this.charset;
             copy.autoDetectEncoding = this.autoDetectEncoding;
-            copy.explicitColumnTypes.putAll(this.explicitColumnTypes);
-            copy.selectedColumns.addAll(this.selectedColumns);
-            copy.columnRenames.putAll(this.columnRenames);
-            copy.renamedTargets.addAll(this.renamedTargets);
             return copy;
+        }
+
+        private boolean isFixedWidths()
+        {
+            return this.fixedWidths != null && this.fixedWidths.length > 0;
+        }
+
+        private Charset resolveCharset(StreamSourceProbe probe)
+        {
+            if (this.autoDetectEncoding)
+            {
+                return probe.getCharset(LEGACY_CSV_FALLBACK);
+            }
+            return this.charset;
+        }
+
+        private int resolveBomLength(StreamSourceProbe probe)
+        {
+            return this.autoDetectEncoding ? probe.bomLengthBytes() : 0;
+        }
+
+        @Override
+        protected Builder self()
+        {
+            return this;
         }
 
         public RowCursorCsv build(InputStream inputStream)

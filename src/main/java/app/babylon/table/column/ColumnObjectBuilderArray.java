@@ -110,15 +110,19 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
     }
 
     @Override
-    public <S> ColumnObject<S> build(Column.Type transformedType)
+    public Column build(Column.Type transformedType)
     {
         ensureActive();
         Column.Type targetType = ArgumentCheck.nonNull(transformedType);
-        if (targetType.equals(this.type))
+        if (targetType.isPrimitive())
         {
             @SuppressWarnings("unchecked")
-            ColumnObject<S> built = (ColumnObject<S>) build();
-            return built;
+            ColumnObject<String> strings = (ColumnObject<String>) build();
+            return new app.babylon.table.transform.TransformToPrimitive(getName(), targetType).apply(strings);
+        }
+        if (targetType.equals(this.type))
+        {
+            return build();
         }
         Class<?> valueClass = this.type.getValueClass();
         if (!CharSequence.class.isAssignableFrom(valueClass))
@@ -126,7 +130,7 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
             throw new IllegalStateException("Parsed build requires CharSequence values, not " + valueClass.getName());
         }
 
-        ColumnObjectArray<S> transformed = new ColumnObjectArray<>(this, targetType);
+        ColumnObjectArray<?> transformed = new ColumnObjectArray<>(this, targetType);
         if (transformed.size() > 0 && transformed.isConstant())
         {
             return ColumnCategorical.constant(getName(), transformed.get(0), transformed.size(), targetType);

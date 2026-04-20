@@ -1,24 +1,19 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.Map;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnInt;
-import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.column.Columns;
-import app.babylon.text.Strings;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformToInt extends TransformBase
 {
     public static final String FUNCTION_NAME = "ToInt";
 
-    private final ColumnName existingColumnName;
-    private final ColumnName newColumnName;
+    private final TransformToPrimitive delegate;
 
     public TransformToInt(ColumnName columnName)
     {
@@ -28,8 +23,8 @@ public class TransformToInt extends TransformBase
     public TransformToInt(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.existingColumnName = ArgumentCheck.nonNull(existingColumnName);
-        this.newColumnName = ArgumentCheck.nonNull(newColumnName);
+        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName),
+                ArgumentCheck.nonNull(newColumnName), ColumnTypes.INT);
     }
 
     public static TransformToInt of(String... params)
@@ -43,54 +38,12 @@ public class TransformToInt extends TransformBase
 
     public ColumnInt apply(Column x)
     {
-        if (x == null)
-        {
-            return null;
-        }
-        if (x instanceof ColumnInt ints)
-        {
-            return ints.copy(this.newColumnName);
-        }
-        if (!Columns.isStringColumn(x))
-        {
-            return null;
-        }
-
-        ColumnObject<String> stringColumn = Columns.asStringColumn(x);
-        ColumnInt.Builder builder = ColumnInt.builder(this.newColumnName);
-        for (int i = 0; i < stringColumn.size(); ++i)
-        {
-            if (!stringColumn.isSet(i))
-            {
-                builder.addNull();
-                continue;
-            }
-            String s = stringColumn.get(i);
-            if (!Strings.isInt(s))
-            {
-                builder.addNull();
-                continue;
-            }
-            try
-            {
-                builder.add(Integer.parseInt(s));
-            }
-            catch (NumberFormatException e)
-            {
-                builder.addNull();
-            }
-        }
-        return builder.build();
+        return (ColumnInt) this.delegate.apply(x);
     }
 
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        Column source = columnsByName.get(this.existingColumnName);
-        ColumnInt ints = apply(source);
-        if (ints != null)
-        {
-            columnsByName.put(this.newColumnName, ints);
-        }
+        this.delegate.apply(columnsByName);
     }
 }

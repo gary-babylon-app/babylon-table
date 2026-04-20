@@ -13,6 +13,7 @@ package app.babylon.table.plans;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -21,6 +22,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Types;
+import java.time.LocalDate;
 import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
@@ -39,6 +41,7 @@ import app.babylon.table.io.HeaderStrategyNoHeaders;
 import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.RowSourceResultSet;
 import app.babylon.table.io.TabularRowReaderCsv;
+import app.babylon.table.transform.DateFormat;
 
 class TablePlanReadTest
 {
@@ -89,11 +92,10 @@ class TablePlanReadTest
                         xyz,20.0
                 """;
 
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
         TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withColumnType(AMOUNT,
                 ColumnTypes.DOUBLE);
 
-        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
+        TableColumnar table = plan.execute(csvRowSource(csv));
 
         assertEquals(BUILT_FROM_CSV, table.getName());
         assertEquals(ColumnTypes.STRING, table.getType(CODE));
@@ -117,11 +119,10 @@ class TablePlanReadTest
                 xyz,
                 """;
 
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
         TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withColumnType(AMOUNT,
                 ColumnTypes.DECIMAL);
 
-        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
+        TableColumnar table = plan.execute(csvRowSource(csv));
 
         assertEquals(BUILT_FROM_CSV, table.getName());
         assertEquals(ColumnTypes.STRING, table.getType(CODE));
@@ -131,6 +132,80 @@ class TablePlanReadTest
         assertEquals("abc", codes.get(0));
         assertEquals(0, new BigDecimal("10.50").compareTo(amounts.get(0)));
         assertFalse(amounts.isSet(1));
+    }
+
+    @Test
+    void shouldReadIntColumnsWhenSpecifiedOnRowSource()
+    {
+        final ColumnName UNIQUE_ID = ColumnName.of("UniqueId");
+        final ColumnName BUCKET = ColumnName.of("Bucket");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        final String csv = """
+                UniqueId,Bucket
+                101,7
+                102,9
+                103,7
+                104,7
+                105,9
+                """;
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withSeparator(',').withColumnType(UNIQUE_ID, ColumnTypes.INT).withColumnType(BUCKET, ColumnTypes.INT)
+                .build();
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(ColumnTypes.INT, table.getType(UNIQUE_ID));
+        assertEquals(ColumnTypes.INT, table.getType(BUCKET));
+        assertEquals(101, table.getInt(UNIQUE_ID).get(0));
+        assertEquals(102, table.getInt(UNIQUE_ID).get(1));
+        assertEquals(103, table.getInt(UNIQUE_ID).get(2));
+        assertEquals(104, table.getInt(UNIQUE_ID).get(3));
+        assertEquals(105, table.getInt(UNIQUE_ID).get(4));
+        assertEquals(7, table.getInt(BUCKET).get(0));
+        assertEquals(9, table.getInt(BUCKET).get(1));
+        assertEquals(7, table.getInt(BUCKET).get(2));
+        assertEquals(7, table.getInt(BUCKET).get(3));
+        assertEquals(9, table.getInt(BUCKET).get(4));
+    }
+
+    @Test
+    void shouldReadIntColumnsWhenSpecifiedOnTablePlanRead()
+    {
+        final ColumnName UNIQUE_ID = ColumnName.of("UniqueId");
+        final ColumnName BUCKET = ColumnName.of("Bucket");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        final String csv = """
+                UniqueId,Bucket
+                101,7
+                102,9
+                103,7
+                104,7
+                105,9
+                """;
+
+        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+                .withSeparator(',').build();
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS).withColumnType(UNIQUE_ID, ColumnTypes.INT)
+                .withColumnType(BUCKET, ColumnTypes.INT);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(ColumnTypes.INT, table.getType(UNIQUE_ID));
+        assertEquals(ColumnTypes.INT, table.getType(BUCKET));
+        assertEquals(101, table.getInt(UNIQUE_ID).get(0));
+        assertEquals(102, table.getInt(UNIQUE_ID).get(1));
+        assertEquals(103, table.getInt(UNIQUE_ID).get(2));
+        assertEquals(104, table.getInt(UNIQUE_ID).get(3));
+        assertEquals(105, table.getInt(UNIQUE_ID).get(4));
+        assertEquals(7, table.getInt(BUCKET).get(0));
+        assertEquals(9, table.getInt(BUCKET).get(1));
+        assertEquals(7, table.getInt(BUCKET).get(2));
+        assertEquals(7, table.getInt(BUCKET).get(3));
+        assertEquals(9, table.getInt(BUCKET).get(4));
     }
 
     @Test
@@ -155,7 +230,6 @@ class TablePlanReadTest
                 USD,100000000,2800000
                 """;
 
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
         // @formatter:off
         TablePlanRead plan = new TablePlanRead()
                                 .withTableName(CASHFLOWS)
@@ -163,7 +237,7 @@ class TablePlanReadTest
                                 .withColumnTypes(ColumnTypes.DECIMAL, NOTIONAL, AMOUNT);
         // @formatter:on
 
-        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
+        TableColumnar table = plan.execute(csvRowSource(csv));
 
         assertEquals(CASHFLOWS, table.getName());
         assertEquals(ColumnTypes.CURRENCY, table.getType(CCY));
@@ -187,6 +261,155 @@ class TablePlanReadTest
     }
 
     @Test
+    void shouldReadLocalDateColumnsUsingDateInferenceAfterBuild()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName CODE = ColumnName.of("Code");
+        final TableName BUILT_FROM_CSV = TableName.of("BuiltFromCsv");
+        String csv = """
+                TradeDate,Code
+                15/02/2026,abc
+                16/02/2026,xyz
+                """;
+
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withColumnType(TRADE_DATE,
+                ColumnTypes.LOCALDATE);
+
+        TableColumnar table = plan.execute(csvRowSource(csv));
+
+        assertEquals(BUILT_FROM_CSV, table.getName());
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(TRADE_DATE));
+        assertEquals(ColumnTypes.STRING, table.getType(CODE));
+        assertEquals(LocalDate.of(2026, 2, 15), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 2, 16), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+        assertEquals("abc", table.getString(CODE).get(0));
+        assertEquals("xyz", table.getString(CODE).get(1));
+    }
+
+    @Test
+    void shouldInferAmbiguousTradeDateFromSettleDateColumn()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName SETTLE_DATE = ColumnName.of("SettleDate");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                TradeDate,SettleDate
+                12/02/2026,13/02/2026
+                12/03/2026,14/03/2026
+                """;
+
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS)
+                .withColumnType(TRADE_DATE, ColumnTypes.LOCALDATE).withColumnType(SETTLE_DATE, ColumnTypes.LOCALDATE);
+
+        TableColumnar table = plan.execute(csvRowSource(csv));
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(TRADE_DATE));
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(SETTLE_DATE));
+        assertEquals(LocalDate.of(2026, 2, 12), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 3, 12), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+        assertEquals(LocalDate.of(2026, 2, 13), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 3, 14), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(1));
+    }
+
+    @Test
+    void shouldReadThreeLetterMonthNamesWhenAllDaysAreAtMostTwelve()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName SETTLE_DATE = ColumnName.of("SettleDate");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                TradeDate,SettleDate
+                02-Mar-2026,05-Mar-2026
+                07-Apr-2026,10-Apr-2026
+                """;
+
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS)
+                .withColumnType(TRADE_DATE, ColumnTypes.LOCALDATE).withColumnType(SETTLE_DATE, ColumnTypes.LOCALDATE);
+
+        TableColumnar table = plan.execute(csvRowSource(csv));
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(TRADE_DATE));
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(SETTLE_DATE));
+        assertEquals(LocalDate.of(2026, 3, 2), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 4, 7), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+        assertEquals(LocalDate.of(2026, 3, 5), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 4, 10), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(1));
+    }
+
+    @Test
+    void shouldInferIsoDatesWhenAllDaysAreAmbiguous()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName SETTLE_DATE = ColumnName.of("SettleDate");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                TradeDate,SettleDate
+                2026-03-01,2026-03-03
+                2026-04-01,2026-04-03
+                """;
+
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS)
+                .withColumnType(TRADE_DATE, ColumnTypes.LOCALDATE).withColumnType(SETTLE_DATE, ColumnTypes.LOCALDATE);
+
+        TableColumnar table = plan.execute(csvRowSource(csv));
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(TRADE_DATE));
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(SETTLE_DATE));
+        assertEquals(LocalDate.of(2026, 3, 1), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 4, 1), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+        assertEquals(LocalDate.of(2026, 3, 3), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 4, 3), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(1));
+    }
+
+    @Test
+    void shouldThrowWhenAllDmyDatesAreAmbiguous()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName SETTLE_DATE = ColumnName.of("SettleDate");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                TradeDate,SettleDate
+                01/03/2026,03/03/2026
+                01/04/2026,03/04/2026
+                """;
+
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS)
+                .withColumnType(TRADE_DATE, ColumnTypes.LOCALDATE).withColumnType(SETTLE_DATE, ColumnTypes.LOCALDATE);
+
+        assertThrows(IllegalArgumentException.class, () -> plan.execute(csvRowSource(csv)));
+    }
+
+    @Test
+    void shouldUseConfiguredLocalDateFallbackForAmbiguousDmyDates()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName SETTLE_DATE = ColumnName.of("SettleDate");
+        final TableName CASHFLOWS = TableName.of("Cashflows");
+        String csv = """
+                TradeDate,SettleDate
+                01/03/2026,03/03/2026
+                01/04/2026,03/04/2026
+                """;
+
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS)
+                .withColumnType(TRADE_DATE, ColumnTypes.LOCALDATE).withColumnType(SETTLE_DATE, ColumnTypes.LOCALDATE)
+                .withLocalDateFormat(DateFormat.DMY);
+
+        TableColumnar table = plan.execute(csvRowSource(csv));
+
+        assertEquals(CASHFLOWS, table.getName());
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(TRADE_DATE));
+        assertEquals(ColumnTypes.LOCALDATE, table.getType(SETTLE_DATE));
+        assertEquals(LocalDate.of(2026, 3, 1), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 4, 1), table.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+        assertEquals(LocalDate.of(2026, 3, 3), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 4, 3), table.getObject(SETTLE_DATE, ColumnTypes.LOCALDATE).get(1));
+    }
+
+    @Test
     void shouldIncludeResourceNameColumnForStreamSourceReads()
     {
         final ColumnName RESOURCE_NAME = ColumnName.of("ResourceName");
@@ -195,10 +418,9 @@ class TablePlanReadTest
         final TableName BUILT_FROM_CSV = TableName.of("BuiltFromCsv");
         String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
 
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(',');
         TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withIncludeResourceName(RESOURCE_NAME);
 
-        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"), reader);
+        TableColumnar table = plan.execute(csvRowSource(csv));
 
         assertEquals(3, table.getColumnCount());
         assertEquals(RESOURCE_NAME, table.getColumnNames()[2]);
@@ -600,5 +822,11 @@ class TablePlanReadTest
         };
         return (ResultSetMetaData) Proxy.newProxyInstance(TablePlanReadTest.class.getClassLoader(), new Class<?>[]
         {ResultSetMetaData.class}, handler);
+    }
+
+    private static RowSourceCsv csvRowSource(String csv)
+    {
+        return RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv")).withSeparator(',')
+                .build();
     }
 }

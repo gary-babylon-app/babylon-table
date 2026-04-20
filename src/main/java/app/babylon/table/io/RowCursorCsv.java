@@ -39,6 +39,7 @@ public final class RowCursorCsv implements RowCursor
 
     private final Map<ColumnName, Column.Type> explicitColumnTypes;
     private final HeaderStrategy headerStrategy;
+    private final boolean stripping;
     private final char separator;
     private final char quote;
     private final int[] fixedWidths;
@@ -54,6 +55,7 @@ public final class RowCursorCsv implements RowCursor
         BufferedInputStream bufferedInputStream = toBufferedStream(ArgumentCheck.nonNull(inputStream));
         this.explicitColumnTypes = new LinkedHashMap<>(ArgumentCheck.nonNull(builder).explicitColumnTypes);
         this.headerStrategy = ArgumentCheck.nonNull(builder.headerStrategy);
+        this.stripping = builder.stripping;
         this.separator = builder.separator;
         this.quote = builder.quote;
         this.fixedWidths = builder.fixedWidths == null
@@ -119,6 +121,11 @@ public final class RowCursorCsv implements RowCursor
         return this.separator;
     }
 
+    public boolean isStripping()
+    {
+        return this.stripping;
+    }
+
     public char getQuote()
     {
         return this.quote;
@@ -175,6 +182,7 @@ public final class RowCursorCsv implements RowCursor
     {
         TabularRowReaderCsv options = new TabularRowReaderCsv();
         options.withHeaderStrategy(this.headerStrategy);
+        options.withStripping(this.stripping);
         options.withSeparator(format.separator());
         options.withQuote(format.quote());
         options.withFixedWidths(this.fixedWidths);
@@ -197,7 +205,9 @@ public final class RowCursorCsv implements RowCursor
 
     private RowProjected createProjectedRow(HeaderDetection headerDetection)
     {
-        return new RowProjectedDefault(headerDetection.getSelectedPositions());
+        return this.stripping
+                ? new RowProjectedStripped(headerDetection.getSelectedPositions())
+                : new RowProjectedDefault(headerDetection.getSelectedPositions());
     }
 
     private boolean isFixedWidths()
@@ -265,6 +275,7 @@ public final class RowCursorCsv implements RowCursor
     {
         private final Map<ColumnName, Column.Type> explicitColumnTypes;
         private HeaderStrategy headerStrategy;
+        private boolean stripping;
         private char separator;
         private char quote;
         private int[] fixedWidths;
@@ -275,6 +286,7 @@ public final class RowCursorCsv implements RowCursor
         {
             this.explicitColumnTypes = new LinkedHashMap<>();
             this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
+            this.stripping = true;
             this.separator = ',';
             this.quote = '"';
             this.fixedWidths = null;
@@ -291,6 +303,12 @@ public final class RowCursorCsv implements RowCursor
         public Builder withSeparator(char separator)
         {
             this.separator = separator;
+            return this;
+        }
+
+        public Builder withStripping(boolean stripping)
+        {
+            this.stripping = stripping;
             return this;
         }
 
@@ -318,12 +336,44 @@ public final class RowCursorCsv implements RowCursor
             return this;
         }
 
+        /**
+         * Specifies a source-side column type for this CSV cursor.
+         * <p>
+         * This type becomes part of the cursor schema returned by
+         * {@link RowCursor#columns()} and can therefore influence which builder the row
+         * consumer chooses before any rows are read.
+         * <p>
+         * For categorical text columns, this is typically only worth doing when the
+         * direct parser is materially better than first building the string dictionary.
+         *
+         * @param columnName
+         *            the source column name
+         * @param columnType
+         *            the source-side column type
+         * @return this builder
+         */
         public Builder withColumnType(ColumnName columnName, Column.Type columnType)
         {
             this.explicitColumnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
             return this;
         }
 
+        /**
+         * Specifies source-side column types to expose through
+         * {@link RowCursor#columns()}.
+         * <p>
+         * These types are consumed before rows are read, so they can select a more
+         * direct builder and bypass intermediate string materialization when the type
+         * has an efficient slice-based parser.
+         * <p>
+         * In normal categorical-text cases, it is often still preferable to leave the
+         * source as {@code STRING} and let the row consumer build the natural string
+         * dictionary.
+         *
+         * @param columnTypes
+         *            source-side column types keyed by column name
+         * @return this builder
+         */
         public Builder withColumnTypes(Map<ColumnName, Column.Type> columnTypes)
         {
             if (columnTypes != null)
@@ -340,6 +390,7 @@ public final class RowCursorCsv implements RowCursor
         {
             Builder copy = new Builder();
             copy.headerStrategy = this.headerStrategy;
+            copy.stripping = this.stripping;
             copy.separator = this.separator;
             copy.quote = this.quote;
             copy.fixedWidths = this.fixedWidths == null

@@ -104,10 +104,14 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
     }
 
     @Override
-    public <S> ColumnCategorical<S> build(Column.Type transformedType)
+    public Column build(Column.Type transformedType)
     {
         ensureActive();
         Column.Type targetType = ArgumentCheck.nonNull(transformedType);
+        if (targetType.isPrimitive())
+        {
+            return new app.babylon.table.transform.TransformToPrimitive(getName(), targetType).apply(build());
+        }
         Class<?> valueClass = this.type.getValueClass();
         if (!CharSequence.class.isAssignableFrom(valueClass))
         {
@@ -115,8 +119,8 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
                     "Categorical parsed build requires CharSequence values, not " + valueClass.getName());
         }
         @SuppressWarnings("unchecked")
-        TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
-        return new ColumnCategoricalDictionary<S>(this, targetType, parser);
+        TypeParser<Object> parser = (TypeParser<Object>) targetType.getParser();
+        return new ColumnCategoricalDictionary<Object>(this, targetType, parser);
     }
 
     private T get(int i)

@@ -11,8 +11,10 @@
 package app.babylon.table.io;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
@@ -25,21 +27,28 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
+import app.babylon.table.transform.DateFormat;
+import app.babylon.table.transform.TransformToLocalDate;
 
 public final class RowConsumerCreateTable implements RowConsumer
 {
     private final TableName tableName;
     private final TableDescription tableDescription;
-    private final Map<ColumnName, Column.Type> explicitColumnTypes;
+    private final Map<ColumnName, Column.Type> sourceColumnTypes;
+    private final Map<ColumnName, Column.Type> planColumnTypes;
+    private final DateFormat localDateFormat;
     private Column.Type[] columnTypes;
     private Column.Builder[] columnBuilders;
 
     RowConsumerCreateTable(TableName tableName, TableDescription tableDescription,
-            Map<ColumnName, Column.Type> explicitColumnTypes)
+            Map<ColumnName, Column.Type> sourceColumnTypes, Map<ColumnName, Column.Type> planColumnTypes,
+            DateFormat localDateFormat)
     {
         this.tableName = tableName;
         this.tableDescription = tableDescription;
-        this.explicitColumnTypes = new LinkedHashMap<>(explicitColumnTypes);
+        this.sourceColumnTypes = new LinkedHashMap<>(sourceColumnTypes);
+        this.planColumnTypes = new LinkedHashMap<>(planColumnTypes);
+        this.localDateFormat = localDateFormat;
         this.columnTypes = null;
         this.columnBuilders = null;
     }
@@ -52,7 +61,7 @@ public final class RowConsumerCreateTable implements RowConsumer
         this.columnBuilders = new Column.Builder[columnNames.length];
         for (int i = 0; i < columnNames.length; ++i)
         {
-            Column.Type columnType = effectiveColumnType(columnNames[i], this.explicitColumnTypes);
+            Column.Type columnType = builderColumnType(columnNames[i], this.sourceColumnTypes, this.planColumnTypes);
             this.columnTypes[i] = columnType;
             if (columnType.isPrimitive())
             {
@@ -89,33 +98,70 @@ public final class RowConsumerCreateTable implements RowConsumer
     public TableColumnar build()
     {
         Column[] columns = new Column[this.columnBuilders.length];
+        List<ColumnName> localDateColumns = new ArrayList<>();
         for (int i = 0; i < columns.length; ++i)
         {
             Column.Builder colBuilder = columnBuilders[i];
             ColumnName colName = colBuilder.getName();
-            Column.Type type = this.explicitColumnTypes.getOrDefault(colName, ColumnTypes.STRING);
+            Column.Type type = this.planColumnTypes.get(colName);
+            if (type == null)
+            {
+                type = this.sourceColumnTypes.get(colName);
+            }
             if (colBuilder instanceof ColumnObject.Builder<?> objectBuilder)
             {
-                // Very convenient and fast transformation from string
-                columns[i] = objectBuilder.build(type);
+                if (type == null)
+                {
+                    columns[i] = objectBuilder.build();
+                }
+                else if (LocalDate.class.equals(type.getValueClass()))
+                {
+                    localDateColumns.add(colName);
+                    columns[i] = objectBuilder.build();
+                }
+                else
+                {
+                    // Very convenient and fast transformation from string
+                    columns[i] = objectBuilder.build(type);
+                }
             }
             else
             {
                 columns[i] = colBuilder.build();
             }
         }
-        return Tables.newTable(this.tableName, this.tableDescription, columns);
+        TableColumnar table = Tables.newTable(this.tableName, this.tableDescription, columns);
+        if (!localDateColumns.isEmpty())
+        {
+            return table
+                    .apply(new TransformToLocalDate(this.localDateFormat, localDateColumns.toArray(new ColumnName[0])));
+        }
+        return table;
     }
 
     public static RowConsumerCreateTable create(TableName tableName)
     {
-        return create(tableName, null, Collections.emptyMap());
+        return create(tableName, null, Collections.emptyMap(), Collections.emptyMap(), null);
     }
 
     public static RowConsumerCreateTable create(TableName tableName, TableDescription tableDescription,
             Map<ColumnName, Column.Type> explicitColumnTypes)
     {
-        return new RowConsumerCreateTable(tableName, tableDescription, explicitColumnTypes);
+        return create(tableName, tableDescription, explicitColumnTypes, explicitColumnTypes, null);
+    }
+
+    public static RowConsumerCreateTable create(TableName tableName, TableDescription tableDescription,
+            Map<ColumnName, Column.Type> explicitColumnTypes, DateFormat localDateFormat)
+    {
+        return create(tableName, tableDescription, explicitColumnTypes, explicitColumnTypes, localDateFormat);
+    }
+
+    public static RowConsumerCreateTable create(TableName tableName, TableDescription tableDescription,
+            Map<ColumnName, Column.Type> sourceColumnTypes, Map<ColumnName, Column.Type> planColumnTypes,
+            DateFormat localDateFormat)
+    {
+        return new RowConsumerCreateTable(tableName, tableDescription, sourceColumnTypes, planColumnTypes,
+                localDateFormat);
     }
 
     private static Column.Type effectiveColumnType(ColumnName columnName,
@@ -127,6 +173,18 @@ public final class RowConsumerCreateTable implements RowConsumer
             return ColumnTypes.STRING;
         }
         return columnType;
+    }
+
+    private static Column.Type builderColumnType(ColumnName columnName, Map<ColumnName, Column.Type> sourceColumnTypes,
+            Map<ColumnName, Column.Type> planColumnTypes)
+    {
+        Column.Type sourceType = sourceColumnTypes.get(columnName);
+        Column.Type planType = planColumnTypes.get(columnName);
+        if (planType != null && planType.isPrimitive() && (sourceType == null || !sourceType.isPrimitive()))
+        {
+            return planType;
+        }
+        return effectiveColumnType(columnName, sourceColumnTypes);
     }
 
     private static void addValue(Column.Builder builder, CharSequence chars, int start, int length)

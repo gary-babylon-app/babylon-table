@@ -285,17 +285,6 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
     }
 
     @Override
-    public TableColumnar execute(StreamSource streamSource, TabularRowReader reader)
-    {
-        validate();
-        StreamSource checkedStreamSource = ArgumentCheck.nonNull(streamSource);
-        RowConsumerGroupAggregate rowConsumer = new RowConsumerGroupAggregate(this);
-        TabularRowReader.Result readResult = ArgumentCheck.nonNull(reader).read(checkedStreamSource, rowConsumer);
-        ensureSuccess(readResult);
-        return rowConsumer.build();
-    }
-
-    @Override
     public TableColumnar execute(RowCursor rowCursor)
     {
         validate();
@@ -327,19 +316,6 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             throw new TableException("Failed to aggregate rows from row source '" + checkedRowSource.getName() + "'.",
                     e);
         }
-    }
-
-    private static void ensureSuccess(TabularRowReader.Result readResult)
-    {
-        if (readResult.isSuccessLike())
-        {
-            return;
-        }
-        if (readResult.getCause() instanceof RuntimeException runtimeException)
-        {
-            throw runtimeException;
-        }
-        throw new TableException(readResult.getMessage());
     }
 
     private static ColumnName[] toColumnNames(app.babylon.table.column.ColumnDefinition[] columnDefinitions)

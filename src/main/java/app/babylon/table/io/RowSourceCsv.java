@@ -78,6 +78,12 @@ public final class RowSourceCsv implements RowSource
             return this;
         }
 
+        public Builder withStripping(boolean stripping)
+        {
+            this.rowCursorBuilder.withStripping(stripping);
+            return this;
+        }
+
         public Builder withQuote(char quote)
         {
             this.rowCursorBuilder.withQuote(quote);
@@ -102,12 +108,56 @@ public final class RowSourceCsv implements RowSource
             return this;
         }
 
+        /**
+         * Specifies a source-side column type for CSV reading.
+         * <p>
+         * The supplied type is exposed through the resulting
+         * {@link RowCursorCsv#columns()} metadata and can therefore select the
+         * low-level builder used during row consumption. This is the preferred place to
+         * specify a type when the goal is to parse row slices directly into the final
+         * builder rather than first building a {@code String} column and converting it
+         * later.
+         * <p>
+         * For ordinary categorical text this is usually not needed. In that common case
+         * it is often better to keep the source as {@code STRING}, let the row consumer
+         * build the string dictionary naturally, and only specify a source-side type
+         * when the direct parser has a real advantage.
+         *
+         * @param columnName
+         *            the source column name
+         * @param columnType
+         *            the source-side column type
+         * @return this builder
+         */
         public Builder withColumnType(ColumnName columnName, Column.Type columnType)
         {
             this.rowCursorBuilder.withColumnType(columnName, columnType);
             return this;
         }
 
+        /**
+         * Specifies a source-side column type for CSV reading.
+         * <p>
+         * This is stronger than a purely post-read typing hint. The type supplied here
+         * becomes part of the {@link RowCursorCsv#columns()} metadata and can therefore
+         * influence which builder the row consumer creates before rows are read.
+         * <p>
+         * For categorical text columns, this is best reserved for cases where the
+         * direct parser is meaningfully better than first creating the string
+         * dictionary.
+         * <p>
+         * Use this when the source text can be parsed directly into the desired builder
+         * and you want to avoid an intermediate string column in memory, for example:
+         * <p>
+         * - primitive numeric columns such as {@code int}, {@code long}, and
+         * {@code double}
+         * <p>
+         * - custom enum-like object types with fast {@code CharSequence}-based parsers
+         *
+         * @param columnTypes
+         *            source-side column types keyed by column name
+         * @return this builder
+         */
         public Builder withColumnTypes(Map<ColumnName, Column.Type> columnTypes)
         {
             this.rowCursorBuilder.withColumnTypes(columnTypes);

@@ -10,13 +10,11 @@
 
 package app.babylon.table.plans;
 
-import app.babylon.io.StreamSource;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
 import app.babylon.table.TableName;
 import app.babylon.table.io.RowSource;
 import app.babylon.table.io.RowCursor;
-import app.babylon.table.io.TabularRowReader;
 
 public interface TablePlan
 {
@@ -27,8 +25,6 @@ public interface TablePlan
     TablePlan withTableDescription(TableDescription tableDescription);
 
     TableDescription getTableDescription();
-
-    TableColumnar execute(StreamSource streamSource, TabularRowReader reader);
 
     /**
      * Executes this plan against an already-open row supplier.

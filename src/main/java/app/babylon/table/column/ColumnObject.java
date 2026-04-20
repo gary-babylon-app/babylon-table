@@ -186,7 +186,7 @@ public interface ColumnObject<T> extends Column
          *            the target column type
          * @return an immutable categorical column of the transformed type
          */
-        <S> ColumnObject<S> build(Column.Type transformedType);
+        Column build(Column.Type transformedType);
         // {
         // Column.Type targetType = ArgumentCheck.nonNull(transformedType);
         // if (targetType.equals(getType()))

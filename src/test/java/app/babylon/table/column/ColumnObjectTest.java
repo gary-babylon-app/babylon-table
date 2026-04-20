@@ -112,7 +112,7 @@ class ColumnObjectTest
         builder.addNull();
         builder.add("3.00");
 
-        ColumnObject<BigDecimal> decimals = builder.build(ColumnTypes.DECIMAL);
+        ColumnObject<BigDecimal> decimals = (ColumnObject<BigDecimal>) builder.build(ColumnTypes.DECIMAL);
 
         assertFalse(decimals instanceof ColumnCategorical<?>);
         assertEquals(0, new BigDecimal("10.50").compareTo(decimals.get(0)));
@@ -133,13 +133,46 @@ class ColumnObjectTest
         builder.add("7.25");
         builder.add("7.25");
 
-        ColumnObject<BigDecimal> decimals = builder.build(ColumnTypes.DECIMAL);
+        ColumnObject<BigDecimal> decimals = (ColumnObject<BigDecimal>) builder.build(ColumnTypes.DECIMAL);
 
         assertTrue(decimals instanceof ColumnCategorical<?>);
         assertTrue(decimals.isConstant());
         assertTrue(decimals.isAllSet());
         assertSame(ColumnTypes.DECIMAL, decimals.getType());
         assertEquals(0, new BigDecimal("7.25").compareTo(decimals.get(0)));
+    }
+
+    @Test
+    void objectBuildersShouldBuildPrimitiveTargetsViaTransformToPrimitive()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnObject.Builder<String> arrayBuilder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING,
+                ColumnObject.Mode.ARRAY);
+        arrayBuilder.add("10.50");
+        arrayBuilder.add("bad");
+        arrayBuilder.addNull();
+
+        Column arrayBuilt = arrayBuilder.build(ColumnTypes.DOUBLE);
+        assertTrue(arrayBuilt instanceof ColumnDouble);
+        ColumnDouble arrayDoubles = (ColumnDouble) arrayBuilt;
+        assertEquals(10.5d, arrayDoubles.get(0), 1.0e-12);
+        assertFalse(arrayDoubles.isSet(1));
+        assertFalse(arrayDoubles.isSet(2));
+
+        ColumnObject.Builder<String> categoricalBuilder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING,
+                ColumnObject.Mode.CATEGORICAL);
+        categoricalBuilder.add("10");
+        categoricalBuilder.add("bad");
+        categoricalBuilder.add("10");
+        categoricalBuilder.addNull();
+
+        Column categoricalBuilt = categoricalBuilder.build(ColumnTypes.INT);
+        assertTrue(categoricalBuilt instanceof ColumnInt);
+        ColumnInt categoricalInts = (ColumnInt) categoricalBuilt;
+        assertEquals(10, categoricalInts.get(0));
+        assertFalse(categoricalInts.isSet(1));
+        assertEquals(10, categoricalInts.get(2));
+        assertFalse(categoricalInts.isSet(3));
     }
 
     @Test

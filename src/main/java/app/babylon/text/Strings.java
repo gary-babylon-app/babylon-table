@@ -209,7 +209,7 @@ public final class Strings
         return isBoundedWholeNumber(s, start, length, "2147483647", "2147483648");
     }
 
-    public static boolean isLong(String s)
+    public static boolean isLong(CharSequence s)
     {
         return s != null && isLong(s, 0, s.length());
     }

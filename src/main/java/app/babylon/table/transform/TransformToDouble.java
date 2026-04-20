@@ -1,23 +1,19 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.Map;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.column.Columns;
-import app.babylon.text.BigDecimals;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformToDouble extends TransformBase
 {
     public static final String FUNCTION_NAME = "ToDouble";
 
-    private final ColumnName existingColumnName;
-    private final ColumnName newColumnName;
+    private final TransformToPrimitive delegate;
 
     public TransformToDouble(ColumnName columnName)
     {
@@ -27,8 +23,8 @@ public class TransformToDouble extends TransformBase
     public TransformToDouble(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.existingColumnName = ArgumentCheck.nonNull(existingColumnName);
-        this.newColumnName = ArgumentCheck.nonNull(newColumnName);
+        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName),
+                ArgumentCheck.nonNull(newColumnName), ColumnTypes.DOUBLE, TransformParseMode.ONLY_ONE_IN);
     }
 
     public static TransformToDouble of(String... params)
@@ -42,54 +38,12 @@ public class TransformToDouble extends TransformBase
 
     public ColumnDouble apply(Column x)
     {
-        if (x == null)
-        {
-            return null;
-        }
-        if (x instanceof ColumnDouble doubles)
-        {
-            return doubles.copy(this.newColumnName);
-        }
-        if (!Columns.isStringColumn(x))
-        {
-            return null;
-        }
-
-        ColumnObject<String> strings = Columns.asStringColumn(x);
-        ColumnDouble.Builder builder = ColumnDouble.builder(this.newColumnName);
-        for (int i = 0; i < strings.size(); ++i)
-        {
-            if (!strings.isSet(i))
-            {
-                builder.addNull();
-                continue;
-            }
-            String s = strings.get(i);
-            Double parsed = BigDecimals.parseDouble(s);
-            if (parsed == null)
-            {
-                parsed = BigDecimals.extractDouble(s);
-            }
-            if (parsed == null)
-            {
-                builder.addNull();
-            }
-            else
-            {
-                builder.add(parsed.doubleValue());
-            }
-        }
-        return builder.build();
+        return (ColumnDouble) this.delegate.apply(x);
     }
 
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        Column source = columnsByName.get(this.existingColumnName);
-        ColumnDouble doubles = apply(source);
-        if (doubles != null)
-        {
-            columnsByName.put(this.newColumnName, doubles);
-        }
+        this.delegate.apply(columnsByName);
     }
 }

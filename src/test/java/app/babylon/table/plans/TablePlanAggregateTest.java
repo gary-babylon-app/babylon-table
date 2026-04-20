@@ -59,8 +59,6 @@ class TablePlanAggregateTest
     @Test
     void executeShouldGroupAndAggregateSingleDoubleColumn()
     {
-        final ColumnName COLUMN_1 = ColumnName.of("Column1");
-        final ColumnName COLUMN_2 = ColumnName.of("Column2");
         final ColumnName STATION = ColumnName.of("Station");
         final ColumnName TEMPERATURE = ColumnName.of("Temperature");
         final ColumnName COUNT = ColumnName.of("Count");
@@ -75,12 +73,13 @@ class TablePlanAggregateTest
                 .withAggregate(TEMPERATURE, SUM, Aggregate.SUM).withAggregate(TEMPERATURE, MIN, Aggregate.MIN)
                 .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN).withAggregate(TEMPERATURE, MAX, Aggregate.MAX);
 
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(';')
-                .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
-                .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE);
-
-        TableColumnar table = plan
-                .execute(StreamSources.fromString("Amsterdam;10.0\nAmsterdam;14.0\nLondon;7.0\n", "1brc.csv"), reader);
+        String csv = """
+                Station;Temperature
+                Amsterdam;10.0
+                Amsterdam;14.0
+                London;7.0
+                """;
+        TableColumnar table = plan.execute(semiColonRowSource(csv));
 
         assertEquals(TableName.of("StationSummary"), table.getName());
         assertEquals(2, table.getRowCount());
@@ -101,9 +100,6 @@ class TablePlanAggregateTest
     @Test
     void executeShouldSupportMultipleAggregateSourceColumns()
     {
-        final ColumnName COLUMN_1 = ColumnName.of("Column1");
-        final ColumnName COLUMN_2 = ColumnName.of("Column2");
-        final ColumnName COLUMN_3 = ColumnName.of("Column3");
         final ColumnName STATION = ColumnName.of("Station");
         final ColumnName TEMPERATURE = ColumnName.of("Temperature");
         final ColumnName HUMIDITY = ColumnName.of("Humidity");
@@ -115,14 +111,13 @@ class TablePlanAggregateTest
                 .withGroupBy(STATION).withAggregate(TEMPERATURE, MIN_TEMPERATURE, Aggregate.MIN)
                 .withAggregate(HUMIDITY, MAX_HUMIDITY, Aggregate.MAX);
 
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(';')
-                .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
-                .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, TEMPERATURE)
-                .withColumnRename(COLUMN_3, HUMIDITY);
-
-        TableColumnar table = plan.execute(
-                StreamSources.fromString("Amsterdam;10.0;85.0\nAmsterdam;12.0;82.0\nLondon;7.0;91.0\n", "1brc.csv"),
-                reader);
+        String csv = """
+                Station;Temperature;Humidity
+                Amsterdam;10.0;85.0
+                Amsterdam;12.0;82.0
+                London;7.0;91.0
+                """;
+        TableColumnar table = plan.execute(semiColonRowSource(csv));
 
         assertEquals(2, table.getRowCount());
         assertEquals("Amsterdam", table.getString(STATION).get(0));
@@ -136,9 +131,6 @@ class TablePlanAggregateTest
     @Test
     void executeShouldGroupByMultipleColumns()
     {
-        final ColumnName COLUMN_1 = ColumnName.of("Column1");
-        final ColumnName COLUMN_2 = ColumnName.of("Column2");
-        final ColumnName COLUMN_3 = ColumnName.of("Column3");
         final ColumnName STATION = ColumnName.of("Station");
         final ColumnName COUNTRY = ColumnName.of("Country");
         final ColumnName TEMPERATURE = ColumnName.of("Temperature");
@@ -150,13 +142,14 @@ class TablePlanAggregateTest
                 .withTableName(TableName.of("StationCountrySummary")).withGroupBy(STATION, COUNTRY)
                 .withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT).withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN);
 
-        TabularRowReaderCsv reader = new TabularRowReaderCsv().withSeparator(';')
-                .withHeaderStrategy(new app.babylon.table.io.HeaderStrategyNoHeaders(10))
-                .withColumnRename(COLUMN_1, STATION).withColumnRename(COLUMN_2, COUNTRY)
-                .withColumnRename(COLUMN_3, TEMPERATURE);
-
-        TableColumnar table = plan.execute(StreamSources.fromString(
-                "Amsterdam;NL;10.0\nAmsterdam;NL;14.0\nAmsterdam;US;30.0\nLondon;UK;7.0\n", "1brc.csv"), reader);
+        String csv = """
+                Station;Country;Temperature
+                Amsterdam;NL;10.0
+                Amsterdam;NL;14.0
+                Amsterdam;US;30.0
+                London;UK;7.0
+                """;
+        TableColumnar table = plan.execute(semiColonRowSource(csv));
 
         assertEquals(3, table.getRowCount());
         assertEquals("Amsterdam", table.getString(STATION).get(0));
@@ -205,11 +198,10 @@ class TablePlanAggregateTest
                 .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN).withAggregate(TEMPERATURE, MAX, Aggregate.MAX)
                 .withAggregate(HUMIDITY, HUMIDITY_MAX, Aggregate.MAX);
 
-        StreamSource streamingSource = StreamSources.fromString(csv, "summary.csv");
         StreamSource inMemorySource = StreamSources.fromString(csv, "summary.csv");
 
-        TabularRowReaderCsv reader = newReader(STATION, COUNTRY, TEMPERATURE, HUMIDITY);
-        TableColumnar streamingResult = plan.execute(streamingSource, reader);
+        TableColumnar streamingResult = plan.execute(RowSourceCsv.builder()
+                .withStreamSource(StreamSources.fromString(csv, "summary.csv")).withSeparator(',').build());
         TabularRowReaderCsv inMemoryReader = newReader(STATION, COUNTRY, TEMPERATURE, HUMIDITY);
         RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(TableName.of("ParsedSummary"), null,
                 plan.getColumnTypes());
@@ -244,6 +236,12 @@ class TablePlanAggregateTest
             ColumnName humidity)
     {
         return new TabularRowReaderCsv().withSeparator(',');
+    }
+
+    private static RowSourceCsv semiColonRowSource(String csv)
+    {
+        return RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv.stripIndent(), "1brc.csv"))
+                .withSeparator(';').build();
     }
 
     private static Map<String, SummaryRow> toSummaryRows(TableColumnar table, ColumnName station, ColumnName country,

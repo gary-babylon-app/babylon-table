@@ -17,7 +17,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
@@ -31,7 +30,7 @@ import app.babylon.table.column.Columns;
 import app.babylon.table.io.RowConsumerCreateTable;
 import app.babylon.table.io.RowCursor;
 import app.babylon.table.io.RowSource;
-import app.babylon.table.io.TabularRowReader;
+import app.babylon.table.transform.DateFormat;
 import app.babylon.table.transform.Transform;
 import app.babylon.text.Strings;
 
@@ -46,18 +45,30 @@ import app.babylon.text.Strings;
  *
  * TableColumnar table = new TablePlanRead().withTableName(TableName.of("Trades")).execute(rowSource);
  * }</pre>
+ * <p>
+ * There are two useful layers for column typing when reading:
+ * <p>
+ * - source-side types from {@link RowCursor#columns()} choose the low-level
+ * builder before rows are consumed and are therefore the best place to avoid
+ * intermediate string materialization when that direct parser is genuinely
+ * worthwhile
+ * <p>
+ * - plan-side types configured on this class describe the desired output type
+ * and can override the source-side type when appropriate
  */
 public class TablePlanRead extends TablePlanCommon<TablePlanRead>
 {
     private final List<Transform> transforms;
     private final Map<ColumnName, Column.Type> columnTypes;
     private ColumnName dataSourceNameColumnName;
+    private DateFormat localDateFormat;
 
     public TablePlanRead()
     {
         this.transforms = new ArrayList<>();
         this.columnTypes = new LinkedHashMap<>();
         this.dataSourceNameColumnName = null;
+        this.localDateFormat = null;
     }
 
     public TablePlanRead withIncludeResourceName(ColumnName resourceName)
@@ -69,6 +80,17 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
     public ColumnName getResourceName()
     {
         return this.dataSourceNameColumnName;
+    }
+
+    public TablePlanRead withLocalDateFormat(DateFormat localDateFormat)
+    {
+        this.localDateFormat = localDateFormat;
+        return this;
+    }
+
+    public DateFormat getLocalDateFormat()
+    {
+        return this.localDateFormat;
     }
 
     public TablePlanRead withTransform(Transform transform)
@@ -97,6 +119,27 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         return Collections.unmodifiableList(this.transforms);
     }
 
+    /**
+     * Specifies the desired output type for a column in the resulting table.
+     * <p>
+     * This is best thought of as plan-side type intent. If the source cursor also
+     * exposes a type for the same column, that source-side type can still matter
+     * earlier because it may choose the low-level builder before rows are read.
+     * <p>
+     * In other words:
+     * <p>
+     * - source-side types are the right place to request direct builder parsing and
+     * bypass intermediate strings when the parser has a real advantage
+     * <p>
+     * - plan-side types are the right place to describe the desired result schema
+     * or override the source metadata
+     *
+     * @param columnName
+     *            the output column name
+     * @param columnType
+     *            the desired output type
+     * @return this plan
+     */
     public TablePlanRead withColumnType(ColumnName columnName, Column.Type columnType)
     {
         this.columnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
@@ -149,19 +192,6 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
     }
 
     @Override
-    public TableColumnar execute(StreamSource streamSource, TabularRowReader reader)
-    {
-        StreamSource checkedStreamSource = ArgumentCheck.nonNull(streamSource);
-        TabularRowReader checkedReader = ArgumentCheck.nonNull(reader);
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(
-                effectiveParsedTableName(checkedStreamSource.getName()), getTableDescription(), this.columnTypes);
-        TabularRowReader.Result readResult = checkedReader.read(checkedStreamSource, rowConsumer);
-        ensureSuccess(readResult);
-        TableColumnar parsed = appendResourceNameColumn(rowConsumer.build(), checkedStreamSource.getName());
-        return apply(parsed);
-    }
-
-    @Override
     public TableColumnar execute(RowCursor rowCursor)
     {
         return execute(rowCursor, null);
@@ -185,19 +215,6 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         }
     }
 
-    private static void ensureSuccess(TabularRowReader.Result readResult)
-    {
-        if (readResult.isSuccessLike())
-        {
-            return;
-        }
-        if (readResult.getCause() instanceof RuntimeException runtimeException)
-        {
-            throw runtimeException;
-        }
-        throw new TableException(readResult.getMessage());
-    }
-
     private ColumnName[] toColumnNames(ColumnDefinition[] columnDefinitions)
     {
         ColumnName[] columnNames = new ColumnName[columnDefinitions.length];
@@ -208,19 +225,18 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         return columnNames;
     }
 
-    private Map<ColumnName, Column.Type> effectiveColumnTypes(ColumnDefinition[] columnDefinitions)
+    private Map<ColumnName, Column.Type> sourceColumnTypes(ColumnDefinition[] columnDefinitions)
     {
-        Map<ColumnName, Column.Type> effective = new LinkedHashMap<>();
+        Map<ColumnName, Column.Type> source = new LinkedHashMap<>();
         for (ColumnDefinition columnDefinition : columnDefinitions)
         {
             Column.Type type = columnDefinition.type();
             if (type != null)
             {
-                effective.put(columnDefinition.name(), type);
+                source.put(columnDefinition.name(), type);
             }
         }
-        effective.putAll(this.columnTypes);
-        return effective;
+        return source;
     }
 
     private TableColumnar execute(RowCursor rowCursor, String sourceName)
@@ -228,10 +244,10 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
         RowCursor checkedRowCursor = ArgumentCheck.nonNull(rowCursor);
         ColumnDefinition[] columnDefinitions = checkedRowCursor.columns();
         ColumnName[] columnNames = toColumnNames(columnDefinitions);
-        Map<ColumnName, Column.Type> effectiveColumnTypes = effectiveColumnTypes(columnDefinitions);
+        Map<ColumnName, Column.Type> sourceColumnTypes = sourceColumnTypes(columnDefinitions);
 
         RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(effectiveParsedTableName(sourceName),
-                getTableDescription(), effectiveColumnTypes);
+                getTableDescription(), sourceColumnTypes, this.columnTypes, this.localDateFormat);
         rowConsumer.start(columnNames);
         while (checkedRowCursor.next())
         {

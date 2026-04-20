@@ -30,13 +30,35 @@ public final class TypeParsers
         @Override
         public Byte parse(CharSequence s)
         {
-            return Strings.isEmpty(s) ? null : parseByte(s);
+            if (Strings.isEmpty(s) || !Strings.isInt(s))
+            {
+                return null;
+            }
+            try
+            {
+                return parseByte(s);
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
         }
 
         @Override
         public Byte parse(CharSequence s, int offset, int length)
         {
-            return s == null || length <= 0 ? null : parseByte(s, offset, length);
+            if (s == null || length <= 0 || !Strings.isInt(s, offset, length))
+            {
+                return null;
+            }
+            try
+            {
+                return parseByte(s, offset, length);
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
         }
     };
     public static final TypeParser<Integer> INT = new TypeParser<>()
@@ -44,13 +66,35 @@ public final class TypeParsers
         @Override
         public Integer parse(CharSequence s)
         {
-            return Strings.isEmpty(s) ? null : parseInt(s);
+            if (Strings.isEmpty(s) || !Strings.isInt(s))
+            {
+                return null;
+            }
+            try
+            {
+                return parseInt(s);
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
         }
 
         @Override
         public Integer parse(CharSequence s, int offset, int length)
         {
-            return s == null || length <= 0 ? null : parseInt(s, offset, length);
+            if (s == null || length <= 0 || !Strings.isInt(s, offset, length))
+            {
+                return null;
+            }
+            try
+            {
+                return parseInt(s, offset, length);
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
         }
     };
     public static final TypeParser<Long> LONG = new TypeParser<>()
@@ -58,13 +102,35 @@ public final class TypeParsers
         @Override
         public Long parse(CharSequence s)
         {
-            return Strings.isEmpty(s) ? null : parseLong(s);
+            if (Strings.isEmpty(s) || !Strings.isLong(s))
+            {
+                return null;
+            }
+            try
+            {
+                return parseLong(s);
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
         }
 
         @Override
         public Long parse(CharSequence s, int offset, int length)
         {
-            return s == null || length <= 0 ? null : parseLong(s, offset, length);
+            if (s == null || length <= 0 || !Strings.isLong(s, offset, length))
+            {
+                return null;
+            }
+            try
+            {
+                return parseLong(s, offset, length);
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
         }
     };
     public static final TypeParser<Double> DOUBLE = new TypeParser<>()
@@ -72,13 +138,13 @@ public final class TypeParsers
         @Override
         public Double parse(CharSequence s)
         {
-            return Strings.isEmpty(s) ? null : parseDouble(s);
+            return Strings.isEmpty(s) ? null : BigDecimals.parseDouble(s);
         }
 
         @Override
         public Double parse(CharSequence s, int offset, int length)
         {
-            return s == null || length <= 0 ? null : parseDouble(s, offset, length);
+            return s == null || length <= 0 ? null : BigDecimals.parseDouble(s.subSequence(offset, offset + length));
         }
     };
     public static final TypeParser<BigDecimal> BIG_DECIMAL = BigDecimals::parse;

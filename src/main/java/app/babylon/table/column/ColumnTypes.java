@@ -11,7 +11,13 @@
 package app.babylon.table.column;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Period;
+import java.time.YearMonth;
 import java.util.Currency;
 
 import app.babylon.table.column.Column.Type;
@@ -43,6 +49,18 @@ public final class ColumnTypes
     public static final Type STRING        = Column.Type.of(String.class,     TypeParsers.STRING);
     /** BigDecimal type. */
     public static final Type DECIMAL       = Column.Type.of(BigDecimal.class, TypeParsers.BIG_DECIMAL);
+    /** Instant type. */
+    public static final Type INSTANT       = Column.Type.of(Instant.class,    TypeParsers.INSTANT);
+    /** LocalDateTime type. */
+    public static final Type LOCAL_DATE_TIME = Column.Type.of(LocalDateTime.class, TypeParsers.LOCAL_DATE_TIME);
+    /** LocalTime type. */
+    public static final Type LOCAL_TIME    = Column.Type.of(LocalTime.class,  TypeParsers.LOCAL_TIME);
+    /** OffsetDateTime type. */
+    public static final Type OFFSET_DATE_TIME = Column.Type.of(OffsetDateTime.class, TypeParsers.OFFSET_DATE_TIME);
+    /** Period type. */
+    public static final Type PERIOD        = Column.Type.of(Period.class,     TypeParsers.PERIOD);
+    /** YearMonth type. */
+    public static final Type YEAR_MONTH    = Column.Type.of(YearMonth.class,  TypeParsers.YEAR_MONTH);
     /** LocalDate type. */
     public static final Type LOCALDATE     = Column.Type.of(LocalDate.class,  TypeParsers.LOCAL_DATE_YMD);
     /** Currency type. */

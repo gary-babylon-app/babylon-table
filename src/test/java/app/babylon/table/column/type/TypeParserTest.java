@@ -5,7 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.Period;
+import java.time.YearMonth;
 import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
@@ -71,6 +77,151 @@ class TypeParserTest
         assertEquals(LocalDate.of(2024, 3, 15), parser.parse(chars, 2, 10));
         assertNull(parser.parse("not-a-date"));
         assertNull(parser.parse(chars, 0, 2));
+    }
+
+    @Test
+    void objectParserShouldWorkWithInstant()
+    {
+        TypeParser<Instant> parser = TypeParsers.INSTANT;
+        Instant expected = Instant.parse("2026-04-21T10:15:30Z");
+        String chars = "xx2026-04-21T10:15:30Zyy";
+
+        assertEquals(expected, parser.parse("2026-04-21T10:15:30Z"));
+        assertEquals(expected, parser.parse(chars, 2, 20));
+        assertNull(parser.parse("not-an-instant"));
+    }
+
+    @Test
+    void instantParserShouldTrimWhitespaceAtTheEdges()
+    {
+        TypeParser<Instant> parser = TypeParsers.INSTANT;
+        Instant expected = Instant.parse("2026-04-21T10:15:30Z");
+        String chars = "xx 2026-04-21T10:15:30Z yy";
+
+        assertEquals(expected, parser.parse(" 2026-04-21T10:15:30Z "));
+        assertEquals(expected, parser.parse(chars, 2, 22));
+    }
+
+    @Test
+    void objectParserShouldWorkWithLocalDateTime()
+    {
+        TypeParser<LocalDateTime> parser = TypeParsers.LOCAL_DATE_TIME;
+        LocalDateTime expected = LocalDateTime.of(2026, 4, 21, 10, 15, 30);
+        String chars = "xx2026-04-21T10:15:30yy";
+
+        assertEquals(expected, parser.parse("2026-04-21T10:15:30"));
+        assertEquals(expected, parser.parse(chars, 2, 19));
+        assertNull(parser.parse("not-a-local-date-time"));
+    }
+
+    @Test
+    void localDateTimeParserShouldTrimWhitespaceAtTheEdges()
+    {
+        TypeParser<LocalDateTime> parser = TypeParsers.LOCAL_DATE_TIME;
+        LocalDateTime expected = LocalDateTime.of(2026, 4, 21, 10, 15, 30);
+        String chars = "xx 2026-04-21T10:15:30 yy";
+
+        assertEquals(expected, parser.parse(" 2026-04-21T10:15:30 "));
+        assertEquals(expected, parser.parse(chars, 2, 21));
+    }
+
+    @Test
+    void objectParserShouldWorkWithLocalTime()
+    {
+        TypeParser<LocalTime> parser = TypeParsers.LOCAL_TIME;
+        LocalTime expected = LocalTime.of(10, 15, 30);
+        String chars = "xx10:15:30yy";
+
+        assertEquals(expected, parser.parse("10:15:30"));
+        assertEquals(expected, parser.parse(chars, 2, 8));
+        assertNull(parser.parse("not-a-local-time"));
+    }
+
+    @Test
+    void localTimeParserShouldTrimWhitespaceAtTheEdges()
+    {
+        TypeParser<LocalTime> parser = TypeParsers.LOCAL_TIME;
+        LocalTime expected = LocalTime.of(10, 15, 30);
+        String chars = "xx 10:15:30 yy";
+
+        assertEquals(expected, parser.parse(" 10:15:30 "));
+        assertEquals(expected, parser.parse(chars, 2, 10));
+    }
+
+    @Test
+    void objectParserShouldWorkWithOffsetDateTime()
+    {
+        TypeParser<OffsetDateTime> parser = TypeParsers.OFFSET_DATE_TIME;
+        OffsetDateTime expected = OffsetDateTime.parse("2026-04-21T10:15:30Z");
+        String chars = "xx2026-04-21T10:15:30Zyy";
+
+        assertEquals(expected, parser.parse("2026-04-21T10:15:30Z"));
+        assertEquals(expected, parser.parse(chars, 2, 20));
+        assertNull(parser.parse("not-an-offset-date-time"));
+    }
+
+    @Test
+    void offsetDateTimeParserShouldTrimWhitespaceAtTheEdges()
+    {
+        TypeParser<OffsetDateTime> parser = TypeParsers.OFFSET_DATE_TIME;
+        OffsetDateTime expected = OffsetDateTime.parse("2026-04-21T10:15:30Z");
+        String chars = "xx 2026-04-21T10:15:30Z yy";
+
+        assertEquals(expected, parser.parse(" 2026-04-21T10:15:30Z "));
+        assertEquals(expected, parser.parse(chars, 2, 22));
+    }
+
+    @Test
+    void objectParserShouldWorkWithYearMonth()
+    {
+        TypeParser<YearMonth> parser = TypeParsers.YEAR_MONTH;
+        YearMonth expected = YearMonth.of(2026, 4);
+        String chars = "xx2026-04yy";
+
+        assertEquals(expected, parser.parse("2026-04"));
+        assertEquals(expected, parser.parse(chars, 2, 7));
+        assertNull(parser.parse("not-a-year-month"));
+    }
+
+    @Test
+    void yearMonthParserShouldTrimWhitespaceAtTheEdges()
+    {
+        TypeParser<YearMonth> parser = TypeParsers.YEAR_MONTH;
+        YearMonth expected = YearMonth.of(2026, 4);
+        String chars = "xx 2026-04 yy";
+
+        assertEquals(expected, parser.parse(" 2026-04 "));
+        assertEquals(expected, parser.parse(chars, 2, 9));
+    }
+
+    @Test
+    void objectParserShouldWorkWithPeriod()
+    {
+        TypeParser<Period> parser = TypeParsers.PERIOD;
+
+        assertEquals(Period.ofMonths(1), parser.parse("1M"));
+        assertEquals(Period.ofMonths(3), parser.parse("P3M"));
+        assertEquals(Period.ofMonths(3), parser.parse("3M"));
+        assertEquals(Period.ofMonths(6), parser.parse("6m"));
+        assertEquals(Period.ofMonths(12), parser.parse("12M"));
+        assertEquals(Period.ofYears(1), parser.parse("1Y"));
+        assertEquals(Period.ofYears(1), parser.parse("1y"));
+        assertEquals(Period.ofMonths(-3), parser.parse("-P3M"));
+        assertEquals(Period.ofMonths(-3), parser.parse("-3M"));
+        assertEquals(Period.ofDays(10), parser.parse("xx10Dyy", 2, 3));
+        assertNull(parser.parse("not-a-period"));
+    }
+
+    @Test
+    void periodParserShouldTrimWhitespaceAtTheEdges()
+    {
+        TypeParser<Period> parser = TypeParsers.PERIOD;
+        String chars = "xx 3M yy";
+
+        assertEquals(Period.ofMonths(3), parser.parse(" 3M "));
+        assertEquals(Period.ofMonths(3), parser.parse(" P3M "));
+        assertEquals(Period.ofMonths(-3), parser.parse(" -P3M "));
+        assertEquals(Period.ofMonths(3), parser.parse(chars, 2, 4));
     }
 
     @Test

@@ -225,48 +225,94 @@ public final class Strings
      */
     public static CharSequence strip(CharSequence s)
     {
-        return s == null ? null : strip(s, 0, s.length());
-    }
-
-    public static CharSequence strip(CharSequence s, int start, int length)
-    {
         if (s == null)
         {
             return null;
         }
+        int length = s.length();
         if (length <= 0)
         {
             return "";
         }
-
-        int end = start + length - 1;
-        if (!Character.isWhitespace(s.charAt(start)) && !Character.isWhitespace(s.charAt(end)))
-        {
-            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
-        }
-
-        int actualStart = start;
-        int actualEnd = end;
-
-        while (actualStart <= actualEnd && Character.isWhitespace(s.charAt(actualStart)))
-        {
-            actualStart++;
-        }
-
-        while (actualEnd >= actualStart && Character.isWhitespace(s.charAt(actualEnd)))
-        {
-            actualEnd--;
-        }
-
-        if (actualStart > actualEnd)
+        int strippedStart = stripStart(s, 0, length);
+        int strippedEnd = stripEnd(s, 0, length);
+        if (strippedStart >= strippedEnd)
         {
             return "";
         }
-        if (actualStart == start && actualEnd == end)
+        if (strippedStart == 0 && strippedEnd == length)
         {
-            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+            return s;
         }
-        return s.subSequence(actualStart, actualEnd + 1);
+        return s.subSequence(strippedStart, strippedEnd);
+    }
+
+    /**
+     * Returns the inclusive start index of the trimmed slice after Unicode
+     * whitespace stripping.
+     * <p>
+     * This is intended for slice-oriented parsing code that wants trimmed bounds
+     * without first creating a {@link CharSequence#subSequence(int, int)} view.
+     * Paired with {@link #stripEnd(CharSequence, int, int)}, callers can decide
+     * whether a slice changed and only materialize a subsequence if the downstream
+     * parser requires one.
+     * <p>
+     * Typical usage:
+     * 
+     * <pre>{@code
+     * int strippedOffset = Strings.stripStart(s, offset, length);
+     * int strippedEnd = Strings.stripEnd(s, offset, length);
+     * if (strippedOffset < strippedEnd)
+     * {
+     *     CharSequence candidate = s.subSequence(strippedOffset, strippedEnd);
+     * }
+     * }</pre>
+     * <p>
+     * This is generally preferable to a hypothetical
+     * {@code strip(CharSequence, int, int)} helper for low-level parsing, because
+     * it lets the caller keep control of whether a new view object is created.
+     */
+    public static int stripStart(CharSequence s, int start, int length)
+    {
+        if (s == null || length <= 0)
+        {
+            return start;
+        }
+        int strippedStart = start;
+        int end = start + length;
+        while (strippedStart < end && Character.isWhitespace(s.charAt(strippedStart)))
+        {
+            ++strippedStart;
+        }
+        return strippedStart;
+    }
+
+    /**
+     * Returns the exclusive end index of the trimmed slice after Unicode whitespace
+     * stripping.
+     * <p>
+     * The returned value follows the normal Java {@code start}/{@code end}
+     * convention used by {@link CharSequence#subSequence(int, int)} and
+     * {@link String#substring(int, int)}:
+     * <p>
+     * - start is inclusive
+     * <p>
+     * - end is exclusive
+     *
+     * @see #stripStart(CharSequence, int, int)
+     */
+    public static int stripEnd(CharSequence s, int start, int length)
+    {
+        if (s == null || length <= 0)
+        {
+            return start;
+        }
+        int strippedEnd = start + length;
+        while (strippedEnd > start && Character.isWhitespace(s.charAt(strippedEnd - 1)))
+        {
+            --strippedEnd;
+        }
+        return strippedEnd;
     }
 
     /**

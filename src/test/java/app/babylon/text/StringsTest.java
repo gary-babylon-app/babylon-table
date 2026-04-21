@@ -191,14 +191,18 @@ public class StringsTest
     }
 
     @Test
-    public void stripShouldTrimRequestedSlice()
+    public void stripStartAndStripEndShouldTrimRequestedSlice()
     {
         CharSequence s = "xx  abc  yy";
 
-        assertEquals("", Strings.strip(s, 0, 0));
-        assertEquals("abc", Strings.strip(s, 2, 7));
-        assertEquals("abc", Strings.strip("xx\nabc\ryy", 2, 5));
-        assertEquals("\uFEFFabc", Strings.strip("xx\uFEFFabc yy", 2, 5));
+        assertEquals(0, Strings.stripStart(s, 0, 0));
+        assertEquals(0, Strings.stripEnd(s, 0, 0));
+        assertEquals(4, Strings.stripStart(s, 2, 7));
+        assertEquals(7, Strings.stripEnd(s, 2, 7));
+        assertEquals(3, Strings.stripStart("xx\nabc\ryy", 2, 5));
+        assertEquals(6, Strings.stripEnd("xx\nabc\ryy", 2, 5));
+        assertEquals(2, Strings.stripStart("xx\uFEFFabc yy", 2, 5));
+        assertEquals(6, Strings.stripEnd("xx\uFEFFabc yy", 2, 5));
     }
 
     @Test

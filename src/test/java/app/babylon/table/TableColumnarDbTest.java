@@ -14,6 +14,8 @@ import java.sql.Types;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Period;
+import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
 
@@ -114,6 +116,70 @@ class TableColumnarDbTest
         assertEquals("ABC", table.getString(CODE).get(0));
         assertEquals("XYZ", table.getString(CODE).get(1));
         assertNull(table.get(RATIO));
+    }
+
+    @Test
+    void shouldApplyExplicitStringColumnTypeAtBuild()
+    {
+        final ColumnName CCY = ColumnName.of("Ccy");
+        final TableName TRADES = TableName.of("Trades");
+
+        ResultSet resultSet = resultSet(new String[]
+        {"Ccy"}, new String[]
+        {"Ccy"}, new int[]
+        {Types.VARCHAR}, new Object[][]
+        {
+                {"USD"},
+                {"EUR"}});
+
+        TableColumnarDb table = TableColumnarDb.builder().withTableName(TRADES).withResultSet(resultSet)
+                .withColumnType(CCY, ColumnTypes.CURRENCY).build();
+
+        assertEquals(ColumnTypes.CURRENCY, table.getType(CCY));
+        assertEquals(Currency.getInstance("USD"), table.getObject(CCY, ColumnTypes.CURRENCY).get(0));
+        assertEquals(Currency.getInstance("EUR"), table.getObject(CCY, ColumnTypes.CURRENCY).get(1));
+    }
+
+    @Test
+    void shouldApplyExplicitPeriodColumnTypeAtBuild()
+    {
+        final ColumnName TENOR = ColumnName.of("Tenor");
+        final TableName TRADES = TableName.of("Trades");
+
+        ResultSet resultSet = resultSet(new String[]
+        {"Tenor"}, new String[]
+        {"Tenor"}, new int[]
+        {Types.VARCHAR}, new Object[][]
+        {
+                {"3M"},
+                {"1Y"}});
+
+        TableColumnarDb table = TableColumnarDb.builder().withTableName(TRADES).withResultSet(resultSet)
+                .withColumnType(TENOR, ColumnTypes.PERIOD).build();
+
+        assertEquals(ColumnTypes.PERIOD, table.getType(TENOR));
+        assertEquals(Period.ofMonths(3), table.getObject(TENOR, ColumnTypes.PERIOD).get(0));
+        assertEquals(Period.ofYears(1), table.getObject(TENOR, ColumnTypes.PERIOD).get(1));
+    }
+
+    @Test
+    void shouldRejectExplicitPrimitiveTypeForStringSourceColumn()
+    {
+        final ColumnName ID = ColumnName.of("Id");
+        final TableName TRADES = TableName.of("Trades");
+
+        ResultSet resultSet = resultSet(new String[]
+        {"Id"}, new String[]
+        {"Id"}, new int[]
+        {Types.VARCHAR}, new Object[][]
+        {
+                {"1"}});
+
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class, () -> TableColumnarDb.builder()
+                .withTableName(TRADES).withResultSet(resultSet).withColumnType(ID, ColumnTypes.INT).build());
+
+        assertEquals("Explicit ResultSet primitive column type int for column " + ID
+                + " is not supported from STRING source columns.", error.getMessage());
     }
 
     @Test

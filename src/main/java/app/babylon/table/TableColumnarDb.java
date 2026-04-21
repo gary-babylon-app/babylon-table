@@ -21,7 +21,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import app.babylon.table.column.Column;
@@ -56,6 +58,7 @@ public final class TableColumnarDb extends TableColumnarMap
         private TableDescription tableDescription;
         private ResultSet resultSet;
         private final Set<ColumnName> selectedColumns;
+        private final Map<ColumnName, Column.Type> explicitColumnTypes;
 
         private Builder()
         {
@@ -63,6 +66,7 @@ public final class TableColumnarDb extends TableColumnarMap
             this.tableDescription = null;
             this.resultSet = null;
             this.selectedColumns = new LinkedHashSet<>();
+            this.explicitColumnTypes = new LinkedHashMap<>();
         }
 
         public Builder withTableName(TableName tableName)
@@ -98,25 +102,44 @@ public final class TableColumnarDb extends TableColumnarMap
             return this;
         }
 
+        public Builder withColumnType(ColumnName columnName, Column.Type columnType)
+        {
+            this.explicitColumnTypes.put(ArgumentCheck.nonNull(columnName), ArgumentCheck.nonNull(columnType));
+            return this;
+        }
+
+        public Builder withColumnTypes(Map<ColumnName, Column.Type> columnTypes)
+        {
+            if (columnTypes != null)
+            {
+                for (Map.Entry<ColumnName, Column.Type> entry : columnTypes.entrySet())
+                {
+                    withColumnType(entry.getKey(), entry.getValue());
+                }
+            }
+            return this;
+        }
+
         public TableColumnarDb build()
         {
             TableName checkedTableName = ArgumentCheck.nonNull(this.tableName);
             ResultSet checkedResultSet = ArgumentCheck.nonNull(this.resultSet);
             try
             {
-                ResolvedColumn[] resolvedColumns = resolveColumns(checkedResultSet, this.selectedColumns);
+                ResolvedColumn[] resolvedColumns = resolveColumns(checkedResultSet, this.selectedColumns,
+                        this.explicitColumnTypes);
                 Column.Builder[] builders = new Column.Builder[resolvedColumns.length];
                 for (int i = 0; i < resolvedColumns.length; ++i)
                 {
-                    ColumnDefinition columnDefinition = resolvedColumns[i].definition();
-                    builders[i] = Columns.newBuilder(columnDefinition.name(), columnDefinition.type());
+                    builders[i] = Columns.newBuilder(resolvedColumns[i].sourceDefinition().name(),
+                            resolvedColumns[i].sourceDefinition().type());
                 }
 
                 while (checkedResultSet.next())
                 {
                     for (int i = 0; i < resolvedColumns.length; ++i)
                     {
-                        ColumnDefinition columnDefinition = resolvedColumns[i].definition();
+                        ColumnDefinition columnDefinition = resolvedColumns[i].sourceDefinition();
                         addValue(checkedResultSet, resolvedColumns[i].sourceIndex(), columnDefinition.type(),
                                 builders[i]);
                     }
@@ -125,7 +148,7 @@ public final class TableColumnarDb extends TableColumnarMap
                 Column[] columns = new Column[builders.length];
                 for (int i = 0; i < builders.length; ++i)
                 {
-                    columns[i] = builders[i].build();
+                    columns[i] = buildColumn(builders[i], resolvedColumns[i]);
                 }
                 return new TableColumnarDb(checkedTableName, this.tableDescription, columns);
             }
@@ -135,8 +158,8 @@ public final class TableColumnarDb extends TableColumnarMap
             }
         }
 
-        private static ResolvedColumn[] resolveColumns(ResultSet resultSet, Set<ColumnName> selectedColumns)
-                throws SQLException
+        private static ResolvedColumn[] resolveColumns(ResultSet resultSet, Set<ColumnName> selectedColumns,
+                Map<ColumnName, Column.Type> explicitColumnTypes) throws SQLException
         {
             ResultSetMetaData metaData = resultSet.getMetaData();
             int columnCount = metaData.getColumnCount();
@@ -149,8 +172,10 @@ public final class TableColumnarDb extends TableColumnarMap
                 {
                     continue;
                 }
-                Column.Type type = resolveColumnType(metaData, i);
-                definitions[resolvedCount] = new ResolvedColumn(i, new ColumnDefinition(name, type));
+                Column.Type sourceType = resolveColumnType(metaData, i);
+                Column.Type targetType = explicitColumnTypes.getOrDefault(name, sourceType);
+                definitions[resolvedCount] = new ResolvedColumn(i, new ColumnDefinition(name, sourceType),
+                        new ColumnDefinition(name, targetType));
                 resolvedCount++;
             }
             return Arrays.copyOf(definitions, resolvedCount);
@@ -264,6 +289,39 @@ public final class TableColumnarDb extends TableColumnarMap
             objectBuilder.add(resultSet.getString(columnIndex));
         }
 
+        @SuppressWarnings("unchecked")
+        private static Column buildColumn(Column.Builder builder, ResolvedColumn resolvedColumn)
+        {
+            ColumnDefinition sourceDefinition = resolvedColumn.sourceDefinition();
+            ColumnDefinition targetDefinition = resolvedColumn.targetDefinition();
+            if (sourceDefinition.type().equals(targetDefinition.type()))
+            {
+                return builder.build();
+            }
+            if (sourceDefinition.type().isPrimitive())
+            {
+                return builder.build();
+            }
+            if (!ColumnTypes.STRING.equals(sourceDefinition.type()))
+            {
+                throw new IllegalArgumentException("Explicit ResultSet column type " + targetDefinition.type()
+                        + " for column " + targetDefinition.name()
+                        + " is only supported for STRING source columns, not " + sourceDefinition.type());
+            }
+            if (targetDefinition.type().isPrimitive())
+            {
+                throw new IllegalArgumentException("Explicit ResultSet primitive column type " + targetDefinition.type()
+                        + " for column " + targetDefinition.name() + " is not supported from STRING source columns.");
+            }
+            if (builder instanceof ColumnObject.Builder<?> objectBuilder)
+            {
+                return ((ColumnObject.Builder<Object>) objectBuilder).build(targetDefinition.type());
+            }
+            throw new IllegalArgumentException("Explicit ResultSet column type " + targetDefinition.type()
+                    + " for column " + targetDefinition.name() + " is not supported from source type "
+                    + sourceDefinition.type());
+        }
+
         private static String describeJdbcType(int jdbcType)
         {
             return switch (jdbcType)
@@ -288,7 +346,7 @@ public final class TableColumnarDb extends TableColumnarMap
         }
     }
 
-    private record ResolvedColumn(int sourceIndex, ColumnDefinition definition)
+    private record ResolvedColumn(int sourceIndex, ColumnDefinition sourceDefinition, ColumnDefinition targetDefinition)
     {
     }
 }

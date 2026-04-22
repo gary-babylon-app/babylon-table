@@ -12,7 +12,6 @@ package app.babylon.table;
 
 import app.babylon.lang.ArgumentCheck;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,58 +34,6 @@ import app.babylon.table.selection.Selection;
 
 public class Tables
 {
-    /**
-     * Reads a caller-owned {@link ResultSet} directly into a {@link TableColumnar}
-     * using JDBC metadata to choose column types.
-     * <p>
-     * This direct path supports the common metadata-driven types:
-     * <p>
-     * - integer-like JDBC types to {@link ColumnTypes#INT}
-     * <p>
-     * - bigint to {@link ColumnTypes#LONG}
-     * <p>
-     * - floating-point types to {@link ColumnTypes#DOUBLE}
-     * <p>
-     * - decimal/numeric to {@link ColumnTypes#DECIMAL}
-     * <p>
-     * - everything else to {@link ColumnTypes#STRING}
-     * <p>
-     * The supplied {@link ResultSet} remains caller-owned and is not closed by this
-     * method.
-     *
-     * @param tableName
-     *            the resulting table name
-     * @param resultSet
-     *            the caller-owned result set to read
-     * @return a materialised columnar table
-     */
-    public static TableColumnar fromResultSet(TableName tableName, ResultSet resultSet)
-    {
-        return fromResultSet(tableName, null, resultSet);
-    }
-
-    /**
-     * Reads a caller-owned {@link ResultSet} directly into a {@link TableColumnar}
-     * using JDBC metadata to choose column types.
-     * <p>
-     * The supplied {@link ResultSet} remains caller-owned and is not closed by this
-     * method.
-     *
-     * @param tableName
-     *            the resulting table name
-     * @param tableDescription
-     *            the resulting table description
-     * @param resultSet
-     *            the caller-owned result set to read
-     * @return a materialised columnar table
-     */
-    public static TableColumnar fromResultSet(TableName tableName, TableDescription tableDescription,
-            ResultSet resultSet)
-    {
-        return TableColumnarDb.builder().withTableName(tableName).withTableDescription(tableDescription)
-                .withResultSet(resultSet).build();
-    }
-
     public static TableColumnar removeDuplicates(TableColumnar table, ColumnName... indexColumns)
     {
         ArgumentCheck.nonEmpty(indexColumns);

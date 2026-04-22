@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableException;
@@ -17,21 +16,19 @@ import app.babylon.table.Tables;
 import app.babylon.table.aggregation.AccumulatorDouble;
 import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.column.Column;
-import app.babylon.table.column.Column.Builder;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.table.column.Columns;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.column.Columns;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumer;
+import app.babylon.table.io.RowCursor;
 import app.babylon.table.io.RowKey;
 import app.babylon.table.io.RowSource;
-import app.babylon.table.io.RowCursor;
-import app.babylon.table.io.TabularRowReader;
 
 public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
 {

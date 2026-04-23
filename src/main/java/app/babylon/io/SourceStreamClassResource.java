@@ -13,12 +13,12 @@ package app.babylon.io;
 import app.babylon.lang.ArgumentCheck;
 import java.io.InputStream;
 
-class DataSourceClassResource implements StreamSource
+class SourceStreamClassResource implements StreamSource
 {
     private final Class<?> clazz;
     private final String name;
 
-    DataSourceClassResource(Class<?> clazz, String name)
+    SourceStreamClassResource(Class<?> clazz, String name)
     {
         this.clazz = ArgumentCheck.nonNull(clazz, "clazz must not be null");
         if (name == null || name.isEmpty())

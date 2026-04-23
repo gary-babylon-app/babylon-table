@@ -9,6 +9,7 @@
  */
 
 package app.babylon.io;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -20,27 +21,27 @@ public class StreamSources
     public static StreamSource fromFile(String directory, String fileName)
     {
         File file = new File(directory, fileName);
-        return new DataSourceFile(file);
+        return new SourceStreamFile(file);
     }
 
     public static StreamSource fromFile(File file)
     {
-        return new DataSourceFile(file);
+        return new SourceStreamFile(file);
     }
 
     public static StreamSource fromClass(Class<?> clazz, String name)
     {
-        return new DataSourceClassResource(clazz, name);
+        return new SourceStreamClassResource(clazz, name);
     }
 
     public static StreamSource fromString(CharSequence data, String resourceName)
     {
-        return new DataSourceString(data, resourceName);
+        return new SourceStreamString(data, resourceName);
     }
 
     public static StreamSource fromBase64(String fileBase64, String resourceName, MimeType mimeType)
     {
-        return new DataSourceBase64(fileBase64, resourceName, mimeType);
+        return new SourceStreamBase64(fileBase64, resourceName, mimeType);
     }
 
     public static String getAsString(StreamSource stream)

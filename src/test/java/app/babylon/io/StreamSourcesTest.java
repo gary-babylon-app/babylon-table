@@ -44,13 +44,13 @@ public class StreamSourcesTest
         String encoded = Base64.getEncoder().encodeToString("hello".getBytes(StandardCharsets.UTF_8));
         StreamSource source = StreamSources.fromBase64(encoded, "hello.txt", MimeType.TEXT_PLAIN);
 
-        assertTrue(source instanceof DataSourceBase64);
+        assertTrue(source instanceof SourceStreamBase64);
         assertEquals("hello.txt", source.getName());
         assertEquals("hello", StreamSources.getAsString(source));
         assertEquals("hello", StreamSources.getSnippet(source));
-        assertEquals(MimeType.TEXT_PLAIN, ((DataSourceBase64) source).getMimeType());
-        assertEquals("hello.txt", ((DataSourceBase64) source).getResourceName());
-        assertEquals(encoded, ((DataSourceBase64) source).getData());
+        assertEquals(MimeType.TEXT_PLAIN, ((SourceStreamBase64) source).getMimeType());
+        assertEquals("hello.txt", ((SourceStreamBase64) source).getResourceName());
+        assertEquals(encoded, ((SourceStreamBase64) source).getData());
     }
 
     @Test

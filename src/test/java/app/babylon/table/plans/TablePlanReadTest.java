@@ -82,7 +82,7 @@ class TablePlanReadTest
     }
 
     @Test
-    void shouldReadFromCsvDataSourceUsingPlanTypes()
+    void shouldReadFromCsvStreamSourceUsingPlanTypes()
     {
         final ColumnName CODE = ColumnName.of("Code");
         final ColumnName AMOUNT = ColumnName.of("Amount");

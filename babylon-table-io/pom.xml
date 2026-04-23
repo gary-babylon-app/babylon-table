@@ -16,6 +16,10 @@
     <name>babylon-table-io</name>
     <description>Optional IO integrations for babylon-table.</description>
 
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>app.babylon</groupId>

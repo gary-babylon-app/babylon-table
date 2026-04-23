@@ -35,7 +35,7 @@ jobs:
             const fs = require('fs');
             const path = require('path');
 
-            const xmlPath = path.join(process.env.GITHUB_WORKSPACE, 'babylon-table/target/site/jacoco/jacoco.xml');
+            const xmlPath = path.join(process.env.GITHUB_WORKSPACE, 'target/site/jacoco/jacoco.xml');
             const xml = fs.readFileSync(xmlPath, 'utf8');
             const matches = [...xml.matchAll(/<counter type="LINE" missed="(\d+)" covered="(\d+)"\/>/g)];
             if (matches.length === 0) {

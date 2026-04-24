@@ -10,10 +10,14 @@
 
 package app.babylon.table.column;
 
+import java.util.Optional;
+
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
+import app.babylon.table.column.type.TypeWriter;
+
 /**
  * Base contract for a named column of tabular data, including size, null-state,
  * comparison, projection, and row-level access operations.
@@ -77,8 +81,26 @@ public interface Column
          */
         public static Type of(Class<?> valueClass, TypeParser<?> parser)
         {
+            return of(valueClass, parser, null);
+        }
+
+        /**
+         * Creates a column type descriptor from its runtime value class, parser, and
+         * optional default writer.
+         *
+         * @param valueClass
+         *            the Java class represented by the column type
+         * @param parser
+         *            the parser associated with this type
+         * @param writer
+         *            the optional writer associated with this type
+         * @return the created column type descriptor
+         */
+        public static Type of(Class<?> valueClass, TypeParser<?> parser, TypeWriter<?> writer)
+        {
             final Class<?> resolvedValueClass = ArgumentCheck.nonNull(valueClass);
             final TypeParser<?> resolvedParser = ArgumentCheck.nonNull(parser);
+            final TypeWriter<?> resolvedWriter = writer;
             return new Type()
             {
                 @Override
@@ -91,6 +113,12 @@ public interface Column
                 public TypeParser<?> getParser()
                 {
                     return resolvedParser;
+                }
+
+                @Override
+                public Optional<TypeWriter<?>> getWriter()
+                {
+                    return Optional.ofNullable(resolvedWriter);
                 }
 
                 @Override
@@ -135,6 +163,13 @@ public interface Column
          * @return the type parser
          */
         public TypeParser<?> getParser();
+
+        /**
+         * Returns the optional writer associated with this logical type.
+         *
+         * @return the optional type writer
+         */
+        public Optional<TypeWriter<?>> getWriter();
 
         /**
          * Indicates whether the represented value class is a primitive Java type.
@@ -223,6 +258,21 @@ public interface Column
     default public String toString(int i, ToStringSettings settings)
     {
         return toString(i);
+    }
+
+    /**
+     * Appends the value at the supplied row using the provided rendering settings.
+     *
+     * @param i
+     *            the zero-based row index
+     * @param out
+     *            the destination buffer
+     * @param settings
+     *            formatting settings to apply
+     */
+    default public void appendTo(int i, StringBuilder out, ToStringSettings settings)
+    {
+        out.append(toString(i, settings));
     }
 
     /**

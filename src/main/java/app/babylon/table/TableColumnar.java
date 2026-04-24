@@ -95,18 +95,6 @@ public interface TableColumnar extends Table
      */
     public TableColumnar prune();
 
-    default public String[] toStringRow(int rowIndex, ToStringSettings settings)
-    {
-        String[] row = new String[getColumnCount()];
-        int i = 0;
-        for (Column column : columns())
-        {
-            row[i] = column.toString(rowIndex, settings);
-            ++i;
-        }
-        return row;
-    }
-
     default public String toString10()
     {
         return TablesToString.printFullTable(this, ToStringSettings.standard(), 10);

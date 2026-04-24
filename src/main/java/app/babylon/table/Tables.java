@@ -136,6 +136,19 @@ public class Tables
         {rightKey}, rightColumnsToAdd);
     }
 
+    public static String[] toStringRow(TableColumnar table, int rowIndex, ToStringSettings settings)
+    {
+        ArgumentCheck.nonNull(table);
+        String[] row = new String[table.getColumnCount()];
+        int i = 0;
+        for (Column column : table.columns())
+        {
+            row[i] = column.toString(rowIndex, settings);
+            ++i;
+        }
+        return row;
+    }
+
     public static TableColumnar leftOuterJoin(TableColumnar left, TableColumnar right, ColumnName[] leftKeys,
             ColumnName[] rightKeys, ColumnName... rightColumnsToAdd)
     {

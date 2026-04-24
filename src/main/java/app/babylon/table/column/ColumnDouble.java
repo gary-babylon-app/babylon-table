@@ -253,6 +253,15 @@ public interface ColumnDouble extends Column
     }
 
     @Override
+    default public void appendTo(int i, StringBuilder out, app.babylon.table.ToStringSettings settings)
+    {
+        if (isSet(i))
+        {
+            out.append(get(i));
+        }
+    }
+
+    @Override
     default public ColumnDouble copy(ColumnName x)
     {
         Builder newBuilder = ColumnDouble.builder(x);

@@ -16,6 +16,7 @@
         <setting id="org.eclipse.jdt.core.formatter.keep_record_constructor_on_one_line" value="one_line_never"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block" value="next_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block_in_case" value="next_line"/>
+        <setting id="org.eclipse.jdt.core.formatter.brace_position_for_block_in_case_after_arrow" value="next_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_switch" value="next_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_enum_declaration" value="next_line"/>
         <setting id="org.eclipse.jdt.core.formatter.brace_position_for_enum_constant" value="next_line"/>

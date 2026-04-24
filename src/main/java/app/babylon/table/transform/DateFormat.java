@@ -46,16 +46,20 @@ public enum DateFormat
         s = s.toUpperCase(Locale.UK).strip();
         switch (s)
         {
-            case "DMY" -> {
+            case "DMY" ->
+            {
                 return DMY;
             }
-            case "MDY" -> {
+            case "MDY" ->
+            {
                 return MDY;
             }
-            case "YMD" -> {
+            case "YMD" ->
+            {
                 return YMD;
             }
-            default -> {
+            default ->
+            {
                 return null;
             }
         }

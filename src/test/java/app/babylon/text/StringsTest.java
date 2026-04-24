@@ -86,6 +86,26 @@ public class StringsTest
     }
 
     @Test
+    public void indexOfAnyShouldFindAnyRequestedCharacterInWholeSequenceAndSlices()
+    {
+        assertEquals(5, Strings.indexOfAny("trade,date", ',', ';'));
+        assertEquals(5, Strings.indexOfAny("trade;date", ',', ';'));
+        assertEquals(5, Strings.indexOfAny("trade|date", ',', ';', '|'));
+        assertEquals(5, Strings.indexOfAny("trade\ndate", ',', ';', '|', '\n'));
+
+        assertEquals(7, Strings.indexOfAny("xxtrade,dateyy", 2, 10, ',', ';'));
+        assertEquals(7, Strings.indexOfAny("xxtrade;dateyy", 2, 10, ',', ';'));
+        assertEquals(7, Strings.indexOfAny("xxtrade|dateyy", 2, 10, ',', ';', '|'));
+        assertEquals(7, Strings.indexOfAny("xxtrade\ndateyy", 2, 10, ',', ';', '|', '\n'));
+
+        assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';'));
+        assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';', '|'));
+        assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';', '|', '\n'));
+        assertEquals(-1, Strings.indexOfAny("xxtrade,dateyy", 0, 2, ',', ';', '|', '\n'));
+        assertEquals(-1, Strings.indexOfAny(null, ',', ';'));
+    }
+
+    @Test
     public void lastIndexOfShouldFindLastHyphenInWholeSequenceAndSlices()
     {
         assertEquals(10, Strings.lastIndexOf("trade-date-end", '-'));

@@ -404,7 +404,6 @@ final class CsvFormatProbe
         private int tabCount;
         private int semiColonCount;
         private int pipeCount;
-        private int doubleQuoteCount;
         private int distinctSeparatorCount;
 
         private CharacterCount()
@@ -413,7 +412,6 @@ final class CsvFormatProbe
             this.tabCount = 0;
             this.semiColonCount = 0;
             this.pipeCount = 0;
-            this.doubleQuoteCount = 0;
             this.distinctSeparatorCount = 0;
         }
 
@@ -425,38 +423,41 @@ final class CsvFormatProbe
                 char ch = sample.charAt(i);
                 switch (ch)
                 {
-                    case ',' -> {
+                    case ',' ->
+                    {
                         if (count.commaCount == 0)
                         {
                             ++count.distinctSeparatorCount;
                         }
                         ++count.commaCount;
                     }
-                    case '\t' -> {
+                    case '\t' ->
+                    {
                         if (count.tabCount == 0)
                         {
                             ++count.distinctSeparatorCount;
                         }
                         ++count.tabCount;
                     }
-                    case ';' -> {
+                    case ';' ->
+                    {
                         if (count.semiColonCount == 0)
                         {
                             ++count.distinctSeparatorCount;
                         }
                         ++count.semiColonCount;
                     }
-                    case '|' -> {
+                    case '|' ->
+                    {
                         if (count.pipeCount == 0)
                         {
                             ++count.distinctSeparatorCount;
                         }
                         ++count.pipeCount;
                     }
-                    case '"' -> {
-                        ++count.doubleQuoteCount;
-                    }
-                    default -> {
+                    default ->
+                    {
+                        // deliberate
                     }
                 }
             }
@@ -468,19 +469,9 @@ final class CsvFormatProbe
             return this.commaCount > 0;
         }
 
-        int getCommaCount()
-        {
-            return this.commaCount;
-        }
-
         boolean hasTab()
         {
             return this.tabCount > 0;
-        }
-
-        int getTabCount()
-        {
-            return this.tabCount;
         }
 
         boolean hasSemiColon()
@@ -488,34 +479,14 @@ final class CsvFormatProbe
             return this.semiColonCount > 0;
         }
 
-        int getSemiColonCount()
-        {
-            return this.semiColonCount;
-        }
-
         boolean hasPipe()
         {
             return this.pipeCount > 0;
         }
 
-        int getPipeCount()
-        {
-            return this.pipeCount;
-        }
-
         int getDistinctSeparatorCount()
         {
             return this.distinctSeparatorCount;
-        }
-
-        boolean hasDoubleQuote()
-        {
-            return this.doubleQuoteCount > 0;
-        }
-
-        int getDoubleQuoteCount()
-        {
-            return this.doubleQuoteCount;
         }
     }
 

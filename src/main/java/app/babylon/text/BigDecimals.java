@@ -471,20 +471,25 @@ public final class BigDecimals
                 {
                     case ' ' -> spaces = true;
                     case ',' -> commas = true;
-                    case '.' -> {
+                    case '.' ->
+                    {
                         ++dot;
                     }
-                    case '-' -> {
+                    case '-' ->
+                    {
                         ++hyphen;
                     }
-                    case 'e', 'E' -> {
+                    case 'e', 'E' ->
+                    {
                         ++scientificE;
                     }
-                    case '%', '(', ')' -> {
+                    case '%', '(', ')' ->
+                    {
                         // deliberate, these are valid
                     }
                     case '$', '€', '£', '¥', 'R' -> currency = true;
-                    default -> {
+                    default ->
+                    {
                         if (c >= '0' && c <= '9')
                         {
                             ++digit;

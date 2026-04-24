@@ -34,6 +34,10 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.ToStringSettings;
+import app.babylon.table.column.type.TypeParsers;
+import app.babylon.table.column.type.TypeWriter;
+
 class ColumnObjectTest
 {
     private static final class NotComparable
@@ -54,6 +58,25 @@ class ColumnObjectTest
 
     private static final Column.Type NOT_COMPARABLE_TYPE = Column.Type.of(NotComparable.class,
             app.babylon.table.column.type.TypeParsers.NULL);
+
+    private static final Column.Type CUSTOM_STRINGABLE_TYPE = Column.Type.of(CustomStringable.class, TypeParsers.NULL,
+            (TypeWriter<CustomStringable>) (value, out) -> out.append("type:").append(value.value));
+
+    private static final class CustomStringable
+    {
+        private final String value;
+
+        private CustomStringable(String value)
+        {
+            this.value = value;
+        }
+
+        @Override
+        public String toString()
+        {
+            return "object:" + this.value;
+        }
+    }
 
     @Test
     void stringColumnsShouldFormatCompactToString()
@@ -76,6 +99,31 @@ class ColumnObjectTest
         builder.addNull();
 
         assertFalse(builder.toString().isEmpty());
+    }
+
+    @Test
+    void toStringWithSettingsShouldPreferSettingsWriterThenTypeWriterThenObjectToString()
+    {
+        final ColumnName TEST = ColumnName.of("Test");
+
+        ColumnObject.Builder<CustomStringable> customBuilder = ColumnObject.builder(TEST, CUSTOM_STRINGABLE_TYPE,
+                ColumnObject.Mode.ARRAY);
+        customBuilder.add(new CustomStringable("alpha"));
+        ColumnObject<CustomStringable> customColumn = customBuilder.build();
+
+        ToStringSettings settings = new ToStringSettings().withTypeWriter(CUSTOM_STRINGABLE_TYPE,
+                (TypeWriter<CustomStringable>) (value, out) -> out.append("settings:").append(value.value));
+
+        assertEquals("settings:alpha", customColumn.toString(0, settings));
+        assertEquals("type:alpha", customColumn.toString(0, null));
+
+        Column.Type noWriterType = Column.Type.of(CustomStringable.class, TypeParsers.NULL);
+        ColumnObject.Builder<CustomStringable> fallbackBuilder = ColumnObject.builder(TEST, noWriterType,
+                ColumnObject.Mode.ARRAY);
+        fallbackBuilder.add(new CustomStringable("beta"));
+        ColumnObject<CustomStringable> fallbackColumn = fallbackBuilder.build();
+
+        assertEquals("object:beta", fallbackColumn.toString(0, null));
     }
 
     @Test

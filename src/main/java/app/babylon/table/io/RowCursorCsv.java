@@ -17,12 +17,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Map;
 
 import app.babylon.io.StreamSourceProbe;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
-import app.babylon.table.column.ColumnName;
 
 /**
  * Supplies rows from an open CSV input stream.
@@ -94,25 +92,6 @@ public final class RowCursorCsv extends RowCursorLineReaderCommon
     public boolean isAutoDetectEncoding()
     {
         return this.autoDetectEncoding;
-    }
-
-    private boolean isFixedWidths()
-    {
-        return this.fixedWidths != null && this.fixedWidths.length > 0;
-    }
-
-    private Charset resolveCharset(StreamSourceProbe probe)
-    {
-        if (this.autoDetectEncoding)
-        {
-            return probe.getCharset(LEGACY_CSV_FALLBACK);
-        }
-        return this.charset;
-    }
-
-    private int resolveBomLength(StreamSourceProbe probe)
-    {
-        return this.autoDetectEncoding ? probe.bomLengthBytes() : 0;
     }
 
     private static LineReader createLineReader(InputStream inputStream, Builder builder)

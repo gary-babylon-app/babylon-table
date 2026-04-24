@@ -552,43 +552,56 @@ public final class DateValueFacts
     {
         switch (chronoField)
         {
-            case "JAN" -> {
+            case "JAN" ->
+            {
                 return 1;
             }
-            case "FEB" -> {
+            case "FEB" ->
+            {
                 return 2;
             }
-            case "MAR" -> {
+            case "MAR" ->
+            {
                 return 3;
             }
-            case "APR" -> {
+            case "APR" ->
+            {
                 return 4;
             }
-            case "MAY" -> {
+            case "MAY" ->
+            {
                 return 5;
             }
-            case "JUN" -> {
+            case "JUN" ->
+            {
                 return 6;
             }
-            case "JUL" -> {
+            case "JUL" ->
+            {
                 return 7;
             }
-            case "AUG" -> {
+            case "AUG" ->
+            {
                 return 8;
             }
-            case "SEP" -> {
+            case "SEP" ->
+            {
                 return 9;
             }
-            case "OCT" -> {
+            case "OCT" ->
+            {
                 return 10;
             }
-            case "NOV" -> {
+            case "NOV" ->
+            {
                 return 11;
             }
-            case "DEC" -> {
+            case "DEC" ->
+            {
                 return 12;
             }
-            default -> {
+            default ->
+            {
                 return -1;
             }
         }
@@ -631,22 +644,26 @@ public final class DateValueFacts
         int day;
         switch (format)
         {
-            case YMD -> {
+            case YMD ->
+            {
                 year = c0.intValue();
                 month = c1.intValue();
                 day = c2.intValue();
             }
-            case DMY -> {
+            case DMY ->
+            {
                 day = c0.intValue();
                 month = c1.intValue();
                 year = c2.intValue();
             }
-            case MDY -> {
+            case MDY ->
+            {
                 month = c0.intValue();
                 day = c1.intValue();
                 year = c2.intValue();
             }
-            default -> {
+            default ->
+            {
                 return null;
             }
         }

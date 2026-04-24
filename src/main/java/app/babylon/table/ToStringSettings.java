@@ -12,6 +12,13 @@ package app.babylon.table;
 
 import java.text.DecimalFormat;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Optional;
+
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.type.TypeWriter;
 
 public class ToStringSettings
 {
@@ -21,12 +28,14 @@ public class ToStringSettings
     private DateTimeFormatter dateFormatter;
     private DecimalFormat decimalFormat;
     private boolean stripTrailingZeros;
+    private final Map<Column.Type, TypeWriter<?>> typeWriters;
 
     public ToStringSettings()
     {
         this.dateFormatter = DateTimeFormatter.ISO_DATE;
         this.decimalFormat = STANDARD_DECIMAL_FORMAT;
         this.stripTrailingZeros = true;
+        this.typeWriters = new LinkedHashMap<>();
     }
 
     public ToStringSettings withDateFormatter(DateTimeFormatter f)
@@ -46,6 +55,12 @@ public class ToStringSettings
         return this;
     }
 
+    public ToStringSettings withTypeWriter(Column.Type type, TypeWriter<?> writer)
+    {
+        this.typeWriters.put(ArgumentCheck.nonNull(type), ArgumentCheck.nonNull(writer));
+        return this;
+    }
+
     public boolean isStripTrailingZeros()
     {
         return this.stripTrailingZeros;
@@ -59,6 +74,11 @@ public class ToStringSettings
     public DecimalFormat getDecimalFormatter(DecimalFormat valueIfNull)
     {
         return (this.decimalFormat == null) ? valueIfNull : this.decimalFormat;
+    }
+
+    public Optional<TypeWriter<?>> getTypeWriter(Column.Type type)
+    {
+        return Optional.ofNullable(this.typeWriters.get(type));
     }
 
     public static ToStringSettings standard()

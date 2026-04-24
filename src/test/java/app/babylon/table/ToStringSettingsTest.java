@@ -10,6 +10,9 @@ import java.time.format.DateTimeFormatter;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.column.type.TypeWriters;
+
 class ToStringSettingsTest
 {
     @Test
@@ -38,5 +41,14 @@ class ToStringSettingsTest
         assertSame(fallbackDateFormatter, settings.getDateFormatter(fallbackDateFormatter));
         assertSame(fallbackDecimalFormat, settings.getDecimalFormatter(fallbackDecimalFormat));
         assertTrue(ToStringSettings.standard().isStripTrailingZeros());
+    }
+
+    @Test
+    void shouldStoreTypeWriterOverrides()
+    {
+        ToStringSettings settings = new ToStringSettings().withTypeWriter(ColumnTypes.STRING, TypeWriters.STRING);
+
+        assertSame(TypeWriters.STRING, settings.getTypeWriter(ColumnTypes.STRING).orElseThrow());
+        assertTrue(settings.getTypeWriter(ColumnTypes.INT).isEmpty());
     }
 }

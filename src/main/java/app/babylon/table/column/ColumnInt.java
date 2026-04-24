@@ -218,6 +218,15 @@ public interface ColumnInt extends Column
     }
 
     @Override
+    default public void appendTo(int i, StringBuilder out, app.babylon.table.ToStringSettings settings)
+    {
+        if (isSet(i))
+        {
+            out.append(get(i));
+        }
+    }
+
+    @Override
     default public ColumnInt copy(ColumnName x)
     {
         Builder newBuilder = ColumnInt.builder(x);

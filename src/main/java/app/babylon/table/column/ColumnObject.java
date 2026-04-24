@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -22,6 +23,7 @@ import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
+import app.babylon.table.column.type.TypeWriter;
 import app.babylon.table.selection.Selection;
 
 /**
@@ -450,41 +452,68 @@ public interface ColumnObject<T> extends Column
 
     default public String toString(int i, ToStringSettings settings)
     {
+        StringBuilder out = new StringBuilder();
+        appendTo(i, out, settings);
+        return out.toString();
+    }
+
+    @Override
+    default public void appendTo(int i, StringBuilder out, ToStringSettings settings)
+    {
         if (!isSet(i))
         {
-            return "";
+            return;
         }
 
-        if (this instanceof ColumnObject<?> co)
+        T value = get(i);
+        if (value == null)
         {
-            Class<?> valueClass = getType().getValueClass();
-            if (BigDecimal.class.equals(valueClass))
-            {
-                BigDecimal value = (BigDecimal) co.get(i);
-                if (value == null)
-                {
-                    return "";
-                }
-                if (settings != null && settings.isStripTrailingZeros())
-                {
-                    value = value.stripTrailingZeros();
-                }
-                return value.toPlainString();
-            }
-
-            if (LocalDate.class.equals(valueClass))
-            {
-                LocalDate value = (LocalDate) co.get(i);
-                if (value == null)
-                {
-                    return "";
-                }
-                return value.format(settings == null
-                        ? ToStringSettings.standard().getDateFormatter(null)
-                        : settings.getDateFormatter(null));
-            }
+            return;
         }
-        return toString(i);
+
+        Optional<TypeWriter<?>> settingsWriter = settings == null
+                ? Optional.empty()
+                : settings.getTypeWriter(getType());
+        if (settingsWriter.isPresent())
+        {
+            write(value, settingsWriter.get(), out);
+            return;
+        }
+
+        Class<?> valueClass = getType().getValueClass();
+        if (BigDecimal.class.equals(valueClass))
+        {
+            BigDecimal decimal = (BigDecimal) value;
+            if (settings != null && settings.isStripTrailingZeros())
+            {
+                decimal = decimal.stripTrailingZeros();
+            }
+            out.append(decimal.toPlainString());
+            return;
+        }
+
+        if (LocalDate.class.equals(valueClass))
+        {
+            LocalDate date = (LocalDate) value;
+            out.append(date.format(settings == null
+                    ? ToStringSettings.standard().getDateFormatter(null)
+                    : settings.getDateFormatter(null)));
+            return;
+        }
+
+        Optional<TypeWriter<?>> typeWriter = getType().getWriter();
+        if (typeWriter.isPresent())
+        {
+            write(value, typeWriter.get(), out);
+            return;
+        }
+        out.append(value.toString());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> void write(T value, TypeWriter<?> typeWriter, StringBuilder out)
+    {
+        ((TypeWriter<T>) typeWriter).write(value, out);
     }
 
     /**

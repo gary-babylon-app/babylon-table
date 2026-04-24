@@ -202,6 +202,15 @@ public interface ColumnByte extends Column
     }
 
     @Override
+    default public void appendTo(int i, StringBuilder out, app.babylon.table.ToStringSettings settings)
+    {
+        if (isSet(i))
+        {
+            out.append(get(i));
+        }
+    }
+
+    @Override
     default public Column getAsColumn(int i)
     {
         return isSet(i)

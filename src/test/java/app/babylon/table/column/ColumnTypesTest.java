@@ -11,11 +11,13 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.Period;
 import java.time.YearMonth;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.column.type.TypeParsers;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.column.type.TypeParsers;
+import app.babylon.table.column.type.TypeWriters;
 
 class ColumnTypesTest
 {
@@ -52,6 +54,20 @@ class ColumnTypesTest
         assertEquals(TypeParsers.PERIOD, ColumnTypes.PERIOD.getParser());
         assertEquals(TypeParsers.YEAR_MONTH, ColumnTypes.YEAR_MONTH.getParser());
         assertEquals(TypeParsers.LOCAL_DATE_YMD, ColumnTypes.LOCALDATE.getParser());
+        assertSame(TypeWriters.BYTE, ColumnTypes.BYTE.getWriter().orElseThrow());
+        assertSame(TypeWriters.INT, ColumnTypes.INT.getWriter().orElseThrow());
+        assertSame(TypeWriters.LONG, ColumnTypes.LONG.getWriter().orElseThrow());
+        assertSame(TypeWriters.DOUBLE, ColumnTypes.DOUBLE.getWriter().orElseThrow());
+        assertSame(TypeWriters.STRING, ColumnTypes.STRING.getWriter().orElseThrow());
+        assertSame(TypeWriters.BIG_DECIMAL, ColumnTypes.DECIMAL.getWriter().orElseThrow());
+        assertSame(TypeWriters.INSTANT, ColumnTypes.INSTANT.getWriter().orElseThrow());
+        assertSame(TypeWriters.LOCAL_DATE_TIME, ColumnTypes.LOCAL_DATE_TIME.getWriter().orElseThrow());
+        assertSame(TypeWriters.LOCAL_TIME, ColumnTypes.LOCAL_TIME.getWriter().orElseThrow());
+        assertSame(TypeWriters.OFFSET_DATE_TIME, ColumnTypes.OFFSET_DATE_TIME.getWriter().orElseThrow());
+        assertSame(TypeWriters.PERIOD, ColumnTypes.PERIOD.getWriter().orElseThrow());
+        assertSame(TypeWriters.YEAR_MONTH, ColumnTypes.YEAR_MONTH.getWriter().orElseThrow());
+        assertSame(TypeWriters.LOCAL_DATE, ColumnTypes.LOCALDATE.getWriter().orElseThrow());
+        assertSame(TypeWriters.CURRENCY, ColumnTypes.CURRENCY.getWriter().orElseThrow());
         assertEquals("double", ColumnTypes.DOUBLE.toString());
         assertEquals("Double", ColumnTypes.DOUBLE_OBJECT.toString());
     }
@@ -69,6 +85,8 @@ class ColumnTypesTest
         assertEquals("ColumnTypesTest", first.toString());
         assertSame(TypeParsers.NULL, first.getParser());
         assertSame(TypeParsers.NULL, second.getParser());
+        assertEquals(Optional.empty(), first.getWriter());
+        assertEquals(Optional.empty(), second.getWriter());
     }
 
     @Test
@@ -78,5 +96,6 @@ class ColumnTypesTest
 
         assertEquals(TypeParsers.NULL, type.getParser());
         assertEquals(null, type.getParser().parse("anything"));
+        assertEquals(Optional.empty(), type.getWriter());
     }
 }

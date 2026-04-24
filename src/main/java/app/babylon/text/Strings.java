@@ -141,6 +141,78 @@ public final class Strings
         return -1;
     }
 
+    public static int indexOfAny(CharSequence s, char c1, char c2)
+    {
+        return s == null ? -1 : indexOfAny(s, 0, s.length(), c1, c2);
+    }
+
+    public static int indexOfAny(CharSequence s, char c1, char c2, char c3)
+    {
+        return s == null ? -1 : indexOfAny(s, 0, s.length(), c1, c2, c3);
+    }
+
+    public static int indexOfAny(CharSequence s, char c1, char c2, char c3, char c4)
+    {
+        return s == null ? -1 : indexOfAny(s, 0, s.length(), c1, c2, c3, c4);
+    }
+
+    public static int indexOfAny(CharSequence s, int start, int length, char c1, char c2)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            char c = s.charAt(i);
+            if (c == c1 || c == c2)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int indexOfAny(CharSequence s, int start, int length, char c1, char c2, char c3)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            char c = s.charAt(i);
+            if (c == c1 || c == c2 || c == c3)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int indexOfAny(CharSequence s, int start, int length, char c1, char c2, char c3, char c4)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            char c = s.charAt(i);
+            if (c == c1 || c == c2 || c == c3 || c == c4)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static int lastIndexOf(CharSequence s, char c)
     {
         return s == null ? -1 : lastIndexOf(s, 0, s.length(), c);

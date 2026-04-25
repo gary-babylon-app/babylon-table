@@ -240,11 +240,11 @@ class ColumnsTest
     void newCharSliceBuilderSupportsStringType()
     {
         final ColumnName VALUES = ColumnName.of("values");
-        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.STRING);
+        ColumnObject.Builder<String> builder = ColumnObject.builder(VALUES);
         builder.add("Alpha", 0, 5);
         builder.add(null, 0, 0);
 
-        ColumnObject<String> column = (ColumnObject<String>) builder.build();
+        ColumnObject<String> column = builder.build();
         assertEquals("Alpha", column.get(0));
         assertFalse(column.isSet(1));
     }
@@ -253,11 +253,11 @@ class ColumnsTest
     void newCharSliceBuilderSupportsDecimalType()
     {
         final ColumnName VALUES = ColumnName.of("values");
-        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.DECIMAL);
+        ColumnObject.Builder<BigDecimal> builder = ColumnObject.builder(VALUES, ColumnTypes.DECIMAL);
         builder.add("1234.50", 0, 7);
         builder.add("bad", 0, 3);
 
-        ColumnObject<BigDecimal> column = (ColumnObject<BigDecimal>) builder.build();
+        ColumnObject<BigDecimal> column = builder.build();
         assertEquals(0, new BigDecimal("1234.50").compareTo(column.get(0)));
         assertFalse(column.isSet(1));
     }

@@ -3,12 +3,12 @@ package app.babylon.table.transform;
 import java.util.Arrays;
 import java.util.Map;
 
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
-import app.babylon.lang.Is;
 
 public class TransformCreateConstant extends TransformBase
 {
@@ -100,8 +100,7 @@ public class TransformCreateConstant extends TransformBase
         return newConstantColumnTyped(columnName, value, rowCount, type);
     }
 
-    @SuppressWarnings(
-    {"unchecked", "rawtypes"})
+    @SuppressWarnings("unchecked")
     private static <T> ColumnObject<T> newConstantColumnTyped(ColumnName columnName, Object value, int rowCount,
             Column.Type type)
     {

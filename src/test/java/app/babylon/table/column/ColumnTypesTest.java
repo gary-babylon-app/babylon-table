@@ -15,7 +15,6 @@ import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.type.TypeParsers;
 import app.babylon.table.column.type.TypeWriters;
 

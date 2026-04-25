@@ -13,8 +13,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.TestStreamSources;
 import app.babylon.io.StreamSources;
+import app.babylon.io.TestStreamSources;
 import app.babylon.table.TableException;
 import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
@@ -279,7 +279,6 @@ class RowCursorCsvTest
     @Test
     void shouldFilterRowsUsingConfiguredRowFilter()
     {
-        final ColumnName CITY = ColumnName.of("City");
         final ColumnName ISIN = ColumnName.of("Isin");
         String csv = "City,Isin\nLondon,GB0001\nParis,\nRome,IT0001\n";
         RowSourceCsv source = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "rows.csv"))

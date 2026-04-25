@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParsers;
-import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.selection.Selection;
 
 class ColumnCategoricalTest
@@ -280,7 +279,7 @@ class ColumnCategoricalTest
         builder.add("bad");
         builder.addNull();
 
-        ColumnCategorical<BigDecimal> column = (ColumnCategorical<BigDecimal>) builder.build(ColumnTypes.DECIMAL);
+        ColumnCategorical<BigDecimal> column = (ColumnCategorical<BigDecimal>) builder.buildAs(ColumnTypes.DECIMAL);
 
         assertEquals(ColumnTypes.DECIMAL, column.getType());
         assertEquals(0, new BigDecimal("10.5").compareTo(column.get(0)));
@@ -302,7 +301,7 @@ class ColumnCategoricalTest
         builder.add("BRL");
         builder.add("PLN");
 
-        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.build(ColumnTypes.CURRENCY);
+        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.buildAs(ColumnTypes.CURRENCY);
 
         assertEquals(ColumnTypes.CURRENCY, column.getType());
         assertEquals(Currency.getInstance("BRL"), column.get(0));
@@ -323,7 +322,7 @@ class ColumnCategoricalTest
         builder.add("bad");
         builder.add("MXN");
 
-        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.build(ColumnTypes.CURRENCY);
+        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.buildAs(ColumnTypes.CURRENCY);
 
         assertEquals(Currency.getInstance("BRL"), column.get(0));
         assertFalse(column.isSet(1));
@@ -340,7 +339,7 @@ class ColumnCategoricalTest
         builder.add("hello");
         builder.addNull();
 
-        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.build(ColumnTypes.CURRENCY);
+        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.buildAs(ColumnTypes.CURRENCY);
 
         assertFalse(column.isConstant());
         assertFalse(column.isAllSet());
@@ -359,7 +358,7 @@ class ColumnCategoricalTest
         builder.add("BRL");
         builder.add("BRL");
 
-        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.build(ColumnTypes.CURRENCY);
+        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.buildAs(ColumnTypes.CURRENCY);
 
         assertTrue(column.isConstant());
         assertEquals(Currency.getInstance("BRL"), column.get(0));

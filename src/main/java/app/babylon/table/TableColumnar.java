@@ -42,10 +42,30 @@ import app.babylon.table.transform.Transform;
  */
 public interface TableColumnar extends Table
 {
+    /**
+     * Returns a one-row columnar table containing the last row.
+     *
+     * @return a one-row columnar table containing the last row
+     */
+    @Override
     public TableColumnar getLastRow();
 
+    /**
+     * Returns a one-row columnar table containing the first row.
+     *
+     * @return a one-row columnar table containing the first row
+     */
+    @Override
     public TableColumnar getFirstRow();
 
+    /**
+     * Returns a one-row columnar table containing the row at the supplied index.
+     *
+     * @param i
+     *            the zero-based row index
+     * @return a one-row columnar table containing the row at {@code i}
+     */
+    @Override
     public TableColumnar getRow(int i);
 
     public Column get(ColumnName x);

@@ -226,7 +226,7 @@ abstract class TableColumnarCommon implements TableColumnar
         Column[] newOneRowColumns = new Column[getColumnCount()];
         for (int j = 0; j < newOneRowColumns.length; ++j)
         {
-            newOneRowColumns[j] = columns[j].getAsColumn(i);
+            newOneRowColumns[j] = columns[j].selectRow(i);
         }
         TableDescription description = new TableDescription("");
         return Tables.newTable(TableName.of(getName().toString() + " Row " + i), description, newOneRowColumns);

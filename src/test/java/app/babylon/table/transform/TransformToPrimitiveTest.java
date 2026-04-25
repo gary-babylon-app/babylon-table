@@ -85,7 +85,7 @@ class TransformToPrimitiveTest
         final ColumnName AMOUNT = ColumnName.of("Amount");
         ColumnObject.Builder<String> builder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING, Mode.ARRAY);
         builder.add("10");
-        Column source = builder.build(ColumnTypes.DECIMAL);
+        Column source = builder.buildAs(ColumnTypes.DECIMAL);
 
         TransformToPrimitive transform = new TransformToPrimitive(AMOUNT, ColumnTypes.INT);
         assertNull(transform.apply(source));

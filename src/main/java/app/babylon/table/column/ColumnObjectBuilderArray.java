@@ -110,7 +110,7 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
     }
 
     @Override
-    public Column build(Column.Type transformedType)
+    public Column buildAs(Column.Type transformedType)
     {
         ensureActive();
         Column.Type targetType = ArgumentCheck.nonNull(transformedType);

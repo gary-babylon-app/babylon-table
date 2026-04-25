@@ -180,13 +180,13 @@ class ColumnObjectArray<T> implements ColumnObject<T>
     }
 
     @Override
-    public Column getAsColumn(int i)
+    public ColumnCategorical<T> selectRow(int i)
     {
         return ColumnCategorical.constant(getName(), get(i), 1, this.type);
     }
 
     @Override
-    public Column copy(ColumnName x)
+    public ColumnObject<T> copy(ColumnName x)
     {
         ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, this.type);
         for (int i = 0; i < size(); ++i)
@@ -251,13 +251,13 @@ class ColumnObjectArray<T> implements ColumnObject<T>
         }
 
         @Override
-        public Column getAsColumn(int i)
+        public ColumnCategorical<T> selectRow(int i)
         {
             return ColumnCategorical.constant(getName(), get(i), 1, getType());
         }
 
         @Override
-        public Column copy(ColumnName x)
+        public ColumnObject<T> copy(ColumnName x)
         {
             ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, getType());
             for (int i = 0; i < size(); ++i)

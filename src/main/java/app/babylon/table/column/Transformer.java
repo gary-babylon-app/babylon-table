@@ -74,7 +74,6 @@ public interface Transformer<T, S> extends Function<T, S>
         };
     }
 
-    @SuppressWarnings("unchecked")
     static <S> Transformer<String, S> parser(Column.Type type, TransformParseMode parseMode)
     {
         return parser(type, parseMode, null);

@@ -58,11 +58,6 @@ public interface Column
          * @return the built column
          */
         public Column build();
-
-        // default public Column build(Column.Type type)
-        // {
-        // return build();
-        // }
     }
 
     /**
@@ -313,6 +308,6 @@ public interface Column
      *            the row to extract
      * @return a single-row column with the same column name
      */
-    public Column getAsColumn(int i);
+    public Column selectRow(int i);
 
 }

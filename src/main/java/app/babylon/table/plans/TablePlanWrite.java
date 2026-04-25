@@ -25,6 +25,12 @@ import app.babylon.text.Strings;
  */
 public class TablePlanWrite
 {
+    private static final char DEFAULT_SEPARATOR = ',';
+    private static final String DEFAULT_LINE_SEPARATOR = "\n";
+    private static final char DOUBLE_QUOTE = '"';
+    private static final char LINE_FEED = '\n';
+    private static final char CARRIAGE_RETURN = '\r';
+
     private final Set<ColumnName> selectedColumns;
     private SinkStream sink;
     private ToStringSettings toStringSettings;
@@ -39,8 +45,8 @@ public class TablePlanWrite
         this.sink = null;
         this.toStringSettings = ToStringSettings.standard();
         this.includeHeaders = true;
-        this.separator = ',';
-        this.lineSeparator = "\n";
+        this.separator = DEFAULT_SEPARATOR;
+        this.lineSeparator = DEFAULT_LINE_SEPARATOR;
         this.charset = StandardCharsets.UTF_8;
     }
 
@@ -211,22 +217,22 @@ public class TablePlanWrite
     private void writeEscaped(CharSequence value, BufferedWriter writer) throws IOException
     {
         CharSequence text = value == null ? "" : value;
-        boolean mustQuote = Strings.indexOfAny(text, this.separator, '"', '\n', '\r') >= 0;
+        boolean mustQuote = Strings.indexOfAny(text, this.separator, DOUBLE_QUOTE, LINE_FEED, CARRIAGE_RETURN) >= 0;
         if (!mustQuote)
         {
             writer.append(text);
             return;
         }
-        writer.write('"');
+        writer.write(DOUBLE_QUOTE);
         for (int i = 0; i < text.length(); ++i)
         {
             char c = text.charAt(i);
-            if (c == '"')
+            if (c == DOUBLE_QUOTE)
             {
-                writer.write('"');
+                writer.write(DOUBLE_QUOTE);
             }
             writer.write(c);
         }
-        writer.write('"');
+        writer.write(DOUBLE_QUOTE);
     }
 }

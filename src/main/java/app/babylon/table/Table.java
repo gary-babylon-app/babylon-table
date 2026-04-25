@@ -24,9 +24,26 @@ public interface Table
 
     public int getRowCount();
 
+    /**
+     * Returns a one-row table containing the last row.
+     *
+     * @return a one-row table containing the last row
+     */
     public Table getLastRow();
 
+    /**
+     * Returns a one-row table containing the first row.
+     *
+     * @return a one-row table containing the first row
+     */
     public Table getFirstRow();
 
+    /**
+     * Returns a one-row table containing the row at the supplied index.
+     *
+     * @param i
+     *            the zero-based row index
+     * @return a one-row table containing the row at {@code i}
+     */
     public Table getRow(int i);
 }

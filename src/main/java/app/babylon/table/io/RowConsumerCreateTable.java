@@ -122,7 +122,7 @@ public final class RowConsumerCreateTable implements RowConsumer
                 else
                 {
                     // Very convenient and fast transformation from string
-                    columns[i] = objectBuilder.build(type);
+                    columns[i] = objectBuilder.buildAs(type);
                 }
             }
             else

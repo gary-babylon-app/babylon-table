@@ -111,7 +111,7 @@ public class ColumnDoubleTest
     }
 
     @Test
-    public void getAsColumnReturnsSingleRowConstantColumn()
+    public void selectRowReturnsSingleRowConstantColumn()
     {
         final ColumnName SOURCE = ColumnName.of("source");
         ColumnDouble.Builder sourceBuilder = (ColumnDouble.Builder) ColumnDouble.builder(SOURCE);
@@ -119,7 +119,7 @@ public class ColumnDoubleTest
         sourceBuilder.add(22.0);
         ColumnDouble source = sourceBuilder.build();
 
-        Column single = source.getAsColumn(1);
+        Column single = source.selectRow(1);
         assertTrue(single instanceof ColumnDouble);
         assertEquals(1, single.size());
         assertEquals(SOURCE, single.getName());

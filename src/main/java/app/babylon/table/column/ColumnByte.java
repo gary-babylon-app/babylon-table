@@ -211,7 +211,7 @@ public interface ColumnByte extends Column
     }
 
     @Override
-    default public Column getAsColumn(int i)
+    default public Column selectRow(int i)
     {
         return isSet(i)
                 ? new ColumnByteConstant(getName(), get(i), 1, true)

@@ -132,7 +132,7 @@ public class ColumnIntTest
     }
 
     @Test
-    public void getAsColumnReturnsSingleRowConstantColumn()
+    public void selectRowReturnsSingleRowConstantColumn()
     {
         final ColumnName SOURCE = ColumnName.of("source");
         ColumnInt.Builder sourceBuilder = (ColumnInt.Builder) ColumnInt.builder(SOURCE);
@@ -140,7 +140,7 @@ public class ColumnIntTest
         sourceBuilder.add(22);
         ColumnInt source = sourceBuilder.build();
 
-        Column single = source.getAsColumn(1);
+        Column single = source.selectRow(1);
         assertTrue(single instanceof ColumnInt);
         assertEquals(1, single.size());
         assertEquals(SOURCE, single.getName());

@@ -57,7 +57,7 @@ class ColumnObjectArrayTest
         ColumnObject<String> column = builder.build();
 
         ColumnObject<String> copy = (ColumnObject<String>) column.copy(CITY_COPY);
-        ColumnObject<String> single = (ColumnObject<String>) column.getAsColumn(2);
+        ColumnObject<String> single = (ColumnObject<String>) column.selectRow(2);
 
         assertEquals(CITY_COPY, copy.getName());
         assertEquals("Zurich", copy.get(0));

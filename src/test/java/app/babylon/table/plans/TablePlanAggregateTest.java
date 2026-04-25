@@ -2,7 +2,6 @@ package app.babylon.table.plans;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -13,7 +12,6 @@ import app.babylon.io.StreamSources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.aggregation.Aggregate;
-import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.io.RowConsumerCreateTable;

@@ -136,7 +136,7 @@ public class ColumnByteTest
     }
 
     @Test
-    public void getAsColumnShouldReturnByteConstant()
+    public void selectRowShouldReturnByteConstant()
     {
         final ColumnName BYTES_BIN = ColumnName.of("BYTES_BIN");
         ColumnByte.Builder builder = ColumnByte.builder(BYTES_BIN);
@@ -144,8 +144,8 @@ public class ColumnByteTest
         builder.addNull();
         ColumnByte column = builder.build();
 
-        ColumnByte single = (ColumnByte) column.getAsColumn(0);
-        ColumnByte nullSingle = (ColumnByte) column.getAsColumn(1);
+        ColumnByte single = (ColumnByte) column.selectRow(0);
+        ColumnByte nullSingle = (ColumnByte) column.selectRow(1);
 
         assertEquals(1, single.size());
         assertEquals("1", single.toString(0));
@@ -231,14 +231,14 @@ public class ColumnByteTest
     }
 
     @Test
-    public void getAsColumnShouldPreserveSetValueAndNullState()
+    public void selectRowShouldPreserveSetValueAndNullState()
     {
         final ColumnName B = ColumnName.of("B");
         ColumnByte column = ColumnByte.builder(B).add((byte) 4).addNull().add((byte) 9).build();
 
-        ColumnByte first = (ColumnByte) column.getAsColumn(0);
-        ColumnByte second = (ColumnByte) column.getAsColumn(1);
-        ColumnByte third = (ColumnByte) column.getAsColumn(2);
+        ColumnByte first = (ColumnByte) column.selectRow(0);
+        ColumnByte second = (ColumnByte) column.selectRow(1);
+        ColumnByte third = (ColumnByte) column.selectRow(2);
 
         assertEquals(1, first.size());
         assertTrue(first.isSet(0));
@@ -323,8 +323,8 @@ public class ColumnByteTest
 
         ColumnByte copied = setConstant.copy(COPY);
         ColumnByte copiedNull = nullConstant.copy(COPY_NULL);
-        ColumnByte single = (ColumnByte) setConstant.getAsColumn(1);
-        ColumnByte singleNull = (ColumnByte) nullConstant.getAsColumn(1);
+        ColumnByte single = (ColumnByte) setConstant.selectRow(1);
+        ColumnByte singleNull = (ColumnByte) nullConstant.selectRow(1);
 
         assertEquals(COPY, copied.getName());
         assertEquals(3, copied.size());

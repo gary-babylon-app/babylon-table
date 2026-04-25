@@ -239,7 +239,7 @@ public interface ColumnDouble extends Column
     }
 
     @Override
-    default public Column getAsColumn(int i)
+    default public Column selectRow(int i)
     {
         return isSet(i)
                 ? new ColumnDoubleConstant(getName(), get(i), 1, true)

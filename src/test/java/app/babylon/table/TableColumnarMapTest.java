@@ -51,7 +51,6 @@ class TableColumnarMapTest
         final ColumnName NAME = ColumnName.of("Name");
         final ColumnName AMOUNT = ColumnName.of("Amount");
         final ColumnName STATUS = ColumnName.of("Status");
-        final ColumnName MISSING = ColumnName.of("Missing");
 
         ColumnInt.Builder ids = ColumnInt.builder(ID);
         ids.add(1);

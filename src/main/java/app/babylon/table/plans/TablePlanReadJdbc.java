@@ -327,7 +327,7 @@ public class TablePlanReadJdbc extends TablePlanCommon<TablePlanReadJdbc>
         }
         if (builder instanceof ColumnObject.Builder<?> objectBuilder)
         {
-            return ((ColumnObject.Builder<Object>) objectBuilder).build(targetDefinition.type());
+            return ((ColumnObject.Builder<Object>) objectBuilder).buildAs(targetDefinition.type());
         }
         throw new IllegalArgumentException("Explicit ResultSet column type " + targetDefinition.type() + " for column "
                 + targetDefinition.name() + " is not supported from source type " + sourceDefinition.type());

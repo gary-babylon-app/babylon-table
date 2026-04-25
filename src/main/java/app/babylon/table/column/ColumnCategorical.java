@@ -67,8 +67,8 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
         ColumnCategorical<T> build();
 
         /**
-         * Builds the categorical column by parsing each distinct source value through
-         * the supplied target type parser.
+         * Builds a column by parsing each distinct source value as the supplied target
+         * type.
          *
          * This is the natural path for building a typed categorical column from a
          * string-like categorical builder when the target parser may still need to
@@ -83,36 +83,18 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
          * done during the build and the intermediate immutable string categorical
          * column can be avoided.
          *
-         * If the supplied target type is the same as the builder type, this behaves
-         * like {@link #build()} and returns the categorical column directly.
+         * The returned column follows {@code transformedType}, not necessarily this
+         * categorical builder's interface. For example, a string-backed categorical
+         * builder may produce a primitive column when the target type is primitive. If
+         * the supplied target type is the same as the builder type, this behaves like
+         * {@link #build()} and returns the categorical column directly.
          *
          * @param transformedType
          *            the target column type
-         * @return an immutable categorical column of the transformed type
+         * @return an immutable column whose logical type is {@code transformedType}
          */
-        Column build(Column.Type transformedType);
-        // {
-        // Column.Type targetType = ArgumentCheck.nonNull(transformedType);
-        // if (targetType.equals(getType()))
-        // {
-        // @SuppressWarnings("unchecked")
-        // ColumnCategorical<S> built = (ColumnCategorical<S>) build();
-        // return built;
-        // }
-        // Class<?> valueClass = getType().getValueClass();
-        // if (!CharSequence.class.isAssignableFrom(valueClass))
-        // {
-        // throw new IllegalStateException(
-        // "Categorical parsed build requires CharSequence values, not " +
-        // valueClass.getName());
-        // }
-        // @SuppressWarnings("unchecked")
-        // TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
-        // @SuppressWarnings("unchecked")
-        // Builder<CharSequence> source = (Builder<CharSequence>) this;
-        // ColumnCategorical<CharSequence> built = source.build();
-        // return built.transform(Transformer.of(parser::parse, targetType));
-        // }
+        @Override
+        Column buildAs(Column.Type transformedType);
     }
 
     /**
@@ -293,7 +275,7 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     }
 
     @Override
-    default Column getAsColumn(int i)
+    default ColumnCategorical<T> selectRow(int i)
     {
         T t = get(i);
         return ColumnCategorical.constant(getName(), t, 1, getType());
@@ -302,7 +284,6 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     @Override
     default ColumnCategorical<T> copy(ColumnName x)
     {
-        @SuppressWarnings("unchecked")
         Builder<T> newBuilder = ColumnCategorical.builder(x, getType());
         for (int i = 0; i < size(); ++i)
         {

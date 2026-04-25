@@ -160,7 +160,7 @@ class ColumnObjectTest
         builder.addNull();
         builder.add("3.00");
 
-        ColumnObject<BigDecimal> decimals = (ColumnObject<BigDecimal>) builder.build(ColumnTypes.DECIMAL);
+        ColumnObject<BigDecimal> decimals = (ColumnObject<BigDecimal>) builder.buildAs(ColumnTypes.DECIMAL);
 
         assertFalse(decimals instanceof ColumnCategorical<?>);
         assertEquals(0, new BigDecimal("10.50").compareTo(decimals.get(0)));
@@ -181,7 +181,7 @@ class ColumnObjectTest
         builder.add("7.25");
         builder.add("7.25");
 
-        ColumnObject<BigDecimal> decimals = (ColumnObject<BigDecimal>) builder.build(ColumnTypes.DECIMAL);
+        ColumnObject<BigDecimal> decimals = (ColumnObject<BigDecimal>) builder.buildAs(ColumnTypes.DECIMAL);
 
         assertTrue(decimals instanceof ColumnCategorical<?>);
         assertTrue(decimals.isConstant());
@@ -200,7 +200,7 @@ class ColumnObjectTest
         arrayBuilder.add("bad");
         arrayBuilder.addNull();
 
-        Column arrayBuilt = arrayBuilder.build(ColumnTypes.DOUBLE);
+        Column arrayBuilt = arrayBuilder.buildAs(ColumnTypes.DOUBLE);
         assertTrue(arrayBuilt instanceof ColumnDouble);
         ColumnDouble arrayDoubles = (ColumnDouble) arrayBuilt;
         assertEquals(10.5d, arrayDoubles.get(0), 1.0e-12);
@@ -214,7 +214,7 @@ class ColumnObjectTest
         categoricalBuilder.add("10");
         categoricalBuilder.addNull();
 
-        Column categoricalBuilt = categoricalBuilder.build(ColumnTypes.INT);
+        Column categoricalBuilt = categoricalBuilder.buildAs(ColumnTypes.INT);
         assertTrue(categoricalBuilt instanceof ColumnInt);
         ColumnInt categoricalInts = (ColumnInt) categoricalBuilt;
         assertEquals(10, categoricalInts.get(0));

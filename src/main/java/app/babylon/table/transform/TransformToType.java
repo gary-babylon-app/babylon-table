@@ -2,6 +2,7 @@ package app.babylon.table.transform;
 
 import java.util.Map;
 import java.util.function.Function;
+
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
@@ -115,16 +116,6 @@ public class TransformToType<T> extends TransformBase
             }
         }
         putColumns(columnsByName, transformedColumns);
-    }
-
-    private static boolean sourceMatchesMode(ColumnObject<?> column, ColumnObject.Mode mode)
-    {
-        return switch (mode)
-        {
-            case AUTO -> false;
-            case CATEGORICAL -> column instanceof ColumnCategorical<?>;
-            case ARRAY -> !(column instanceof ColumnCategorical<?>);
-        };
     }
 
     private ColumnObject<T> rebuild(ColumnObject<String> input, ColumnName newColumnName, ColumnObject.Mode mode,

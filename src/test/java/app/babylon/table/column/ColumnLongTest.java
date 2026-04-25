@@ -147,7 +147,7 @@ public class ColumnLongTest
     }
 
     @Test
-    public void getAsColumnReturnsSingleRowConstantColumn()
+    public void selectRowReturnsSingleRowConstantColumn()
     {
         final ColumnName SOURCE = ColumnName.of("source");
         ColumnLong.Builder sourceBuilder = (ColumnLong.Builder) ColumnLong.builder(SOURCE);
@@ -155,7 +155,7 @@ public class ColumnLongTest
         sourceBuilder.add(22L);
         ColumnLong source = sourceBuilder.build();
 
-        Column single = source.getAsColumn(1);
+        Column single = source.selectRow(1);
         assertTrue(single instanceof ColumnLong);
         assertEquals(1, single.size());
         assertEquals(SOURCE, single.getName());

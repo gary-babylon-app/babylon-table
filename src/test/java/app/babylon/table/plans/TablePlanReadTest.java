@@ -12,8 +12,8 @@ package app.babylon.table.plans;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
@@ -41,7 +41,6 @@ import app.babylon.table.io.HeaderStrategyNoHeaders;
 import app.babylon.table.io.RowFilters;
 import app.babylon.table.io.RowSourceCsv;
 import app.babylon.table.io.RowSourceResultSet;
-import app.babylon.table.io.TabularRowReaderCsv;
 import app.babylon.table.transform.DateFormat;
 
 class TablePlanReadTest

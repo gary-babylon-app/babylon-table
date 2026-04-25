@@ -135,6 +135,27 @@ public interface ColumnObject<T> extends Column
     }
 
     /**
+     * Creates a copy of this object column with the supplied column name.
+     *
+     * @param x
+     *            the name to assign to the copy
+     * @return an object column containing the same values under the new name
+     */
+    @Override
+    public ColumnObject<T> copy(ColumnName x);
+
+    /**
+     * Returns a single-row object column containing the value from the supplied
+     * row.
+     *
+     * @param i
+     *            the row to extract
+     * @return a single-row object column with the same column name
+     */
+    @Override
+    public ColumnObject<T> selectRow(int i);
+
+    /**
      * Builder for nullable object columns.
      *
      * @param <T>
@@ -186,39 +207,21 @@ public interface ColumnObject<T> extends Column
         public ColumnObject<T> build();
 
         /**
-         * Builds the object column by parsing each distinct source value through the
-         * supplied target type parser.
-         * 
-         * If the supplied target type is the same as the builder type, this behaves
-         * like {@link #build()} and returns the column directly.
+         * Builds a column by parsing this builder's source values as the supplied
+         * target type.
+         *
+         * The returned column follows {@code transformedType}, not necessarily this
+         * object builder's interface. For example, a string-backed object builder may
+         * produce a primitive column when the target type is primitive. If the supplied
+         * target type is the same as the builder type, this behaves like
+         * {@link #build()} and returns the object column directly.
          *
          * @param transformedType
          *            the target column type
-         * @return an immutable column of the transformed type
+         * @return an immutable column whose logical type is {@code transformedType}
          */
-        Column build(Column.Type transformedType);
-        // {
-        // Column.Type targetType = ArgumentCheck.nonNull(transformedType);
-        // if (targetType.equals(getType()))
-        // {
-        // @SuppressWarnings("unchecked")
-        // ColumnCategorical<S> built = (ColumnCategorical<S>) build();
-        // return built;
-        // }
-        // Class<?> valueClass = getType().getValueClass();
-        // if (!CharSequence.class.isAssignableFrom(valueClass))
-        // {
-        // throw new IllegalStateException(
-        // "Categorical parsed build requires CharSequence values, not " +
-        // valueClass.getName());
-        // }
-        // @SuppressWarnings("unchecked")
-        // TypeParser<S> parser = (TypeParser<S>) targetType.getParser();
-        // @SuppressWarnings("unchecked")
-        // Builder<CharSequence> builder = (Builder<CharSequence>) this;
-        // ColumnObject<CharSequence> built = builder.build();
-        // return built.transform(Transformer.of(parser::parse, targetType));
-        // }
+        Column buildAs(Column.Type transformedType);
+
         /**
          * Appends an unset row.
          *

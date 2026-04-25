@@ -263,6 +263,32 @@ class ColumnsTest
     }
 
     @Test
+    void decimalPlacesReturnsLargestNonNegativeScale()
+    {
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnObject.Builder<BigDecimal> builder = ColumnObject.builderDecimal(VALUES);
+        builder.add(new BigDecimal("10"));
+        builder.add(new BigDecimal("10.5"));
+        builder.addNull();
+        builder.add(new BigDecimal("10.2500"));
+        builder.add(new BigDecimal("1E+3"));
+
+        assertEquals(4, Columns.decimalPlaces(builder.build()));
+    }
+
+    @Test
+    void decimalPlacesReturnsZeroWhenNoSetDecimalsHavePositiveScale()
+    {
+        final ColumnName VALUES = ColumnName.of("values");
+        ColumnObject.Builder<BigDecimal> builder = ColumnObject.builderDecimal(VALUES);
+        builder.addNull();
+        builder.add(new BigDecimal("1E+3"));
+
+        assertEquals(0, Columns.decimalPlaces(builder.build()));
+        assertEquals(0, Columns.decimalPlaces(ColumnObject.builderDecimal(VALUES).build()));
+    }
+
+    @Test
     void newIntCreatesConstantIntColumn()
     {
         final ColumnName VALUES = ColumnName.of("values");

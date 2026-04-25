@@ -269,6 +269,27 @@ public class Columns
     }
 
     /**
+     * Returns the largest non-negative scale found in a decimal column.
+     *
+     * @param column
+     *            decimal column to inspect
+     * @return maximum decimal places across set values
+     */
+    public static int decimalPlaces(ColumnObject<BigDecimal> column)
+    {
+        int numDecimalPlaces = 0;
+        for (int row = 0; row < column.size(); row++)
+        {
+            if (column.isSet(row))
+            {
+                BigDecimal value = column.get(row);
+                numDecimalPlaces = Math.max(numDecimalPlaces, Math.max(0, value.scale()));
+            }
+        }
+        return numDecimalPlaces;
+    }
+
+    /**
      * Creates a constant int column.
      */
     public static ColumnInt newInt(ColumnName colName, int value, int size)

@@ -593,4 +593,9 @@ public final class BigDecimals
             return isScientificDecimal(s) ? s : null;
         }
     }
+
+    public static boolean isWholeNumber(BigDecimal value)
+    {
+        return value.stripTrailingZeros().scale() <= 0;
+    }
 }

@@ -76,6 +76,17 @@ public class StringsTest
     }
 
     @Test
+    public void isStripxEmptyShouldRecogniseEmptySlicesAfterStripping()
+    {
+        assertTrue(Strings.isStripxEmpty(null, 0, 1));
+        assertTrue(Strings.isStripxEmpty("abc", 1, 0));
+        assertTrue(Strings.isStripxEmpty("xx  yy", 2, 2));
+        assertTrue(Strings.isStripxEmpty("xx\uFEFF\u00A0\u200Byy", 2, 3));
+        assertFalse(Strings.isStripxEmpty("xx ab yy", 2, 3));
+        assertFalse(Strings.isStripxEmpty("xxabc yy", 2, 3));
+    }
+
+    @Test
     public void indexOfShouldFindHyphenInWholeSequenceAndSlices()
     {
         assertEquals(5, Strings.indexOf("trade-date", '-'));

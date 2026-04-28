@@ -118,6 +118,21 @@ public final class Strings
         return s == null || s.length() == 0;
     }
 
+    public static boolean isStripxEmpty(CharSequence s, int start, int length)
+    {
+        if (s == null || length <= 0)
+        {
+            return true;
+        }
+        int actualStart = start;
+        int actualEnd = start + length - 1;
+        while (actualStart <= actualEnd && isStrippable(s.charAt(actualStart)))
+        {
+            actualStart++;
+        }
+        return actualStart > actualEnd;
+    }
+
     public static int indexOf(CharSequence s, char c)
     {
         return s == null ? -1 : indexOf(s, 0, s.length(), c);

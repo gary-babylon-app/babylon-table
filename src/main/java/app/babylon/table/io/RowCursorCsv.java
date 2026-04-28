@@ -32,8 +32,6 @@ public final class RowCursorCsv extends RowCursorLineReaderCommon
 {
     private static final Charset LEGACY_CSV_FALLBACK = Charset.forName("windows-1252");
 
-    private final HeaderStrategy headerStrategy;
-    private final boolean stripping;
     private final char separator;
     private final char quote;
     private final int[] fixedWidths;
@@ -43,8 +41,6 @@ public final class RowCursorCsv extends RowCursorLineReaderCommon
     RowCursorCsv(InputStream inputStream, Builder builder)
     {
         super(createLineReader(ArgumentCheck.nonNull(inputStream), builder), builder);
-        this.headerStrategy = ArgumentCheck.nonNull(builder.headerStrategy);
-        this.stripping = builder.stripping;
         this.separator = builder.separator;
         this.quote = builder.quote;
         this.fixedWidths = builder.fixedWidths == null
@@ -61,7 +57,7 @@ public final class RowCursorCsv extends RowCursorLineReaderCommon
 
     public HeaderStrategy getHeaderStrategy()
     {
-        return this.headerStrategy;
+        return super.getHeaderStrategy();
     }
 
     public char getSeparator()
@@ -71,7 +67,7 @@ public final class RowCursorCsv extends RowCursorLineReaderCommon
 
     public boolean isStripping()
     {
-        return this.stripping;
+        return super.isStripping();
     }
 
     public char getQuote()

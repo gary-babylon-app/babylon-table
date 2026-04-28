@@ -31,18 +31,22 @@ abstract class RowCursorLineReaderCommon implements RowCursor
 {
     private final LineReader lineReader;
     private final RowStreamMarkable rowStream;
+    private final HeaderStrategy headerStrategy;
     private final RowProjected projectedRow;
     private final Predicate<Row> rowFilter;
     private final ColumnDefinition[] columnDefinitions;
+    private final boolean stripping;
     private Row currentRow;
 
     protected RowCursorLineReaderCommon(LineReader lineReader, BuilderBase<?> builder)
     {
         this.lineReader = ArgumentCheck.nonNull(lineReader);
         this.rowStream = new RowStreamBuffered(this.lineReader);
+        this.headerStrategy = ArgumentCheck.nonNull(builder.headerStrategy);
+        this.stripping = builder.stripping;
         try
         {
-            HeaderDetection headerDetection = builder.headerStrategy.detect(this.rowStream, builder.selectedColumns);
+            HeaderDetection headerDetection = this.headerStrategy.detect(this.rowStream, builder.selectedColumns);
             this.projectedRow = builder.createProjectedRow(headerDetection);
             ColumnName[] projectedColumnNames = builder
                     .createProjectedColumnNames(headerDetection.getSelectedHeaders());
@@ -115,6 +119,16 @@ abstract class RowCursorLineReaderCommon implements RowCursor
     public void close() throws IOException
     {
         this.lineReader.close();
+    }
+
+    protected HeaderStrategy getHeaderStrategy()
+    {
+        return this.headerStrategy;
+    }
+
+    protected boolean isStripping()
+    {
+        return this.stripping;
     }
 
     static abstract class BuilderBase<B extends BuilderBase<B>>

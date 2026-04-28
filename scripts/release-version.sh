@@ -53,6 +53,13 @@ pom.write_text(updated)
 PY
 }
 
+step()
+{
+    local number="$1"
+    local name="$2"
+    printf '\n[%s] %s\n\n' "$number" "$name"
+}
+
 require_synced_with_upstream()
 {
     local ahead behind
@@ -73,7 +80,7 @@ if [ -z "$upstream" ]; then
     exit 1
 fi
 
-echo "Updating local branch from $upstream..."
+step "1" "Update local branch from $upstream"
 git pull --ff-only
 require_clean_worktree
 require_synced_with_upstream
@@ -120,7 +127,7 @@ Tag:             $tag
 This will:
   1. Update pom.xml to $release_version
   2. Run mvn -q spotless:check
-  3. Run mvn test
+  3. Run mvn clean test
   4. Commit: Release $tag
   5. Push the release commit
   6. Create annotated tag: $tag
@@ -139,19 +146,40 @@ case "$answer" in
         ;;
 esac
 
+step "2" "Set release version $release_version"
 set_project_version "$release_version"
+
+step "3" "Run Spotless check"
 mvn -q spotless:check
-mvn test
+
+step "4" "Run clean test"
+mvn clean test
+
+step "5" "Commit release $tag"
 git add pom.xml
 git commit -m "Release $tag"
+
+step "6" "Push release commit"
 git push
+
+step "7" "Create annotated tag $tag"
 git tag -a "$tag" -m "Release $tag"
+
+step "8" "Push tag $tag"
 git push origin "$tag"
 
+step "9" "Set next development version $next_version"
 set_project_version "$next_version"
+
+step "10" "Run Spotless check"
 mvn -q spotless:check
+
+step "11" "Commit next development version"
 git add pom.xml
 git commit -m "Prepare for $next_version"
+
+step "12" "Push next development commit"
 git push
 
+printf '\n'
 echo "Release $tag complete. Next development version is $next_version."

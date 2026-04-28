@@ -64,10 +64,10 @@ public class HeaderStrategyWidestNonEmptyRow implements HeaderStrategy
 
         if (scannedRows.isEmpty() || headerRowIndex < 0)
         {
-            return new HeaderDetection(new String[0]);
+            return new HeaderDetection(new ColumnName[0]);
         }
         rowStream.mark(headerRowIndex);
-        return new HeaderDetection(scannedRows.get(headerRowIndex).toStringArray());
+        return new HeaderDetection(HeaderStrategy.toColumnNames(scannedRows.get(headerRowIndex)));
     }
 
     private static int countNonEmptyValues(RowBuffer row)

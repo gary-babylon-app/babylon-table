@@ -56,11 +56,11 @@ public class HeaderStrategyAuto implements HeaderStrategy
         }
         if (scannedRows.isEmpty())
         {
-            return new HeaderDetection(new String[0]);
+            return new HeaderDetection(new ColumnName[0]);
         }
         int headerRowIndex = detectHeaderRowIndex(scannedRows, selectedColumns);
         rowStream.mark(headerRowIndex);
-        return new HeaderDetection(scannedRows.get(headerRowIndex).toStringArray());
+        return new HeaderDetection(HeaderStrategy.toColumnNames(scannedRows.get(headerRowIndex)));
     }
 
     static double headerScore(RowBuffer rowValues)

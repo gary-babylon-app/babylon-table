@@ -40,8 +40,8 @@ class HeaderStrategyExpectedHeadersTest
                         HeaderStrategyTestSupport.row("Date", "Symbol", "Price"),
                         HeaderStrategyTestSupport.row("2026-01-02", "AAA", "10.25")), null);
 
-        assertArrayEquals(new String[]
-        {"Date", "Symbol", "Price"}, detection.getHeadersFound());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Date"), ColumnName.of("Symbol"), ColumnName.of("Price")}, detection.getHeadersFound());
     }
 
     @Test

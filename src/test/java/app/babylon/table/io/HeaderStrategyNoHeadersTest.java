@@ -9,6 +9,8 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.column.ColumnName;
+
 class HeaderStrategyNoHeadersTest
 {
     @Test
@@ -30,8 +32,8 @@ class HeaderStrategyNoHeadersTest
                 .stream(HeaderStrategyTestSupport.row("a", "b"), HeaderStrategyTestSupport.row("c", "d", "e")), null);
 
         assertTrue(detection.isSyntheticHeaders());
-        assertArrayEquals(new String[]
-        {"Field1", "Field2", "Field3"}, detection.getHeadersFound());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Field1"), ColumnName.of("Field2"), ColumnName.of("Field3")}, detection.getHeadersFound());
     }
 
     @Test

@@ -241,23 +241,24 @@ abstract class RowCursorLineReaderCommon implements RowCursor
             return self();
         }
 
-        protected final ColumnName[] createProjectedColumnNames(String[] sourceHeaders)
+        protected final ColumnName[] createProjectedColumnNames(ColumnName[] sourceHeaders)
         {
             ColumnName[] columnNames = new ColumnName[sourceHeaders.length];
             for (int i = 0; i < sourceHeaders.length; ++i)
             {
-                ColumnName originalColumnName = ColumnName.of(sourceHeaders[i]);
+                ColumnName originalColumnName = sourceHeaders[i];
                 columnNames[i] = this.columnRenames.getOrDefault(originalColumnName, originalColumnName);
             }
             return columnNames;
         }
 
-        protected final ColumnDefinition[] createColumnDefinitions(String[] sourceHeaders, ColumnName[] projectedNames)
+        protected final ColumnDefinition[] createColumnDefinitions(ColumnName[] sourceHeaders,
+                ColumnName[] projectedNames)
         {
             ColumnDefinition[] definitions = new ColumnDefinition[sourceHeaders.length];
             for (int i = 0; i < sourceHeaders.length; ++i)
             {
-                ColumnName sourceColumnName = ColumnName.of(sourceHeaders[i]);
+                ColumnName sourceColumnName = sourceHeaders[i];
                 Column.Type explicitType = this.explicitColumnTypes.get(sourceColumnName);
                 definitions[i] = new ColumnDefinition(projectedNames[i], explicitType);
             }

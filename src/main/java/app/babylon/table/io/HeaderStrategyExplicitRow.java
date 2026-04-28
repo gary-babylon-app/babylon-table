@@ -44,7 +44,7 @@ public class HeaderStrategyExplicitRow implements HeaderStrategy
             if (rowIndex == this.headerRowIndex)
             {
                 rowStream.mark(rowIndex);
-                return new HeaderDetection(rowBuffer.toStringArray());
+                return new HeaderDetection(HeaderStrategy.toColumnNames(rowBuffer));
             }
             ++rowIndex;
         }

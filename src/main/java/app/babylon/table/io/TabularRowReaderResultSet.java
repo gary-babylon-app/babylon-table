@@ -124,10 +124,10 @@ public class TabularRowReaderResultSet extends TabularRowReaderCommon<TabularRow
     private HeaderDetection createHeaderDetection(ResultSetMetaData metaData) throws SQLException
     {
         int columnCount = metaData.getColumnCount();
-        String[] headersFound = new String[columnCount];
+        ColumnName[] headersFound = new ColumnName[columnCount];
         for (int i = 1; i <= columnCount; ++i)
         {
-            headersFound[i - 1] = resolveHeaderName(metaData, i);
+            headersFound[i - 1] = ColumnName.of(resolveHeaderName(metaData, i));
         }
 
         Set<ColumnName> selectedColumns = getSelectedColumns(null);
@@ -136,23 +136,23 @@ public class TabularRowReaderResultSet extends TabularRowReaderCommon<TabularRow
             return new HeaderDetection(headersFound);
         }
 
-        List<String> selectedHeaders = new ArrayList<>();
+        List<ColumnName> selectedHeaders = new ArrayList<>();
         List<Integer> selectedPositions = new ArrayList<>();
         for (int i = 0; i < headersFound.length; ++i)
         {
-            String header = headersFound[i];
-            if (Strings.isEmpty(header))
+            ColumnName header = headersFound[i];
+            if (header == null)
             {
                 continue;
             }
-            if (selectedColumns.contains(ColumnName.of(header)))
+            if (selectedColumns.contains(header))
             {
                 selectedHeaders.add(header);
                 selectedPositions.add(i);
             }
         }
 
-        return new HeaderDetection(headersFound, false, selectedHeaders.toArray(new String[selectedHeaders.size()]),
+        return new HeaderDetection(headersFound, false, selectedHeaders.toArray(new ColumnName[selectedHeaders.size()]),
                 toIntArray(selectedPositions));
     }
 
@@ -174,7 +174,7 @@ public class TabularRowReaderResultSet extends TabularRowReaderCommon<TabularRow
 
     private ColumnName[] createProjectedColumnNames(HeaderDetection headerDetection)
     {
-        String[] selectedHeaders = headerDetection.getSelectedHeaders();
+        ColumnName[] selectedHeaders = headerDetection.getSelectedHeaders();
         ColumnName[] columnNames = new ColumnName[selectedHeaders.length];
         for (int i = 0; i < selectedHeaders.length; ++i)
         {
@@ -188,13 +188,13 @@ public class TabularRowReaderResultSet extends TabularRowReaderCommon<TabularRow
         return getRowFilter() == null ? null : getRowFilter().bind(projectedColumnNames);
     }
 
-    private ColumnName getRenameColumnName(String original)
+    private ColumnName getRenameColumnName(ColumnName original)
     {
         if (original == null)
         {
             return null;
         }
-        return getColumnReName(ColumnName.of(original));
+        return getColumnReName(original);
     }
 
     private void populateRowBuffer(ResultSet resultSet, RowBuffer rowBuffer, int columnCount, char[] transferBuffer)

@@ -358,25 +358,4 @@ public final class ColumnName implements Comparable<ColumnName>
         return Strings.isEmpty(s) ? "" : buildCanonicalKey(s, 0, s.length());
     }
 
-    /**
-     * Converts column names back to their exported string values.
-     *
-     * @param x
-     *            source column names
-     * @return string values or {@code null}
-     */
-    public static String[] toStringArray(Collection<ColumnName> x)
-    {
-        if (x == null)
-        {
-            return null;
-        }
-        String[] results = new String[x.size()];
-        int i = 0;
-        for (ColumnName cn : x)
-        {
-            results[i++] = cn.getValue();
-        }
-        return results;
-    }
 }

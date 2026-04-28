@@ -238,7 +238,7 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
 
     private ColumnName[] createProjectedColumnNames(HeaderDetection headerDetection)
     {
-        String[] selectedHeaders = headerDetection.getSelectedHeaders();
+        ColumnName[] selectedHeaders = headerDetection.getSelectedHeaders();
         ColumnName[] columnNames = new ColumnName[selectedHeaders.length];
         for (int i = 0; i < selectedHeaders.length; ++i)
         {
@@ -247,14 +247,13 @@ public class TabularRowReaderCsv extends TabularRowReaderCommon<TabularRowReader
         return columnNames;
     }
 
-    private ColumnName getRenameColumnName(String original)
+    private ColumnName getRenameColumnName(ColumnName original)
     {
         if (original == null)
         {
             return null;
         }
-        ColumnName originalColumnName = ColumnName.of(original);
-        ColumnName renamed = getColumnReName(originalColumnName);
+        ColumnName renamed = getColumnReName(original);
         return renamed;
     }
 

@@ -1,16 +1,7 @@
-/*
- * Copyright 2026 Babylon Financial Technology
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- */
-
 package app.babylon.table.io;
 
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.column.ColumnName;
 
 /**
  * Result of header detection, including the found headers and any selected
@@ -18,15 +9,15 @@ import app.babylon.lang.ArgumentCheck;
  */
 public class HeaderDetection
 {
-    private final String[] headersFound;
+    private final ColumnName[] headersFound;
     private final boolean syntheticHeaders;
-    private final String[] selectedHeaders;
+    private final ColumnName[] selectedHeaders;
     private final int[] selectedPositions;
 
     /**
      * Creates a detection with the supplied headers and no synthetic flag.
      */
-    public HeaderDetection(String[] headersFound)
+    public HeaderDetection(ColumnName[] headersFound)
     {
         this(headersFound, false);
     }
@@ -34,7 +25,7 @@ public class HeaderDetection
     /**
      * Creates a detection with the supplied headers.
      */
-    public HeaderDetection(String[] headersFound, boolean syntheticHeaders)
+    public HeaderDetection(ColumnName[] headersFound, boolean syntheticHeaders)
     {
         this(headersFound, syntheticHeaders, headersFound, identityPositions(headersFound.length));
     }
@@ -42,7 +33,7 @@ public class HeaderDetection
     /**
      * Creates a full detection result.
      */
-    public HeaderDetection(String[] headersFound, boolean syntheticHeaders, String[] selectedHeaders,
+    public HeaderDetection(ColumnName[] headersFound, boolean syntheticHeaders, ColumnName[] selectedHeaders,
             int[] selectedPositions)
     {
         this.headersFound = ArgumentCheck.nonNull(headersFound);
@@ -54,7 +45,7 @@ public class HeaderDetection
     /**
      * Returns the headers found in the source.
      */
-    public String[] getHeadersFound()
+    public ColumnName[] getHeadersFound()
     {
         return this.headersFound;
     }
@@ -62,7 +53,7 @@ public class HeaderDetection
     /**
      * Returns the selected output headers.
      */
-    public String[] getSelectedHeaders()
+    public ColumnName[] getSelectedHeaders()
     {
         return this.selectedHeaders;
     }

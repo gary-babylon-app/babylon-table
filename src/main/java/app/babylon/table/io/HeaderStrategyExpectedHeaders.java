@@ -90,7 +90,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
             if (matchedHeaderCount >= enoughForMatch)
             {
                 rowStream.mark(rowsScanned - 1);
-                return new HeaderDetection(rowBuffer.toStringArray());
+                return new HeaderDetection(HeaderStrategy.toColumnNames(rowBuffer));
             }
         }
         throw new RuntimeException("Can not find headers from expected names within " + this.scanLimit + " rows.");

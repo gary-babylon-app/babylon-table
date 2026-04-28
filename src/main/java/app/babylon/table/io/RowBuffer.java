@@ -243,16 +243,6 @@ public final class RowBuffer implements Row
         return RowKey.of(this, positions);
     }
 
-    String[] toStringArray()
-    {
-        String[] values = new String[this.fieldCount];
-        for (int i = 0; i < this.fieldCount; ++i)
-        {
-            values[i] = getString(i);
-        }
-        return values;
-    }
-
     @Override
     public RowBuffer copy()
     {

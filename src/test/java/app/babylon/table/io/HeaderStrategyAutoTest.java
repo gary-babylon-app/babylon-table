@@ -32,8 +32,8 @@ class HeaderStrategyAutoTest
                         HeaderStrategyTestSupport.row("2026-01-02", "AAA", "10.25")),
                 null);
 
-        assertArrayEquals(new String[]
-        {"Date", "Symbol", "Close"}, detection.getHeadersFound());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Date"), ColumnName.of("Symbol"), ColumnName.of("Close")}, detection.getHeadersFound());
     }
 
     @Test
@@ -46,10 +46,10 @@ class HeaderStrategyAutoTest
                 .detect(HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("Trade Date", "", "Price"),
                         HeaderStrategyTestSupport.row("2026-01-02", "", "10.25")), Set.of(TRADE_DATE, PRICE));
 
-        assertArrayEquals(new String[]
-        {"Trade Date", "Column2", "Price"}, detection.getHeadersFound());
-        assertArrayEquals(new String[]
-        {"Trade Date", "Price"}, detection.getSelectedHeaders());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Trade Date"), ColumnName.of("Column2"), ColumnName.of("Price")}, detection.getHeadersFound());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Trade Date"), ColumnName.of("Price")}, detection.getSelectedHeaders());
         assertArrayEquals(new int[]
         {0, 2}, detection.getSelectedPositions());
     }

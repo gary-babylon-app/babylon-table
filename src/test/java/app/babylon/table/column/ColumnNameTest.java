@@ -17,7 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -199,10 +198,8 @@ public class ColumnNameTest
     }
 
     @Test
-    public void testToWordsAndToStringArrayReuseProvidedCollection()
+    public void testToWordsReuseProvidedCollection()
     {
-        final ColumnName TRADE_DATE = ColumnName.of("Trade Date");
-        final ColumnName SETTLE_DATE = ColumnName.of("SettleDate");
         final ColumnName cn = ColumnName.of("tradeDate20");
         Collection<String> words = new ArrayList<>();
 
@@ -210,10 +207,5 @@ public class ColumnNameTest
 
         assertSame(words, returned);
         assertEquals(List.of("Trade", "Date20"), new ArrayList<>(returned));
-
-        String[] values = ColumnName.toStringArray(Arrays.asList(TRADE_DATE, SETTLE_DATE));
-        assertEquals("TradeDate", values[0]);
-        assertEquals("SettleDate", values[1]);
-        assertNull(ColumnName.toStringArray(null));
     }
 }

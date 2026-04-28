@@ -8,6 +8,8 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.column.ColumnName;
+
 class HeaderStrategyExplicitRowTest
 {
     @Test
@@ -27,8 +29,8 @@ class HeaderStrategyExplicitRowTest
                 HeaderStrategyTestSupport.row("preamble", "value"), HeaderStrategyTestSupport.row("Date", "Price"),
                 HeaderStrategyTestSupport.row("2026-01-02", "10.25")), null);
 
-        assertArrayEquals(new String[]
-        {"Date", "Price"}, detection.getHeadersFound());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Date"), ColumnName.of("Price")}, detection.getHeadersFound());
     }
 
     @Test

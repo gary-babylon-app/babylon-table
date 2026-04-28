@@ -66,12 +66,12 @@ public class HeaderStrategyNoHeaders implements HeaderStrategy
         }
         if (maxWidth == 0)
         {
-            return new HeaderDetection(new String[0], true);
+            return new HeaderDetection(new ColumnName[0], true);
         }
-        String[] headers = new String[maxWidth];
+        ColumnName[] headers = new ColumnName[maxWidth];
         for (int i = 0; i < maxWidth; ++i)
         {
-            headers[i] = this.columnPrefix + Integer.toString(i + 1);
+            headers[i] = ColumnName.of(this.columnPrefix + Integer.toString(i + 1));
         }
         return new HeaderDetection(headers, true);
     }

@@ -23,13 +23,60 @@ esac
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
-status="$(git status --porcelain)"
-if [ -n "$status" ]; then
-    echo "Refusing to prepare a release because the working tree is not clean." >&2
-    echo >&2
-    echo "$status" >&2
+require_clean_worktree()
+{
+    local status
+    status="$(git status --porcelain)"
+    if [ -n "$status" ]; then
+        echo "Refusing to release because the working tree is not clean." >&2
+        echo >&2
+        echo "$status" >&2
+        exit 1
+    fi
+}
+
+set_project_version()
+{
+    local version="$1"
+    python3 - "$version" <<'PY'
+import re
+import sys
+from pathlib import Path
+
+version = sys.argv[1]
+pom = Path("pom.xml")
+text = pom.read_text()
+updated, count = re.subn(r"(<version>)[^<]+(</version>)", rf"\g<1>{version}\2", text, count=1)
+if count != 1:
+    raise SystemExit("Could not update the project version in pom.xml")
+pom.write_text(updated)
+PY
+}
+
+require_synced_with_upstream()
+{
+    local ahead behind
+    read -r ahead behind < <(git rev-list --left-right --count HEAD..."$upstream")
+    if [ "$ahead" -ne 0 ] || [ "$behind" -ne 0 ]; then
+        echo "Refusing to release because the current branch is not in sync with $upstream." >&2
+        echo "Ahead:  $ahead" >&2
+        echo "Behind: $behind" >&2
+        exit 1
+    fi
+}
+
+require_clean_worktree
+
+upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || true)"
+if [ -z "$upstream" ]; then
+    echo "Refusing to release because the current branch has no upstream tracking branch." >&2
     exit 1
 fi
+
+echo "Updating local branch from $upstream..."
+git pull --ff-only
+require_clean_worktree
+require_synced_with_upstream
 
 current_version="$(sed -n 's:.*<version>\([^<]*\)</version>.*:\1:p' pom.xml | head -n 1)"
 if [[ ! "$current_version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)-SNAPSHOT$ ]]; then
@@ -55,13 +102,32 @@ case "$bump" in
 esac
 tag="v$release_version"
 
+if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+    echo "Refusing to release because local tag already exists: $tag" >&2
+    exit 1
+fi
+if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
+    echo "Refusing to release because remote tag already exists: $tag" >&2
+    exit 1
+fi
+
 cat <<EOF
 Current version: $current_version
 Release version: $release_version
 Next version:    $next_version
 Tag:             $tag
 
-This will update pom.xml to $release_version.
+This will:
+  1. Update pom.xml to $release_version
+  2. Run mvn -q spotless:check
+  3. Run mvn test
+  4. Commit: Release $tag
+  5. Push the release commit
+  6. Create annotated tag: $tag
+  7. Push the tag
+  8. Update pom.xml to $next_version
+  9. Commit: Prepare for $next_version
+ 10. Push the next development commit
 EOF
 
 read -r -p "Continue? [y/N] " answer
@@ -73,19 +139,19 @@ case "$answer" in
         ;;
 esac
 
-python3 - "$release_version" <<'PY'
-import re
-import sys
-from pathlib import Path
+set_project_version "$release_version"
+mvn -q spotless:check
+mvn test
+git add pom.xml
+git commit -m "Release $tag"
+git push
+git tag -a "$tag" -m "Release $tag"
+git push origin "$tag"
 
-version = sys.argv[1]
-pom = Path("pom.xml")
-text = pom.read_text()
-updated, count = re.subn(r"(<version>)[^<]+(</version>)", rf"\g<1>{version}\2", text, count=1)
-if count != 1:
-    raise SystemExit("Could not update the project version in pom.xml")
-pom.write_text(updated)
-PY
+set_project_version "$next_version"
+mvn -q spotless:check
+git add pom.xml
+git commit -m "Prepare for $next_version"
+git push
 
-echo "pom.xml updated to $release_version"
-echo "After committing/tagging the release, bump to: $next_version"
+echo "Release $tag complete. Next development version is $next_version."

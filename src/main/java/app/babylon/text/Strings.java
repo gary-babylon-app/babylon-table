@@ -10,6 +10,8 @@
 
 package app.babylon.text;
 
+import java.text.Normalizer;
+
 public final class Strings
 {
 
@@ -450,6 +452,64 @@ public final class Strings
             return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
         }
         return s.subSequence(actualStart, actualEnd + 1);
+    }
+
+    public static CharSequence removeDiacritics(CharSequence s)
+    {
+        return s == null ? null : removeDiacritics(s, 0, s.length());
+    }
+
+    public static CharSequence removeDiacritics(CharSequence s, int start, int length)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        if (length <= 0)
+        {
+            return "";
+        }
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            if (s.charAt(i) > 127)
+            {
+                return removeDiacriticsSlow(s, start, length);
+            }
+        }
+        return start == 0 && length == s.length() ? s : s.subSequence(start, end);
+    }
+
+    private static String removeDiacriticsSlow(CharSequence s, int start, int length)
+    {
+        CharSequence source = start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+        String normalized = Normalizer.normalize(source, Normalizer.Form.NFKD);
+        StringBuilder out = null;
+        for (int i = 0; i < normalized.length(); ++i)
+        {
+            char c = normalized.charAt(i);
+            if (isDiacriticMark(c))
+            {
+                if (out == null)
+                {
+                    out = new StringBuilder(normalized.length());
+                    out.append(normalized, 0, i);
+                }
+                continue;
+            }
+            if (out != null)
+            {
+                out.append(c);
+            }
+        }
+        return out == null ? normalized : out.toString();
+    }
+
+    private static boolean isDiacriticMark(char c)
+    {
+        int type = Character.getType(c);
+        return type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK
+                || type == Character.ENCLOSING_MARK;
     }
 
     private static boolean isStrippable(char c)

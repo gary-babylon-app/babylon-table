@@ -248,4 +248,17 @@ public class StringsTest
         assertEquals("abc", Strings.stripx("\uFEFF abc \u200B"));
         assertEquals("", Strings.stripx(" \u00A0\u200B "));
     }
+
+    @Test
+    public void removeDiacriticsShouldFastPathAsciiAndRemoveMarks()
+    {
+        String plain = "Trade Date";
+
+        assertNull(Strings.removeDiacritics(null));
+        assertSame(plain, Strings.removeDiacritics(plain));
+        assertEquals("Trade", Strings.removeDiacritics("xxTradeyy", 2, 5));
+        assertEquals("Cafe", Strings.removeDiacritics("Caf\u00E9"));
+        assertEquals("Angstrom", Strings.removeDiacritics("\u00C5ngstr\u00F6m"));
+        assertEquals("Sao Paulo", Strings.removeDiacritics("S\u00E3o Paulo"));
+    }
 }

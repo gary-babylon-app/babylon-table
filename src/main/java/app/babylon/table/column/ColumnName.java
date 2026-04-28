@@ -10,12 +10,10 @@
 
 package app.babylon.table.column;
 
-import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
@@ -26,8 +24,6 @@ import app.babylon.text.Strings;
  */
 public final class ColumnName implements Comparable<ColumnName>
 {
-    private static final Pattern P_DIACRITICS = Pattern.compile("\\p{M}+");
-
     /** Human-facing/exported heading (always CamelUpper). */
     private final String value;
 
@@ -46,13 +42,22 @@ public final class ColumnName implements Comparable<ColumnName>
      *            source text
      * @return column name
      */
-    public static ColumnName of(String s)
+    public static ColumnName of(CharSequence s)
     {
         if (Strings.isEmpty(s))
         {
             throw new RuntimeException("Empty string for column name.");
         }
-        return new ColumnName(s);
+        return of(s, 0, s.length());
+    }
+
+    public static ColumnName of(CharSequence s, int start, int length)
+    {
+        if (Strings.isStripxEmpty(s, start, length))
+        {
+            throw new RuntimeException("Empty string for column name.");
+        }
+        return new ColumnName(s, start, length);
     }
 
     /**
@@ -64,7 +69,12 @@ public final class ColumnName implements Comparable<ColumnName>
      */
     public static ColumnName parse(CharSequence s)
     {
-        return Strings.isEmpty(s) ? null : of(s.toString());
+        return Strings.isEmpty(s) ? null : parse(s, 0, s.length());
+    }
+
+    public static ColumnName parse(CharSequence s, int start, int length)
+    {
+        return Strings.isStripxEmpty(s, start, length) ? null : of(s, start, length);
     }
 
     /**
@@ -124,29 +134,29 @@ public final class ColumnName implements Comparable<ColumnName>
         return c;
     }
 
-    private ColumnName(String input)
+    private ColumnName(CharSequence input, int start, int length)
     {
-        String tokens = normalizeForTokens(input);
+        String tokens = normalizeForTokens(input, start, length);
         this.value = ArgumentCheck.nonEmpty(Strings.toCamelUpperPreserve(tokens).toString());
-        this.canonical = ArgumentCheck.nonEmpty(buildCanonicalKey(input));
+        this.canonical = ArgumentCheck.nonEmpty(buildCanonicalKey(input, start, length));
     }
 
-    private static String normalizeForTokens(String s)
+    private static String normalizeForTokens(CharSequence s, int start, int length)
     {
         if (s == null)
         {
             return "";
         }
-        return removeDiacritics(s.strip());
+        return Strings.removeDiacritics(Strings.stripx(s, start, length)).toString();
     }
 
-    private static String buildCanonicalKey(String s)
+    private static String buildCanonicalKey(CharSequence s, int start, int length)
     {
-        if (Strings.isEmpty(s))
+        if (Strings.isStripxEmpty(s, start, length))
         {
             return "";
         }
-        String n = removeDiacritics(s);
+        CharSequence n = Strings.removeDiacritics(s, start, length);
         StringBuilder out = new StringBuilder(n.length());
         for (int i = 0; i < n.length(); i++)
         {
@@ -157,12 +167,6 @@ public final class ColumnName implements Comparable<ColumnName>
             }
         }
         return out.toString();
-    }
-
-    private static String removeDiacritics(String s)
-    {
-        String n = Normalizer.normalize(s, Normalizer.Form.NFKD);
-        return P_DIACRITICS.matcher(n).replaceAll("");
     }
 
     @Override
@@ -351,7 +355,7 @@ public final class ColumnName implements Comparable<ColumnName>
      */
     public static String clean(String s)
     {
-        return Strings.isEmpty(s) ? "" : buildCanonicalKey(s);
+        return Strings.isEmpty(s) ? "" : buildCanonicalKey(s, 0, s.length());
     }
 
     /**

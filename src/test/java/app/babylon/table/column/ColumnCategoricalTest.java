@@ -322,12 +322,16 @@ class ColumnCategoricalTest
         builder.add("bad");
         builder.add("MXN");
 
-        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.buildAs(ColumnTypes.CURRENCY);
-
-        assertEquals(Currency.getInstance("BRL"), column.get(0));
+        Column column = builder.buildAs(ColumnTypes.CURRENCY);
         assertFalse(column.isSet(1));
         assertFalse(column.isSet(2));
-        assertEquals(Currency.getInstance("MXN"), column.get(3));
+
+        assertTrue(column instanceof ColumnCategorical);
+        @SuppressWarnings("unchecked")
+        ColumnCategorical<Currency> cc = (ColumnCategorical<Currency>) column;
+
+        assertEquals(Currency.getInstance("BRL"), cc.get(0));
+        assertEquals(Currency.getInstance("MXN"), cc.get(3));
     }
 
     @Test
@@ -339,14 +343,16 @@ class ColumnCategoricalTest
         builder.add("hello");
         builder.addNull();
 
-        ColumnCategorical<Currency> column = (ColumnCategorical<Currency>) builder.buildAs(ColumnTypes.CURRENCY);
-
-        assertFalse(column.isConstant());
+        Column column = builder.buildAs(ColumnTypes.CURRENCY);
         assertFalse(column.isAllSet());
         assertFalse(column.isNoneSet());
-        assertEquals(Currency.getInstance("BRL"), column.get(0));
         assertFalse(column.isSet(1));
         assertFalse(column.isSet(2));
+        assertFalse(column.isConstant());
+
+        ColumnCategorical<Currency> cc = (ColumnCategorical<Currency>) column;
+
+        assertEquals(Currency.getInstance("BRL"), cc.get(0));
     }
 
     @Test

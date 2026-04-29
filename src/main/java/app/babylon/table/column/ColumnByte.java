@@ -262,13 +262,6 @@ public interface ColumnByte extends Column
     }
 
     /**
-     * Indicates whether the column represents the same value for every row.
-     *
-     * @return {@code true} when the column is constant
-     */
-    public boolean isConstant();
-
-    /**
      * Indicates whether the byte values match the legacy XLS file signature.
      *
      * @return {@code true} when the column contents look like XLS bytes

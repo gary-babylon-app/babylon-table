@@ -198,6 +198,8 @@ public class ColumnIntTest
         assertTrue(constant.isAllSet());
         assertFalse(constant.isNoneSet());
         assertTrue(constant.isConstant());
+        Column column = constant;
+        assertTrue(column.isConstant());
 
         int[] target = new int[6];
         int[] values = constant.toArray(target);

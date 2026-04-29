@@ -283,10 +283,4 @@ public interface ColumnLong extends Column
         return selection;
     }
 
-    /**
-     * Indicates whether the column represents the same value for every row.
-     *
-     * @return {@code true} when the column is constant
-     */
-    public boolean isConstant();
 }

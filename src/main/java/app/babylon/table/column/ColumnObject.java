@@ -252,13 +252,6 @@ public interface ColumnObject<T> extends Column
      */
     public T get(int i);
 
-    /**
-     * Indicates whether the column represents the same value for every row.
-     *
-     * @return {@code true} when the column is constant
-     */
-    public boolean isConstant();
-
     @Override
     default public boolean isSet(int i)
     {

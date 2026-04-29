@@ -233,6 +233,16 @@ public interface Column
     }
 
     /**
+    * Indicates whether the column represents the same value for every row.
+    * Unset values are part of the value pattern, so an all-unset column is constant,
+    * while a mix of unset and set values is not constant unless the implementation
+    * explicitly defines that pattern as constant.
+    *
+    * @return {@code true} when the column is constant
+    */
+    public boolean isConstant();
+
+    /**
      * Formats the value at the supplied row for display.
      *
      * @param i

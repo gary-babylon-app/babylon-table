@@ -44,7 +44,7 @@ public final class ColumnName implements Comparable<ColumnName>
      */
     public static ColumnName of(CharSequence s)
     {
-        if (Strings.isEmpty(s))
+        if (s == null)
         {
             throw new RuntimeException("Empty string for column name.");
         }
@@ -69,7 +69,7 @@ public final class ColumnName implements Comparable<ColumnName>
      */
     public static ColumnName parse(CharSequence s)
     {
-        return Strings.isEmpty(s) ? null : parse(s, 0, s.length());
+        return s == null ? null : parse(s, 0, s.length());
     }
 
     public static ColumnName parse(CharSequence s, int start, int length)

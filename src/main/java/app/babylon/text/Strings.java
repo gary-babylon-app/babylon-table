@@ -120,6 +120,12 @@ public final class Strings
         return s == null || s.length() == 0;
     }
 
+    /**
+     * Returns true when the supplied slice is empty after applying the same edge
+     * stripping rules as {@link #stripx(CharSequence, int, int)}. Those rules
+     * remove normal Unicode whitespace and the additional ingestion artifacts
+     * documented on {@code stripx}.
+     */
     public static boolean isStripxEmpty(CharSequence s, int start, int length)
     {
         if (s == null || length <= 0)
@@ -405,8 +411,20 @@ public final class Strings
     }
 
     /**
-     * Unicode-aware edge stripping (like {@link String#strip()}) plus additional
-     * ingestion cleanup characters.
+     * Unicode-aware edge stripping for external text. This behaves like
+     * {@link String#strip()} for normal whitespace, and also strips common
+     * ingestion artifacts that can appear at text boundaries:
+     * <ul>
+     * <li>non-breaking space ({@code U+00A0}), often copied from HTML, PDFs, and
+     * spreadsheets</li>
+     * <li>zero-width space/non-joiner/joiner ({@code U+200B}, {@code U+200C},
+     * {@code U+200D}), often introduced by copy/paste, web text, PDFs, or rich text
+     * editors</li>
+     * <li>byte order mark ({@code U+FEFF}), often found at file or field
+     * boundaries</li>
+     * <li>replacement character ({@code U+FFFD}), commonly produced by encoding
+     * damage</li>
+     * </ul>
      */
     public static CharSequence stripx(CharSequence s)
     {

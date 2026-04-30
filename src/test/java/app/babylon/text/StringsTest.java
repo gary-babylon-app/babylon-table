@@ -146,6 +146,30 @@ public class StringsTest
     }
 
     @Test
+    public void traceAnyShouldReturnEverySplitterIndex()
+    {
+        CharSequence s = "2026-04/30 12:45";
+
+        assertEquals(bitSet(4, 7, 10, 13), Strings.traceAny(s, '-', '/', ' ', ':'));
+    }
+
+    @Test
+    public void traceAnyShouldSupportSlices()
+    {
+        CharSequence s = "xx2026-04/30yy";
+
+        assertEquals(bitSet(6, 9), Strings.traceAny(s, 2, 10, '-', '/'));
+    }
+
+    @Test
+    public void traceAnyShouldUseSingleSplitterFastPath()
+    {
+        CharSequence s = "a,b,c";
+
+        assertEquals(Strings.trace(s, ','), Strings.traceAny(s, ','));
+    }
+
+    @Test
     public void splitterShouldPreserveEmptyFieldsWhenRequested()
     {
         CharSequence s = "a,, b, ,";
@@ -249,6 +273,36 @@ public class StringsTest
         assertEquals(bitSet(5, 9), Strings.trace(s, 3, 9, '|'));
         assertArrayEquals(new String[]
         {"a", "b", "c"}, Strings.splitter().withSplitter('|').split(s, 3, 9));
+    }
+
+    @Test
+    public void splitterShouldSupportMultipleDelimiters()
+    {
+        Strings.Splitter splitter = Strings.splitter().withSplitters('-', '/');
+
+        assertArrayEquals(new String[]
+        {"2026", "04", "30"}, splitter.split("2026-04/30"));
+    }
+
+    @Test
+    public void splitterShouldDefensivelyCopyAdditionalDelimiters()
+    {
+        char[] additionalSplitters = new char[]
+        {'/'};
+        Strings.Splitter splitter = Strings.splitter().withSplitters('-', additionalSplitters);
+        additionalSplitters[0] = ':';
+
+        assertArrayEquals(new String[]
+        {"2026", "04", "30"}, splitter.split("2026-04/30"));
+    }
+
+    @Test
+    public void withSplitterShouldReturnToSingleDelimiterMode()
+    {
+        Strings.Splitter splitter = Strings.splitter().withSplitters('-', '/').withSplitter('-');
+
+        assertArrayEquals(new String[]
+        {"2026", "04/30"}, splitter.split("2026-04/30"));
     }
 
     @Test

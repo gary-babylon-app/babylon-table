@@ -11,6 +11,7 @@
 package app.babylon.text;
 
 import java.text.Normalizer;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.function.Predicate;
 
@@ -304,6 +305,51 @@ public final class Strings
     }
 
     /**
+     * Finds every occurrence of any supplied splitter and returns the source
+     * indexes as marked bits.
+     * <p>
+     * This is the multi-delimiter form of {@link #trace(CharSequence, char)}. The
+     * single-character trace overload remains the fast path for the common case and
+     * avoids varargs array creation.
+     */
+    public static BitSet traceAny(CharSequence s, char splitter, char... additionalSplitters)
+    {
+        return s == null ? new BitSet() : traceAny(s, 0, s.length(), splitter, additionalSplitters);
+    }
+
+    /**
+     * Finds every occurrence of any supplied splitter in a slice and returns their
+     * indexes as marked bits.
+     * <p>
+     * The returned {@link BitSet} is indexed against the original source sequence,
+     * not against the supplied slice.
+     */
+    public static BitSet traceAny(CharSequence s, int start, int length, char splitter, char... additionalSplitters)
+    {
+        if (additionalSplitters == null || additionalSplitters.length == 0)
+        {
+            return trace(s, start, length, splitter);
+        }
+
+        BitSet indexes = new BitSet();
+        if (s == null || length <= 0)
+        {
+            return indexes;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            char c = s.charAt(i);
+            if (c == splitter || isAny(c, additionalSplitters))
+            {
+                indexes.set(i);
+            }
+        }
+        return indexes;
+    }
+
+    /**
      * Splits using {@code splitter}, with the same defaults as {@link #splitter()}:
      * {@code withStripping(true)} and {@code withRemoveEmpty(true)}.
      * <p>
@@ -426,23 +472,26 @@ public final class Strings
      * 
      * <pre>{@code
      * static final Strings.Splitter PIPE_SPLITTER = Strings.splitter().withSplitter('|');
+     * static final Strings.Splitter DATE_SPLITTER = Strings.splitter().withSplitters('-', '/');
      * String[] fields = PIPE_SPLITTER.withRemoveEmpty(false).split(source);
      * }</pre>
      */
     public static final class Splitter
     {
         private final char splitter;
+        private final char[] additionalSplitters;
         private final boolean strip;
         private final boolean removeEmpty;
 
         private Splitter()
         {
-            this(',', true, true);
+            this(',', null, true, true);
         }
 
-        private Splitter(char splitter, boolean strip, boolean removeEmpty)
+        private Splitter(char splitter, char[] additionalSplitters, boolean strip, boolean removeEmpty)
         {
             this.splitter = splitter;
+            this.additionalSplitters = additionalSplitters;
             this.strip = strip;
             this.removeEmpty = removeEmpty;
         }
@@ -453,7 +502,22 @@ public final class Strings
          */
         public Splitter withSplitter(char splitter)
         {
-            return new Splitter(splitter, this.strip, this.removeEmpty);
+            return new Splitter(splitter, null, this.strip, this.removeEmpty);
+        }
+
+        /**
+         * Returns a splitter that treats any of the supplied delimiter characters as a
+         * field boundary.
+         * <p>
+         * This is intended for reusable splitter constants. The additional delimiter
+         * array is defensively copied so the returned splitter remains immutable.
+         */
+        public Splitter withSplitters(char splitter, char... additionalSplitters)
+        {
+            char[] copy = additionalSplitters == null || additionalSplitters.length == 0
+                    ? null
+                    : Arrays.copyOf(additionalSplitters, additionalSplitters.length);
+            return new Splitter(splitter, copy, this.strip, this.removeEmpty);
         }
 
         /**
@@ -465,7 +529,7 @@ public final class Strings
          */
         public Splitter withStripping(boolean strip)
         {
-            return new Splitter(this.splitter, strip, this.removeEmpty);
+            return new Splitter(this.splitter, this.additionalSplitters, strip, this.removeEmpty);
         }
 
         /**
@@ -478,7 +542,7 @@ public final class Strings
          */
         public Splitter withRemoveEmpty(boolean removeEmpty)
         {
-            return new Splitter(this.splitter, this.strip, removeEmpty);
+            return new Splitter(this.splitter, this.additionalSplitters, this.strip, removeEmpty);
         }
 
         /**
@@ -504,7 +568,9 @@ public final class Strings
             }
 
             int end = start + length;
-            BitSet splitters = trace(source, start, length, this.splitter);
+            BitSet splitters = this.additionalSplitters == null
+                    ? trace(source, start, length, this.splitter)
+                    : traceAny(source, start, length, this.splitter, this.additionalSplitters);
             String[] result = new String[splitters.cardinality() + 1];
             int resultIndex = 0;
             int tokenStart = start;
@@ -847,6 +913,18 @@ public final class Strings
     {
         return Character.isWhitespace(c) || c == '\u00A0' || c == '\u200B' || c == '\u200C' || c == '\u200D'
                 || c == '\uFEFF' || c == '\uFFFD';
+    }
+
+    private static boolean isAny(char c, char[] values)
+    {
+        for (char value : values)
+        {
+            if (c == value)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isBoundedWholeNumber(CharSequence s, int start, int length, String positiveBound,

@@ -11,7 +11,6 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.lang.Is;
-import app.babylon.text.Split;
 
 public class TransformSplit extends TransformBase
 {
@@ -25,7 +24,7 @@ public class TransformSplit extends TransformBase
     {
         super(FUNCTION_NAME);
         this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
-        this.splitOn = ArgumentCheck.nonEmpty(splitOn);
+        this.splitOn = oneCharacter(splitOn);
         this.splitColumnNames = ArgumentCheck.nonNull(splitColumnNames);
     }
 
@@ -60,12 +59,13 @@ public class TransformSplit extends TransformBase
         {
             newColumns[i] = ColumnObject.builder(splitColumnNames[i], ColumnTypes.STRING);
         }
+        Strings.Splitter splitter = Strings.splitter().withSplitter(this.splitOn.charAt(0)).withRemoveEmpty(false);
         for (int i = 0; i < toSplit.size(); ++i)
         {
             String s = toSplit.get(i);
             if (!Strings.isEmpty(s))
             {
-                String[] splitValues = Split.literal(s, this.splitOn, true);
+                String[] splitValues = splitter.split(s);
                 int size = Math.min(splitValues.length, newColumns.length);
                 for (int j = 0; j < size; ++j)
                 {
@@ -80,7 +80,7 @@ public class TransformSplit extends TransformBase
             {
                 for (int j = 0; j < newColumns.length; ++j)
                 {
-                    newColumns[j].addNull();;
+                    newColumns[j].addNull();
                 }
             }
         }
@@ -91,5 +91,15 @@ public class TransformSplit extends TransformBase
             builtColumns[i] = newColumns[i].build();
         }
         putColumns(columnsByName, builtColumns);
+    }
+
+    private static String oneCharacter(String splitOn)
+    {
+        splitOn = ArgumentCheck.nonEmpty(splitOn);
+        if (splitOn.length() != 1)
+        {
+            throw new RuntimeException(FUNCTION_NAME + " split delimiter must be exactly one character.");
+        }
+        return splitOn;
     }
 }

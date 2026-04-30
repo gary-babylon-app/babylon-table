@@ -2,6 +2,7 @@ package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -18,47 +19,62 @@ public class TransformSplitTest
     @Test
     public void shouldSplitOneColumnIntoManyColumns()
     {
-        final ColumnName PAIR = ColumnName.of("Pair");
-        final ColumnName LEFT = ColumnName.of("Left");
-        final ColumnName MIDDLE = ColumnName.of("Middle");
-        final ColumnName RIGHT = ColumnName.of("Right");
+        final ColumnName SPLIT = ColumnName.of("Split");
+        final ColumnName QUANTITY_BEFORE = ColumnName.of("QuantityBefore");
+        final ColumnName QUANTITY_AFTER = ColumnName.of("QuantityAfter");
 
-        ColumnObject.Builder<String> strings = ColumnObject.builder(PAIR, ColumnTypes.STRING);
-        strings.add("A|B|C");
-        strings.add("D||F");
-        strings.add("G|H");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(SPLIT, ColumnTypes.STRING);
+        strings.add("1/20");
+        strings.add(" 3 / 2 ");
+        strings.add("1/");
         strings.addNull();
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformSplit(PAIR, "|", LEFT, MIDDLE, RIGHT));
+        TableColumnar transformed = table.apply(new TransformSplit(SPLIT, "/", QUANTITY_BEFORE, QUANTITY_AFTER));
 
-        ColumnObject<String> lefts = transformed.getString(LEFT);
-        ColumnObject<String> middles = transformed.getString(MIDDLE);
-        ColumnObject<String> rights = transformed.getString(RIGHT);
+        ColumnObject<String> quantitiesBefore = transformed.getString(QUANTITY_BEFORE);
+        ColumnObject<String> quantitiesAfter = transformed.getString(QUANTITY_AFTER);
 
-        assertEquals("A", lefts.get(0));
-        assertEquals("B", middles.get(0));
-        assertEquals("C", rights.get(0));
+        assertEquals("1", quantitiesBefore.get(0));
+        assertEquals("20", quantitiesAfter.get(0));
 
-        assertEquals("D", lefts.get(1));
-        assertEquals("", middles.get(1));
-        assertEquals("F", rights.get(1));
+        assertEquals("3", quantitiesBefore.get(1));
+        assertEquals("2", quantitiesAfter.get(1));
 
-        assertEquals("G", lefts.get(2));
-        assertEquals("H", middles.get(2));
-        assertFalse(rights.isSet(2));
+        assertEquals("1", quantitiesBefore.get(2));
+        assertEquals("", quantitiesAfter.get(2));
 
-        assertFalse(lefts.isSet(3));
-        assertFalse(middles.isSet(3));
-        assertFalse(rights.isSet(3));
+        assertFalse(quantitiesBefore.isSet(3));
+        assertFalse(quantitiesAfter.isSet(3));
     }
 
     @Test
     public void shouldBeAvailableFromBaseRegistry()
     {
-        Transform transform = Transforms.registry().create("Split", "Pair", "|", "Left", "Right");
+        Transform transform = Transforms.registry().create("Split", "Split", "/", "QuantityBefore", "QuantityAfter");
 
         assertTrue(transform instanceof TransformSplit);
+    }
+
+    @Test
+    public void ofShouldParseStringParameters()
+    {
+        TransformSplit transform = TransformSplit.of(new String[]
+        {"Split", "/", "QuantityBefore", "QuantityAfter"});
+
+        assertEquals(ColumnName.of("Split"), transform.columnToSplit);
+        assertEquals("/", transform.splitOn);
+        assertEquals(ColumnName.of("QuantityBefore"), transform.splitColumnNames[0]);
+        assertEquals(ColumnName.of("QuantityAfter"), transform.splitColumnNames[1]);
+    }
+
+    @Test
+    public void shouldRejectMultiCharacterDelimiter()
+    {
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> new TransformSplit(ColumnName.of("AccountKey"), "::", ColumnName.of("AccountType")));
+
+        assertEquals("Split split delimiter must be exactly one character.", exception.getMessage());
     }
 }

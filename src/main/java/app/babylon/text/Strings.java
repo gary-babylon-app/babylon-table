@@ -125,6 +125,20 @@ public final class Strings
         return s == null || s.length() == 0;
     }
 
+    public static boolean isEmpty(CharSequence s, int start, int length)
+    {
+        return s == null || length <= 0;
+    }
+
+    /**
+     * Returns true when the supplied sequence is empty after applying
+     * {@link #stripx(CharSequence)} rules.
+     */
+    public static boolean isStripxEmpty(CharSequence s)
+    {
+        return s == null || isStripxEmpty(s, 0, s.length());
+    }
+
     /**
      * Returns true when the supplied slice is empty after applying the same edge
      * stripping rules as {@link #stripx(CharSequence, int, int)}. Those rules
@@ -169,23 +183,30 @@ public final class Strings
         return -1;
     }
 
-    public static int indexOfAny(CharSequence s, char c1, char c2)
+    public static int indexOfAny(CharSequence s, char c, char... additional)
     {
-        return s == null ? -1 : indexOfAny(s, 0, s.length(), c1, c2);
+        return s == null ? -1 : indexOfAny(s, 0, s.length(), c, additional);
     }
 
-    public static int indexOfAny(CharSequence s, char c1, char c2, char c3)
+    public static int indexOfAny(CharSequence s, int start, int length, char c, char... additional)
     {
-        return s == null ? -1 : indexOfAny(s, 0, s.length(), c1, c2, c3);
-    }
+        if (additional == null || additional.length == 0)
+        {
+            return indexOf(s, start, length, c);
+        }
+        if (additional.length == 1)
+        {
+            return indexOfAny2(s, start, length, c, additional[0]);
+        }
+        if (additional.length == 2)
+        {
+            return indexOfAny3(s, start, length, c, additional[0], additional[1]);
+        }
+        if (additional.length == 3)
+        {
+            return indexOfAny4(s, start, length, c, additional[0], additional[1], additional[2]);
+        }
 
-    public static int indexOfAny(CharSequence s, char c1, char c2, char c3, char c4)
-    {
-        return s == null ? -1 : indexOfAny(s, 0, s.length(), c1, c2, c3, c4);
-    }
-
-    public static int indexOfAny(CharSequence s, int start, int length, char c1, char c2)
-    {
         if (s == null || length <= 0)
         {
             return -1;
@@ -194,46 +215,8 @@ public final class Strings
         int end = start + length;
         for (int i = start; i < end; ++i)
         {
-            char c = s.charAt(i);
-            if (c == c1 || c == c2)
-            {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public static int indexOfAny(CharSequence s, int start, int length, char c1, char c2, char c3)
-    {
-        if (s == null || length <= 0)
-        {
-            return -1;
-        }
-
-        int end = start + length;
-        for (int i = start; i < end; ++i)
-        {
-            char c = s.charAt(i);
-            if (c == c1 || c == c2 || c == c3)
-            {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public static int indexOfAny(CharSequence s, int start, int length, char c1, char c2, char c3, char c4)
-    {
-        if (s == null || length <= 0)
-        {
-            return -1;
-        }
-
-        int end = start + length;
-        for (int i = start; i < end; ++i)
-        {
-            char c = s.charAt(i);
-            if (c == c1 || c == c2 || c == c3 || c == c4)
+            char current = s.charAt(i);
+            if (current == c || isAny(current, additional))
             {
                 return i;
             }
@@ -256,6 +239,33 @@ public final class Strings
         for (int i = start + length - 1; i >= start; --i)
         {
             if (s.charAt(i) == c)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public static int lastIndexOfAny(CharSequence s, char c, char... additional)
+    {
+        return s == null ? -1 : lastIndexOfAny(s, 0, s.length(), c, additional);
+    }
+
+    public static int lastIndexOfAny(CharSequence s, int start, int length, char c, char... additional)
+    {
+        if (additional == null || additional.length == 0)
+        {
+            return lastIndexOf(s, start, length, c);
+        }
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        for (int i = start + length - 1; i >= start; --i)
+        {
+            char current = s.charAt(i);
+            if (current == c || isAny(current, additional))
             {
                 return i;
             }
@@ -913,6 +923,63 @@ public final class Strings
     {
         return Character.isWhitespace(c) || c == '\u00A0' || c == '\u200B' || c == '\u200C' || c == '\u200D'
                 || c == '\uFEFF' || c == '\uFFFD';
+    }
+
+    private static int indexOfAny2(CharSequence s, int start, int length, char c1, char c2)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            char c = s.charAt(i);
+            if (c == c1 || c == c2)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int indexOfAny3(CharSequence s, int start, int length, char c1, char c2, char c3)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            char c = s.charAt(i);
+            if (c == c1 || c == c2 || c == c3)
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int indexOfAny4(CharSequence s, int start, int length, char c1, char c2, char c3, char c4)
+    {
+        if (s == null || length <= 0)
+        {
+            return -1;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            char c = s.charAt(i);
+            if (c == c1 || c == c2 || c == c3 || c == c4)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static boolean isAny(char c, char[] values)

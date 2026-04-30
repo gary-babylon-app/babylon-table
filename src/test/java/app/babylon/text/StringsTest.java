@@ -76,6 +76,24 @@ public class StringsTest
         assertTrue(Strings.isEmpty(""));
         assertFalse(Strings.isEmpty(" "));
         assertFalse(Strings.isEmpty("abc"));
+
+        assertTrue(Strings.isEmpty(null, 0, 3));
+        assertTrue(Strings.isEmpty("abc", 1, 0));
+        assertTrue(Strings.isEmpty("abc", 1, -1));
+        assertFalse(Strings.isEmpty("abc", 1, 1));
+        assertFalse(Strings.isEmpty("   ", 0, 3));
+    }
+
+    @Test
+    public void isStripxEmptyShouldRecogniseWholeSequencesEmptyAfterStripping()
+    {
+        assertTrue(Strings.isStripxEmpty(null));
+        assertTrue(Strings.isStripxEmpty(""));
+        assertTrue(Strings.isStripxEmpty(" \t\n"));
+        assertTrue(Strings.isStripxEmpty("\uFEFF\u200B\u00A0\uFFFD"));
+
+        assertFalse(Strings.isStripxEmpty("abc"));
+        assertFalse(Strings.isStripxEmpty(" abc "));
     }
 
     @Test
@@ -106,15 +124,19 @@ public class StringsTest
         assertEquals(5, Strings.indexOfAny("trade;date", ',', ';'));
         assertEquals(5, Strings.indexOfAny("trade|date", ',', ';', '|'));
         assertEquals(5, Strings.indexOfAny("trade\ndate", ',', ';', '|', '\n'));
+        assertEquals(5, Strings.indexOfAny("trade:date", ',', ';', '|', '\n', ':'));
 
         assertEquals(7, Strings.indexOfAny("xxtrade,dateyy", 2, 10, ',', ';'));
         assertEquals(7, Strings.indexOfAny("xxtrade;dateyy", 2, 10, ',', ';'));
         assertEquals(7, Strings.indexOfAny("xxtrade|dateyy", 2, 10, ',', ';', '|'));
         assertEquals(7, Strings.indexOfAny("xxtrade\ndateyy", 2, 10, ',', ';', '|', '\n'));
+        assertEquals(7, Strings.indexOfAny("xxtrade-dateyy", 2, 10, ',', ';', '|', '\n', '-'));
 
+        assertEquals(5, Strings.indexOfAny("trade,date", ','));
         assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';'));
         assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';', '|'));
         assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';', '|', '\n'));
+        assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';', '|', '\n', ':'));
         assertEquals(-1, Strings.indexOfAny("xxtrade,dateyy", 0, 2, ',', ';', '|', '\n'));
         assertEquals(-1, Strings.indexOfAny(null, ',', ';'));
     }
@@ -127,6 +149,19 @@ public class StringsTest
         assertEquals(12, Strings.lastIndexOf("xxtrade-date-endyy", 2, 14, '-'));
         assertEquals(7, Strings.lastIndexOf("xxtrade-date-endyy", 2, 10, '-'));
         assertEquals(-1, Strings.lastIndexOf(null, '-'));
+    }
+
+    @Test
+    public void lastIndexOfAnyShouldFindLastRequestedCharacterInWholeSequenceAndSlices()
+    {
+        assertEquals(10, Strings.lastIndexOfAny("trade,date:end", ',', ';', ':'));
+        assertEquals(5, Strings.lastIndexOfAny("trade,date", ','));
+        assertEquals(12, Strings.lastIndexOfAny("xxtrade,date:endyy", 2, 14, ',', ';', ':'));
+        assertEquals(7, Strings.lastIndexOfAny("xxtrade,date:endyy", 2, 10, ',', ';', ':'));
+
+        assertEquals(-1, Strings.lastIndexOfAny("tradedate", ',', ';', ':'));
+        assertEquals(-1, Strings.lastIndexOfAny("xxtrade,dateyy", 0, 2, ',', ';', ':'));
+        assertEquals(-1, Strings.lastIndexOfAny(null, ',', ';'));
     }
 
     @Test

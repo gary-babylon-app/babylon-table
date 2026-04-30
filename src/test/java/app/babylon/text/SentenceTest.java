@@ -13,43 +13,94 @@ package app.babylon.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.Currency;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.jupiter.api.Test;
 
 public class SentenceTest
 {
     @Test
-    public void onlyOneInShouldReturnOnlyMatch()
+    public void firstInShouldReturnFirstMatch()
     {
-        Integer actual = Sentence.onlyOneIn(this::parseInteger, "abc 123 xyz");
+        Integer actual = Sentence.firstIn(this::parseIntegerSlice, "abc 123 xyz 456");
         assertEquals(123, actual);
     }
 
     @Test
-    public void onlyOneInShouldReturnNullWhenNoMatch()
+    public void firstInShouldBindSliceParserMethodReferences()
     {
-        Integer actual = Sentence.onlyOneIn(this::parseInteger, "abc xyz");
-        assertNull(actual);
+        Currency actual = Sentence.firstIn(Currencys::parse, "pay USD 120 tomorrow");
+        assertEquals(Currency.getInstance("USD"), actual);
     }
 
     @Test
-    public void onlyOneInShouldReturnNullWhenMultipleMatches()
+    public void lastInShouldReturnLastMatch()
     {
-        Integer actual = Sentence.onlyOneIn(this::parseInteger, "123 abc 456");
-        assertNull(actual);
+        Integer actual = Sentence.lastIn(this::parseIntegerSlice, "abc 123 xyz 456");
+        assertEquals(456, actual);
     }
 
     @Test
-    public void onlyInShouldDelegateToOnlyOneIn()
+    public void lastInShouldUseConfiguredSeparator()
     {
-        Integer actual = Sentence.onlyIn(this::parseInteger, "abc 123 xyz");
+        Integer actual = Sentence.lastIn(this::parseIntegerSlice, "abc,123,xyz,456", ',');
+        assertEquals(456, actual);
+    }
+
+    @Test
+    public void onlyInShouldReturnOnlyMatch()
+    {
+        Integer actual = Sentence.onlyIn(this::parseIntegerSlice, "abc 123 xyz");
         assertEquals(123, actual);
     }
 
-    private Integer parseInteger(CharSequence s)
+    @Test
+    public void onlyInShouldReturnNullWhenNoMatch()
+    {
+        Integer actual = Sentence.onlyIn(this::parseIntegerSlice, "abc xyz");
+        assertNull(actual);
+    }
+
+    @Test
+    public void onlyInShouldReturnNullWhenMultipleMatches()
+    {
+        Integer actual = Sentence.onlyIn(this::parseIntegerSlice, "123 abc 456");
+        assertNull(actual);
+    }
+
+    @Test
+    public void onlyInShouldBindSliceParserMethodReferences()
+    {
+        Currency actual = Sentence.onlyIn(Currencys::parse, "pay USD tomorrow");
+        assertEquals(Currency.getInstance("USD"), actual);
+    }
+
+    @Test
+    public void parserShouldReceiveSourceAndSliceBounds()
+    {
+        AtomicInteger calls = new AtomicInteger();
+
+        Integer actual = Sentence.firstIn((s, start, length) -> {
+            calls.incrementAndGet();
+            assertEquals("abc 123 xyz", s.toString());
+            return parseInteger(s, start, length);
+        }, "abc 123 xyz");
+
+        assertEquals(123, actual);
+        assertEquals(2, calls.get());
+    }
+
+    private Integer parseIntegerSlice(CharSequence s, int start, int length)
+    {
+        return parseInteger(s, start, length);
+    }
+
+    private Integer parseInteger(CharSequence s, int start, int length)
     {
         try
         {
-            return Integer.valueOf(s.toString());
+            return Integer.valueOf(s.subSequence(start, start + length).toString());
         }
         catch (NumberFormatException e)
         {

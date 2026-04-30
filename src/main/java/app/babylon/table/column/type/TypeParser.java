@@ -10,23 +10,22 @@
 
 package app.babylon.table.column.type;
 
+import app.babylon.text.SliceParser;
+
 /**
  * Parses textual values into a target typed value.
+ * <p>
+ * The primary operation is slice parsing. Whole-sequence parsing delegates to
+ * the slice method, so type parsers can be used anywhere a {@link SliceParser}
+ * is expected without creating intermediate strings.
  *
  * @param <T>
- *            the object value type produced by {@link #parse(CharSequence)}
+ *            the object value type produced by
+ *            {@link #parse(CharSequence, int, int)}
  */
-public interface TypeParser<T>
+@FunctionalInterface
+public interface TypeParser<T> extends SliceParser<T>
 {
-    /**
-     * Parses a whole character sequence into an object value.
-     *
-     * @param s
-     *            the source text
-     * @return the parsed value, or {@code null} when parsing fails
-     */
-    T parse(CharSequence s);
-
     /**
      * Parses a slice of a character sequence into an object value.
      *
@@ -38,9 +37,20 @@ public interface TypeParser<T>
      *            the slice length
      * @return the parsed value, or {@code null} when parsing fails
      */
-    default T parse(CharSequence s, int offset, int length)
+    @Override
+    T parse(CharSequence s, int offset, int length);
+
+    /**
+     * Parses a whole character sequence into an object value.
+     *
+     * @param s
+     *            the source text
+     * @return the parsed value, or {@code null} when parsing fails
+     */
+    @Override
+    default T parse(CharSequence s)
     {
-        return parse(s.subSequence(offset, offset + length));
+        return s == null ? null : parse(s, 0, s.length());
     }
 
     /**

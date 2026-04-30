@@ -81,7 +81,7 @@ public class TransformToTypeTest
     }
 
     @Test
-    public void shouldUseOnlyOneInParseMode()
+    public void shouldUseOnlyInParseMode()
     {
         final ColumnName FROM = ColumnName.of("From");
         final ColumnName TO = ColumnName.of("To");
@@ -93,7 +93,7 @@ public class TransformToTypeTest
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
         TableColumnar transformed = table
-                .apply(TransformToType.of(ColumnTypes.DECIMAL, "From", "To", "CATEGORICAL", "ONLY_ONE_IN"));
+                .apply(TransformToType.of(ColumnTypes.DECIMAL, "From", "To", "CATEGORICAL", "ONLY_IN"));
 
         ColumnCategorical<BigDecimal> decimals = transformed.getCategorical(TO, ColumnTypes.DECIMAL);
         assertEquals(new BigDecimal("1"), decimals.get(0));

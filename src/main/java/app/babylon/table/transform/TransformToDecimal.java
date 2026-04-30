@@ -12,7 +12,6 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.text.BigDecimals;
-import app.babylon.text.Split;
 import app.babylon.text.Strings;
 
 public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
@@ -62,7 +61,7 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
                 return null;
             }
             s = s.substring(FUNCTION_NAME.length() + 1, s.length() - 1);
-            return new TransformToDecimal(ColumnName.of(Split.commaSeparatedParams(s)));
+            return new TransformToDecimal(ColumnName.of(Strings.split(s)));
         }
         if (params.length >= 2)
         {

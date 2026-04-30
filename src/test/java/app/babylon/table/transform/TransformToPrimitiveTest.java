@@ -50,10 +50,10 @@ class TransformToPrimitiveTest
         builder.add("abc");
 
         TransformToPrimitive transform = new TransformToPrimitive(AMOUNT, ColumnTypes.DOUBLE,
-                TransformParseMode.ONLY_ONE_IN);
+                TransformParseMode.ONLY_IN);
         ColumnDouble doubles = (ColumnDouble) transform.apply(builder.build());
 
-        assertSame(TransformParseMode.ONLY_ONE_IN, transform.getParseMode());
+        assertSame(TransformParseMode.ONLY_IN, transform.getParseMode());
         assertEquals(12.5d, doubles.get(0), 1.0e-12);
         assertFalse(doubles.isSet(1));
     }

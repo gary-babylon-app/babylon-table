@@ -24,7 +24,7 @@ public class TransformToDouble extends TransformBase
     {
         super(FUNCTION_NAME);
         this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName),
-                ArgumentCheck.nonNull(newColumnName), ColumnTypes.DOUBLE, TransformParseMode.ONLY_ONE_IN);
+                ArgumentCheck.nonNull(newColumnName), ColumnTypes.DOUBLE, TransformParseMode.ONLY_IN);
     }
 
     public static TransformToDouble of(String... params)

@@ -9,7 +9,6 @@ import java.util.Map;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.text.Split;
 import app.babylon.text.Strings;
 
 class TransformDecimalBinaryOperator extends TransformBase
@@ -104,7 +103,7 @@ class TransformDecimalBinaryOperator extends TransformBase
 
         s = s.substring(FUNCTION_NAME.length() + 1, s.length() - 1);
 
-        String[] params = Split.commaSeparatedParams(s);
+        String[] params = Strings.split(s);
 
         if (params.length < 3)
         {

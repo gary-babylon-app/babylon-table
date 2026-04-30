@@ -16,12 +16,15 @@ import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.text.Sentence;
+
 class TypeParserTest
 {
     @Test
     void defaultPrimitiveParsersShouldWorkForCharSequence()
     {
-        TypeParser<String> parser = s -> s == null ? null : s.toString().trim();
+        TypeParser<String> parser = (s, offset,
+                length) -> s == null ? null : s.subSequence(offset, offset + length).toString().trim();
 
         assertEquals("Alpha", parser.parse(" Alpha "));
         assertEquals((byte) 12, parser.parseByte("12"));
@@ -33,7 +36,7 @@ class TypeParserTest
     @Test
     void defaultPrimitiveParsersShouldWorkForCharSlice()
     {
-        TypeParser<String> parser = CharSequence::toString;
+        TypeParser<String> parser = (s, offset, length) -> s.subSequence(offset, offset + length).toString();
         String chars = "xx-12|345|6789012345|9.75|Beta-yy";
 
         assertEquals((byte) -12, parser.parseByte(chars, 2, 3));
@@ -267,5 +270,13 @@ class TypeParserTest
         assertNull(parser.parse("not-a-currency"));
         assertNull(parser.parse(""));
         assertNull(parser.parse((CharSequence) null));
+    }
+
+    @Test
+    void typeParserShouldBindWhereSliceParserIsExpected()
+    {
+        Currency actual = Sentence.firstIn(TypeParsers.CURRENCY, "pay USD tomorrow");
+
+        assertSame(Currency.getInstance("USD"), actual);
     }
 }

@@ -10,55 +10,117 @@
 
 package app.babylon.text;
 
-import java.util.List;
-import java.util.function.Function;
+import java.util.BitSet;
 
 public final class Sentence
 {
 
-    public static <T> T firstIn(Function<CharSequence, T> parser, CharSequence sentence)
+    /**
+     * Finds the <em>first</em> parsed value <em>in</em> a space-separated sentence.
+     * <p>
+     * Parsers with a {@code parse(CharSequence, int, int)} shape bind directly to
+     * {@link SliceParser}, so callers can scan sentence words without materialising
+     * intermediate strings:
+     * 
+     * <pre>
+     * Currency currency = Sentence.firstIn(Currencys::parse, "pay USD 120 tomorrow");
+     * Currency typed = Sentence.firstIn(TypeParsers.CURRENCY, "pay USD 120 tomorrow");
+     * </pre>
+     * <p>
+     * {@code TypeParser} implementations can be used here too because they extend
+     * {@link SliceParser}.
+     */
+    public static <T> T firstIn(SliceParser<T> parser, CharSequence sentence)
     {
-        List<String> words = Split.anyChars(sentence, " ");
-
-        for (String word : words)
+        if (sentence == null)
         {
-            T value = parser.apply(word);
+            return null;
+        }
+        BitSet separators = Strings.trace(sentence, ' ');
+        int start = 0;
+        for (int separator = separators.nextSetBit(0); separator >= 0; separator = separators.nextSetBit(separator + 1))
+        {
+            T value = parse(parser, sentence, start, separator);
             if (value != null)
             {
                 return value;
             }
+            start = separator + 1;
         }
-        return null;
+        return parse(parser, sentence, start, sentence.length());
     }
 
-    public static <T> T lastIn(Function<CharSequence, T> parser, String sentence)
+    /**
+     * Finds the <em>last</em> parsed value <em>in</em> a space-separated sentence.
+     * <p>
+     * For example, this finds the last currency in a sentence:
+     * 
+     * <pre>
+     * Currency currency = Sentence.lastIn(Currencys::parse, "pay USD or EUR tomorrow");
+     * Currency typed = Sentence.lastIn(TypeParsers.CURRENCY, "pay USD or EUR tomorrow");
+     * </pre>
+     * <p>
+     * The parser receives the original sentence plus each word's start and length,
+     * avoiding intermediate strings.
+     */
+    public static <T> T lastIn(SliceParser<T> parser, String sentence)
     {
-        return lastIn(parser, sentence, " ");
+        return lastIn(parser, sentence, ' ');
     }
 
-    public static <T> T lastIn(Function<CharSequence, T> parser, String sentence, String separators)
+    /**
+     * Finds the <em>last</em> parsed value <em>in</em> a sentence separated by
+     * {@code separator}.
+     * <p>
+     * The parser receives the original sentence plus each field's start and length,
+     * avoiding intermediate strings.
+     */
+    public static <T> T lastIn(SliceParser<T> parser, String sentence, char separator)
     {
-        List<String> words = Split.anyChars(sentence, separators);
-
-        for (int i = words.size() - 1; i >= 0; --i)
+        if (sentence == null)
         {
-            T value = parser.apply(words.get(i));
+            return null;
+        }
+        BitSet separators = Strings.trace(sentence, separator);
+        int end = sentence.length();
+        for (int i = separators.previousSetBit(sentence.length() - 1); i >= 0; i = separators.previousSetBit(i - 1))
+        {
+            T value = parse(parser, sentence, i + 1, end);
             if (value != null)
             {
                 return value;
             }
+            end = i;
         }
-        return null;
+        return parse(parser, sentence, 0, end);
     }
 
-    public static <T> T onlyOneIn(Function<CharSequence, T> parser, CharSequence sentence)
+    /**
+     * Finds the <em>only</em> parsed value <em>in</em> a space-separated sentence,
+     * or {@code null} when no value or multiple values are found.
+     * <p>
+     * The name is short for "find the only currency in this sentence":
+     * 
+     * <pre>
+     * Currency currency = Sentence.onlyIn(Currencys::parse, "pay USD tomorrow");
+     * Currency typed = Sentence.onlyIn(TypeParsers.CURRENCY, "pay USD tomorrow");
+     * </pre>
+     * <p>
+     * The parser receives the original sentence plus each word's start and length,
+     * avoiding intermediate strings.
+     */
+    public static <T> T onlyIn(SliceParser<T> parser, CharSequence sentence)
     {
-        List<String> words = Split.anyChars(sentence, " ");
+        if (sentence == null)
+        {
+            return null;
+        }
+        BitSet separators = Strings.trace(sentence, ' ');
         T only = null;
-
-        for (String word : words)
+        int start = 0;
+        for (int separator = separators.nextSetBit(0); separator >= 0; separator = separators.nextSetBit(separator + 1))
         {
-            T value = parser.apply(word);
+            T value = parse(parser, sentence, start, separator);
             if (value != null)
             {
                 if (only != null)
@@ -67,12 +129,26 @@ public final class Sentence
                 }
                 only = value;
             }
+            start = separator + 1;
+        }
+        T value = parse(parser, sentence, start, sentence.length());
+        if (value != null)
+        {
+            if (only != null)
+            {
+                return null;
+            }
+            only = value;
         }
         return only;
     }
 
-    public static <T> T onlyIn(Function<CharSequence, T> parser, CharSequence sentence)
+    private static <T> T parse(SliceParser<T> parser, CharSequence sentence, int start, int end)
     {
-        return onlyOneIn(parser, sentence);
+        if (start >= end)
+        {
+            return null;
+        }
+        return parser.parse(sentence, start, end - start);
     }
 }

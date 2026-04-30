@@ -67,8 +67,9 @@ public final class TypeParsers
     private static final Period PERIOD_12M = Period.ofMonths(12);
     private static final Period PERIOD_1Y = Period.ofYears(1);
 
-    public static final TypeParser<Object> NULL = s -> null;
-    public static final TypeParser<String> STRING = s -> s == null ? null : s.toString();
+    public static final TypeParser<Object> NULL = (s, offset, length) -> null;
+    public static final TypeParser<String> STRING = (s, offset,
+            length) -> s == null ? null : s.subSequence(offset, offset + length).toString();
     public static final TypeParser<Byte> BYTE = new TypeParser<>()
     {
         @Override
@@ -191,7 +192,8 @@ public final class TypeParsers
             return s == null || length <= 0 ? null : BigDecimals.parseDouble(s.subSequence(offset, offset + length));
         }
     };
-    public static final TypeParser<BigDecimal> BIG_DECIMAL = BigDecimals::parse;
+    public static final TypeParser<BigDecimal> BIG_DECIMAL = (s, offset, length) -> BigDecimals
+            .parse(s == null ? null : s.subSequence(offset, offset + length));
     public static final TypeParser<Instant> INSTANT = new TypeParser<>()
     {
         @Override
@@ -591,7 +593,8 @@ public final class TypeParsers
     public static TypeParser<LocalDate> localDate(DateFormat format)
     {
         DateFormat x = ArgumentCheck.nonNull(format);
-        return s -> ColumnLocalDates.stringToDate(s, x);
+        return (s, offset, length) -> ColumnLocalDates
+                .stringToDate(s == null ? null : s.subSequence(offset, offset + length), x);
     }
 
     private static CharSequence normalisePeriodText(CharSequence s, int start, int endExclusive)

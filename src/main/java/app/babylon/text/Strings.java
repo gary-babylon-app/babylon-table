@@ -11,9 +11,13 @@
 package app.babylon.text;
 
 import java.text.Normalizer;
+import java.util.BitSet;
+import java.util.function.Predicate;
 
 public final class Strings
 {
+    public static final Predicate<String> EMPTY_OR_NULL = s -> s == null || s.isEmpty();
+    private static final Splitter DEFAULT_SPLITTER = new Splitter();
 
     public static CharSequence toCamelUpperPreserve(CharSequence x)
     {
@@ -256,6 +260,286 @@ public final class Strings
             }
         }
         return -1;
+    }
+
+    /**
+     * Finds every occurrence of {@code splitter} and returns the source indexes as
+     * marked bits.
+     * <p>
+     * This is intentionally a raw delimiter trace: it does not strip text, remove
+     * empty fields, or otherwise apply {@link Splitter} policy. Use it when code
+     * needs delimiter positions directly, for example to size arrays or plan
+     * low-level parsing.
+     */
+    public static BitSet trace(CharSequence s, char splitter)
+    {
+        return s == null ? new BitSet() : trace(s, 0, s.length(), splitter);
+    }
+
+    /**
+     * Finds every occurrence of {@code splitter} in a slice and returns their
+     * indexes as marked bits.
+     * <p>
+     * The returned {@link BitSet} is indexed against the original source sequence,
+     * not against the supplied slice. For example, a splitter at {@code start} sets
+     * bit {@code start}.
+     */
+    public static BitSet trace(CharSequence s, int start, int length, char splitter)
+    {
+        BitSet indexes = new BitSet();
+        if (s == null || length <= 0)
+        {
+            return indexes;
+        }
+
+        int end = start + length;
+        for (int i = start; i < end; ++i)
+        {
+            if (s.charAt(i) == splitter)
+            {
+                indexes.set(i);
+            }
+        }
+        return indexes;
+    }
+
+    /**
+     * Splits using {@code splitter}, with the same defaults as {@link #splitter()}:
+     * {@code withStripping(true)} and {@code withRemoveEmpty(true)}.
+     * <p>
+     * This is convenient for one-off calls. For repeated use with the same
+     * delimiter, prefer a reusable immutable {@link Splitter}:
+     * 
+     * <pre>{@code
+     * private static final Strings.Splitter PIPE = Strings.splitter().withSplitter('|');
+     * }</pre>
+     */
+    public static String[] split(CharSequence s, char splitter)
+    {
+        return splitter().withSplitter(splitter).split(s);
+    }
+
+    /**
+     * Splits a slice using {@code splitter}, with the same defaults as
+     * {@link #splitter()}: {@code withStripping(true)} and
+     * {@code withRemoveEmpty(true)}.
+     * <p>
+     * This is convenient for one-off calls. For repeated use with the same
+     * delimiter, prefer a reusable immutable {@link Splitter}.
+     */
+    public static String[] split(CharSequence s, int start, int length, char splitter)
+    {
+        return splitter().withSplitter(splitter).split(s, start, length);
+    }
+
+    /**
+     * Splits comma-separated text using the default {@link Splitter} settings.
+     */
+    public static String[] split(CharSequence s)
+    {
+        return DEFAULT_SPLITTER.split(s);
+    }
+
+    /**
+     * Returns a copy of {@code values} with {@code null} entries removed while
+     * preserving order.
+     * <p>
+     * If {@code values} is already compact, the same array instance is returned. If
+     * {@code values} is null, an empty array is returned.
+     */
+    public static String[] compact(String[] values)
+    {
+        return compact(values, s -> s == null);
+    }
+
+    /**
+     * Returns a copy of {@code values} with entries matching {@code remove} omitted
+     * while preserving order.
+     * <p>
+     * If no entries match, the same array instance is returned. If {@code values}
+     * is null, an empty array is returned. If {@code remove} is null, no entries
+     * are removed.
+     */
+    public static String[] compact(String[] values, Predicate<String> remove)
+    {
+        if (values == null)
+        {
+            return new String[0];
+        }
+        if (remove == null)
+        {
+            return values;
+        }
+
+        BitSet removed = new BitSet();
+        for (int i = 0; i < values.length; ++i)
+        {
+            if (remove.test(values[i]))
+            {
+                removed.set(i);
+            }
+        }
+        int removedCount = removed.cardinality();
+        if (removedCount == 0)
+        {
+            return values;
+        }
+
+        String[] compacted = new String[values.length - removedCount];
+        int size = 0;
+        for (int i = 0; i < values.length; ++i)
+        {
+            if (!removed.get(i))
+            {
+                compacted[size++] = values[i];
+            }
+        }
+        return compacted;
+    }
+
+    /**
+     * Creates a reusable splitter configuration.
+     * <p>
+     * Defaults are comma delimiter, {@code withStripping(true)}, and
+     * {@code withRemoveEmpty(true)}. Stripping uses the same boundary rules as
+     * {@link #stripx(CharSequence)}, so it removes Unicode whitespace and common
+     * ingestion artifacts such as BOMs, non-breaking spaces, zero-width characters,
+     * and replacement characters.
+     * <p>
+     * Because splitter configurations are immutable, configured instances can be
+     * stored as constants for repeated use:
+     * 
+     * <pre>{@code
+     * private static final Strings.Splitter PIPE = Strings.splitter().withSplitter('|');
+     * }</pre>
+     */
+    public static Splitter splitter()
+    {
+        return DEFAULT_SPLITTER;
+    }
+
+    /**
+     * Configurable string splitter.
+     * <p>
+     * Splitters are immutable. Fluent configuration methods return a new splitter,
+     * so configured instances can be safely reused as constants, for example:
+     * 
+     * <pre>{@code
+     * static final Strings.Splitter PIPE_SPLITTER = Strings.splitter().withSplitter('|');
+     * String[] fields = PIPE_SPLITTER.withRemoveEmpty(false).split(source);
+     * }</pre>
+     */
+    public static final class Splitter
+    {
+        private final char splitter;
+        private final boolean strip;
+        private final boolean removeEmpty;
+
+        private Splitter()
+        {
+            this(',', true, true);
+        }
+
+        private Splitter(char splitter, boolean strip, boolean removeEmpty)
+        {
+            this.splitter = splitter;
+            this.strip = strip;
+            this.removeEmpty = removeEmpty;
+        }
+
+        /**
+         * Returns a splitter with the delimiter character used to split input. The
+         * default delimiter is comma.
+         */
+        public Splitter withSplitter(char splitter)
+        {
+            return new Splitter(splitter, this.strip, this.removeEmpty);
+        }
+
+        /**
+         * Returns a splitter that controls whether each field is stripped before it is
+         * returned or tested for emptiness.
+         * <p>
+         * When enabled, stripping uses {@link #stripx(CharSequence)} rules at field
+         * boundaries. The default is {@code true}.
+         */
+        public Splitter withStripping(boolean strip)
+        {
+            return new Splitter(this.splitter, strip, this.removeEmpty);
+        }
+
+        /**
+         * Returns a splitter that controls whether empty fields are omitted from the
+         * result.
+         * <p>
+         * When {@code withStripping(true)} is enabled, fields containing only
+         * stripx-removable boundary characters are considered empty. The default is
+         * {@code true}.
+         */
+        public Splitter withRemoveEmpty(boolean removeEmpty)
+        {
+            return new Splitter(this.splitter, this.strip, removeEmpty);
+        }
+
+        /**
+         * Splits the whole source using this splitter configuration.
+         */
+        public String[] split(CharSequence source)
+        {
+            return source == null ? new String[0] : split(source, 0, source.length());
+        }
+
+        /**
+         * Splits a slice using this splitter configuration.
+         * <p>
+         * The implementation traces delimiter positions once, allocates for the maximum
+         * possible number of fields, and only compacts the result if empty fields are
+         * removed.
+         */
+        public String[] split(CharSequence source, int start, int length)
+        {
+            if (source == null || length <= 0)
+            {
+                return new String[0];
+            }
+
+            int end = start + length;
+            BitSet splitters = trace(source, start, length, this.splitter);
+            String[] result = new String[splitters.cardinality() + 1];
+            int resultIndex = 0;
+            int tokenStart = start;
+            for (int splitterIndex = splitters.nextSetBit(start); splitterIndex >= 0
+                    && splitterIndex < end; splitterIndex = splitters.nextSetBit(splitterIndex + 1))
+            {
+                String token = this.stringOrNull(source, tokenStart, splitterIndex - tokenStart);
+                if (token != null)
+                {
+                    result[resultIndex++] = token;
+                }
+                tokenStart = splitterIndex + 1;
+            }
+            String token = this.stringOrNull(source, tokenStart, end - tokenStart);
+            if (token != null)
+            {
+                result[resultIndex++] = token;
+            }
+            return resultIndex == result.length ? result : compact(result);
+        }
+
+        private String stringOrNull(CharSequence source, int start, int length)
+        {
+            if (!this.strip)
+            {
+                return this.removeEmpty && length <= 0 ? null : source.subSequence(start, start + length).toString();
+            }
+            int strippedStart = stripxStart(source, start, length);
+            int strippedEnd = stripxEnd(source, start, length);
+            if (this.removeEmpty && strippedStart >= strippedEnd)
+            {
+                return null;
+            }
+            return strippedStart >= strippedEnd ? "" : source.subSequence(strippedStart, strippedEnd).toString();
+        }
     }
 
     public static boolean isWholeNumber(CharSequence s)
@@ -528,6 +812,35 @@ public final class Strings
         int type = Character.getType(c);
         return type == Character.NON_SPACING_MARK || type == Character.COMBINING_SPACING_MARK
                 || type == Character.ENCLOSING_MARK;
+    }
+
+    private static int stripxStart(CharSequence s, int start, int length)
+    {
+        if (s == null || length <= 0)
+        {
+            return start;
+        }
+        int strippedStart = start;
+        int end = start + length;
+        while (strippedStart < end && isStrippable(s.charAt(strippedStart)))
+        {
+            ++strippedStart;
+        }
+        return strippedStart;
+    }
+
+    private static int stripxEnd(CharSequence s, int start, int length)
+    {
+        if (s == null || length <= 0)
+        {
+            return start;
+        }
+        int strippedEnd = start + length;
+        while (strippedEnd > start && isStrippable(s.charAt(strippedEnd - 1)))
+        {
+            --strippedEnd;
+        }
+        return strippedEnd;
     }
 
     private static boolean isStrippable(char c)

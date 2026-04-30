@@ -23,6 +23,7 @@ class TransformParseModeTest
     {
         assertEquals(TransformParseMode.EXACT, TransformParseMode.parse(null));
         assertEquals(TransformParseMode.FIRST_IN, TransformParseMode.parse("first_in"));
+        assertEquals(TransformParseMode.ONLY_IN, TransformParseMode.parse("only_in"));
     }
 
     @Test
@@ -31,7 +32,7 @@ class TransformParseModeTest
         assertEquals(Integer.valueOf(12), TransformParseMode.EXACT.apply(INTEGER_PARSER, "12"));
         assertEquals(Integer.valueOf(12), TransformParseMode.FIRST_IN.apply(INTEGER_PARSER, "x 12 y 34"));
         assertEquals(Integer.valueOf(34), TransformParseMode.LAST_IN.apply(INTEGER_PARSER, "x 12 y 34"));
-        assertEquals(Integer.valueOf(12), TransformParseMode.ONLY_ONE_IN.apply(INTEGER_PARSER, "only 12 here"));
-        assertNull(TransformParseMode.ONLY_ONE_IN.apply(INTEGER_PARSER, "12 and 34"));
+        assertEquals(Integer.valueOf(12), TransformParseMode.ONLY_IN.apply(INTEGER_PARSER, "only 12 here"));
+        assertNull(TransformParseMode.ONLY_IN.apply(INTEGER_PARSER, "12 and 34"));
     }
 }

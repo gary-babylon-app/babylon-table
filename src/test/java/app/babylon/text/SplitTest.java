@@ -20,17 +20,17 @@ import org.junit.jupiter.api.Test;
 public class SplitTest
 {
     @Test
-    public void anyCharsShouldSplitOnAnyConfiguredSeparator()
+    public void characterShouldSplitOnConfiguredSeparator()
     {
-        List<String> actual = Split.anyChars("alpha,beta;gamma", ",;");
+        List<String> actual = Split.character("alpha,beta,gamma", ',');
 
         assertEquals(List.of("alpha", "beta", "gamma"), actual);
     }
 
     @Test
-    public void anyCharsShouldUseSpaceWhenSeparatorsAreEmpty()
+    public void characterShouldRemoveEmptyValues()
     {
-        List<String> actual = Split.anyChars("alpha beta  gamma", "");
+        List<String> actual = Split.character("alpha beta  gamma", ' ');
 
         assertEquals(List.of("alpha", "beta", "gamma"), actual);
     }
@@ -51,15 +51,6 @@ public class SplitTest
 
         assertArrayEquals(new String[]
         {"a", "", "b"}, actual);
-    }
-
-    @Test
-    public void commaSeparatedParamsShouldTrimWhitespaceAroundCommas()
-    {
-        String[] actual = Split.commaSeparatedParams(" left , middle,right ");
-
-        assertArrayEquals(new String[]
-        {" left", "middle", "right "}, actual);
     }
 
     @Test

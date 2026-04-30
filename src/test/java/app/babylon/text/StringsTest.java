@@ -10,11 +10,14 @@
 
 package app.babylon.text;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.BitSet;
 
 import org.junit.jupiter.api.Test;
 
@@ -124,6 +127,128 @@ public class StringsTest
         assertEquals(12, Strings.lastIndexOf("xxtrade-date-endyy", 2, 14, '-'));
         assertEquals(7, Strings.lastIndexOf("xxtrade-date-endyy", 2, 10, '-'));
         assertEquals(-1, Strings.lastIndexOf(null, '-'));
+    }
+
+    @Test
+    public void traceShouldReturnSplitterIndexes()
+    {
+        CharSequence s = "xx alpha, beta ,gamma yy";
+
+        assertEquals(bitSet(8, 15), Strings.trace(s, 3, 18, ','));
+    }
+
+    @Test
+    public void traceShouldReturnEverySplitterIndex()
+    {
+        CharSequence s = "a,, b, ,";
+
+        assertEquals(bitSet(1, 2, 5, 7), Strings.trace(s, ','));
+    }
+
+    @Test
+    public void splitterShouldPreserveEmptyFieldsWhenRequested()
+    {
+        CharSequence s = "a,, b, ,";
+
+        assertArrayEquals(new String[]
+        {"a", "", "b", "", ""}, Strings.splitter().withRemoveEmpty(false).split(s));
+    }
+
+    @Test
+    public void splitterConfigurationShouldBeImmutable()
+    {
+        Strings.Splitter splitter = Strings.splitter();
+        Strings.Splitter keepEmpty = splitter.withRemoveEmpty(false);
+        Strings.Splitter pipe = splitter.withSplitter('|');
+
+        assertArrayEquals(new String[]
+        {"a", "b"}, splitter.split("a,,b"));
+        assertArrayEquals(new String[]
+        {"a", "", "b"}, keepEmpty.split("a,,b"));
+        assertArrayEquals(new String[]
+        {"a", "b"}, pipe.split("a|b"));
+        assertArrayEquals(new String[]
+        {"a|b"}, splitter.split("a|b"));
+    }
+
+    @Test
+    public void traceShouldReturnEmptyArrayForNullOrEmptyInput()
+    {
+        assertTrue(Strings.trace(null, ',').isEmpty());
+        assertTrue(Strings.trace("", ',').isEmpty());
+        assertTrue(Strings.trace("abc", 1, 0, ',').isEmpty());
+    }
+
+    @Test
+    public void splitShouldMaterializeStrippedTokens()
+    {
+        assertArrayEquals(new String[]
+        {"alpha", "beta", "gamma"}, Strings.split(" alpha, beta ,, gamma ,", ','));
+        assertArrayEquals(new String[]
+        {"alpha", "beta", "gamma"}, Strings.split(" alpha, beta ,, gamma ,"));
+        assertArrayEquals(new String[0], Strings.split(null, ','));
+    }
+
+    @Test
+    public void compactShouldRemoveNullHoles()
+    {
+        String[] compact = new String[]
+        {"a", "b"};
+
+        assertArrayEquals(new String[0], Strings.compact(null));
+        assertSame(compact, Strings.compact(compact));
+        assertArrayEquals(new String[]
+        {"a", "b", "c"}, Strings.compact(new String[]
+        {"a", null, "b", null, "c"}));
+    }
+
+    @Test
+    public void compactShouldRemovePredicateMatches()
+    {
+        String[] compact = new String[]
+        {"a", "", "b"};
+
+        assertSame(compact, Strings.compact(compact, null));
+        assertSame(compact, Strings.compact(compact, s -> false));
+        assertArrayEquals(new String[]
+        {"a", "b"}, Strings.compact(new String[]
+        {"", "a", null, "b", ""}, Strings.EMPTY_OR_NULL));
+    }
+
+    @Test
+    public void splitterShouldRemoveEmptyFieldsAfterStrippingByDefault()
+    {
+        assertArrayEquals(new String[]
+        {"a", "b"}, Strings.splitter().split(" a, ,b,, "));
+    }
+
+    @Test
+    public void splitterShouldUseStripxWhenStripping()
+    {
+        assertArrayEquals(new String[]
+        {"a", "b"}, Strings.splitter().split("\uFEFFa\u200B,\u00A0\u200B,b\uFFFD"));
+        assertArrayEquals(new String[]
+        {"\uFEFFa\u200B", "\u00A0\u200B", "b\uFFFD"},
+                Strings.splitter().withStripping(false).split("\uFEFFa\u200B,\u00A0\u200B,b\uFFFD"));
+    }
+
+    @Test
+    public void splitterShouldPreserveWhitespaceWhenStripIsFalse()
+    {
+        assertArrayEquals(new String[]
+        {" a", " b "}, Strings.splitter().withStripping(false).split(" a, b "));
+        assertArrayEquals(new String[]
+        {" a", " ", "b"}, Strings.splitter().withStripping(false).withRemoveEmpty(true).split(" a, ,b"));
+    }
+
+    @Test
+    public void splitterShouldSupportCustomDelimiterAndSlices()
+    {
+        CharSequence s = "xx a | b | c yy";
+
+        assertEquals(bitSet(5, 9), Strings.trace(s, 3, 9, '|'));
+        assertArrayEquals(new String[]
+        {"a", "b", "c"}, Strings.splitter().withSplitter('|').split(s, 3, 9));
     }
 
     @Test
@@ -260,5 +385,15 @@ public class StringsTest
         assertEquals("Cafe", Strings.removeDiacritics("Caf\u00E9"));
         assertEquals("Angstrom", Strings.removeDiacritics("\u00C5ngstr\u00F6m"));
         assertEquals("Sao Paulo", Strings.removeDiacritics("S\u00E3o Paulo"));
+    }
+
+    private static BitSet bitSet(int... indexes)
+    {
+        BitSet bits = new BitSet();
+        for (int index : indexes)
+        {
+            bits.set(index);
+        }
+        return bits;
     }
 }

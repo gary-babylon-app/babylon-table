@@ -10,4 +10,9 @@ public class TransformAdd extends TransformDecimalBinaryOperator
     {
         super(leftColumnName, OPERATOR.Add, rightColumnName, newColumnName);
     }
+
+    public static TransformAdd of(ColumnName leftColumnName, ColumnName rightColumnName, ColumnName newColumnName)
+    {
+        return new TransformAdd(leftColumnName, rightColumnName, newColumnName);
+    }
 }

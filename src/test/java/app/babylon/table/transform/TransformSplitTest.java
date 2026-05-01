@@ -63,10 +63,25 @@ public class TransformSplitTest
         TransformSplit transform = TransformSplit.of(new String[]
         {"Split", "/", "QuantityBefore", "QuantityAfter"});
 
-        assertEquals(ColumnName.of("Split"), transform.columnToSplit);
-        assertEquals("/", transform.splitOn);
-        assertEquals(ColumnName.of("QuantityBefore"), transform.splitColumnNames[0]);
-        assertEquals(ColumnName.of("QuantityAfter"), transform.splitColumnNames[1]);
+        assertEquals(ColumnName.of("Split"), transform.getColumnToSplit());
+        assertEquals("/", transform.getSplitOn());
+        assertEquals(ColumnName.of("QuantityBefore"), transform.getSplitColumnNames()[0]);
+        assertEquals(ColumnName.of("QuantityAfter"), transform.getSplitColumnNames()[1]);
+    }
+
+    @Test
+    public void shouldDefensivelyCopySplitColumnNames()
+    {
+        ColumnName[] splitColumnNames = new ColumnName[]
+        {ColumnName.of("QuantityBefore"), ColumnName.of("QuantityAfter")};
+
+        TransformSplit transform = new TransformSplit(ColumnName.of("Split"), "/", splitColumnNames);
+        splitColumnNames[0] = ColumnName.of("Mutated");
+        ColumnName[] actual = transform.getSplitColumnNames();
+        actual[1] = ColumnName.of("AlsoMutated");
+
+        assertEquals(ColumnName.of("QuantityBefore"), transform.getSplitColumnNames()[0]);
+        assertEquals(ColumnName.of("QuantityAfter"), transform.getSplitColumnNames()[1]);
     }
 
     @Test

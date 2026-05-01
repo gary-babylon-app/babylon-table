@@ -5,6 +5,10 @@ import java.util.Map;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnByte;
+import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
@@ -52,11 +56,34 @@ public class TransformCreateConstant extends TransformBase
     {
         if (!Is.empty(params) && params.length >= 2)
         {
-            ColumnName newColumnName = ColumnName.parse(params[0]);
-            String value = (params[1]);
-            return new TransformCreateConstant(newColumnName, value);
+            return of(ColumnName.parse(params[0]), params[1]);
         }
         return null;
+    }
+
+    public static TransformCreateConstant of(ColumnName newColumnName, String newColumnValue)
+    {
+        return new TransformCreateConstant(newColumnName, newColumnValue);
+    }
+
+    public static <T> TransformCreateConstant of(Column.Type type, ColumnName newColumnName, T newColumnValue)
+    {
+        return new TransformCreateConstant(type, newColumnName, newColumnValue);
+    }
+
+    public ColumnName[] newColumnNames()
+    {
+        return Arrays.copyOf(this.newColumnNames, this.newColumnNames.length);
+    }
+
+    public Object[] newColumnValues()
+    {
+        return Arrays.copyOf(this.newColumnValues, this.newColumnValues.length);
+    }
+
+    public Column.Type[] types()
+    {
+        return Arrays.copyOf(this.types, this.types.length);
     }
 
     @Override
@@ -97,14 +124,69 @@ public class TransformCreateConstant extends TransformBase
 
     private static Column newConstantColumn(ColumnName columnName, Object value, int rowCount, Column.Type type)
     {
-        return newConstantColumnTyped(columnName, value, rowCount, type);
+        Column.Builder builder = Columns.newBuilder(columnName, type);
+        for (int i = 0; i < rowCount; ++i)
+        {
+            addValue(builder, value);
+        }
+        return builder.build();
     }
 
     @SuppressWarnings("unchecked")
-    private static <T> ColumnObject<T> newConstantColumnTyped(ColumnName columnName, Object value, int rowCount,
-            Column.Type type)
+    private static void addValue(Column.Builder builder, Object value)
     {
-        return Columns.newCategorical(columnName, (T) value, rowCount, type);
+        if (builder instanceof ColumnByte.Builder byteBuilder)
+        {
+            if (value == null)
+            {
+                byteBuilder.addNull();
+            }
+            else
+            {
+                byteBuilder.add(((Byte) value).byteValue());
+            }
+        }
+        else if (builder instanceof ColumnInt.Builder intBuilder)
+        {
+            if (value == null)
+            {
+                intBuilder.addNull();
+            }
+            else
+            {
+                intBuilder.add(((Integer) value).intValue());
+            }
+        }
+        else if (builder instanceof ColumnLong.Builder longBuilder)
+        {
+            if (value == null)
+            {
+                longBuilder.addNull();
+            }
+            else
+            {
+                longBuilder.add(((Long) value).longValue());
+            }
+        }
+        else if (builder instanceof ColumnDouble.Builder doubleBuilder)
+        {
+            if (value == null)
+            {
+                doubleBuilder.addNull();
+            }
+            else
+            {
+                doubleBuilder.add(((Double) value).doubleValue());
+            }
+        }
+        else if (builder instanceof ColumnObject.Builder<?> objectBuilder)
+        {
+            ((ColumnObject.Builder<Object>) objectBuilder).add(value);
+        }
+        else
+        {
+            throw new IllegalArgumentException("Unsupported builder " + builder.getClass().getName());
+        }
     }
 
 }

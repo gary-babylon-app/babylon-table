@@ -24,6 +24,7 @@ public class TransformToLocalDate extends TransformBase
     public static final String FUNCTION_NAME = "ToDate";
     private final ColumnName[] columnNames;
     private final DateFormat format;
+    private final TransformParseMode parseMode;
     private final ColumnName[] newColumnNames;
 
     public TransformToLocalDate(ColumnName... columnNames)
@@ -38,20 +39,33 @@ public class TransformToLocalDate extends TransformBase
 
     public TransformToLocalDate(DateFormat format, ColumnName... columnNames)
     {
+        this(format, null, columnNames);
+    }
+
+    public TransformToLocalDate(DateFormat format, TransformParseMode parseMode, ColumnName... columnNames)
+    {
         super(FUNCTION_NAME);
         this.columnNames = ArgumentCheck.nonEmpty(columnNames);
         this.format = format;
+        this.parseMode = parseMode;
         this.newColumnNames = null;
     }
 
     public TransformToLocalDate(ColumnName columnName, ColumnName newColumnName, DateFormat format)
     {
+        this(columnName, newColumnName, format, null);
+    }
+
+    public TransformToLocalDate(ColumnName columnName, ColumnName newColumnName, DateFormat format,
+            TransformParseMode parseMode)
+    {
         super(FUNCTION_NAME);
         this.columnNames = new ColumnName[]
         {ArgumentCheck.nonNull(columnName)};
         this.format = format;
-        this.newColumnNames = new ColumnName[]
-        {ArgumentCheck.nonNull(newColumnName)};
+        this.parseMode = parseMode;
+        this.newColumnNames = newColumnName == null ? null : new ColumnName[]
+        {newColumnName};
     }
 
     public static TransformToLocalDate of(String... params)
@@ -63,12 +77,51 @@ public class TransformToLocalDate extends TransformBase
                 ColumnName columnName = ColumnName.parse(params[0]);
                 ColumnName newColumnName = ColumnName.parse(params[1]);
                 DateFormat dateFormat = DateFormat.parse(params[2]);
+                TransformParseMode parseMode = params.length >= 4 ? TransformParseMode.parse(params[3]) : null;
 
-                return new TransformToLocalDate(columnName, newColumnName, dateFormat);
+                return of(columnName, newColumnName, dateFormat, parseMode);
 
             }
         }
         return null;
+    }
+
+    public static TransformToLocalDate of(ColumnName columnName, ColumnName newColumnName, DateFormat format,
+            TransformParseMode parseMode)
+    {
+        return new TransformToLocalDate(columnName, newColumnName, format, parseMode);
+    }
+
+    public static TransformToLocalDate of(DateFormat format, TransformParseMode parseMode, ColumnName... columnNames)
+    {
+        return new TransformToLocalDate(format, parseMode, columnNames);
+    }
+
+    public TransformParseMode parseMode()
+    {
+        return this.parseMode;
+    }
+
+    public ColumnName[] columnNames()
+    {
+        return java.util.Arrays.copyOf(this.columnNames, this.columnNames.length);
+    }
+
+    public ColumnName[] newColumnNames()
+    {
+        return this.newColumnNames == null
+                ? null
+                : java.util.Arrays.copyOf(this.newColumnNames, this.newColumnNames.length);
+    }
+
+    public DateFormat format()
+    {
+        return this.format;
+    }
+
+    public TransformParseMode effectiveParseMode()
+    {
+        return this.parseMode == null ? TransformParseMode.EXACT : this.parseMode;
     }
 
     @Override
@@ -184,8 +237,8 @@ public class TransformToLocalDate extends TransformBase
         return true;
     }
 
-    private static LocalDate parseLocalDate(DateFormat format, CharSequence s)
+    private LocalDate parseLocalDate(DateFormat format, String s)
     {
-        return ColumnLocalDates.stringToDate(s, format);
+        return effectiveParseMode().apply(value -> ColumnLocalDates.stringToDate(value, format), s);
     }
 }

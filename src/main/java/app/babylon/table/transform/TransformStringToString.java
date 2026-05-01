@@ -24,6 +24,21 @@ abstract class TransformStringToString extends TransformBase
         this.newColumnName = newColumnName;
     }
 
+    public ColumnName existingColumnName()
+    {
+        return this.existingColumnName;
+    }
+
+    public ColumnName newColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    public ColumnName effectiveNewColumnName()
+    {
+        return this.newColumnName == null ? this.existingColumnName : this.newColumnName;
+    }
+
     @Override
     public final void apply(Map<ColumnName, Column> columnsByName)
     {

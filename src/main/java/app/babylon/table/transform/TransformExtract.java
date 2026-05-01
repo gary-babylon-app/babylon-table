@@ -35,17 +35,27 @@ public class TransformExtract extends TransformStringToString
         return new TransformExtract(extractColumnName, pattern);
     }
 
+    public static TransformExtract of(ColumnName extractColumnName, ColumnName newColumnName, Pattern pattern)
+    {
+        if (extractColumnName == null || newColumnName == null || pattern == null)
+        {
+            return null;
+        }
+        return new TransformExtract(extractColumnName, pattern, newColumnName);
+    }
+
     public static TransformExtract of(String... params)
     {
         if (!Is.empty(params) && params.length >= 3)
         {
-            ColumnName columnName = ColumnName.of(params[0]);
-            ColumnName newColumnName = ColumnName.of(params[1]);
-            Pattern pattern = Pattern.compile(params[2]);
-
-            return new TransformExtract(columnName, pattern, newColumnName);
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]), Pattern.compile(params[2]));
         }
         return null;
+    }
+
+    public Pattern pattern()
+    {
+        return this.pattern;
     }
 
     @Override

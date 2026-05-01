@@ -67,6 +67,26 @@ public class TransformStringReplaceAll extends TransformBase
         return of(existingColumnName, newColumnName, params[2], params[3]);
     }
 
+    public ColumnName existingColumnName()
+    {
+        return this.existingColumnName;
+    }
+
+    public ColumnName newColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    public String target()
+    {
+        return this.target;
+    }
+
+    public String replacement()
+    {
+        return this.replacement;
+    }
+
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {

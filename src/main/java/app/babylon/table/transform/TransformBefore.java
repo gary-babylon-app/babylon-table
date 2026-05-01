@@ -22,9 +22,19 @@ public class TransformBefore extends TransformStringToString
     {
         if (!Is.empty(params) && params.length >= 3)
         {
-            return new TransformBefore(ColumnName.of(params[0]), ColumnName.of(params[1]), params[2]);
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]), params[2]);
         }
         return null;
+    }
+
+    public static TransformBefore of(ColumnName existingColumnName, ColumnName newColumnName, String delimiter)
+    {
+        return new TransformBefore(existingColumnName, newColumnName, delimiter);
+    }
+
+    public String delimiter()
+    {
+        return this.delimiter;
     }
 
     @Override

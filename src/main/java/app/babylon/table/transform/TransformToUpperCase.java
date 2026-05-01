@@ -13,7 +13,7 @@ public class TransformToUpperCase extends TransformStringToString
 
     public TransformToUpperCase(ColumnName existingColumnName)
     {
-        this(existingColumnName, existingColumnName);
+        this(existingColumnName, null);
     }
 
     public TransformToUpperCase(ColumnName existingColumnName, ColumnName newColumnName)
@@ -30,13 +30,23 @@ public class TransformToUpperCase extends TransformStringToString
         if (params.length == 1)
         {
             ColumnName columnName = ColumnName.of(params[0]);
-            return new TransformToUpperCase(columnName);
+            return of(columnName);
         }
         if (params.length >= 2)
         {
-            return new TransformToUpperCase(ColumnName.of(params[0]), ColumnName.of(params[1]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
         }
         return null;
+    }
+
+    public static TransformToUpperCase of(ColumnName existingColumnName)
+    {
+        return new TransformToUpperCase(existingColumnName);
+    }
+
+    public static TransformToUpperCase of(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformToUpperCase(existingColumnName, newColumnName);
     }
 
     @Override

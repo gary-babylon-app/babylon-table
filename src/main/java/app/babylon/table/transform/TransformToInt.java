@@ -17,23 +17,33 @@ public class TransformToInt extends TransformBase
 
     public TransformToInt(ColumnName columnName)
     {
-        this(columnName, columnName);
+        this(columnName, null);
     }
 
     public TransformToInt(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName),
-                ArgumentCheck.nonNull(newColumnName), ColumnTypes.INT);
+        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName), newColumnName,
+                ColumnTypes.INT);
     }
 
     public static TransformToInt of(String... params)
     {
         if (!Is.empty(params) && params.length >= 2)
         {
-            return new TransformToInt(ColumnName.of(params[0]), ColumnName.of(params[1]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
         }
         return null;
+    }
+
+    public static TransformToInt of(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformToInt(existingColumnName, newColumnName);
+    }
+
+    public TransformToPrimitive delegate()
+    {
+        return this.delegate;
     }
 
     public ColumnInt apply(Column x)

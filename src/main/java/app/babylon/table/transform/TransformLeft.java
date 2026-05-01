@@ -20,9 +20,19 @@ public class TransformLeft extends TransformStringToString
     {
         if (!Is.empty(params) && params.length >= 3)
         {
-            return new TransformLeft(ColumnName.of(params[0]), ColumnName.of(params[1]), Integer.parseInt(params[2]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]), Integer.parseInt(params[2]));
         }
         return null;
+    }
+
+    public static TransformLeft of(ColumnName existingColumnName, ColumnName newColumnName, int length)
+    {
+        return new TransformLeft(existingColumnName, newColumnName, length);
+    }
+
+    public int length()
+    {
+        return this.length;
     }
 
     @Override

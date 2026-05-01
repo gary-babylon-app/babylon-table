@@ -66,9 +66,14 @@ public class TransformToDecimalAbs extends TransformStringColumnsBase<BigDecimal
         {
             ColumnName columnName = ColumnName.parse(params[0]);
             ColumnName newColumnName = ColumnName.parse(params[1]);
-            return new TransformToDecimalAbs(columnName, newColumnName);
+            return of(columnName, newColumnName);
         }
         return null;
+    }
+
+    public static TransformToDecimalAbs of(ColumnName columnName, ColumnName newColumnName)
+    {
+        return new TransformToDecimalAbs(columnName, newColumnName);
     }
 
     @Override
@@ -97,9 +102,14 @@ public class TransformToDecimalAbs extends TransformStringColumnsBase<BigDecimal
             Function<CharSequence, BigDecimal> parser)
     {
         super(FUNCTION_NAME, new ColumnName[]
-        {ArgumentCheck.nonNull(columnName)}, new ColumnName[]
-        {ArgumentCheck.nonNull(newColumnName)});
+        {ArgumentCheck.nonNull(columnName)}, newColumnNames(newColumnName));
         this.parser = resolveParser(parser, TransformToDecimalAbs::parseAbsDecimal);
+    }
+
+    private static ColumnName[] newColumnNames(ColumnName newColumnName)
+    {
+        return newColumnName == null ? null : new ColumnName[]
+        {newColumnName};
     }
 
     public ColumnObject<BigDecimal> apply(Column x)

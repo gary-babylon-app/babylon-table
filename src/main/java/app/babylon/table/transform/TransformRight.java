@@ -20,9 +20,19 @@ public class TransformRight extends TransformStringToString
     {
         if (!Is.empty(params) && params.length >= 3)
         {
-            return new TransformRight(ColumnName.of(params[0]), ColumnName.of(params[1]), Integer.parseInt(params[2]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]), Integer.parseInt(params[2]));
         }
         return null;
+    }
+
+    public static TransformRight of(ColumnName existingColumnName, ColumnName newColumnName, int length)
+    {
+        return new TransformRight(existingColumnName, newColumnName, length);
+    }
+
+    public int length()
+    {
+        return this.length;
     }
 
     @Override

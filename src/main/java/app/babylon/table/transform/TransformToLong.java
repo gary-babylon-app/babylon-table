@@ -17,23 +17,33 @@ public class TransformToLong extends TransformBase
 
     public TransformToLong(ColumnName columnName)
     {
-        this(columnName, columnName);
+        this(columnName, null);
     }
 
     public TransformToLong(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName),
-                ArgumentCheck.nonNull(newColumnName), ColumnTypes.LONG);
+        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName), newColumnName,
+                ColumnTypes.LONG);
     }
 
     public static TransformToLong of(String... params)
     {
         if (!Is.empty(params) && params.length >= 2)
         {
-            return new TransformToLong(ColumnName.of(params[0]), ColumnName.of(params[1]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
         }
         return null;
+    }
+
+    public static TransformToLong of(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformToLong(existingColumnName, newColumnName);
+    }
+
+    public TransformToPrimitive delegate()
+    {
+        return this.delegate;
     }
 
     public ColumnLong apply(Column x)

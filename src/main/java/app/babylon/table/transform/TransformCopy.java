@@ -26,9 +26,24 @@ public class TransformCopy extends TransformBase
     {
         if (!Is.empty(params) && params.length >= 2)
         {
-            return new TransformCopy(ColumnName.of(params[0]), ColumnName.of(params[1]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
         }
         return null;
+    }
+
+    public static TransformCopy of(ColumnName columnToCopy, ColumnName newCopyName)
+    {
+        return new TransformCopy(columnToCopy, newCopyName);
+    }
+
+    public ColumnName columnToCopy()
+    {
+        return this.columnToCopy;
+    }
+
+    public ColumnName newCopyName()
+    {
+        return this.newCopyName;
     }
 
     @Override

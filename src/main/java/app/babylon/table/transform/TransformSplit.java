@@ -1,47 +1,73 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
-import app.babylon.text.Strings;
-
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
-import app.babylon.lang.Is;
+import app.babylon.text.Strings;
 
 public class TransformSplit extends TransformBase
 {
     public static final String FUNCTION_NAME = "Split";
 
-    public ColumnName columnToSplit;
-    public String splitOn;
-    public ColumnName[] splitColumnNames;
+    private final ColumnName columnToSplit;
+    private final String splitOn;
+    private final ColumnName[] splitColumnNames;
 
     public TransformSplit(ColumnName columnToSplit, String splitOn, ColumnName... splitColumnNames)
     {
         super(FUNCTION_NAME);
         this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
         this.splitOn = oneCharacter(splitOn);
-        this.splitColumnNames = ArgumentCheck.nonNull(splitColumnNames);
+        this.splitColumnNames = Arrays.copyOf(ArgumentCheck.nonNull(splitColumnNames), splitColumnNames.length);
+    }
+
+    public TransformSplit(ColumnName columnToSplit, String splitOn, Collection<String> splitColumnNames)
+    {
+        super(FUNCTION_NAME);
+        this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
+        this.splitOn = oneCharacter(splitOn);
+        this.splitColumnNames = columnNames(splitColumnNames);
+    }
+
+    public ColumnName getColumnToSplit()
+    {
+        return this.columnToSplit;
+    }
+
+    public String getSplitOn()
+    {
+        return this.splitOn;
+    }
+
+    public ColumnName[] getSplitColumnNames()
+    {
+        return Arrays.copyOf(this.splitColumnNames, this.splitColumnNames.length);
     }
 
     public static TransformSplit of(String[] params)
     {
         if (!Is.empty(params) && params.length >= 4)
         {
-            ColumnName columnToSplit = ColumnName.of(params[0]);
-            String splitOn = params[1];
-            ColumnName[] splitColumnNames = new ColumnName[params.length - 2];
-            for (int i = 2; i < params.length; ++i)
-            {
-                splitColumnNames[i - 2] = ColumnName.of(params[i]);
-            }
-            return new TransformSplit(columnToSplit, splitOn, splitColumnNames);
+            return of(ColumnName.of(params[0]), params[1], Arrays.asList(params).subList(2, params.length));
         }
         return null;
+    }
+
+    public static TransformSplit of(ColumnName columnToSplit, String splitOn, ColumnName... splitColumnNames)
+    {
+        return new TransformSplit(columnToSplit, splitOn, splitColumnNames);
+    }
+
+    public static TransformSplit of(ColumnName columnToSplit, String splitOn, Collection<String> splitColumnNames)
+    {
+        return new TransformSplit(columnToSplit, splitOn, splitColumnNames);
     }
 
     @Override
@@ -101,5 +127,17 @@ public class TransformSplit extends TransformBase
             throw new RuntimeException(FUNCTION_NAME + " split delimiter must be exactly one character.");
         }
         return splitOn;
+    }
+
+    private static ColumnName[] columnNames(Collection<String> splitColumnNames)
+    {
+        Collection<String> names = ArgumentCheck.nonEmpty(splitColumnNames);
+        ColumnName[] copy = new ColumnName[names.size()];
+        int i = 0;
+        for (String name : names)
+        {
+            copy[i++] = ColumnName.of(name);
+        }
+        return copy;
     }
 }

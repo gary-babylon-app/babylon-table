@@ -119,6 +119,21 @@ class TransformDecimalBinaryOperator extends TransformBase
         return new TransformDecimalBinaryOperator(leftColumnName, operator, rightColumnName, newColumnName);
     }
 
+    public ColumnName leftColumnName()
+    {
+        return this.leftColumnName;
+    }
+
+    public ColumnName rightColumnName()
+    {
+        return this.rightColumnName;
+    }
+
+    public ColumnName newColumnName()
+    {
+        return this.newColumnName;
+    }
+
     @Override
     public String toString()
     {

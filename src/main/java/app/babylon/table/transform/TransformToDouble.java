@@ -17,23 +17,33 @@ public class TransformToDouble extends TransformBase
 
     public TransformToDouble(ColumnName columnName)
     {
-        this(columnName, columnName);
+        this(columnName, null);
     }
 
     public TransformToDouble(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName),
-                ArgumentCheck.nonNull(newColumnName), ColumnTypes.DOUBLE, TransformParseMode.ONLY_IN);
+        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName), newColumnName,
+                ColumnTypes.DOUBLE, TransformParseMode.ONLY_IN);
     }
 
     public static TransformToDouble of(String... params)
     {
         if (!Is.empty(params) && params.length >= 2)
         {
-            return new TransformToDouble(ColumnName.of(params[0]), ColumnName.of(params[1]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
         }
         return null;
+    }
+
+    public static TransformToDouble of(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformToDouble(existingColumnName, newColumnName);
+    }
+
+    public TransformToPrimitive delegate()
+    {
+        return this.delegate;
     }
 
     public ColumnDouble apply(Column x)

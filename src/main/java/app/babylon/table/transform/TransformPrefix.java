@@ -15,7 +15,7 @@ public class TransformPrefix extends TransformStringToString
 
     public TransformPrefix(String prefix, ColumnName existingColumnName)
     {
-        this(prefix, existingColumnName, existingColumnName);
+        this(prefix, existingColumnName, null);
     }
 
     public TransformPrefix(String prefix, ColumnName existingColumnName, ColumnName newColumnName)
@@ -32,9 +32,24 @@ public class TransformPrefix extends TransformStringToString
         }
         if (params.length == 2)
         {
-            return new TransformPrefix(params[0], ColumnName.of(params[1]));
+            return of(params[0], ColumnName.of(params[1]));
         }
-        return new TransformPrefix(params[0], ColumnName.of(params[1]), ColumnName.of(params[2]));
+        return of(params[0], ColumnName.of(params[1]), ColumnName.of(params[2]));
+    }
+
+    public static TransformPrefix of(String prefix, ColumnName existingColumnName)
+    {
+        return new TransformPrefix(prefix, existingColumnName);
+    }
+
+    public static TransformPrefix of(String prefix, ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformPrefix(prefix, existingColumnName, newColumnName);
+    }
+
+    public String prefix()
+    {
+        return this.prefix;
     }
 
     @Override

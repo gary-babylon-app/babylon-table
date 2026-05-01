@@ -67,9 +67,14 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
         {
             ColumnName columnName = ColumnName.parse(params[0]);
             ColumnName newColumnName = ColumnName.parse(params[1]);
-            return new TransformToDecimal(columnName, newColumnName);
+            return of(columnName, newColumnName);
         }
         return null;
+    }
+
+    public static TransformToDecimal of(ColumnName columnName, ColumnName newColumnName)
+    {
+        return new TransformToDecimal(columnName, newColumnName);
     }
 
     @Override
@@ -98,9 +103,14 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
             Function<CharSequence, BigDecimal> parser)
     {
         super(FUNCTION_NAME, new ColumnName[]
-        {ArgumentCheck.nonNull(columnName)}, new ColumnName[]
-        {ArgumentCheck.nonNull(newColumnName)});
+        {ArgumentCheck.nonNull(columnName)}, newColumnNames(newColumnName));
         this.parser = resolveParser(parser, TransformToDecimal::parseDecimal);
+    }
+
+    private static ColumnName[] newColumnNames(ColumnName newColumnName)
+    {
+        return newColumnName == null ? null : new ColumnName[]
+        {newColumnName};
     }
 
     public ColumnObject<BigDecimal> apply(Column x)

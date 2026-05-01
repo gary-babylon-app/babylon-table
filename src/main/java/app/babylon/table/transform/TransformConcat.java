@@ -1,13 +1,16 @@
 package app.babylon.table.transform;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
+import app.babylon.lang.ArgumentCheck;
+import app.babylon.lang.Is;
+import app.babylon.table.ToStringSettings;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
-import app.babylon.lang.Is;
-import app.babylon.table.ToStringSettings;
 
 public class TransformConcat extends TransformBase
 {
@@ -20,9 +23,17 @@ public class TransformConcat extends TransformBase
     public TransformConcat(ColumnName concatColumn, String separator, ColumnName... sourceColumns)
     {
         super(FUNCTION_NAME);
-        this.concatColumn = concatColumn;
-        this.separator = separator == null ? "" : separator;
-        this.sourceColumns = sourceColumns;
+        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
+        this.separator = separator;
+        this.sourceColumns = Arrays.copyOf(ArgumentCheck.nonNull(sourceColumns), sourceColumns.length);
+    }
+
+    public TransformConcat(ColumnName concatColumn, String separator, Collection<String> sourceColumns)
+    {
+        super(FUNCTION_NAME);
+        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
+        this.separator = separator;
+        this.sourceColumns = columnNames(sourceColumns);
     }
 
     public static TransformConcat of(String... params)
@@ -32,14 +43,37 @@ public class TransformConcat extends TransformBase
             return null;
         }
 
-        ColumnName concatColumn = ColumnName.parse(params[0]);
-        String separator = params[1];
-        ColumnName[] sourceColumns = new ColumnName[params.length - 2];
-        for (int i = 2; i < params.length; ++i)
-        {
-            sourceColumns[i - 2] = ColumnName.parse(params[i]);
-        }
+        return of(ColumnName.parse(params[0]), params[1], Arrays.asList(params).subList(2, params.length));
+    }
+
+    public static TransformConcat of(ColumnName concatColumn, String separator, ColumnName... sourceColumns)
+    {
         return new TransformConcat(concatColumn, separator, sourceColumns);
+    }
+
+    public static TransformConcat of(ColumnName concatColumn, String separator, Collection<String> sourceColumns)
+    {
+        return new TransformConcat(concatColumn, separator, sourceColumns);
+    }
+
+    public String separator()
+    {
+        return this.separator;
+    }
+
+    public String effectiveSeparator()
+    {
+        return this.separator == null ? "" : this.separator;
+    }
+
+    public ColumnName concatColumn()
+    {
+        return this.concatColumn;
+    }
+
+    public ColumnName[] sourceColumns()
+    {
+        return Arrays.copyOf(this.sourceColumns, this.sourceColumns.length);
     }
 
     @Override
@@ -69,7 +103,7 @@ public class TransformConcat extends TransformBase
             }
             if (columns.length > 1)
             {
-                newColumn.add(String.join(this.separator, values));
+                newColumn.add(String.join(effectiveSeparator(), values));
             }
             else if (columns.length == 1)
             {
@@ -81,5 +115,17 @@ public class TransformConcat extends TransformBase
             }
         }
         columnsByName.put(this.concatColumn, newColumn.build());
+    }
+
+    private static ColumnName[] columnNames(Collection<String> sourceColumns)
+    {
+        Collection<String> names = ArgumentCheck.nonEmpty(sourceColumns);
+        ColumnName[] copy = new ColumnName[names.size()];
+        int i = 0;
+        for (String name : names)
+        {
+            copy[i++] = ColumnName.of(name);
+        }
+        return copy;
     }
 }

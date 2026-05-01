@@ -25,17 +25,17 @@ public class TransformToPrimitive extends TransformBase
 
     public TransformToPrimitive(ColumnName columnName, Column.Type type)
     {
-        this(columnName, columnName, type, TransformParseMode.EXACT);
+        this(columnName, null, type, null);
     }
 
     public TransformToPrimitive(ColumnName existingColumnName, ColumnName newColumnName, Column.Type type)
     {
-        this(existingColumnName, newColumnName, type, TransformParseMode.EXACT);
+        this(existingColumnName, newColumnName, type, null);
     }
 
     public TransformToPrimitive(ColumnName columnName, Column.Type type, TransformParseMode parseMode)
     {
-        this(columnName, columnName, type, parseMode);
+        this(columnName, null, type, parseMode);
     }
 
     public TransformToPrimitive(ColumnName existingColumnName, ColumnName newColumnName, Column.Type type,
@@ -43,9 +43,9 @@ public class TransformToPrimitive extends TransformBase
     {
         super(FUNCTION_NAME);
         this.existingColumnName = ArgumentCheck.nonNull(existingColumnName);
-        this.newColumnName = ArgumentCheck.nonNull(newColumnName);
+        this.newColumnName = newColumnName;
         this.type = ArgumentCheck.nonNull(type);
-        this.parseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
+        this.parseMode = parseMode;
         if (!this.type.isPrimitive())
         {
             throw new IllegalArgumentException(
@@ -58,9 +58,45 @@ public class TransformToPrimitive extends TransformBase
         return this.type;
     }
 
+    public Column.Type type()
+    {
+        return this.type;
+    }
+
+    public ColumnName existingColumnName()
+    {
+        return this.existingColumnName;
+    }
+
+    public ColumnName newColumnName()
+    {
+        return this.newColumnName;
+    }
+
     public TransformParseMode getParseMode()
     {
         return this.parseMode;
+    }
+
+    public TransformParseMode parseMode()
+    {
+        return this.parseMode;
+    }
+
+    public TransformParseMode effectiveParseMode()
+    {
+        return this.parseMode == null ? TransformParseMode.EXACT : this.parseMode;
+    }
+
+    public ColumnName effectiveNewColumnName()
+    {
+        return this.newColumnName == null ? this.existingColumnName : this.newColumnName;
+    }
+
+    public static TransformToPrimitive of(ColumnName existingColumnName, ColumnName newColumnName, Column.Type type,
+            TransformParseMode parseMode)
+    {
+        return new TransformToPrimitive(existingColumnName, newColumnName, type, parseMode);
     }
 
     public Column apply(Column x)
@@ -71,7 +107,7 @@ public class TransformToPrimitive extends TransformBase
         }
         if (this.type.equals(x.getType()))
         {
-            return x.copy(this.newColumnName);
+            return x.copy(effectiveNewColumnName());
         }
         if (!Columns.isStringColumn(x))
         {
@@ -84,7 +120,7 @@ public class TransformToPrimitive extends TransformBase
             return applyCategorical(categorical);
         }
 
-        Column.Builder builder = Columns.newBuilder(this.newColumnName, this.type);
+        Column.Builder builder = Columns.newBuilder(effectiveNewColumnName(), this.type);
         for (int i = 0; i < strings.size(); ++i)
         {
             if (!strings.isSet(i))
@@ -93,7 +129,7 @@ public class TransformToPrimitive extends TransformBase
                 continue;
             }
             String s = strings.get(i);
-            Object parsed = this.parseMode.apply(this.type.getParser()::parse, s);
+            Object parsed = effectiveParseMode().apply(this.type.getParser()::parse, s);
             if (parsed == null)
             {
                 addNull(builder);
@@ -113,7 +149,7 @@ public class TransformToPrimitive extends TransformBase
         Column transformed = apply(source);
         if (transformed != null)
         {
-            columnsByName.put(this.newColumnName, transformed);
+            columnsByName.put(effectiveNewColumnName(), transformed);
         }
     }
 
@@ -148,10 +184,10 @@ public class TransformToPrimitive extends TransformBase
         for (int code : codes)
         {
             String value = strings.getCategoryValue(code);
-            parsedByCode[code] = value == null ? null : this.parseMode.apply(this.type.getParser()::parse, value);
+            parsedByCode[code] = value == null ? null : effectiveParseMode().apply(this.type.getParser()::parse, value);
         }
 
-        Column.Builder builder = Columns.newBuilder(this.newColumnName, this.type);
+        Column.Builder builder = Columns.newBuilder(effectiveNewColumnName(), this.type);
         for (int i = 0; i < strings.size(); ++i)
         {
             int code = strings.getCategoryCode(i);

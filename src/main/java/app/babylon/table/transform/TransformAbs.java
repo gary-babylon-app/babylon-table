@@ -23,14 +23,14 @@ public class TransformAbs extends TransformBase
 
     private TransformAbs(ColumnName x)
     {
-        this(x, x);
+        this(x, null);
     }
 
     private TransformAbs(ColumnName x, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
         this.columnName = ArgumentCheck.nonNull(x);
-        this.newColumnName = (newColumnName == null) ? x : newColumnName;
+        this.newColumnName = newColumnName;
     }
 
     public static TransformAbs of(ColumnName columnName)
@@ -49,6 +49,21 @@ public class TransformAbs extends TransformBase
             return null;
         }
         return new TransformAbs(columnName, newColumnName);
+    }
+
+    public ColumnName newColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    public ColumnName columnName()
+    {
+        return this.columnName;
+    }
+
+    public ColumnName effectiveNewColumnName()
+    {
+        return this.newColumnName == null ? this.columnName : this.newColumnName;
     }
 
     public static TransformAbs of(String... params)
@@ -88,7 +103,7 @@ public class TransformAbs extends TransformBase
         @SuppressWarnings("unchecked")
         ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
 
-        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(newColumnName);
+        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
         for (int i = 0; i < oldColumn.size(); ++i)
         {
             if (oldColumn.isSet(i))
@@ -112,7 +127,7 @@ public class TransformAbs extends TransformBase
         {
             return;
         }
-        columnsByName.put(newColumnName, apply(column));
+        columnsByName.put(effectiveNewColumnName(), apply(column));
     }
 
     @Override

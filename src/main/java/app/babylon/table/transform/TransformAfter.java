@@ -22,9 +22,19 @@ public class TransformAfter extends TransformStringToString
     {
         if (!Is.empty(params) && params.length >= 3)
         {
-            return new TransformAfter(ColumnName.of(params[0]), ColumnName.of(params[1]), params[2]);
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]), params[2]);
         }
         return null;
+    }
+
+    public static TransformAfter of(ColumnName existingColumnName, ColumnName newColumnName, String delimiter)
+    {
+        return new TransformAfter(existingColumnName, newColumnName, delimiter);
+    }
+
+    public String delimiter()
+    {
+        return this.delimiter;
     }
 
     @Override

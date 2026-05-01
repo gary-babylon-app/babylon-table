@@ -1,5 +1,6 @@
 package app.babylon.table.transform;
 
+import java.util.Locale;
 import java.util.function.Function;
 
 import app.babylon.text.Sentence;
@@ -16,7 +17,15 @@ public enum TransformParseMode
         {
             return EXACT;
         }
-        return valueOf(Strings.strip(s).toString().toUpperCase());
+        String normalised = Strings.strip(s).toString().replace("_", "").replace("-", "").toUpperCase(Locale.ROOT);
+        return switch (normalised)
+        {
+            case "EXACT" -> EXACT;
+            case "FIRSTIN" -> FIRST_IN;
+            case "LASTIN" -> LAST_IN;
+            case "ONLYIN" -> ONLY_IN;
+            default -> throw new IllegalArgumentException("Unknown transform parse mode: " + s);
+        };
     }
 
     public <T> T apply(Function<CharSequence, T> parser, String value)

@@ -15,7 +15,7 @@ public class TransformSuffix extends TransformStringToString
 
     public TransformSuffix(String suffix, ColumnName existingColumnName)
     {
-        this(suffix, existingColumnName, existingColumnName);
+        this(suffix, existingColumnName, null);
     }
 
     public TransformSuffix(String suffix, ColumnName existingColumnName, ColumnName newColumnName)
@@ -32,9 +32,24 @@ public class TransformSuffix extends TransformStringToString
         }
         if (params.length == 2)
         {
-            return new TransformSuffix(params[0], ColumnName.of(params[1]));
+            return of(params[0], ColumnName.of(params[1]));
         }
-        return new TransformSuffix(params[0], ColumnName.of(params[1]), ColumnName.of(params[2]));
+        return of(params[0], ColumnName.of(params[1]), ColumnName.of(params[2]));
+    }
+
+    public static TransformSuffix of(String suffix, ColumnName existingColumnName)
+    {
+        return new TransformSuffix(suffix, existingColumnName);
+    }
+
+    public static TransformSuffix of(String suffix, ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformSuffix(suffix, existingColumnName, newColumnName);
+    }
+
+    public String suffix()
+    {
+        return this.suffix;
     }
 
     @Override

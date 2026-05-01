@@ -28,14 +28,37 @@ public class TransformClassify extends TransformStringToString
     {
         if (!Is.empty(params) && params.length >= 5)
         {
-            ColumnName existingColumnName = ColumnName.of(params[0]);
-            ColumnName newColumnName = ColumnName.of(params[1]);
-            Pattern pattern = Pattern.compile(params[2]);
-            String foundValue = params[3];
-            String notFoundValue = params[4];
-            return new TransformClassify(existingColumnName, newColumnName, pattern, foundValue, notFoundValue);
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]), Pattern.compile(params[2]), params[3],
+                    params[4]);
         }
         return null;
+    }
+
+    public static TransformClassify of(ColumnName existingColumnName, ColumnName newColumnName, Pattern pattern,
+            String newColumnFoundValue, String newColumnNotFoundValue)
+    {
+        return new TransformClassify(existingColumnName, newColumnName, pattern, newColumnFoundValue,
+                newColumnNotFoundValue);
+    }
+
+    public String newColumnNotFoundValue()
+    {
+        return this.newColumnNotFoundValue;
+    }
+
+    public Pattern pattern()
+    {
+        return this.pattern;
+    }
+
+    public String newColumnFoundValue()
+    {
+        return this.newColumnFoundValue;
+    }
+
+    public String effectiveNewColumnNotFoundValue()
+    {
+        return this.newColumnNotFoundValue == null ? "" : this.newColumnNotFoundValue;
     }
 
     @Override
@@ -49,6 +72,6 @@ public class TransformClassify extends TransformStringToString
         {
             return newColumnFoundValue;
         }
-        return newColumnNotFoundValue;
+        return effectiveNewColumnNotFoundValue();
     }
 }

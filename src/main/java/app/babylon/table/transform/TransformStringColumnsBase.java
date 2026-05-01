@@ -22,6 +22,18 @@ abstract class TransformStringColumnsBase<T> extends TransformBase
         this.newColumnNames = newColumnNames;
     }
 
+    public ColumnName[] columnNames()
+    {
+        return java.util.Arrays.copyOf(this.columnNames, this.columnNames.length);
+    }
+
+    public ColumnName[] newColumnNames()
+    {
+        return this.newColumnNames == null
+                ? null
+                : java.util.Arrays.copyOf(this.newColumnNames, this.newColumnNames.length);
+    }
+
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {

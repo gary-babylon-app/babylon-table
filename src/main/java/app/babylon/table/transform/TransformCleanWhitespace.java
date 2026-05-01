@@ -11,7 +11,7 @@ public class TransformCleanWhitespace extends TransformStringToString
 
     public TransformCleanWhitespace(ColumnName existingColumnName)
     {
-        this(existingColumnName, existingColumnName);
+        this(existingColumnName, null);
     }
 
     public TransformCleanWhitespace(ColumnName existingColumnName, ColumnName newColumnName)
@@ -28,13 +28,23 @@ public class TransformCleanWhitespace extends TransformStringToString
         if (params.length == 1)
         {
             ColumnName columnName = ColumnName.of(params[0]);
-            return new TransformCleanWhitespace(columnName);
+            return of(columnName);
         }
         if (params.length >= 2)
         {
-            return new TransformCleanWhitespace(ColumnName.of(params[0]), ColumnName.of(params[1]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
         }
         return null;
+    }
+
+    public static TransformCleanWhitespace of(ColumnName existingColumnName)
+    {
+        return new TransformCleanWhitespace(existingColumnName);
+    }
+
+    public static TransformCleanWhitespace of(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformCleanWhitespace(existingColumnName, newColumnName);
     }
 
     @Override

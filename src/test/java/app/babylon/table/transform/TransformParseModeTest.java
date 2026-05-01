@@ -23,7 +23,10 @@ class TransformParseModeTest
     {
         assertEquals(TransformParseMode.EXACT, TransformParseMode.parse(null));
         assertEquals(TransformParseMode.FIRST_IN, TransformParseMode.parse("first_in"));
+        assertEquals(TransformParseMode.FIRST_IN, TransformParseMode.parse("firstIn"));
+        assertEquals(TransformParseMode.LAST_IN, TransformParseMode.parse("lastIn"));
         assertEquals(TransformParseMode.ONLY_IN, TransformParseMode.parse("only_in"));
+        assertEquals(TransformParseMode.ONLY_IN, TransformParseMode.parse("onlyIn"));
     }
 
     @Test

@@ -1,9 +1,9 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
+import java.util.Arrays;
 import java.util.Map;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
@@ -35,12 +35,29 @@ public class TransformToString extends TransformBase
     {
         if (!Is.empty(params) && params.length >= 2)
         {
-            ColumnName columnName = ColumnName.parse(params[0]);
-            ColumnName newColumnName = ColumnName.parse(params[1]);
-
-            return new TransformToString(columnName, newColumnName);
+            return of(ColumnName.parse(params[0]), ColumnName.parse(params[1]));
         }
         return null;
+    }
+
+    public static TransformToString of(ColumnName columnName, ColumnName newColumnName)
+    {
+        return new TransformToString(columnName, newColumnName);
+    }
+
+    public static TransformToString of(ColumnName... columnNames)
+    {
+        return new TransformToString(columnNames);
+    }
+
+    public ColumnName[] columnNames()
+    {
+        return Arrays.copyOf(this.columnNames, this.columnNames.length);
+    }
+
+    public Map<ColumnName, ColumnName> newColumnNames()
+    {
+        return this.newColumnNames;
     }
 
     @Override

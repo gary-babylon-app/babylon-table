@@ -10,4 +10,9 @@ public class TransformMultiply extends TransformDecimalBinaryOperator
     {
         super(leftColumnName, OPERATOR.Multiply, rightColumnName, newColumnName);
     }
+
+    public static TransformMultiply of(ColumnName leftColumnName, ColumnName rightColumnName, ColumnName newColumnName)
+    {
+        return new TransformMultiply(leftColumnName, rightColumnName, newColumnName);
+    }
 }

@@ -34,10 +34,35 @@ public class TransformSubstring extends TransformBase
     {
         if (!Is.empty(params) && params.length >= 4)
         {
-            return new TransformSubstring(ColumnName.of(params[0]), ColumnName.of(params[1]),
-                    Integer.parseInt(params[2]), Integer.parseInt(params[3]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]), Integer.parseInt(params[2]),
+                    Integer.parseInt(params[3]));
         }
         return null;
+    }
+
+    public static TransformSubstring of(ColumnName existingColumnName, ColumnName newColumnName, int first, int last)
+    {
+        return new TransformSubstring(existingColumnName, newColumnName, first, last);
+    }
+
+    public ColumnName existingColumnName()
+    {
+        return this.existingColumnName;
+    }
+
+    public ColumnName newColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    public int first()
+    {
+        return this.first;
+    }
+
+    public int last()
+    {
+        return this.last;
     }
 
     @Override

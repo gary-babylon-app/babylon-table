@@ -13,7 +13,7 @@ public class TransformToLowerCase extends TransformStringToString
 
     public TransformToLowerCase(ColumnName existingColumnName)
     {
-        this(existingColumnName, existingColumnName);
+        this(existingColumnName, null);
     }
 
     public TransformToLowerCase(ColumnName existingColumnName, ColumnName newColumnName)
@@ -30,13 +30,23 @@ public class TransformToLowerCase extends TransformStringToString
         if (params.length == 1)
         {
             ColumnName columnName = ColumnName.of(params[0]);
-            return new TransformToLowerCase(columnName);
+            return of(columnName);
         }
         if (params.length >= 2)
         {
-            return new TransformToLowerCase(ColumnName.of(params[0]), ColumnName.of(params[1]));
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
         }
         return null;
+    }
+
+    public static TransformToLowerCase of(ColumnName existingColumnName)
+    {
+        return new TransformToLowerCase(existingColumnName);
+    }
+
+    public static TransformToLowerCase of(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformToLowerCase(existingColumnName, newColumnName);
     }
 
     @Override

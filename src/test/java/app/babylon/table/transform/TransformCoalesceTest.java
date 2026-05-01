@@ -58,6 +58,61 @@ public class TransformCoalesceTest
     }
 
     @Test
+    public void shouldTakeFirstNonNullAcrossVariableColumns()
+    {
+        final ColumnName CHOSEN = ColumnName.of("Chosen");
+        final ColumnName FIRST = ColumnName.of("First");
+        final ColumnName SECOND = ColumnName.of("Second");
+        final ColumnName THIRD = ColumnName.of("Third");
+        final ColumnName FOURTH = ColumnName.of("Fourth");
+
+        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST, ColumnTypes.STRING);
+        firstBuilder.addNull();
+        firstBuilder.addNull();
+
+        ColumnObject.Builder<String> secondBuilder = ColumnObject.builder(SECOND, ColumnTypes.STRING);
+        secondBuilder.addNull();
+        secondBuilder.add("b");
+
+        ColumnObject.Builder<String> thirdBuilder = ColumnObject.builder(THIRD, ColumnTypes.STRING);
+        thirdBuilder.addNull();
+        thirdBuilder.add("c");
+
+        ColumnObject.Builder<String> fourthBuilder = ColumnObject.builder(FOURTH, ColumnTypes.STRING);
+        fourthBuilder.add("d");
+        fourthBuilder.add("e");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), firstBuilder.build(), secondBuilder.build(),
+                thirdBuilder.build(), fourthBuilder.build());
+
+        TableColumnar transformed = table
+                .apply(TransformCoalesce.of(CHOSEN, ColumnObject.Mode.AUTO, FIRST, SECOND, THIRD, FOURTH));
+
+        ColumnObject<String> chosen = transformed.getString(CHOSEN);
+        assertEquals("d", chosen.get(0));
+        assertEquals("b", chosen.get(1));
+    }
+
+    @Test
+    public void shouldAllowOneColumn()
+    {
+        final ColumnName CHOSEN = ColumnName.of("Chosen");
+        final ColumnName FIRST = ColumnName.of("First");
+
+        ColumnObject.Builder<String> firstBuilder = ColumnObject.builder(FIRST, ColumnTypes.STRING);
+        firstBuilder.add("a");
+        firstBuilder.addNull();
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), firstBuilder.build());
+
+        TableColumnar transformed = table.apply(TransformCoalesce.of(CHOSEN, ColumnObject.Mode.AUTO, FIRST));
+
+        ColumnObject<String> chosen = transformed.getString(CHOSEN);
+        assertEquals("a", chosen.get(0));
+        assertFalse(chosen.isSet(1));
+    }
+
+    @Test
     public void shouldUseExplicitCategoricalModeFromRegistry()
     {
         final ColumnName CHOSEN = ColumnName.of("CHOSEN");
@@ -93,7 +148,7 @@ public class TransformCoalesceTest
     @Test
     public void shouldDefaultRegistryModeToAutoWhenOmitted()
     {
-        Transform transform = Transforms.registry().create("Coalesce", "Chosen", "First", "Second", "Third");
+        Transform transform = Transforms.registry().create("Coalesce", "Chosen", "First", "Second", "Third", "Fourth");
 
         assertTrue(transform instanceof TransformCoalesce);
     }

@@ -25,10 +25,26 @@ jobs:
           server-username: MAVEN_USERNAME
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: GPG_PASSPHRASE
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Build and verify signatures
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          mvn -B clean verify
+          for signature in target/*.asc; do
+            artifact="${signature%.asc}"
+            if [ ! -f "$artifact" ] && [ "${artifact##*.}" = "pom" ]; then
+              artifact="pom.xml"
+            fi
+            gpg --verify "$signature" "$artifact"
+          done
 
       - name: Publish to Maven Central
         env:
           MAVEN_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        run: mvn -B clean deploy
+        run: mvn -B deploy -DskipTests

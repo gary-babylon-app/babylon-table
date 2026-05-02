@@ -14,7 +14,7 @@ import app.babylon.text.Strings;
 /**
  * Registry for the legacy table-backed transform factory format.
  *
- * @deprecated Use {@link app.babylon.table.transform.dsl.TransformDslParser} to
+ * @deprecated Use {@link app.babylon.table.transform.dsl.QuickTransforms} to
  *             parse persisted transform statements. The DSL replaces this fixed
  *             function-name/parameter registry and this type is expected to be
  *             removed in a future release.
@@ -30,7 +30,7 @@ public final class TransformRegistry
     }
 
     /**
-     * @deprecated Use {@link app.babylon.table.transform.dsl.TransformDslParser}
+     * @deprecated Use {@link app.babylon.table.transform.dsl.QuickTransforms}
      *             extension methods instead.
      */
     @Deprecated(since = "0.3.22", forRemoval = true)
@@ -40,7 +40,7 @@ public final class TransformRegistry
     }
 
     /**
-     * @deprecated Use {@link app.babylon.table.transform.dsl.TransformDslParser}
+     * @deprecated Use {@link app.babylon.table.transform.dsl.QuickTransforms}
      *             extension methods instead.
      */
     @Deprecated(since = "0.3.22", forRemoval = true)
@@ -51,8 +51,7 @@ public final class TransformRegistry
 
     /**
      * @deprecated Parse a DSL statement with
-     *             {@link app.babylon.table.transform.dsl.TransformDslParser}
-     *             instead.
+     *             {@link app.babylon.table.transform.dsl.QuickTransforms} instead.
      */
     @Deprecated(since = "0.3.22", forRemoval = true)
     public Transform create(String functionName, String... params)
@@ -109,7 +108,7 @@ public final class TransformRegistry
     }
 
     /**
-     * @deprecated Use {@link app.babylon.table.transform.dsl.TransformDslParser}
+     * @deprecated Use {@link app.babylon.table.transform.dsl.QuickTransforms}
      *             extension methods instead.
      */
     @Deprecated(since = "0.3.22", forRemoval = true)
@@ -129,8 +128,7 @@ public final class TransformRegistry
 
         /**
          * @deprecated Register DSL command parsers with
-         *             {@link app.babylon.table.transform.dsl.TransformDslParser}
-         *             instead.
+         *             {@link app.babylon.table.transform.dsl.QuickTransforms} instead.
          */
         @Deprecated(since = "0.3.22", forRemoval = true)
         public Builder register(String functionName, TransformFactory factory)
@@ -153,7 +151,7 @@ public final class TransformRegistry
         }
 
         /**
-         * @deprecated Use {@link app.babylon.table.transform.dsl.TransformDslParser}
+         * @deprecated Use {@link app.babylon.table.transform.dsl.QuickTransforms}
          *             directly.
          */
         @Deprecated(since = "0.3.22", forRemoval = true)

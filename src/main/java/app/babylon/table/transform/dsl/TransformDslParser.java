@@ -81,7 +81,7 @@ import app.babylon.table.transform.TransformToUpperCase;
  * rules use literals for free text and patterns where punctuation or spaces
  * should be preserved.
  */
-public final class TransformDslParser
+final class TransformDslParser
 {
     private final Map<String, TransformCommandParser> parsers;
     private final Map<String, Column.Type> types;

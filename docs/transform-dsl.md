@@ -116,7 +116,7 @@ convert TradeDateText to Date into TradeDate using YMD
 convert TradeDateText to Date using YMD by lastIn into TradeDate
 ```
 
-Custom conversion types can be registered with `TransformDslParser.withType(...)`.
+Custom conversion types can be registered with `QuickTransforms.withType(...)`.
 
 ## Substrings and parts
 
@@ -266,17 +266,17 @@ Use `normalise` when you want to remove insignificant trailing zeros instead.
 Custom currency-like scale types can be registered with:
 
 ```java
-TransformDslParser.standard()
+QuickTransforms.standard()
         .withRoundScale(MyCurrency.class, MyCurrency::minorUnits);
 ```
 
 ## Extension points
 
-The standard parser can be extended with custom commands and custom conversion
+Quick Transforms can be extended with custom commands and custom conversion
 types:
 
 ```java
-TransformDslParser parser = TransformDslParser.standard()
+QuickTransforms quickTransforms = QuickTransforms.standard()
         .with("enrich", tokens -> ...)
         .withType("Isin", isinType)
         .withRoundScale(MyCurrency.class, MyCurrency::minorUnits);

@@ -68,7 +68,7 @@ import app.babylon.table.transform.TransformToUpperCase;
 /**
  * Writes transforms as canonical transformation DSL statements.
  */
-public final class TransformDslWriter
+final class TransformDslWriter
 {
     private final Map<Class<?>, Function<Transform, String>> writers;
 

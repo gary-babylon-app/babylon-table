@@ -5,8 +5,8 @@ package app.babylon.table.transform;
  *
  * @deprecated Use
  *             {@link app.babylon.table.transform.dsl.TransformCommandParser}
- *             and {@link app.babylon.table.transform.dsl.TransformDslParser}
- *             for custom persisted transform commands.
+ *             and {@link app.babylon.table.transform.dsl.QuickTransforms} for
+ *             custom persisted transform commands.
  */
 @Deprecated(since = "0.3.22", forRemoval = true)
 @FunctionalInterface

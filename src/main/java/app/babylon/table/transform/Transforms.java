@@ -12,8 +12,8 @@ public final class Transforms
     /**
      * Returns the legacy function-name/parameter registry.
      *
-     * @deprecated Use {@link app.babylon.table.transform.dsl.TransformDslParser}
-     *             for persisted transform definitions. The DSL is the preferred
+     * @deprecated Use {@link app.babylon.table.transform.dsl.QuickTransforms} for
+     *             persisted transform definitions. The DSL is the preferred
      *             transform configuration format and this registry is expected to
      *             be removed in a future release.
      */

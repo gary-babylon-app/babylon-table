@@ -15,4 +15,14 @@ public class TransformMultiply extends TransformDecimalBinaryOperator
     {
         return new TransformMultiply(leftColumnName, rightColumnName, newColumnName);
     }
+
+    public static TransformMultiply of(Operand left, Operand right, ColumnName newColumnName)
+    {
+        return new TransformMultiply(left, right, newColumnName);
+    }
+
+    private TransformMultiply(Operand left, Operand right, ColumnName newColumnName)
+    {
+        super(left, OPERATOR.Multiply, right, newColumnName);
+    }
 }

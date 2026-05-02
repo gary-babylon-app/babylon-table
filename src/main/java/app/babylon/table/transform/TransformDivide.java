@@ -15,4 +15,14 @@ public class TransformDivide extends TransformDecimalBinaryOperator
     {
         return new TransformDivide(leftColumnName, rightColumnName, newColumnName);
     }
+
+    public static TransformDivide of(Operand left, Operand right, ColumnName newColumnName)
+    {
+        return new TransformDivide(left, right, newColumnName);
+    }
+
+    private TransformDivide(Operand left, Operand right, ColumnName newColumnName)
+    {
+        super(left, OPERATOR.Divide, right, newColumnName);
+    }
 }

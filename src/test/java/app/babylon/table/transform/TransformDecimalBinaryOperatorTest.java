@@ -44,6 +44,43 @@ class TransformDecimalBinaryOperatorTest
     }
 
     @Test
+    void shouldApplyDecimalOperatorWithLiteralOperand()
+    {
+        final ColumnName RATE = ColumnName.of("Rate");
+        final ColumnName DECIMAL_RATE = ColumnName.of("DecimalRate");
+
+        ColumnObject.Builder<BigDecimal> rate = ColumnObject.builderDecimal(RATE);
+        rate.add(new BigDecimal("63"));
+        rate.addNull();
+        rate.add(new BigDecimal("12.5"));
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), rate.build());
+
+        TableColumnar transformed = table
+                .apply(TransformMultiply.of(TransformDecimalBinaryOperator.Operand.column(RATE),
+                        TransformDecimalBinaryOperator.Operand.value(new BigDecimal("0.01")), DECIMAL_RATE));
+
+        ColumnObject<BigDecimal> decimalRate = transformed.getDecimal(DECIMAL_RATE);
+        assertEquals(0, new BigDecimal("0.63").compareTo(decimalRate.get(0)));
+        assertFalse(decimalRate.isSet(1));
+        assertEquals(0, new BigDecimal("0.125").compareTo(decimalRate.get(2)));
+    }
+
+    @Test
+    void shouldStripTrailingZerosFromLiteralOperands()
+    {
+        TransformDecimalBinaryOperator.Operand operand = TransformDecimalBinaryOperator.Operand
+                .value(new BigDecimal("0.0100"));
+
+        assertEquals("0.01", operand.value().toPlainString());
+
+        operand = TransformDecimalBinaryOperator.Operand.value(new BigDecimal("1000.000"));
+
+        assertEquals("1000", operand.value().toPlainString());
+        assertEquals(0, operand.value().scale());
+    }
+
+    @Test
     void shouldParseFromString()
     {
         TransformDecimalBinaryOperator transform = TransformDecimalBinaryOperator.of("Add(Left, Right, Total)");

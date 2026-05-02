@@ -11,25 +11,64 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.text.Strings;
 
-class TransformDecimalBinaryOperator extends TransformBase
+public class TransformDecimalBinaryOperator extends TransformBase
 {
     protected enum OPERATOR
     {
         Add, Subtract, Multiply, Divide
     };
 
+    public static record Operand(ColumnName columnName, BigDecimal value)
+    {
+        public Operand
+        {
+            if (columnName == null && value == null)
+            {
+                throw new RuntimeException("Decimal operand requires a column or literal value.");
+            }
+            if (columnName != null && value != null)
+            {
+                throw new RuntimeException("Decimal operand can not be both a column and literal value.");
+            }
+        }
+
+        public static Operand column(ColumnName columnName)
+        {
+            return new Operand(ArgumentCheck.nonNull(columnName), null);
+        }
+
+        public static Operand value(BigDecimal value)
+        {
+            return new Operand(null, canonical(ArgumentCheck.nonNull(value)));
+        }
+
+        public boolean isColumn()
+        {
+            return this.columnName != null;
+        }
+    }
+
     private final ColumnName newColumnName;
-    private final ColumnName leftColumnName;
-    private final ColumnName rightColumnName;
+    private final Operand left;
+    private final Operand right;
     private final OPERATOR operator;
 
     public TransformDecimalBinaryOperator(ColumnName leftColumnName, OPERATOR operator, ColumnName rightColumnName,
             ColumnName newColumnName)
     {
+        this(Operand.column(leftColumnName), operator, Operand.column(rightColumnName), newColumnName);
+    }
+
+    public TransformDecimalBinaryOperator(Operand left, OPERATOR operator, Operand right, ColumnName newColumnName)
+    {
         super(operator.toString());
-        this.leftColumnName = ArgumentCheck.nonNull(leftColumnName);
+        this.left = ArgumentCheck.nonNull(left);
         this.operator = ArgumentCheck.nonNull(operator);
-        this.rightColumnName = ArgumentCheck.nonNull(rightColumnName);
+        this.right = ArgumentCheck.nonNull(right);
+        if (!this.left.isColumn() && !this.right.isColumn())
+        {
+            throw new RuntimeException("Decimal binary operator requires at least one column operand.");
+        }
         this.newColumnName = ArgumentCheck.nonNull(newColumnName);
     }
 
@@ -37,24 +76,29 @@ class TransformDecimalBinaryOperator extends TransformBase
     public void apply(Map<ColumnName, Column> columnsByName)
     {
         @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> leftColumn = (ColumnObject<BigDecimal>) columnsByName.get(this.leftColumnName);
+        ColumnObject<BigDecimal> leftColumn = this.left.isColumn()
+                ? (ColumnObject<BigDecimal>) columnsByName.get(this.left.columnName())
+                : null;
         @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> rightColumn = (ColumnObject<BigDecimal>) columnsByName.get(this.rightColumnName);
+        ColumnObject<BigDecimal> rightColumn = this.right.isColumn()
+                ? (ColumnObject<BigDecimal>) columnsByName.get(this.right.columnName())
+                : null;
 
-        if (leftColumn == null)
+        if (this.left.isColumn() && leftColumn == null)
         {
-            throw new RuntimeException("Left column invalid " + leftColumn);
+            throw new RuntimeException("Left column invalid " + this.left.columnName());
         }
-        if (rightColumn == null)
+        if (this.right.isColumn() && rightColumn == null)
         {
-            throw new RuntimeException("Right column invalid " + rightColumn);
+            throw new RuntimeException("Right column invalid " + this.right.columnName());
         }
 
         ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(newColumnName);
-        for (int i = 0; i < leftColumn.size(); ++i)
+        int size = leftColumn == null ? rightColumn.size() : leftColumn.size();
+        for (int i = 0; i < size; ++i)
         {
-            BigDecimal left = leftColumn.get(i);
-            BigDecimal right = rightColumn.get(i);
+            BigDecimal left = value(leftColumn, this.left, i);
+            BigDecimal right = value(rightColumn, this.right, i);
             if (left != null && right != null)
             {
                 BigDecimal newValue = null;
@@ -121,12 +165,22 @@ class TransformDecimalBinaryOperator extends TransformBase
 
     public ColumnName leftColumnName()
     {
-        return this.leftColumnName;
+        return this.left.columnName();
     }
 
     public ColumnName rightColumnName()
     {
-        return this.rightColumnName;
+        return this.right.columnName();
+    }
+
+    public Operand left()
+    {
+        return this.left;
+    }
+
+    public Operand right()
+    {
+        return this.right;
     }
 
     public ColumnName newColumnName()
@@ -134,10 +188,25 @@ class TransformDecimalBinaryOperator extends TransformBase
         return this.newColumnName;
     }
 
+    private BigDecimal value(ColumnObject<BigDecimal> column, Operand operand, int row)
+    {
+        return operand.isColumn() ? column.get(row) : operand.value();
+    }
+
     @Override
     public String toString()
     {
-        return this.operator.toString() + "(" + leftColumnName + ", " + rightColumnName + ", " + newColumnName + ")";
+        return this.operator.toString() + "(" + operand(this.left) + ", " + operand(this.right) + ", " + newColumnName
+                + ")";
     }
 
+    private String operand(Operand operand)
+    {
+        return operand.isColumn() ? operand.columnName().toString() : operand.value().toPlainString();
+    }
+
+    private static BigDecimal canonical(BigDecimal value)
+    {
+        return TransformNormalise.normalise(value);
+    }
 }

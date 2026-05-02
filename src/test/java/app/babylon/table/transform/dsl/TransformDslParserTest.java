@@ -11,8 +11,12 @@
 package app.babylon.table.transform.dsl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.math.RoundingMode;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +28,8 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.transform.Transform;
-import java.util.Map;
+import app.babylon.table.transform.TransformRound;
+import app.babylon.table.transform.TransformToType;
 
 class TransformDslParserTest
 {
@@ -137,11 +142,51 @@ class TransformDslParserTest
         line = "convert AmountText to Decimal into Amount";
         assertParses(line);
 
-        line = "convert AmountText to DecimalAbs into AbsoluteAmount";
-        assertParses(line);
-
         line = "convert AmountText to String into AmountDisplay";
         assertParses(line);
+
+        line = "convert CurrencyText to Currency into Currency";
+        assertParses(line);
+    }
+
+    @Test
+    void shouldAllowCustomConversionTypes()
+    {
+        Column.Type isin = Column.Type.of(Isin.class,
+                (s, offset, length) -> new Isin(s.subSequence(offset, offset + length).toString()));
+        TransformDslParser parser = PARSER.withType("Isin", isin);
+        String line = "convert IsinText to Isin into Isin";
+
+        TransformToType<?> transform = assertInstanceOf(TransformToType.class, parser.parse(line));
+
+        assertEquals(isin, transform.type());
+    }
+
+    @Test
+    void shouldAllowStandardConversionTypesToBeOverwritten()
+    {
+        Column.Type currency = Column.Type.of(AppCurrency.class,
+                (s, offset, length) -> new AppCurrency(s.subSequence(offset, offset + length).toString()));
+        TransformDslParser parser = PARSER.withType("Currency", currency);
+        String line = "convert CurrencyText to Currency into Currency";
+
+        TransformToType<?> transform = assertInstanceOf(TransformToType.class, parser.parse(line));
+
+        assertEquals(currency, transform.type());
+    }
+
+    @Test
+    void shouldAllowCustomRoundScaleTypes()
+    {
+        TransformDslParser parser = PARSER.withRoundScale(AppCurrency.class, AppCurrency::minorUnits);
+        String line = "round Amount using Currency by halfUp into RoundedAmount";
+
+        TransformRound transform = assertInstanceOf(TransformRound.class, parser.parse(line));
+
+        assertEquals(ColumnName.of("Amount"), transform.columnName());
+        assertEquals(ColumnName.of("Currency"), transform.scaleColumnName());
+        assertEquals(ColumnName.of("RoundedAmount"), transform.newColumnName());
+        assertEquals(RoundingMode.HALF_UP, transform.roundingMode());
     }
 
     @Test
@@ -253,12 +298,63 @@ class TransformDslParserTest
 
         line = "divide Amount by Quantity into UnitPrice";
         assertParses(line);
+
+        line = "add Amount and 5 into AmountPlusFee";
+        assertParses(line);
+
+        line = "subtract 1 from DiscountFactor into DiscountRate";
+        assertParses(line);
+
+        line = "multiply Rate by 0.01 into DecimalRate";
+        assertParses(line);
+
+        line = "divide Amount by 100 into AmountMajor";
+        assertParses(line);
     }
 
     @Test
     void shouldParseAbsExamples()
     {
         String line = "abs Amount into AbsoluteAmount";
+        assertParses(line);
+
+        line = "negate Amount into SignedAmount";
+        assertParses(line);
+
+        line = "negate Quantity when Type is Buy";
+        assertParses(line);
+
+        line = "negate Quantity when Type is Buy into SignedQuantity";
+        assertParses(line);
+
+        line = "negate Quantity into SignedQuantity when Type is Buy";
+        assertParses(line);
+
+        line = "normalise Amount";
+        assertParses(line);
+
+        line = "normalise Amount into NormalisedAmount";
+        assertParses(line);
+
+        line = "round Amount to 2";
+        assertParses(line);
+
+        line = "round Amount to 2 by halfUp into RoundedAmount";
+        assertParses(line);
+
+        line = "round Amount to 2 into RoundedAmount by halfUp";
+        assertParses(line);
+
+        line = "round Amount using Currency";
+        assertParses(line);
+
+        line = "round Amount using Currency by halfUp into RoundedAmount";
+        assertParses(line);
+
+        line = "round Amount using Currency into RoundedAmount by halfUp";
+        assertParses(line);
+
+        line = "round Amount to 2 by bankers into RoundedAmount";
         assertParses(line);
     }
 
@@ -324,6 +420,18 @@ class TransformDslParserTest
     {
         assertNotNull(PARSER.parse(line));
         assertNotNull(PARSER.parse(TokenStream.of(line)));
+    }
+
+    private record Isin(String value)
+    {
+    }
+
+    private record AppCurrency(String value)
+    {
+        private int minorUnits()
+        {
+            return 3;
+        }
     }
 
     private static final class CustomTransform implements Transform

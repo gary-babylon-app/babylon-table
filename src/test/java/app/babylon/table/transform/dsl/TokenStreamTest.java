@@ -112,9 +112,6 @@ class TokenStreamTest
         line = "convert AmountText to Decimal into Amount";
         assertCanTokenize(line);
 
-        line = "convert AmountText to DecimalAbs into AbsoluteAmount";
-        assertCanTokenize(line);
-
         line = "convert AmountText to String into AmountDisplay";
         assertCanTokenize(line);
 
@@ -226,6 +223,21 @@ class TokenStreamTest
     void shouldTokenizeAbsExamples()
     {
         String line = "abs Amount into AbsoluteAmount";
+        assertCanTokenize(line);
+
+        line = "negate Amount into SignedAmount";
+        assertCanTokenize(line);
+
+        line = "negate Quantity when Type is Buy";
+        assertCanTokenize(line);
+
+        line = "normalise Amount into NormalisedAmount";
+        assertCanTokenize(line);
+
+        line = "round Amount to 2 by halfUp into RoundedAmount";
+        assertCanTokenize(line);
+
+        line = "round Amount using Currency by halfUp into RoundedAmount";
         assertCanTokenize(line);
     }
 

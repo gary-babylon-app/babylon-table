@@ -34,13 +34,17 @@ import app.babylon.table.transform.TransformCoalesce;
 import app.babylon.table.transform.TransformConcat;
 import app.babylon.table.transform.TransformCopy;
 import app.babylon.table.transform.TransformCreateConstant;
+import app.babylon.table.transform.TransformDecimalBinaryOperator.Operand;
 import app.babylon.table.transform.TransformDivide;
 import app.babylon.table.transform.TransformExtract;
 import app.babylon.table.transform.TransformLeft;
 import app.babylon.table.transform.TransformMultiply;
+import app.babylon.table.transform.TransformNegate;
+import app.babylon.table.transform.TransformNormalise;
 import app.babylon.table.transform.TransformParseMode;
 import app.babylon.table.transform.TransformPrefix;
 import app.babylon.table.transform.TransformRight;
+import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformSplit;
 import app.babylon.table.transform.TransformStringReplace;
 import app.babylon.table.transform.TransformStringReplaceAll;
@@ -50,7 +54,6 @@ import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
 import app.babylon.table.transform.TransformToDecimal;
-import app.babylon.table.transform.TransformToDecimalAbs;
 import app.babylon.table.transform.TransformToDouble;
 import app.babylon.table.transform.TransformToInt;
 import app.babylon.table.transform.TransformToLocalDate;
@@ -90,8 +93,11 @@ public final class TransformDslWriter
         writers.put(TransformExtract.class, TransformDslWriter::writeExtract);
         writers.put(TransformLeft.class, TransformDslWriter::writeLeft);
         writers.put(TransformMultiply.class, t -> writeDecimal("multiply", "by", t));
+        writers.put(TransformNegate.class, TransformDslWriter::writeNegate);
+        writers.put(TransformNormalise.class, TransformDslWriter::writeNormalise);
         writers.put(TransformPrefix.class, TransformDslWriter::writePrefix);
         writers.put(TransformRight.class, TransformDslWriter::writeRight);
+        writers.put(TransformRound.class, TransformDslWriter::writeRound);
         writers.put(TransformSplit.class, TransformDslWriter::writeSplit);
         writers.put(TransformStringReplace.class, TransformDslWriter::writeReplace);
         writers.put(TransformStringReplaceAll.class, TransformDslWriter::writeReplaceAll);
@@ -101,7 +107,6 @@ public final class TransformDslWriter
         writers.put(TransformSubtract.class, t -> writeDecimal("subtract", "from", t));
         writers.put(TransformSuffix.class, TransformDslWriter::writeSuffix);
         writers.put(TransformToDecimal.class, t -> writeConvert("Decimal", t));
-        writers.put(TransformToDecimalAbs.class, t -> writeConvert("DecimalAbs", t));
         writers.put(TransformToDouble.class, t -> writePrimitiveWrapper("Double", t));
         writers.put(TransformToInt.class, t -> writePrimitiveWrapper("Int", t));
         writers.put(TransformToLocalDate.class, TransformDslWriter::writeDate);
@@ -335,16 +340,52 @@ public final class TransformDslWriter
                 + into(lowercase.existingColumnName(), lowercase.newColumnName());
     }
 
+    private static String writeNegate(Transform transform)
+    {
+        TransformNegate negate = (TransformNegate) transform;
+        String line = "negate " + column(negate.columnName());
+        if (negate.conditionColumnName() != null)
+        {
+            line += " when " + column(negate.conditionColumnName()) + " is " + value(negate.conditionValue());
+        }
+        return line + into(negate.columnName(), negate.newColumnName());
+    }
+
+    private static String writeNormalise(Transform transform)
+    {
+        TransformNormalise normalise = (TransformNormalise) transform;
+        return "normalise " + column(normalise.columnName()) + into(normalise.columnName(), normalise.newColumnName());
+    }
+
+    private static String writeRound(Transform transform)
+    {
+        TransformRound round = (TransformRound) transform;
+        String line = "round " + column(round.columnName());
+        if (round.scaleColumnName() == null)
+        {
+            line += " to " + round.scale();
+        }
+        else
+        {
+            line += " using " + column(round.scaleColumnName());
+        }
+        if (round.roundingMode() != null)
+        {
+            line += " by " + TransformRound.roundingModeName(round.roundingMode());
+        }
+        return line + into(round.columnName(), round.newColumnName());
+    }
+
     private static String writeDecimal(String command, String word, Transform transform)
     {
-        ColumnName left = leftColumnName(transform);
-        ColumnName right = rightColumnName(transform);
+        Operand left = leftOperand(transform);
+        Operand right = rightOperand(transform);
         ColumnName target = newColumnName(transform);
         if (transform instanceof TransformSubtract)
         {
-            return command + " " + column(right) + " " + word + " " + column(left) + " into " + column(target);
+            return command + " " + operand(right) + " " + word + " " + operand(left) + " into " + column(target);
         }
-        return command + " " + column(left) + " " + word + " " + column(right) + " into " + column(target);
+        return command + " " + operand(left) + " " + word + " " + operand(right) + " into " + column(target);
     }
 
     private static String writePrimitiveWrapper(String type, Transform transform)
@@ -412,10 +453,6 @@ public final class TransformDslWriter
         {
             return decimal.columnNames()[0];
         }
-        if (transform instanceof TransformToDecimalAbs decimalAbs)
-        {
-            return decimalAbs.columnNames()[0];
-        }
         if (transform instanceof TransformToString toString)
         {
             return toString.columnNames()[0];
@@ -436,10 +473,6 @@ public final class TransformDslWriter
         if (transform instanceof TransformToDecimal decimal)
         {
             return firstOrNull(decimal.newColumnNames());
-        }
-        if (transform instanceof TransformToDecimalAbs decimalAbs)
-        {
-            return firstOrNull(decimalAbs.newColumnNames());
         }
         if (transform instanceof TransformToString toString)
         {
@@ -500,6 +533,27 @@ public final class TransformDslWriter
         throw new TransformDslException("No left column for " + transform.getClass().getName(), 0);
     }
 
+    private static Operand leftOperand(Transform transform)
+    {
+        if (transform instanceof TransformAdd add)
+        {
+            return add.left();
+        }
+        if (transform instanceof TransformDivide divide)
+        {
+            return divide.left();
+        }
+        if (transform instanceof TransformMultiply multiply)
+        {
+            return multiply.left();
+        }
+        if (transform instanceof TransformSubtract subtract)
+        {
+            return subtract.left();
+        }
+        throw new TransformDslException("No left operand for " + transform.getClass().getName(), 0);
+    }
+
     private static ColumnName rightColumnName(Transform transform)
     {
         if (transform instanceof TransformAdd add)
@@ -519,6 +573,27 @@ public final class TransformDslWriter
             return subtract.rightColumnName();
         }
         throw new TransformDslException("No right column for " + transform.getClass().getName(), 0);
+    }
+
+    private static Operand rightOperand(Transform transform)
+    {
+        if (transform instanceof TransformAdd add)
+        {
+            return add.right();
+        }
+        if (transform instanceof TransformDivide divide)
+        {
+            return divide.right();
+        }
+        if (transform instanceof TransformMultiply multiply)
+        {
+            return multiply.right();
+        }
+        if (transform instanceof TransformSubtract subtract)
+        {
+            return subtract.right();
+        }
+        throw new TransformDslException("No right operand for " + transform.getClass().getName(), 0);
     }
 
     private static ColumnName newColumnName(Transform transform)
@@ -579,6 +654,11 @@ public final class TransformDslWriter
     private static String column(ColumnName name)
     {
         return name.getValue();
+    }
+
+    private static String operand(Operand operand)
+    {
+        return operand.isColumn() ? column(operand.columnName()) : operand.value().toPlainString();
     }
 
     private static String value(String value)

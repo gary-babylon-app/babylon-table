@@ -16,3 +16,19 @@ Highlights:
 - Columnar table operations including filtering, grouping, aggregation, sorting, joins, and transforms
 - Table and column transform support for derived columns and reshape-style workflows
 - CSV reading support for in-memory and streaming-style workflows
+
+## Transform DSL
+
+babylon-table includes a compact, line-oriented transform DSL for describing
+repeatable table cleanup and enrichment steps.
+
+```text
+strip Name into CleanName
+convert AmountText to Decimal into Amount
+multiply Rate by 0.01 into DecimalRate
+round Amount using Currency by bankers into RoundedAmount
+negate Quantity when Type is Buy into SignedQuantity
+```
+
+See the [Transform DSL reference](docs/transform-dsl.md) for the complete list
+of supported statements and examples.

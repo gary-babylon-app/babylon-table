@@ -54,8 +54,6 @@ public class TransformDslWriterTest
         assertFormat("convert AmountText to Decimal into Amount", "convert AmountText to Decimal into Amount");
         assertFormat("convert AmountText to Decimal by onlyIn into Amount",
                 "convert AmountText to Decimal by onlyIn into Amount");
-        assertFormat("convert AmountText to DecimalAbs into AbsoluteAmount",
-                "convert AmountText to DecimalAbs into AbsoluteAmount");
         assertFormat("convert AmountText to String into AmountDisplay",
                 "convert AmountText to String into AmountDisplay");
     }
@@ -130,8 +128,35 @@ public class TransformDslWriterTest
         assertFormat("subtract Fees from GrossAmount into NetAmount", "subtract Fees from GrossAmount into NetAmount");
         assertFormat("multiply Quantity by Price into MarketValue", "multiply Quantity by Price into MarketValue");
         assertFormat("divide Amount by Quantity into UnitPrice", "divide Amount by Quantity into UnitPrice");
+        assertFormat("add Amount and 5 into AmountPlusFee", "add Amount and 5 into AmountPlusFee");
+        assertFormat("subtract 1 from DiscountFactor into DiscountRate",
+                "subtract 1 from DiscountFactor into DiscountRate");
+        assertFormat("multiply Rate by 0.01 into DecimalRate", "multiply Rate by 0.01 into DecimalRate");
+        assertFormat("multiply Rate by 0.0100 into DecimalRate", "multiply Rate by 0.01 into DecimalRate");
+        assertFormat("multiply Amount by 1000.000 into ScaledAmount", "multiply Amount by 1000 into ScaledAmount");
+        assertFormat("divide Amount by 100 into AmountMajor", "divide Amount by 100 into AmountMajor");
         assertFormat("abs Amount", "abs Amount");
         assertFormat("abs Amount into AbsoluteAmount", "abs Amount into AbsoluteAmount");
+        assertFormat("negate Amount into SignedAmount", "negate Amount into SignedAmount");
+        assertFormat("negate Quantity when Type is Buy", "negate Quantity when Type is Buy");
+        assertFormat("negate Quantity when Type is Buy into SignedQuantity",
+                "negate Quantity when Type is Buy into SignedQuantity");
+        assertFormat("negate Quantity into SignedQuantity when Type is Buy",
+                "negate Quantity when Type is Buy into SignedQuantity");
+        assertFormat("normalise Amount", "normalise Amount");
+        assertFormat("normalise Amount into NormalisedAmount", "normalise Amount into NormalisedAmount");
+        assertFormat("round Amount to 2", "round Amount to 2");
+        assertFormat("round Amount to 2 by halfUp into RoundedAmount",
+                "round Amount to 2 by halfUp into RoundedAmount");
+        assertFormat("round Amount to 2 into RoundedAmount by halfUp",
+                "round Amount to 2 by halfUp into RoundedAmount");
+        assertFormat("round Amount to 2 by bankers into RoundedAmount",
+                "round Amount to 2 by bankers into RoundedAmount");
+        assertFormat("round Amount using Currency", "round Amount using Currency");
+        assertFormat("round Amount using Currency by halfUp into RoundedAmount",
+                "round Amount using Currency by halfUp into RoundedAmount");
+        assertFormat("round Amount using Currency into RoundedAmount by halfUp",
+                "round Amount using Currency by halfUp into RoundedAmount");
     }
 
     @Test

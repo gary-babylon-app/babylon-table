@@ -15,4 +15,14 @@ public class TransformAdd extends TransformDecimalBinaryOperator
     {
         return new TransformAdd(leftColumnName, rightColumnName, newColumnName);
     }
+
+    public static TransformAdd of(Operand left, Operand right, ColumnName newColumnName)
+    {
+        return new TransformAdd(left, right, newColumnName);
+    }
+
+    private TransformAdd(Operand left, Operand right, ColumnName newColumnName)
+    {
+        super(left, OPERATOR.Add, right, newColumnName);
+    }
 }

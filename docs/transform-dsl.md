@@ -2,8 +2,19 @@
 
 Quick Transforms are written as simple, human-readable Transformation
 Statements: one statement per line for cleaning, converting, and deriving data.
-The first word is the command. `into` names the output column, `using` supplies
-transform-specific configuration, and `by` supplies a parsing or rounding mode.
+Every statement starts with a command, usually a verb, such as `strip`, `clean`,
+`convert`, `take`, `split`, or `round`.
+
+## Keywords
+
+- `into` - names the output column.
+- `using` - adds a statement-specific parameter.
+- `by` - adds a statement-specific mode.
+
+For example, `convert TradeDateText to Date using YMD` uses a date format,
+while `convert Description to Currency by firstIn` uses a sentence-search
+strategy. Similarly, `round Amount using Currency` uses a scale column, while
+`round Amount to 2 by bankers` uses a rounding strategy.
 
 Technically, the statement format is a small domain-specific language (DSL), but
 it is designed to read like plain operational instructions.

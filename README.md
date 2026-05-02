@@ -17,10 +17,11 @@ Highlights:
 - Table and column transform support for derived columns and reshape-style workflows
 - CSV reading support for in-memory and streaming-style workflows
 
-## Transform DSL
+## Quick Transforms
 
-babylon-table includes a compact, line-oriented transform DSL for describing
-repeatable table cleanup and enrichment steps.
+babylon-table includes Quick Transforms for describing repeatable cleanup,
+conversion, and enrichment steps. Quick Transforms are written as simple,
+human-readable Transformation Statements: one statement per line.
 
 ```text
 strip Name into CleanName
@@ -30,5 +31,7 @@ round Amount using Currency by bankers into RoundedAmount
 negate Quantity when Type is Buy into SignedQuantity
 ```
 
-See the [Transform DSL reference](docs/transform-dsl.md) for the complete list
-of supported statements and examples.
+Technically, the statement format is a small domain-specific language (DSL), but
+it is designed to read like plain operational instructions. See the
+[Quick Transforms reference](docs/transform-dsl.md) for the complete list of
+supported statements and examples.

@@ -1,8 +1,12 @@
-# Transform DSL Reference
+# Quick Transforms Reference
 
-The transform DSL describes one transform per line. The first word is the
-command. `into` names the output column, `using` supplies transform-specific
-configuration, and `by` supplies a parsing or rounding mode.
+Quick Transforms are written as simple, human-readable Transformation
+Statements: one statement per line for cleaning, converting, and deriving data.
+The first word is the command. `into` names the output column, `using` supplies
+transform-specific configuration, and `by` supplies a parsing or rounding mode.
+
+Technically, the statement format is a small domain-specific language (DSL), but
+it is designed to read like plain operational instructions.
 
 Quoted values are literals. Use quotes for text, regex patterns, empty strings,
 and values containing punctuation or spaces.
@@ -68,14 +72,30 @@ description carries information such as broker, currency, date, or timestamp.
 ```text
 convert AmountText to Double
 convert AmountText to Double into Amount
-convert AmountText to Double by firstIn into Amount
 convert AmountText to Decimal into Amount
-convert AmountText to Decimal by onlyIn into Amount
 convert QuantityText to Int into Quantity
 convert UnitsText to Long into Units
 convert AmountText to String into AmountDisplay
 convert CurrencyText to Currency into Currency
 ```
+
+These conversions read a string value and convert it to the requested type. The
+normal case is an exact parse: the whole string value should be the value being
+converted.
+
+Use `by firstIn`, `by lastIn`, or `by onlyIn` when the value must be extracted
+from a longer sentence. A typical case is a description field with several
+words, where one word is the useful value:
+
+```text
+convert Description to Currency by firstIn into Currency
+convert Description to Currency by lastIn into SettlementCurrency
+convert Description to Currency by onlyIn into Currency
+```
+
+`firstIn` uses the first parseable value found in the sentence. `lastIn` uses
+the last parseable value. `onlyIn` uses the value only when exactly one
+parseable value is found.
 
 Date conversion accepts a date format with `using`:
 
@@ -83,15 +103,6 @@ Date conversion accepts a date format with `using`:
 convert TradeDateText to Date using YMD into TradeDate
 convert TradeDateText to Date into TradeDate using YMD
 convert TradeDateText to Date using YMD by lastIn into TradeDate
-```
-
-Parse modes are:
-
-```text
-exact
-firstIn
-lastIn
-onlyIn
 ```
 
 Custom conversion types can be registered with `TransformDslParser.withType(...)`.

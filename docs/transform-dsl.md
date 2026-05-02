@@ -12,12 +12,23 @@ and values containing punctuation or spaces.
 ```text
 strip Name
 strip Name into CleanName
-clean whitespace in Name
-clean whitespace in Name into CleanName
+strip Name using ' []()-;,' into CleanName
+clean Name
+clean Name into CleanName
 ```
 
-`strip` trims leading and trailing whitespace. `clean whitespace` normalises
-internal whitespace.
+`strip` trims leading and trailing whitespace. Add `using` to strip any leading
+or trailing character from the supplied literal; for example
+`strip Name using ' []()-;,'` changes `" [ABC-123], "` to `"ABC-123"`.
+
+`clean` first strips leading and trailing whitespace, then replaces each
+internal run of whitespace with one normal space. In the example below, the dot
+marks a space for explanation only; it is not part of the actual value. `\t`
+marks a tab.
+
+```text
+"··Alpha··Beta\t\tGamma··" -> "Alpha·Beta·Gamma"
+```
 
 ## String case
 
@@ -32,12 +43,25 @@ lowercase Email into LowerEmail
 
 ```text
 copy Symbol into DisplaySymbol
-create constant SourceSystem as 'BrokerA'
-create constant SourceRank as Int '1'
-create constant Currency as Currency 'USD'
+constant 'BrokerA' into SourceSystem
+constant 'USD' into PaymentCurrency
+constant '1' as Int into SourceRank
+constant 'USD' as Currency into PaymentCurrency
 ```
 
-If no type is supplied, constants are strings.
+If no type is supplied, constants are strings. Use `as Type` when the new
+column should have a specific type.
+
+## Metadata
+
+```text
+constant metadata.tableName into SourceFileName
+constant metadata.description into SourceDescription
+```
+
+Metadata constants create a string column from table source metadata. Metadata
+names are case-insensitive. This is useful when an ingested file name or table
+description carries information such as broker, currency, date, or timestamp.
 
 ## Type conversion
 
@@ -126,10 +150,14 @@ optionally provide a `default` or `else` value.
 ```text
 coalesce FirstName into DisplayName
 coalesce FirstName, PreferredName, LegalName into DisplayName
-coalesce FirstAmount, SecondAmount, ThirdAmount as Categorical into ChosenAmount
+coalesce FirstAmount, SecondAmount, ThirdAmount into ChosenAmount
 ```
 
-`coalesce` chooses the first set value from the source columns.
+`coalesce` scans the source columns from left to right for each row and writes
+the first set value it finds. If all source values are empty for a row, the
+output value is empty. For example, `coalesce FirstName, PreferredName, LegalName
+into DisplayName` chooses `FirstName` when present, otherwise `PreferredName`,
+otherwise `LegalName`.
 
 ## Decimal operators
 

@@ -53,6 +53,7 @@ import app.babylon.table.transform.TransformSubstitute;
 import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
+import app.babylon.table.transform.TransformMetadataConstant;
 import app.babylon.table.transform.TransformToDecimal;
 import app.babylon.table.transform.TransformToDouble;
 import app.babylon.table.transform.TransformToInt;
@@ -106,6 +107,7 @@ public final class TransformDslWriter
         writers.put(TransformSubstring.class, TransformDslWriter::writeSubstring);
         writers.put(TransformSubtract.class, t -> writeDecimal("subtract", "from", t));
         writers.put(TransformSuffix.class, TransformDslWriter::writeSuffix);
+        writers.put(TransformMetadataConstant.class, TransformDslWriter::writeMetadataConstant);
         writers.put(TransformToDecimal.class, t -> writeConvert("Decimal", t));
         writers.put(TransformToDouble.class, t -> writePrimitiveWrapper("Double", t));
         writers.put(TransformToInt.class, t -> writePrimitiveWrapper("Int", t));
@@ -183,8 +185,7 @@ public final class TransformDslWriter
     private static String writeCleanWhitespace(Transform transform)
     {
         TransformCleanWhitespace clean = (TransformCleanWhitespace) transform;
-        return "clean whitespace in " + column(clean.existingColumnName())
-                + into(clean.existingColumnName(), clean.newColumnName());
+        return "clean " + column(clean.existingColumnName()) + into(clean.existingColumnName(), clean.newColumnName());
     }
 
     private static String writeCoalesce(Transform transform)
@@ -225,8 +226,18 @@ public final class TransformDslWriter
         ColumnName[] names = constant.newColumnNames();
         Object[] values = constant.newColumnValues();
         Column.Type[] types = constant.types();
-        String type = ColumnTypes.STRING.equals(types[0]) ? "" : typeName(types[0]) + " ";
-        return "create constant " + column(names[0]) + " as " + type + literal(String.valueOf(values[0]));
+        String line = "constant " + literal(String.valueOf(values[0]));
+        if (!ColumnTypes.STRING.equals(types[0]))
+        {
+            line += " as " + typeName(types[0]);
+        }
+        return line + " into " + column(names[0]);
+    }
+
+    private static String writeMetadataConstant(Transform transform)
+    {
+        TransformMetadataConstant metadata = (TransformMetadataConstant) transform;
+        return "constant " + metadata.key().dslName() + " into " + column(metadata.newColumnName());
     }
 
     private static String writeExtract(Transform transform)
@@ -310,7 +321,12 @@ public final class TransformDslWriter
     private static String writeStrip(Transform transform)
     {
         TransformStrip strip = (TransformStrip) transform;
-        return "strip " + column(strip.existingColumnName()) + into(strip.existingColumnName(), strip.newColumnName());
+        String line = "strip " + column(strip.existingColumnName());
+        if (strip.stripCharacters() != null)
+        {
+            line += " using " + literal(strip.stripCharacters());
+        }
+        return line + into(strip.existingColumnName(), strip.newColumnName());
     }
 
     private static String writeSubstitute(Transform transform)

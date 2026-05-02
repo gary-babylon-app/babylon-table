@@ -2,6 +2,14 @@ package app.babylon.table.transform;
 
 import app.babylon.table.column.ColumnName;
 
+/**
+ * Column names for the legacy table-backed transform registry format.
+ *
+ * @deprecated Store transform DSL statements instead. The fixed Param1-Param5
+ *             schema belongs to the deprecated {@link TransformRegistry} path
+ *             and is expected to be removed in a future release.
+ */
+@Deprecated(since = "0.3.22", forRemoval = true)
 public class TransformSetSchema
 {
     public static final String BABYLON = "Babylon";

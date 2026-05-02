@@ -39,6 +39,29 @@ public class TransformStripTest
     }
 
     @Test
+    public void shouldStripConfiguredCharactersFromStringColumn()
+    {
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName STRIPPED = ColumnName.of("Stripped");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, ColumnTypes.STRING);
+        strings.add(" [ABC-123], ");
+        strings.add("(XYZ);");
+        strings.add("- inside -");
+        strings.add("A-B");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table.apply(new TransformStrip(NAME, STRIPPED, " []()-;,"));
+
+        ColumnObject<String> stripped = transformed.getString(STRIPPED);
+        assertEquals("ABC-123", stripped.get(0));
+        assertEquals("XYZ", stripped.get(1));
+        assertEquals("inside", stripped.get(2));
+        assertEquals("A-B", stripped.get(3));
+    }
+
+    @Test
     public void shouldPreserveCategoricalShapeWhenWritingToNewColumn()
     {
         final ColumnName NAME = ColumnName.of("Name");

@@ -18,9 +18,10 @@ public class TransformToDecimalAbs extends TransformStringColumnsBase<BigDecimal
     public static final String FUNCTION_NAME = "ToDecimalAbs";
     private final Function<CharSequence, BigDecimal> parser;
 
-    private TransformToDecimalAbs(ColumnName... columnNames)
+    private TransformToDecimalAbs(ColumnName columnName)
     {
-        super(FUNCTION_NAME, ArgumentCheck.nonEmpty(columnNames), null);
+        super(FUNCTION_NAME, new ColumnName[]
+        {ArgumentCheck.nonNull(columnName)}, null);
         this.parser = TransformToDecimalAbs::parseAbsDecimal;
     }
 
@@ -29,20 +30,9 @@ public class TransformToDecimalAbs extends TransformStringColumnsBase<BigDecimal
         this(columnName, newColumnName, null);
     }
 
-    public static TransformToDecimalAbs of(ColumnName... columnNames)
+    public static TransformToDecimalAbs of(ColumnName columnName)
     {
-        if (Is.empty(columnNames))
-        {
-            return null;
-        }
-        for (ColumnName columnName : columnNames)
-        {
-            if (columnName == null)
-            {
-                return null;
-            }
-        }
-        return new TransformToDecimalAbs(columnNames);
+        return columnName == null ? null : new TransformToDecimalAbs(columnName);
     }
 
     public static TransformToDecimalAbs of(String... params)
@@ -60,7 +50,8 @@ public class TransformToDecimalAbs extends TransformStringColumnsBase<BigDecimal
                 return null;
             }
             s = s.substring(FUNCTION_NAME.length() + 1, s.length() - 1);
-            return new TransformToDecimalAbs(ColumnName.of(Strings.split(s)));
+            String[] columnNames = Strings.split(s);
+            return columnNames.length == 1 ? of(ColumnName.of(columnNames[0])) : null;
         }
         if (params.length >= 2)
         {

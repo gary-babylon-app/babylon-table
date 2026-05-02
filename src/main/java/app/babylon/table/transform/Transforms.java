@@ -2,12 +2,22 @@ package app.babylon.table.transform;
 
 public final class Transforms
 {
+    @Deprecated(since = "0.3.22", forRemoval = true)
     private static volatile TransformRegistry REGISTRY;
 
     private Transforms()
     {
     }
 
+    /**
+     * Returns the legacy function-name/parameter registry.
+     *
+     * @deprecated Use {@link app.babylon.table.transform.dsl.TransformDslParser}
+     *             for persisted transform definitions. The DSL is the preferred
+     *             transform configuration format and this registry is expected to
+     *             be removed in a future release.
+     */
+    @Deprecated(since = "0.3.22", forRemoval = true)
     public static TransformRegistry registry()
     {
         TransformRegistry x = REGISTRY;

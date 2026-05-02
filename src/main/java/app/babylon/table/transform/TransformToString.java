@@ -1,6 +1,5 @@
 package app.babylon.table.transform;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
@@ -14,21 +13,19 @@ public class TransformToString extends TransformBase
 {
     public static final String FUNCTION_NAME = "ToString";
 
-    private ColumnName[] columnNames;
-    private Map<ColumnName, ColumnName> newColumnNames;
+    private final ColumnName columnName;
+    private final ColumnName newColumnName;
 
-    public TransformToString(ColumnName... columnNames)
+    public TransformToString(ColumnName columnName)
     {
-        super(FUNCTION_NAME);
-        this.columnNames = ArgumentCheck.nonNull(columnNames);
+        this(columnName, null);
     }
 
     public TransformToString(ColumnName columnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.columnNames = new ColumnName[]
-        {ArgumentCheck.nonNull(columnName)};
-        this.newColumnNames = (newColumnName != null) ? Map.of(columnName, newColumnName) : Map.of();
+        this.columnName = ArgumentCheck.nonNull(columnName);
+        this.newColumnName = newColumnName;
     }
 
     public static Transform of(String... params)
@@ -45,33 +42,34 @@ public class TransformToString extends TransformBase
         return new TransformToString(columnName, newColumnName);
     }
 
-    public static TransformToString of(ColumnName... columnNames)
+    public static TransformToString of(ColumnName columnName)
     {
-        return new TransformToString(columnNames);
+        return columnName == null ? null : new TransformToString(columnName);
     }
 
     public ColumnName[] columnNames()
     {
-        return Arrays.copyOf(this.columnNames, this.columnNames.length);
+        return new ColumnName[]
+        {this.columnName};
     }
 
     public Map<ColumnName, ColumnName> newColumnNames()
     {
-        return this.newColumnNames;
+        return this.newColumnName == null ? Map.of() : Map.of(this.columnName, this.newColumnName);
     }
 
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        if (!Is.empty(this.columnNames))
+        if (this.columnName != null)
         {
-            Column[] validColumns = getColumns(columnsByName, this.columnNames);
+            Column[] validColumns = getColumns(columnsByName, this.columnName);
             Column[] newColumns = new Column[validColumns.length];
 
             for (int i = 0; i < validColumns.length; ++i)
             {
                 Column c = validColumns[i];
-                ColumnName newColumnName = newColumnNames.getOrDefault(c.getName(), c.getName());
+                ColumnName newColumnName = this.newColumnName == null ? c.getName() : this.newColumnName;
                 ColumnObject.Builder<String> cc = ColumnObject.builder(newColumnName, ColumnTypes.STRING);
                 for (int j = 0; j < c.size(); ++j)
                 {

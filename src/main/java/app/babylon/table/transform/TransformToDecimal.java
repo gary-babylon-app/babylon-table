@@ -19,9 +19,10 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
     public static final String FUNCTION_NAME = "ToDecimal";
     private final Function<CharSequence, BigDecimal> parser;
 
-    private TransformToDecimal(ColumnName... columnNames)
+    private TransformToDecimal(ColumnName columnName)
     {
-        super(FUNCTION_NAME, ArgumentCheck.nonEmpty(columnNames), null);
+        super(FUNCTION_NAME, new ColumnName[]
+        {ArgumentCheck.nonNull(columnName)}, null);
         this.parser = TransformToDecimal::parseDecimal;
     }
 
@@ -30,20 +31,9 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
         this(columnName, newColumnName, null);
     }
 
-    public static TransformToDecimal of(ColumnName... columnNames)
+    public static TransformToDecimal of(ColumnName columnName)
     {
-        if (Is.empty(columnNames))
-        {
-            return null;
-        }
-        for (ColumnName columnName : columnNames)
-        {
-            if (columnName == null)
-            {
-                return null;
-            }
-        }
-        return new TransformToDecimal(columnNames);
+        return columnName == null ? null : new TransformToDecimal(columnName);
     }
 
     public static TransformToDecimal of(String... params)
@@ -61,7 +51,8 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
                 return null;
             }
             s = s.substring(FUNCTION_NAME.length() + 1, s.length() - 1);
-            return new TransformToDecimal(ColumnName.of(Strings.split(s)));
+            String[] columnNames = Strings.split(s);
+            return columnNames.length == 1 ? of(ColumnName.of(columnNames[0])) : null;
         }
         if (params.length >= 2)
         {

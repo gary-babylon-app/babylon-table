@@ -35,7 +35,9 @@ import app.babylon.table.selection.RowFilter;
 import app.babylon.table.selection.Selection;
 import app.babylon.table.sorting.TableSort;
 import app.babylon.table.sorting.TableSort.SortOrder;
+import app.babylon.table.transform.SourceMetadata;
 import app.babylon.table.transform.Transform;
+
 /**
  * A column-oriented table whose data is exposed as named columns and can be
  * sliced, filtered, transformed, grouped, and sorted.
@@ -190,11 +192,12 @@ public interface TableColumnar extends Table
     default public TableColumnar apply(Transform... transforms)
     {
         Map<ColumnName, Column> columnsByName = getColumns(new LinkedHashMap<>());
+        SourceMetadata metadata = sourceMetadata();
         for (Transform transform : transforms)
         {
             if (transform != null)
             {
-                transform.apply(columnsByName);
+                transform.apply(metadata, columnsByName);
             }
         }
         return Tables.newTable(getName(), getDescription(), columnsByName.values());
@@ -203,11 +206,12 @@ public interface TableColumnar extends Table
     default public TableColumnar apply(Collection<Transform> transforms)
     {
         Map<ColumnName, Column> columnsByName = getColumns(new LinkedHashMap<>());
+        SourceMetadata metadata = sourceMetadata();
         for (Transform transform : transforms)
         {
             if (transform != null)
             {
-                transform.apply(columnsByName);
+                transform.apply(metadata, columnsByName);
             }
         }
         return Tables.newTable(getName(), getDescription(), columnsByName.values());
@@ -218,9 +222,15 @@ public interface TableColumnar extends Table
         Map<ColumnName, Column> columnsByName = getColumns(new LinkedHashMap<>());
         if (transform != null)
         {
-            transform.apply(columnsByName);
+            transform.apply(sourceMetadata(), columnsByName);
         }
         return Tables.newTable(getName(), getDescription(), columnsByName.values());
+    }
+
+    default public SourceMetadata sourceMetadata()
+    {
+        TableDescription description = getDescription();
+        return new SourceMetadata(getName().getOriginal(), description == null ? "" : description.getValue());
     }
 
     default public TableColumnar sort(ColumnName... x)

@@ -58,6 +58,7 @@ import app.babylon.table.transform.TransformSubstitute;
 import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
+import app.babylon.table.transform.TransformMetadataConstant;
 import app.babylon.table.transform.TransformToDecimal;
 import app.babylon.table.transform.TransformToDouble;
 import app.babylon.table.transform.TransformToInt;
@@ -103,8 +104,8 @@ public final class TransformDslParser
         parsers.put("clean", TransformDslParser::parseClean);
         parsers.put("coalesce", TransformDslParser::parseCoalesce);
         parsers.put("concat", TransformDslParser::parseConcat);
+        parsers.put("constant", TransformDslParser::parseConstant);
         parsers.put("copy", TransformDslParser::parseCopy);
-        parsers.put("create", TransformDslParser::parseCreate);
         parsers.put("divide", TransformDslParser::parseDivide);
         parsers.put("extract", TransformDslParser::parseExtract);
         parsers.put("lowercase", TransformDslParser::parseLowercase);
@@ -245,13 +246,6 @@ public final class TransformDslParser
 
     private static Transform parseClean(TokenStream tokens)
     {
-        if (tokens.matchWord("whitespace"))
-        {
-            tokens.expectWord("in");
-            String source = tokens.expectValue();
-            String target = optionalInto(tokens, source);
-            return TransformCleanWhitespace.of(ColumnName.of(source), columnName(target));
-        }
         String source = tokens.expectValue();
         if (tokens.matchWord("using"))
         {
@@ -407,17 +401,58 @@ public final class TransformDslParser
         return TransformCopy.of(ColumnName.of(source), ColumnName.of(target));
     }
 
-    private static Transform parseCreate(TokenStream tokens)
+    private static Transform parseConstant(TokenStream tokens)
     {
-        tokens.expectWord("constant");
-        String target = tokens.expectValue();
-        tokens.expectWord("as");
-        Column.Type type = ColumnTypes.STRING;
-        if (!tokens.peek().is(TokenType.LITERAL))
+        Token valueToken = tokens.next();
+        if (!valueToken.isValue())
         {
-            type = parseColumnType(tokens.expectValue());
+            throw new TransformDslException("Expected value", valueToken.position());
         }
-        String value = tokens.expectValue();
+        String value = valueToken.value();
+        TransformMetadataConstant.Key metadataKey = valueToken.is(TokenType.WORD)
+                ? TransformMetadataConstant.Key.parse(value)
+                : null;
+        Column.Type type = ColumnTypes.STRING;
+        String target = null;
+        while (!tokens.isAtEnd())
+        {
+            if (tokens.matchWord("as"))
+            {
+                if (!ColumnTypes.STRING.equals(type))
+                {
+                    throw new TransformDslException("Duplicate as clause", tokens.peek().position());
+                }
+                type = parseColumnType(tokens.expectValue());
+            }
+            else if (tokens.matchWord("into"))
+            {
+                if (target != null)
+                {
+                    throw new TransformDslException("Duplicate into clause", tokens.peek().position());
+                }
+                target = tokens.expectValue();
+            }
+            else
+            {
+                throw new TransformDslException("Expected as, into, or end of statement", tokens.peek().position());
+            }
+        }
+        if (target == null)
+        {
+            throw new TransformDslException("Expected into clause", tokens.peek().position());
+        }
+        if (metadataKey != null)
+        {
+            if (!ColumnTypes.STRING.equals(type))
+            {
+                throw new TransformDslException("Metadata constants do not support as", tokens.peek().position());
+            }
+            return TransformMetadataConstant.of(metadataKey, ColumnName.of(target));
+        }
+        if (!valueToken.is(TokenType.LITERAL))
+        {
+            throw new TransformDslException("Expected literal", tokens.peek().position());
+        }
         Object parsed = parseConstantValue(type, value, tokens);
         return TransformCreateConstant.of(type, ColumnName.of(target), parsed);
     }
@@ -609,8 +644,32 @@ public final class TransformDslParser
     private static Transform parseStrip(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        String target = optionalInto(tokens, source);
-        return TransformStrip.of(ColumnName.of(source), columnName(target));
+        String target = null;
+        String stripCharacters = null;
+        while (!tokens.isAtEnd())
+        {
+            if (tokens.matchWord("using"))
+            {
+                if (stripCharacters != null)
+                {
+                    throw new TransformDslException("Duplicate using clause", tokens.peek().position());
+                }
+                stripCharacters = tokens.expectLiteral();
+            }
+            else if (tokens.matchWord("into"))
+            {
+                if (target != null)
+                {
+                    throw new TransformDslException("Duplicate into clause", tokens.peek().position());
+                }
+                target = tokens.expectValue();
+            }
+            else
+            {
+                throw new TransformDslException("Expected using, into, or end of statement", tokens.peek().position());
+            }
+        }
+        return TransformStrip.of(ColumnName.of(source), columnName(target), stripCharacters);
     }
 
     private static Transform parseSubstitute(TokenStream tokens)

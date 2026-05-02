@@ -15,8 +15,10 @@ public class TransformDslWriterTest
     {
         assertFormat("strip Name", "strip Name");
         assertFormat("strip Name into CleanName", "strip Name into CleanName");
-        assertFormat("clean whitespace in Name", "clean whitespace in Name");
-        assertFormat("clean whitespace in Name into CleanName", "clean whitespace in Name into CleanName");
+        assertFormat("strip Name using ' []()-;,' into CleanName", "strip Name using ' []()-;,' into CleanName");
+        assertFormat("strip Name into CleanName using ' []()-;,'", "strip Name using ' []()-;,' into CleanName");
+        assertFormat("clean Name", "clean Name");
+        assertFormat("clean Name into CleanName", "clean Name into CleanName");
     }
 
     @Test
@@ -32,8 +34,15 @@ public class TransformDslWriterTest
     void shouldWriteCopyAndConstants()
     {
         assertFormat("copy Symbol into DisplaySymbol", "copy Symbol into DisplaySymbol");
-        assertFormat("create constant SourceSystem as 'BrokerA'", "create constant SourceSystem as 'BrokerA'");
-        assertFormat("create constant SourceRank as Int '1'", "create constant SourceRank as Int '1'");
+        assertFormat("constant metadata.tableName into SourceFileName",
+                "constant metadata.tableName into SourceFileName");
+        assertFormat("constant METADATA.DESCRIPTION into SourceDescription",
+                "constant metadata.description into SourceDescription");
+        assertFormat("constant 'BrokerA' into SourceSystem", "constant 'BrokerA' into SourceSystem");
+        assertFormat("constant 'USD' into PaymentCurrency", "constant 'USD' into PaymentCurrency");
+        assertFormat("constant '1' as Int into SourceRank", "constant '1' as Int into SourceRank");
+        assertFormat("constant 'USD' as Currency into PaymentCurrency",
+                "constant 'USD' as Currency into PaymentCurrency");
     }
 
     @Test
@@ -121,8 +130,8 @@ public class TransformDslWriterTest
         assertFormat("coalesce FirstName into DisplayName", "coalesce FirstName into DisplayName");
         assertFormat("coalesce FirstName, PreferredName, LegalName into DisplayName",
                 "coalesce FirstName, PreferredName, LegalName into DisplayName");
-        assertFormat("coalesce FirstAmount, SecondAmount, ThirdAmount as Categorical into ChosenAmount",
-                "coalesce FirstAmount, SecondAmount, ThirdAmount as CATEGORICAL into ChosenAmount");
+        assertFormat("coalesce FirstAmount, SecondAmount, ThirdAmount into ChosenAmount",
+                "coalesce FirstAmount, SecondAmount, ThirdAmount into ChosenAmount");
         assertFormat("add DebitAmount and CreditAmount into NetAmount",
                 "add DebitAmount and CreditAmount into NetAmount");
         assertFormat("subtract Fees from GrossAmount into NetAmount", "subtract Fees from GrossAmount into NetAmount");

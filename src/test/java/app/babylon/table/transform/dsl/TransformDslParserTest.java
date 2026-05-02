@@ -44,10 +44,16 @@ class TransformDslParserTest
         line = "strip Name into CleanName";
         assertParses(line);
 
-        line = "clean whitespace in Name";
+        line = "strip Name using ' []()-;,' into CleanName";
         assertParses(line);
 
-        line = "clean whitespace in Name into CleanName";
+        line = "strip Name into CleanName using ' []()-;,'";
+        assertParses(line);
+
+        line = "clean Name";
+        assertParses(line);
+
+        line = "clean Name into CleanName";
         assertParses(line);
     }
 
@@ -73,10 +79,22 @@ class TransformDslParserTest
         String line = "copy Symbol into DisplaySymbol";
         assertParses(line);
 
-        line = "create constant SourceSystem as 'BrokerA'";
+        line = "constant metadata.tableName into SourceFileName";
         assertParses(line);
 
-        line = "create constant SourceRank as Int '1'";
+        line = "constant METADATA.DESCRIPTION into SourceDescription";
+        assertParses(line);
+
+        line = "constant 'BrokerA' into SourceSystem";
+        assertParses(line);
+
+        line = "constant 'USD' into PaymentCurrency";
+        assertParses(line);
+
+        line = "constant '1' as Int into SourceRank";
+        assertParses(line);
+
+        line = "constant 'USD' as Currency into PaymentCurrency";
         assertParses(line);
     }
 
@@ -89,12 +107,20 @@ class TransformDslParserTest
         names.add("A");
         names.add("B");
         TableColumnar table = Tables.newTable(TableName.of("t"), names.build());
-        String line = "create constant SourceRank as Int '1'";
+        String line = "constant '1' as Int into SourceRank";
 
         TableColumnar transformed = table.apply(PARSER.parse(line));
 
         assertEquals(1, transformed.getInt(sourceRank).get(0));
         assertEquals(1, transformed.getInt(sourceRank).get(1));
+    }
+
+    @Test
+    void shouldRejectConstantTypeWithTo()
+    {
+        String line = "constant 'USD' to Currency into PaymentCurrency";
+
+        assertThrows(TransformDslException.class, () -> PARSER.parse(line));
     }
 
     @Test
@@ -277,7 +303,7 @@ class TransformDslParserTest
         line = "coalesce FirstName into DisplayName";
         assertParses(line);
 
-        line = "coalesce FirstAmount, SecondAmount, ThirdAmount as Categorical into ChosenAmount";
+        line = "coalesce FirstAmount, SecondAmount, ThirdAmount into ChosenAmount";
         assertParses(line);
 
         line = "coalesce FirstAmount, SecondAmount, ThirdAmount, FourthAmount into ChosenAmount";

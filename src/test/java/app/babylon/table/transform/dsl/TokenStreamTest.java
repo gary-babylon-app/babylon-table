@@ -28,13 +28,10 @@ class TokenStreamTest
         line = "strip Name into CleanName";
         assertCanTokenize(line);
 
-        line = "clean whitespace in Name";
+        line = "clean Name";
         assertCanTokenize(line);
 
-        line = "clean whitespace in Name into CleanName";
-        assertCanTokenize(line);
-
-        line = "clean Name using 'standard-cleaner'";
+        line = "clean Name into CleanName";
         assertCanTokenize(line);
     }
 
@@ -60,10 +57,22 @@ class TokenStreamTest
         String line = "copy Symbol into DisplaySymbol";
         assertCanTokenize(line);
 
-        line = "create constant SourceSystem as 'BrokerA'";
+        line = "constant metadata.tableName into SourceFileName";
         assertCanTokenize(line);
 
-        line = "create constant SourceRank as Int '1'";
+        line = "constant metadata.description into SourceDescription";
+        assertCanTokenize(line);
+
+        line = "constant 'BrokerA' into SourceSystem";
+        assertCanTokenize(line);
+
+        line = "constant 'USD' into PaymentCurrency";
+        assertCanTokenize(line);
+
+        line = "constant '1' as Int into SourceRank";
+        assertCanTokenize(line);
+
+        line = "constant 'USD' as Currency into PaymentCurrency";
         assertCanTokenize(line);
     }
 
@@ -199,7 +208,7 @@ class TokenStreamTest
         String line = "coalesce FirstName, PreferredName, LegalName into DisplayName";
         assertCanTokenize(line);
 
-        line = "coalesce FirstAmount, SecondAmount, ThirdAmount as Categorical into ChosenAmount";
+        line = "coalesce FirstAmount, SecondAmount, ThirdAmount into ChosenAmount";
         assertCanTokenize(line);
     }
 

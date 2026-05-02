@@ -23,21 +23,22 @@ public class TransformToType<T> extends TransformBase
     private final ColumnObject.Mode mode;
     private final TransformParseMode parseMode;
 
-    public TransformToType(Column.Type type, ColumnName... columnNames)
+    public TransformToType(Column.Type type, ColumnName columnName)
     {
-        this(type, null, null, columnNames);
+        this(type, (ColumnObject.Mode) null, (TransformParseMode) null, columnName);
     }
 
-    public TransformToType(Column.Type type, ColumnObject.Mode mode, ColumnName... columnNames)
+    public TransformToType(Column.Type type, ColumnObject.Mode mode, ColumnName columnName)
     {
-        this(type, mode, null, columnNames);
+        this(type, mode, (TransformParseMode) null, columnName);
     }
 
     public TransformToType(Column.Type type, ColumnObject.Mode mode, TransformParseMode parseMode,
-            ColumnName... columnNames)
+            ColumnName columnName)
     {
         super(FUNCTION_NAME);
-        this.columnNames = ArgumentCheck.nonEmpty(columnNames);
+        this.columnNames = new ColumnName[]
+        {ArgumentCheck.nonNull(columnName)};
         this.newColumnNames = null;
         this.mode = mode;
         this.parseMode = parseMode;

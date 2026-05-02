@@ -21,5 +21,10 @@ public interface Transform
 {
     public String getName();
 
+    default public void apply(SourceMetadata metadata, Map<ColumnName, Column> columnsByName)
+    {
+        apply(columnsByName);
+    }
+
     public void apply(Map<ColumnName, Column> columnsByName);
 }

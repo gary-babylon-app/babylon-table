@@ -56,9 +56,11 @@ class TransformRoundTest
         assertSame(RoundingMode.HALF_UP, TransformRound.parseRoundingMode("halfUp"));
         assertSame(RoundingMode.HALF_DOWN, TransformRound.parseRoundingMode("halfDown"));
         assertSame(RoundingMode.HALF_EVEN, TransformRound.parseRoundingMode("bankers"));
+        assertSame(RoundingMode.UNNECESSARY, TransformRound.parseRoundingMode("noLoss"));
         assertEquals("halfUp", TransformRound.roundingModeName(RoundingMode.HALF_UP));
         assertEquals("halfDown", TransformRound.roundingModeName(RoundingMode.HALF_DOWN));
         assertEquals("bankers", TransformRound.roundingModeName(RoundingMode.HALF_EVEN));
+        assertEquals("noLoss", TransformRound.roundingModeName(RoundingMode.UNNECESSARY));
     }
 
     @Test

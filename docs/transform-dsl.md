@@ -201,10 +201,17 @@ floor
 halfUp
 halfDown
 bankers
-unnecessary
+noLoss
 ```
 
 `bankers` means `RoundingMode.HALF_EVEN`.
+`noLoss` means `RoundingMode.UNNECESSARY`: the transform fails if rounding
+would discard significant digits.
+
+`round` sets the decimal scale. For example, rounding `12.1` to 2 places
+produces a Decimal value whose plain representation is `12.10`.
+
+Use `normalise` when you want to remove insignificant trailing zeros instead.
 
 Custom currency-like scale types can be registered with:
 

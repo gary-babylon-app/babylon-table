@@ -160,7 +160,7 @@ public class TransformRound extends TransformBase
             case "HALFUP" -> RoundingMode.HALF_UP;
             case "HALFDOWN" -> RoundingMode.HALF_DOWN;
             case "HALFEVEN", "BANKERS" -> RoundingMode.HALF_EVEN;
-            case "UNNECESSARY" -> RoundingMode.UNNECESSARY;
+            case "NOLOSS", "UNNECESSARY" -> RoundingMode.UNNECESSARY;
             default -> throw new IllegalArgumentException("Unknown rounding mode: " + s);
         };
     }
@@ -176,7 +176,7 @@ public class TransformRound extends TransformBase
             case HALF_UP -> "halfUp";
             case HALF_DOWN -> "halfDown";
             case HALF_EVEN -> "bankers";
-            case UNNECESSARY -> "unnecessary";
+            case UNNECESSARY -> "noLoss";
         };
     }
 

@@ -152,6 +152,8 @@ public class TransformDslWriterTest
                 "round Amount to 2 by halfUp into RoundedAmount");
         assertFormat("round Amount to 2 by bankers into RoundedAmount",
                 "round Amount to 2 by bankers into RoundedAmount");
+        assertFormat("round Amount to 2 by noLoss into RoundedAmount",
+                "round Amount to 2 by noLoss into RoundedAmount");
         assertFormat("round Amount using Currency", "round Amount using Currency");
         assertFormat("round Amount using Currency by halfUp into RoundedAmount",
                 "round Amount using Currency by halfUp into RoundedAmount");

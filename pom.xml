@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
 
     <name>babylon-table</name>
-    <description>Java columnar table library for typed data processing, table transforms, filtering, grouping, aggregation, and efficient CSV ingestion, with support for both in-memory workflows and streaming-style execution patterns.</description>
+    <description>Focused Java 21 columnar table library with no third-party runtime dependencies, offering filtering, grouping, aggregation, data transformations, and efficient CSV ingestion for both in-memory workflows and streaming-style execution patterns.</description>
     <url>https://github.com/gary-babylon-app/babylon-table</url>
 
     <licenses>

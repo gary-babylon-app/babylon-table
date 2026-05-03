@@ -15,24 +15,19 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.text.Strings;
 
-public class TransformRound extends TransformBase
+public class TransformRound extends TransformDecimalUnary
 {
     public static final String FUNCTION_NAME = "Round";
     public static final RoundingMode DEFAULT_ROUNDING_MODE = RoundingMode.HALF_EVEN;
 
-    private final ColumnName columnName;
-    private final ColumnName newColumnName;
     private final Integer scale;
     private final ColumnName scaleColumnName;
-    private final ColumnName conditionColumnName;
     private final RoundingMode roundingMode;
     private final Map<Class<?>, ToIntFunction<Object>> roundScales;
 
     private TransformRound(Builder builder)
     {
-        super(FUNCTION_NAME);
-        this.columnName = ArgumentCheck.nonNull(builder.columnName);
-        this.newColumnName = builder.newColumnName;
+        super(FUNCTION_NAME, builder.columnName, builder.newColumnName, builder.conditionColumnName);
         if (builder.scale == null && builder.scaleColumnName == null)
         {
             throw new RuntimeException(FUNCTION_NAME + " requires a scale or scale column.");
@@ -43,7 +38,6 @@ public class TransformRound extends TransformBase
         }
         this.scale = builder.scale == null ? null : ArgumentCheck.nonNegative(builder.scale);
         this.scaleColumnName = builder.scaleColumnName;
-        this.conditionColumnName = builder.conditionColumnName;
         this.roundingMode = builder.roundingMode;
         this.roundScales = Map.copyOf(ArgumentCheck.nonNull(builder.roundScales));
     }
@@ -153,21 +147,6 @@ public class TransformRound extends TransformBase
         return builder(columnName).withScale(scale).build();
     }
 
-    public ColumnName columnName()
-    {
-        return this.columnName;
-    }
-
-    public ColumnName newColumnName()
-    {
-        return this.newColumnName;
-    }
-
-    public ColumnName effectiveNewColumnName()
-    {
-        return this.newColumnName == null ? this.columnName : this.newColumnName;
-    }
-
     public Integer scale()
     {
         return this.scale;
@@ -176,11 +155,6 @@ public class TransformRound extends TransformBase
     public ColumnName scaleColumnName()
     {
         return this.scaleColumnName;
-    }
-
-    public ColumnName conditionColumnName()
-    {
-        return this.conditionColumnName;
     }
 
     public RoundingMode roundingMode()
@@ -229,54 +203,24 @@ public class TransformRound extends TransformBase
         };
     }
 
-    public ColumnObject<BigDecimal> apply(Column column)
-    {
-        return apply(column, null);
-    }
-
-    public ColumnObject<BigDecimal> apply(Column column, ColumnBoolean conditionColumn)
-    {
-        if (column == null)
-        {
-            return null;
-        }
-        if (this.scale == null)
-        {
-            throw new RuntimeException(FUNCTION_NAME + " requires a scale column.");
-        }
-
-        @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
-        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
-        for (int i = 0; i < oldColumn.size(); ++i)
-        {
-            if (oldColumn.isSet(i))
-            {
-                BigDecimal bd = oldColumn.get(i);
-                newColumn.add(shouldRound(conditionColumn, i) ? round(bd, this.scale) : bd);
-            }
-            else
-            {
-                newColumn.addNull();
-            }
-        }
-        return newColumn.build();
-    }
-
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        Column column = columnsByName.get(this.columnName);
+        Column column = columnsByName.get(columnName());
         if (column != null)
         {
-            ColumnBoolean conditionColumn = requireBoolean(columnsByName.get(this.conditionColumnName));
-            if (this.conditionColumnName != null && conditionColumn == null)
+            if (this.scaleColumnName == null)
+            {
+                super.apply(columnsByName);
+                return;
+            }
+            ColumnBoolean conditionColumn = requireBoolean(columnsByName.get(conditionColumnName()));
+            if (conditionColumnName() != null && conditionColumn == null)
             {
                 return;
             }
-            ColumnObject<BigDecimal> transformed = this.scaleColumnName == null
-                    ? apply(column, conditionColumn)
-                    : apply(column, columnsByName.get(this.scaleColumnName), conditionColumn);
+            ColumnObject<BigDecimal> transformed = apply(column, columnsByName.get(this.scaleColumnName),
+                    conditionColumn);
             if (transformed != null)
             {
                 columnsByName.put(effectiveNewColumnName(), transformed);
@@ -306,7 +250,7 @@ public class TransformRound extends TransformBase
             if (oldColumn.isSet(i))
             {
                 BigDecimal bd = oldColumn.get(i);
-                if (shouldRound(conditionColumn, i))
+                if (shouldApply(conditionColumn, i))
                 {
                     if (scales.isSet(i))
                     {
@@ -330,28 +274,14 @@ public class TransformRound extends TransformBase
         return newColumn.build();
     }
 
-    private boolean shouldRound(ColumnBoolean conditionColumn, int row)
+    @Override
+    protected BigDecimal transform(BigDecimal value, int row)
     {
-        return conditionColumn == null
-                || (row < conditionColumn.size() && conditionColumn.isSet(row) && conditionColumn.get(row));
-    }
-
-    private ColumnBoolean requireBoolean(Column column)
-    {
-        if (this.conditionColumnName == null)
+        if (this.scale == null)
         {
-            return null;
+            throw new RuntimeException(FUNCTION_NAME + " requires a scale column.");
         }
-        if (column instanceof ColumnBoolean booleanColumn)
-        {
-            return booleanColumn;
-        }
-        if (column == null)
-        {
-            return null;
-        }
-        throw new IllegalArgumentException(FUNCTION_NAME + " when requires Boolean column '" + column.getName()
-                + "' but found " + column.getType());
+        return round(value, this.scale);
     }
 
     private BigDecimal round(BigDecimal value, int scale)

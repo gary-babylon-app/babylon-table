@@ -58,15 +58,11 @@ import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
 import app.babylon.table.transform.TransformMetadataConstant;
-import app.babylon.table.transform.TransformToDecimal;
-import app.babylon.table.transform.TransformToDouble;
-import app.babylon.table.transform.TransformToInt;
 import app.babylon.table.transform.TransformToLocalDate;
-import app.babylon.table.transform.TransformToLong;
 import app.babylon.table.transform.TransformToLowerCase;
 import app.babylon.table.transform.TransformToPrimitive;
-import app.babylon.table.transform.TransformToString;
-import app.babylon.table.transform.TransformToType;
+import app.babylon.table.transform.TransformAnyToString;
+import app.babylon.table.transform.TransformStringToType;
 import app.babylon.table.transform.TransformToUpperCase;
 
 /**
@@ -113,15 +109,11 @@ final class TransformDslWriter
         writers.put(TransformSubtract.class, t -> writeDecimal("subtract", "from", t));
         writers.put(TransformSuffix.class, TransformDslWriter::writeSuffix);
         writers.put(TransformMetadataConstant.class, TransformDslWriter::writeMetadataConstant);
-        writers.put(TransformToDecimal.class, t -> writeConvert("Decimal", t));
-        writers.put(TransformToDouble.class, t -> writePrimitiveWrapper("Double", t));
-        writers.put(TransformToInt.class, t -> writePrimitiveWrapper("Int", t));
         writers.put(TransformToLocalDate.class, TransformDslWriter::writeDate);
-        writers.put(TransformToLong.class, t -> writePrimitiveWrapper("Long", t));
         writers.put(TransformToLowerCase.class, TransformDslWriter::writeLowercase);
         writers.put(TransformToPrimitive.class, TransformDslWriter::writePrimitive);
-        writers.put(TransformToString.class, t -> writeConvert("String", t));
-        writers.put(TransformToType.class, TransformDslWriter::writeToType);
+        writers.put(TransformAnyToString.class, t -> writeConvert("String", t));
+        writers.put(TransformStringToType.class, TransformDslWriter::writeStringToType);
         writers.put(TransformToUpperCase.class, TransformDslWriter::writeUppercase);
         return new TransformDslWriter(writers);
     }
@@ -455,22 +447,15 @@ final class TransformDslWriter
         return command + " " + operand(left) + " " + word + " " + operand(right) + " into " + column(target);
     }
 
-    private static String writePrimitiveWrapper(String type, Transform transform)
-    {
-        TransformToPrimitive delegate = primitiveDelegate(transform);
-        return "convert " + column(firstConfiguredSource(delegate)) + " to " + type
-                + into(firstConfiguredSource(delegate), firstConfiguredTarget(delegate));
-    }
-
     private static String writePrimitive(Transform transform)
     {
         TransformToPrimitive primitive = (TransformToPrimitive) transform;
         return writeConvert(typeName(primitive.type()), primitive);
     }
 
-    private static String writeToType(Transform transform)
+    private static String writeStringToType(Transform transform)
     {
-        TransformToType<?> toType = (TransformToType<?>) transform;
+        TransformStringToType<?> toType = (TransformStringToType<?>) transform;
         return writeConvert(typeName(toType.type()), toType);
     }
 
@@ -509,17 +494,13 @@ final class TransformDslWriter
     {
         if (transform instanceof TransformToPrimitive primitive)
         {
-            return primitive.existingColumnName();
+            return primitive.columnName();
         }
-        if (transform instanceof TransformToType<?> toType)
+        if (transform instanceof TransformStringToType<?> toType)
         {
             return toType.columnName();
         }
-        if (transform instanceof TransformToDecimal decimal)
-        {
-            return decimal.columnNames()[0];
-        }
-        if (transform instanceof TransformToString toString)
+        if (transform instanceof TransformAnyToString toString)
         {
             return toString.columnNames()[0];
         }
@@ -532,15 +513,11 @@ final class TransformDslWriter
         {
             return primitive.newColumnName();
         }
-        if (transform instanceof TransformToType<?> toType)
+        if (transform instanceof TransformStringToType<?> toType)
         {
             return toType.newColumnName();
         }
-        if (transform instanceof TransformToDecimal decimal)
-        {
-            return firstOrNull(decimal.newColumnNames());
-        }
-        if (transform instanceof TransformToString toString)
+        if (transform instanceof TransformAnyToString toString)
         {
             Map<ColumnName, ColumnName> namesBySource = toString.newColumnNames();
             return namesBySource == null ? null : namesBySource.get(firstConfiguredSource(transform));
@@ -551,31 +528,12 @@ final class TransformDslWriter
     private static TransformParseMode parseMode(Transform transform)
     {
         if (transform instanceof TransformToPrimitive primitive)
-        {
-            return primitive.parseMode();
-        }
-        if (transform instanceof TransformToType<?> toType)
+            return null;
+        if (transform instanceof TransformStringToType<?> toType)
         {
             return toType.parseMode();
         }
         return null;
-    }
-
-    private static TransformToPrimitive primitiveDelegate(Transform transform)
-    {
-        if (transform instanceof TransformToDouble toDouble)
-        {
-            return toDouble.delegate();
-        }
-        if (transform instanceof TransformToInt toInt)
-        {
-            return toInt.delegate();
-        }
-        if (transform instanceof TransformToLong toLong)
-        {
-            return toLong.delegate();
-        }
-        throw new TransformDslException("No primitive delegate for " + transform.getClass().getName(), 0);
     }
 
     private static ColumnName leftColumnName(Transform transform)

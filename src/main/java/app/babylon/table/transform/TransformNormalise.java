@@ -1,26 +1,18 @@
 package app.babylon.table.transform;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
-import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
 
-public class TransformNormalise extends TransformBase
+public class TransformNormalise extends TransformDecimalUnary
 {
     public static final String FUNCTION_NAME = "Normalise";
 
-    private final ColumnName columnName;
-    private final ColumnName newColumnName;
-
     private TransformNormalise(ColumnName columnName, ColumnName newColumnName)
     {
-        super(FUNCTION_NAME);
-        this.columnName = ArgumentCheck.nonNull(columnName);
-        this.newColumnName = newColumnName;
+        super(FUNCTION_NAME, columnName, newColumnName, null);
     }
 
     public static TransformNormalise of(ColumnName columnName)
@@ -46,53 +38,10 @@ public class TransformNormalise extends TransformBase
         return of(ColumnName.parse(params[0]));
     }
 
-    public ColumnName columnName()
-    {
-        return this.columnName;
-    }
-
-    public ColumnName newColumnName()
-    {
-        return this.newColumnName;
-    }
-
-    public ColumnName effectiveNewColumnName()
-    {
-        return this.newColumnName == null ? this.columnName : this.newColumnName;
-    }
-
-    public ColumnObject<BigDecimal> apply(Column column)
-    {
-        if (column == null)
-        {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
-        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
-        for (int i = 0; i < oldColumn.size(); ++i)
-        {
-            if (oldColumn.isSet(i))
-            {
-                newColumn.add(normalise(oldColumn.get(i)));
-            }
-            else
-            {
-                newColumn.addNull();
-            }
-        }
-        return newColumn.build();
-    }
-
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    protected BigDecimal transform(BigDecimal value, int row)
     {
-        Column column = columnsByName.get(this.columnName);
-        if (column != null)
-        {
-            columnsByName.put(effectiveNewColumnName(), apply(column));
-        }
+        return normalise(value);
     }
 
     public static BigDecimal normalise(BigDecimal value)

@@ -12,7 +12,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 
-class TransformToStringTest
+class TransformAnyToStringTest
 {
     @Test
     void applyShouldConvertSelectedColumnsToStrings()
@@ -24,7 +24,7 @@ class TransformToStringTest
         quantity.addNull();
 
         TableColumnar transformed = Tables.newTable(TableName.of("t"), quantity.build())
-                .apply(new TransformToString(QUANTITY, TEXT));
+                .apply(new TransformAnyToString(QUANTITY, TEXT));
 
         assertEquals("12", transformed.getString(TEXT).get(0));
         assertEquals("", transformed.getString(TEXT).get(1));
@@ -33,7 +33,7 @@ class TransformToStringTest
     @Test
     void ofShouldCreateTransformFromParams()
     {
-        assertTrue(TransformToString.of("quantity", "text") instanceof TransformToString);
-        assertEquals(null, TransformToString.of("quantity"));
+        assertTrue(TransformAnyToString.of("quantity", "text") instanceof TransformAnyToString);
+        assertEquals(null, TransformAnyToString.of("quantity"));
     }
 }

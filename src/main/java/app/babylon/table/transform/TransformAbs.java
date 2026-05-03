@@ -6,22 +6,14 @@ import app.babylon.lang.Is;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
 import app.babylon.text.Strings;
 
-public class TransformAbs extends TransformBase
+public class TransformAbs extends TransformDecimalUnary
 {
     public static final String FUNCTION_NAME = "Abs";
-
-    private final ColumnName columnName;
-    private final ColumnName newColumnName;
-    private final ColumnName conditionColumnName;
 
     private TransformAbs(ColumnName x)
     {
@@ -30,18 +22,12 @@ public class TransformAbs extends TransformBase
 
     private TransformAbs(ColumnName x, ColumnName newColumnName)
     {
-        super(FUNCTION_NAME);
-        this.columnName = ArgumentCheck.nonNull(x);
-        this.newColumnName = newColumnName;
-        this.conditionColumnName = null;
+        super(FUNCTION_NAME, x, newColumnName, null);
     }
 
     private TransformAbs(Builder builder)
     {
-        super(FUNCTION_NAME);
-        this.columnName = builder.columnName;
-        this.newColumnName = builder.newColumnName;
-        this.conditionColumnName = builder.conditionColumnName;
+        super(FUNCTION_NAME, builder.columnName, builder.newColumnName, builder.conditionColumnName);
     }
 
     public static TransformAbs of(ColumnName columnName)
@@ -60,26 +46,6 @@ public class TransformAbs extends TransformBase
             return null;
         }
         return new TransformAbs(columnName, newColumnName);
-    }
-
-    public ColumnName newColumnName()
-    {
-        return this.newColumnName;
-    }
-
-    public ColumnName columnName()
-    {
-        return this.columnName;
-    }
-
-    public ColumnName effectiveNewColumnName()
-    {
-        return this.newColumnName == null ? this.columnName : this.newColumnName;
-    }
-
-    public ColumnName conditionColumnName()
-    {
-        return this.conditionColumnName;
     }
 
     public static Builder builder(ColumnName columnName)
@@ -114,99 +80,17 @@ public class TransformAbs extends TransformBase
         return null;
     }
 
-    public ColumnObject<BigDecimal> apply(Column column)
-    {
-        if (column == null)
-        {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
-
-        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
-        for (int i = 0; i < oldColumn.size(); ++i)
-        {
-            if (oldColumn.isSet(i))
-            {
-                BigDecimal bd = oldColumn.get(i);
-                newColumn.add(bd.abs(MathContext.DECIMAL64));
-            }
-            else
-            {
-                newColumn.addNull();
-            }
-        }
-        return newColumn.build();
-    }
-
-    public ColumnObject<BigDecimal> apply(Column column, ColumnBoolean conditionColumn)
-    {
-        if (column == null || conditionColumn == null)
-        {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
-
-        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
-        for (int i = 0; i < oldColumn.size(); ++i)
-        {
-            if (oldColumn.isSet(i))
-            {
-                BigDecimal bd = oldColumn.get(i);
-                newColumn.add(shouldAbs(conditionColumn, i) ? bd.abs(MathContext.DECIMAL64) : bd);
-            }
-            else
-            {
-                newColumn.addNull();
-            }
-        }
-        return newColumn.build();
-    }
-
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    protected BigDecimal transform(BigDecimal value, int row)
     {
-        Column column = columnsByName.get(columnName);
-        if (column == null)
-        {
-            return;
-        }
-        ColumnObject<BigDecimal> transformed = this.conditionColumnName == null
-                ? apply(column)
-                : apply(column, requireBoolean(columnsByName.get(this.conditionColumnName)));
-        if (transformed != null)
-        {
-            columnsByName.put(effectiveNewColumnName(), transformed);
-        }
-    }
-
-    private boolean shouldAbs(ColumnBoolean conditionColumn, int row)
-    {
-        return row < conditionColumn.size() && conditionColumn.isSet(row) && conditionColumn.get(row);
-    }
-
-    private ColumnBoolean requireBoolean(Column column)
-    {
-        if (column instanceof ColumnBoolean booleanColumn)
-        {
-            return booleanColumn;
-        }
-        if (column == null)
-        {
-            return null;
-        }
-        throw new IllegalArgumentException(FUNCTION_NAME + " when requires Boolean column '" + column.getName()
-                + "' but found " + column.getType());
+        return value.abs(MathContext.DECIMAL64);
     }
 
     @Override
     public String toString()
     {
         return FUNCTION_NAME + "(" + Arrays.stream(new ColumnName[]
-        {columnName}).map(ColumnName::toString).collect(Collectors.joining(",")) + ")";
+        {columnName()}).map(ColumnName::toString).collect(Collectors.joining(",")) + ")";
     }
 
     public static final class Builder

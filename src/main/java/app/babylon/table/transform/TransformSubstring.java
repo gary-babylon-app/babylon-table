@@ -2,30 +2,20 @@ package app.babylon.table.transform;
 
 import app.babylon.lang.ArgumentCheck;
 
-import java.util.Map;
-
 import app.babylon.lang.Is;
-import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.column.ColumnTypes;
-import app.babylon.table.column.Columns;
 import app.babylon.text.Strings;
 
-public class TransformSubstring extends TransformBase
+public class TransformSubstring extends TransformStringToString
 {
     public static final String FUNCTION_NAME = "Substring";
 
-    private final ColumnName existingColumnName;
-    private final ColumnName newColumnName;
     private final int first;
     private final int last;
 
     public TransformSubstring(ColumnName existingColumnName, ColumnName newColumnName, int first, int last)
     {
-        super(FUNCTION_NAME);
-        this.existingColumnName = ArgumentCheck.nonNull(existingColumnName);
-        this.newColumnName = ArgumentCheck.nonNull(newColumnName);
+        super(FUNCTION_NAME, existingColumnName, ArgumentCheck.nonNull(newColumnName));
         this.first = Math.max(0, first);
         this.last = Math.max(this.first + 1, last);
     }
@@ -45,16 +35,6 @@ public class TransformSubstring extends TransformBase
         return new TransformSubstring(existingColumnName, newColumnName, first, last);
     }
 
-    public ColumnName existingColumnName()
-    {
-        return this.existingColumnName;
-    }
-
-    public ColumnName newColumnName()
-    {
-        return this.newColumnName;
-    }
-
     public int first()
     {
         return this.first;
@@ -66,30 +46,9 @@ public class TransformSubstring extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    protected String transformString(String s)
     {
-        ColumnObject<String> column = Columns.asStringColumn(columnsByName.get(this.existingColumnName));
-        if (column == null)
-        {
-            return;
-        }
-        ColumnObject.Builder<String> newColumnBuilder = ColumnObject.builder(this.newColumnName, ColumnTypes.STRING);
-
-        for (int i = 0; i < column.size(); ++i)
-        {
-            String s = column.get(i);
-            if (!Strings.isEmpty(s) && s.length() >= last)
-            {
-                s = s.substring(this.first, this.last);
-                newColumnBuilder.add(s);
-            }
-            else
-            {
-                newColumnBuilder.addNull();
-            }
-        }
-        ColumnObject<String> newColumn = newColumnBuilder.build();
-        columnsByName.put(newColumn.getName(), newColumn);
+        return !Strings.isEmpty(s) && s.length() >= this.last ? s.substring(this.first, this.last) : null;
     }
 
 }

@@ -30,7 +30,7 @@ import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
-import app.babylon.table.transform.TransformToType;
+import app.babylon.table.transform.TransformStringToType;
 
 class TransformDslParserTest
 {
@@ -174,7 +174,7 @@ class TransformDslParserTest
 
         line = "convert AmountText to Decimal into Amount";
         assertParses(line);
-        assertInstanceOf(TransformToType.class, PARSER.parse(line));
+        assertInstanceOf(TransformStringToType.class, PARSER.parse(line));
 
         line = "convert AmountText to String into AmountDisplay";
         assertParses(line);
@@ -191,7 +191,7 @@ class TransformDslParserTest
         TransformDslParser parser = PARSER.withType("Isin", isin);
         String line = "convert IsinText to Isin into Isin";
 
-        TransformToType<?> transform = assertInstanceOf(TransformToType.class, parser.parse(line));
+        TransformStringToType<?> transform = assertInstanceOf(TransformStringToType.class, parser.parse(line));
 
         assertEquals(isin, transform.type());
     }
@@ -204,7 +204,7 @@ class TransformDslParserTest
         TransformDslParser parser = PARSER.withType("Currency", currency);
         String line = "convert CurrencyText to Currency into Currency";
 
-        TransformToType<?> transform = assertInstanceOf(TransformToType.class, parser.parse(line));
+        TransformStringToType<?> transform = assertInstanceOf(TransformStringToType.class, parser.parse(line));
 
         assertEquals(currency, transform.type());
     }

@@ -63,14 +63,11 @@ import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
 import app.babylon.table.transform.TransformMetadataConstant;
-import app.babylon.table.transform.TransformToDouble;
-import app.babylon.table.transform.TransformToInt;
 import app.babylon.table.transform.TransformToLocalDate;
-import app.babylon.table.transform.TransformToLong;
 import app.babylon.table.transform.TransformToLowerCase;
 import app.babylon.table.transform.TransformToPrimitive;
-import app.babylon.table.transform.TransformToString;
-import app.babylon.table.transform.TransformToType;
+import app.babylon.table.transform.TransformAnyToString;
+import app.babylon.table.transform.TransformStringToType;
 import app.babylon.table.transform.TransformToUpperCase;
 
 /**
@@ -356,35 +353,26 @@ final class TransformDslParser
         return switch (normalisedType)
         {
             case "decimal" -> format == null
-                    ? TransformToType.builder(ColumnTypes.DECIMAL, ColumnName.of(source))
+                    ? TransformStringToType.builder(ColumnTypes.DECIMAL, ColumnName.of(source))
                             .withNewColumnName(columnName(target)).withMode(ColumnObject.Mode.CATEGORICAL)
                             .withParseMode(parseMode).build()
                     : throwUnsupportedUsing(type, tokens);
             case "double" -> format == null
-                    ? parseMode == null
-                            ? TransformToDouble.of(ColumnName.of(source), columnName(target))
-                            : TransformToPrimitive.builder(ColumnTypes.DOUBLE, ColumnName.of(source))
-                                    .withNewColumnName(columnName(target)).withParseMode(parseMode).build()
+                    ? primitiveConvert(ColumnTypes.DOUBLE, source, target, parseMode, tokens)
                     : throwUnsupportedUsing(type, tokens);
             case "int",
                     "integer" ->
                 format == null
-                        ? parseMode == null
-                                ? TransformToInt.of(ColumnName.of(source), columnName(target))
-                                : TransformToPrimitive.builder(ColumnTypes.INT, ColumnName.of(source))
-                                        .withNewColumnName(columnName(target)).withParseMode(parseMode).build()
+                        ? primitiveConvert(ColumnTypes.INT, source, target, parseMode, tokens)
                         : throwUnsupportedUsing(type, tokens);
             case "long" -> format == null
-                    ? parseMode == null
-                            ? TransformToLong.of(ColumnName.of(source), columnName(target))
-                            : TransformToPrimitive.builder(ColumnTypes.LONG, ColumnName.of(source))
-                                    .withNewColumnName(columnName(target)).withParseMode(parseMode).build()
+                    ? primitiveConvert(ColumnTypes.LONG, source, target, parseMode, tokens)
                     : throwUnsupportedUsing(type, tokens);
             case "date", "localdate" ->
                 TransformToLocalDate.builder(ColumnName.of(source)).withNewColumnName(columnName(target))
                         .withFormat(DateFormat.parse(format)).withParseMode(parseMode).build();
             case "string" -> format == null
-                    ? TransformToString.of(ColumnName.of(source), columnName(target))
+                    ? TransformAnyToString.of(ColumnName.of(source), columnName(target))
                     : throwUnsupportedUsing(type, tokens);
             default -> parseRegisteredType(source, target, type, normalisedType, format, parseMode, tokens);
         };
@@ -404,11 +392,20 @@ final class TransformDslParser
         }
         if (columnType.isPrimitive())
         {
-            return TransformToPrimitive.builder(columnType, ColumnName.of(source)).withNewColumnName(columnName(target))
-                    .withParseMode(parseMode).build();
+            return primitiveConvert(columnType, source, target, parseMode, tokens);
         }
-        return TransformToType.builder(columnType, ColumnName.of(source)).withNewColumnName(columnName(target))
+        return TransformStringToType.builder(columnType, ColumnName.of(source)).withNewColumnName(columnName(target))
                 .withMode(ColumnObject.Mode.CATEGORICAL).withParseMode(parseMode).build();
+    }
+
+    private static Transform primitiveConvert(Column.Type type, String source, String target,
+            TransformParseMode parseMode, TokenStream tokens)
+    {
+        if (parseMode != null && parseMode != TransformParseMode.EXACT)
+        {
+            return throwUnsupportedParseMode(type.toString(), tokens);
+        }
+        return TransformToPrimitive.builder(type, ColumnName.of(source)).withNewColumnName(columnName(target)).build();
     }
 
     private static Transform throwUnsupportedParseMode(String type, TokenStream tokens)

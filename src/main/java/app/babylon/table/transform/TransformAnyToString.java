@@ -1,6 +1,5 @@
 package app.babylon.table.transform;
 
-import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
@@ -10,19 +9,19 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 
-public class TransformToString extends TransformBase
+public class TransformAnyToString extends TransformBase
 {
     public static final String FUNCTION_NAME = "ToString";
 
     private final ColumnName columnName;
     private final ColumnName newColumnName;
 
-    public TransformToString(ColumnName columnName)
+    public TransformAnyToString(ColumnName columnName)
     {
         this(columnName, null);
     }
 
-    public TransformToString(ColumnName columnName, ColumnName newColumnName)
+    public TransformAnyToString(ColumnName columnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
         this.columnName = ArgumentCheck.nonNull(columnName);
@@ -38,14 +37,14 @@ public class TransformToString extends TransformBase
         return null;
     }
 
-    public static TransformToString of(ColumnName columnName, ColumnName newColumnName)
+    public static TransformAnyToString of(ColumnName columnName, ColumnName newColumnName)
     {
-        return new TransformToString(columnName, newColumnName);
+        return new TransformAnyToString(columnName, newColumnName);
     }
 
-    public static TransformToString of(ColumnName columnName)
+    public static TransformAnyToString of(ColumnName columnName)
     {
-        return columnName == null ? null : new TransformToString(columnName);
+        return columnName == null ? null : new TransformAnyToString(columnName);
     }
 
     public ColumnName[] columnNames()
@@ -62,24 +61,17 @@ public class TransformToString extends TransformBase
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        if (this.columnName != null)
+        Column column = columnsByName.get(this.columnName);
+        if (column == null)
         {
-            Column[] validColumns = getColumns(columnsByName, List.of(this.columnName));
-            Column[] newColumns = new Column[validColumns.length];
-
-            for (int i = 0; i < validColumns.length; ++i)
-            {
-                Column c = validColumns[i];
-                ColumnName newColumnName = this.newColumnName == null ? c.getName() : this.newColumnName;
-                ColumnObject.Builder<String> cc = ColumnObject.builder(newColumnName, ColumnTypes.STRING);
-                for (int j = 0; j < c.size(); ++j)
-                {
-                    cc.add(c.toString(j));
-                }
-                newColumns[i] = cc.build();
-
-            }
-            putColumns(columnsByName, newColumns);
+            return;
         }
+        ColumnName targetColumnName = this.newColumnName == null ? column.getName() : this.newColumnName;
+        ColumnObject.Builder<String> builder = ColumnObject.builder(targetColumnName, ColumnTypes.STRING);
+        for (int row = 0; row < column.size(); ++row)
+        {
+            builder.add(column.toString(row));
+        }
+        columnsByName.put(targetColumnName, builder.build());
     }
 }

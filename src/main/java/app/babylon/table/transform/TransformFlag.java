@@ -41,26 +41,13 @@ public class TransformFlag extends TransformBase
     public void apply(Map<ColumnName, Column> columnsByName)
     {
         RowPredicate predicate = this.condition.prepare(columnsByName);
-        int rowCount = rowCount(columnsByName);
+        int rowCount = rowCount(columnsByName, this.condition.columnNames());
         ColumnBoolean.Builder builder = ColumnBoolean.builder(this.newColumnName);
         for (int row = 0; row < rowCount; ++row)
         {
             builder.add(predicate.test(row));
         }
         columnsByName.put(this.newColumnName, builder.build());
-    }
-
-    private int rowCount(Map<ColumnName, Column> columnsByName)
-    {
-        for (ColumnName columnName : this.condition.columnNames())
-        {
-            Column column = columnsByName.get(columnName);
-            if (column != null)
-            {
-                return column.size();
-            }
-        }
-        return 0;
     }
 
     public static final class Builder

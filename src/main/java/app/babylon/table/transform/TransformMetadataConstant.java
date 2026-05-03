@@ -76,7 +76,7 @@ public class TransformMetadataConstant extends TransformBase
             return;
         }
         SourceMetadata source = metadata == null ? new SourceMetadata("", "") : metadata;
-        int rowCount = columnsByName.isEmpty() ? 0 : columnsByName.values().iterator().next().size();
+        int rowCount = rowCount(columnsByName);
         columnsByName.put(this.newColumnName,
                 ColumnCategorical.constant(this.newColumnName, value(source), rowCount, ColumnTypes.STRING));
     }

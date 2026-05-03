@@ -1,30 +1,18 @@
 package app.babylon.table.transform;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
-import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.column.ColumnTypes;
 
-public class TransformNegate extends TransformBase
+public class TransformNegate extends TransformDecimalUnary
 {
     public static final String FUNCTION_NAME = "Negate";
 
-    private final ColumnName columnName;
-    private final ColumnName newColumnName;
-    private final ColumnName conditionColumnName;
-
     private TransformNegate(Builder builder)
     {
-        super(FUNCTION_NAME);
-        this.columnName = builder.columnName;
-        this.newColumnName = builder.newColumnName;
-        this.conditionColumnName = builder.conditionColumnName;
+        super(FUNCTION_NAME, builder.columnName, builder.newColumnName, builder.conditionColumnName);
     }
 
     public static TransformNegate of(ColumnName columnName)
@@ -57,120 +45,10 @@ public class TransformNegate extends TransformBase
         return new Builder(columnName);
     }
 
-    public ColumnName columnName()
-    {
-        return this.columnName;
-    }
-
-    public ColumnName newColumnName()
-    {
-        return this.newColumnName;
-    }
-
-    public ColumnName effectiveNewColumnName()
-    {
-        return this.newColumnName == null ? this.columnName : this.newColumnName;
-    }
-
-    public ColumnName conditionColumnName()
-    {
-        return this.conditionColumnName;
-    }
-
-    public ColumnObject<BigDecimal> apply(Column column)
-    {
-        if (column == null)
-        {
-            return null;
-        }
-        requireDecimal(column);
-
-        @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
-        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
-        for (int i = 0; i < oldColumn.size(); ++i)
-        {
-            if (oldColumn.isSet(i))
-            {
-                BigDecimal bd = oldColumn.get(i);
-                newColumn.add(bd.negate());
-            }
-            else
-            {
-                newColumn.addNull();
-            }
-        }
-        return newColumn.build();
-    }
-
-    public ColumnObject<BigDecimal> apply(Column column, ColumnBoolean conditionColumn)
-    {
-        if (column == null || conditionColumn == null)
-        {
-            return null;
-        }
-        requireDecimal(column);
-
-        @SuppressWarnings("unchecked")
-        ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
-        ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
-        for (int i = 0; i < oldColumn.size(); ++i)
-        {
-            if (oldColumn.isSet(i))
-            {
-                BigDecimal bd = oldColumn.get(i);
-                newColumn.add(shouldNegate(conditionColumn, i) ? bd.negate() : bd);
-            }
-            else
-            {
-                newColumn.addNull();
-            }
-        }
-        return newColumn.build();
-    }
-
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    protected BigDecimal transform(BigDecimal value, int row)
     {
-        Column column = columnsByName.get(this.columnName);
-        if (column != null)
-        {
-            ColumnObject<BigDecimal> transformed = this.conditionColumnName == null
-                    ? apply(column)
-                    : apply(column, requireBoolean(columnsByName.get(this.conditionColumnName)));
-            if (transformed != null)
-            {
-                columnsByName.put(effectiveNewColumnName(), transformed);
-            }
-        }
-    }
-
-    private boolean shouldNegate(ColumnBoolean conditionColumn, int row)
-    {
-        return row < conditionColumn.size() && conditionColumn.isSet(row) && conditionColumn.get(row);
-    }
-
-    private ColumnBoolean requireBoolean(Column column)
-    {
-        if (column instanceof ColumnBoolean booleanColumn)
-        {
-            return booleanColumn;
-        }
-        if (column == null)
-        {
-            return null;
-        }
-        throw new IllegalArgumentException(FUNCTION_NAME + " when requires Boolean column '" + column.getName()
-                + "' but found " + column.getType());
-    }
-
-    private void requireDecimal(Column column)
-    {
-        if (!ColumnTypes.DECIMAL.equals(column.getType()))
-        {
-            throw new IllegalArgumentException(FUNCTION_NAME + " requires Decimal column '" + column.getName()
-                    + "' but found " + column.getType());
-        }
+        return value.negate();
     }
 
     public static final class Builder

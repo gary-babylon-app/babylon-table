@@ -1,8 +1,5 @@
 package app.babylon.table.transform;
 
-import java.util.Map;
-
-import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
@@ -12,34 +9,26 @@ import app.babylon.table.column.Columns;
 import app.babylon.table.column.Transformer;
 import app.babylon.text.Strings;
 
-public class TransformToType<T> extends TransformBase
+public class TransformStringToType<T> extends TransformConvert
 {
     public static final String FUNCTION_NAME = "ToType";
 
-    private final ColumnName columnName;
-    private final ColumnName newColumnName;
-    private final Column.Type type;
     private final ColumnObject.Mode mode;
-    private final TransformParseMode parseMode;
 
-    private TransformToType(Builder<T> builder)
+    private TransformStringToType(Builder<T> builder)
     {
-        super(FUNCTION_NAME);
-        this.columnName = ArgumentCheck.nonNull(builder.columnName);
-        this.newColumnName = builder.newColumnName;
+        super(FUNCTION_NAME, builder.columnName, builder.newColumnName, builder.type, builder.parseMode);
         this.mode = builder.mode;
-        this.parseMode = builder.parseMode;
-        this.type = ArgumentCheck.nonNull(builder.type);
     }
 
     public static <T> Builder<T> builder(Column.Type type)
     {
-        return TransformToType.<T>builder().withType(type);
+        return TransformStringToType.<T>builder().withType(type);
     }
 
     public static <T> Builder<T> builder(Column.Type type, ColumnName columnName)
     {
-        return TransformToType.<T>builder(type).withColumnName(columnName);
+        return TransformStringToType.<T>builder(type).withColumnName(columnName);
     }
 
     public static <T> Builder<T> builder()
@@ -89,13 +78,13 @@ public class TransformToType<T> extends TransformBase
             return this;
         }
 
-        public TransformToType<T> build()
+        public TransformStringToType<T> build()
         {
-            return new TransformToType<>(this);
+            return new TransformStringToType<>(this);
         }
     }
 
-    public static <T> TransformToType<T> of(Column.Type type, String... params)
+    public static <T> TransformStringToType<T> of(Column.Type type, String... params)
     {
         if (!Is.empty(params) && params.length >= 2)
         {
@@ -107,8 +96,8 @@ public class TransformToType<T> extends TransformBase
             TransformParseMode parseMode = (params.length >= 4 && !Strings.isEmpty(params[3]))
                     ? TransformParseMode.parse(params[3])
                     : null;
-            return TransformToType.<T>builder(type, from).withNewColumnName(to).withMode(mode).withParseMode(parseMode)
-                    .build();
+            return TransformStringToType.<T>builder(type, from).withNewColumnName(to).withMode(mode)
+                    .withParseMode(parseMode).build();
         }
         return null;
     }
@@ -118,70 +107,38 @@ public class TransformToType<T> extends TransformBase
         return this.mode;
     }
 
-    public ColumnName columnName()
-    {
-        return this.columnName;
-    }
-
-    public ColumnName newColumnName()
-    {
-        return this.newColumnName;
-    }
-
-    public Column.Type type()
-    {
-        return this.type;
-    }
-
     public ColumnObject.Mode effectiveMode()
     {
         return this.mode == null ? ColumnObject.Mode.AUTO : this.mode;
     }
 
-    public TransformParseMode parseMode()
-    {
-        return this.parseMode;
-    }
-
-    public TransformParseMode effectiveParseMode()
-    {
-        return this.parseMode == null ? TransformParseMode.EXACT : this.parseMode;
-    }
-
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public Column apply(Column column)
     {
-        if (columnsByName == null)
-        {
-            return;
-        }
-        Column column = columnsByName.get(this.columnName);
         if (column == null)
         {
-            return;
+            return null;
         }
         if (String.class.equals(column.getType().getValueClass()))
         {
             ColumnObject<String> stringColumn = Columns.asStringColumn(column);
-            ColumnName transformedColumnName = this.newColumnName == null ? column.getName() : this.newColumnName;
+            ColumnName transformedColumnName = effectiveNewColumnName();
             Transformer<String, T> transformer = transformer(transformedColumnName);
             ColumnObject.Mode effectiveMode = effectiveMode();
             boolean canTransformCategorical = effectiveMode == ColumnObject.Mode.CATEGORICAL
                     && stringColumn instanceof ColumnCategorical<?>;
-            Column transformedColumn = canTransformCategorical
+            return canTransformCategorical
                     ? stringColumn.transform(transformer)
                     : rebuild(stringColumn, transformedColumnName, effectiveMode, transformer);
-            columnsByName.put(transformedColumnName, transformedColumn);
-            return;
         }
-        throw new RuntimeException(
-                "Can only convert String columns to " + type.getValueClass().getSimpleName() + ": " + column.getName());
+        throw new RuntimeException("Can only convert String columns to " + type().getValueClass().getSimpleName() + ": "
+                + column.getName());
     }
 
     private ColumnObject<T> rebuild(ColumnObject<String> input, ColumnName newColumnName, ColumnObject.Mode mode,
             Transformer<String, T> transformer)
     {
-        ColumnObject.Builder<T> transformed = ColumnObject.builder(newColumnName, type, mode);
+        ColumnObject.Builder<T> transformed = ColumnObject.builder(newColumnName, type(), mode);
         for (int j = 0; j < input.size(); ++j)
         {
             if (input.isSet(j))
@@ -199,7 +156,7 @@ public class TransformToType<T> extends TransformBase
 
     private Transformer<String, T> transformer(ColumnName newColumnName)
     {
-        return Transformer.parser(type, effectiveParseMode(), newColumnName);
+        return Transformer.parser(type(), effectiveParseMode(), newColumnName);
     }
 
 }

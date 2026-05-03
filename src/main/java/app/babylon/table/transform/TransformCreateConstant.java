@@ -94,7 +94,7 @@ public class TransformCreateConstant extends TransformBase
         {
             return;
         }
-        int rowCount = columnsByName.isEmpty() ? 0 : columnsByName.values().iterator().next().size();
+        int rowCount = rowCount(columnsByName);
         Column[] newColumns = new Column[newColumnNames.length];
         for (int i = 0; i < newColumnNames.length; ++i)
         {

@@ -92,6 +92,13 @@ public interface Column
         }
 
         /**
+         * Appends an unset row.
+         *
+         * @return this builder
+         */
+        public Builder addNull();
+
+        /**
          * Materialises the current builder contents as an immutable column.
          *
          * @return the built column

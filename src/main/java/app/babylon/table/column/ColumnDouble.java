@@ -10,10 +10,11 @@
 
 package app.babylon.table.column;
 
+import java.util.Arrays;
 import java.util.function.DoublePredicate;
 
-import app.babylon.table.selection.Selection;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.table.selection.Selection;
 
 /**
  * A column of nullable double values with efficient primitive access and
@@ -319,7 +320,7 @@ public interface ColumnDouble extends Column
 
     default RowPredicate predicate(Operator operator, double... values)
     {
-        double[] supplied = values == null ? new double[0] : java.util.Arrays.copyOf(values, values.length);
+        double[] supplied = values == null ? new double[0] : Arrays.copyOf(values, values.length);
         requireValueCount(operator, supplied.length);
         return row -> isSet(row) && test(get(row), operator, supplied);
     }

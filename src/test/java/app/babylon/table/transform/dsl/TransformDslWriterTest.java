@@ -53,8 +53,7 @@ public class TransformDslWriterTest
     {
         assertFormat("convert AmountText to Double", "convert AmountText to Double");
         assertFormat("convert AmountText to Double into Amount", "convert AmountText to Double into Amount");
-        assertFormat("convert AmountText to Double by firstIn into Amount",
-                "convert AmountText to Double by firstIn into Amount");
+        assertFormat("convert AmountText to Double by exact into Amount", "convert AmountText to Double into Amount");
         assertFormat("convert QuantityText to Int into Quantity", "convert QuantityText to Int into Quantity");
         assertFormat("convert UnitsText to Long into Units", "convert UnitsText to Long into Units");
         assertFormat("convert TradeDateText to Date using YMD into TradeDate",

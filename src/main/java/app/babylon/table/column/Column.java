@@ -10,6 +10,7 @@
 
 package app.babylon.table.column;
 
+import java.util.Locale;
 import java.util.Optional;
 
 import app.babylon.lang.ArgumentCheck;
@@ -18,6 +19,7 @@ import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.column.type.TypeWriter;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.text.Strings;
 
 /**
  * Base contract for a named column of tabular data, including size, null-state,
@@ -48,7 +50,23 @@ public interface Column
             {
                 throw new IllegalArgumentException("Expected comparison operator.");
             }
-            return switch (s.toLowerCase())
+            Operator operator = parseExact(s);
+            if (operator != null)
+            {
+                return operator;
+            }
+            CharSequence stripped = Strings.stripx(s);
+            operator = parseExact(stripped == null ? null : stripped.toString().toLowerCase(Locale.ROOT));
+            if (operator != null)
+            {
+                return operator;
+            }
+            throw new IllegalArgumentException("Unknown comparison operator '" + s + "'.");
+        }
+
+        private static Operator parseExact(String s)
+        {
+            return switch (s)
             {
                 case "=", "==", "is" -> EQUAL;
                 case "<>", "!=" -> NOT_EQUAL;
@@ -58,7 +76,7 @@ public interface Column
                 case "<=" -> LESS_THAN_OR_EQUAL;
                 case "in" -> IN;
                 case "not in" -> NOT_IN;
-                default -> throw new IllegalArgumentException("Unknown comparison operator '" + s + "'.");
+                default -> null;
             };
         }
     }

@@ -17,6 +17,13 @@ class ColumnOperatorTest
     }
 
     @Test
+    void shouldNormaliseOperatorOnlyAfterExactAliasesFail()
+    {
+        assertEquals(Column.Operator.IN, Column.Operator.parse(" IN "));
+        assertEquals(Column.Operator.NOT_IN, Column.Operator.parse(" Not In "));
+    }
+
+    @Test
     void shouldPreferBusinessReadableOperatorText()
     {
         assertEquals("=", Column.Operator.EQUAL.preferredText());

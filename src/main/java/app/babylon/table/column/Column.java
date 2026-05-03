@@ -433,7 +433,7 @@ public interface Column
     }
 
     @SuppressWarnings(
-    {"rawtypes", "unchecked"})
+    {"unchecked"})
     private static int compare(Object left, Object right)
     {
         if (left == right)

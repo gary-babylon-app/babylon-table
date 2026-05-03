@@ -17,7 +17,7 @@ public enum TransformParseMode
         {
             return EXACT;
         }
-        String normalised = Strings.strip(s).toString().replace("_", "").replace("-", "").toUpperCase(Locale.ROOT);
+        String normalised = Strings.clean(s, ' ', '_', '-').toUpperCase(Locale.ROOT);
         return switch (normalised)
         {
             case "EXACT" -> EXACT;

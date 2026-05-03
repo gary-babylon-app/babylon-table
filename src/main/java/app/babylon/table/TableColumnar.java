@@ -23,6 +23,7 @@ import java.util.function.IntPredicate;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnInt;
@@ -103,6 +104,8 @@ public interface TableColumnar extends Table
     public ColumnLong getLong(ColumnName x);
 
     public ColumnInt getInt(ColumnName x);
+
+    public ColumnBoolean getBoolean(ColumnName x);
 
     public Iterable<Column> columns();
 

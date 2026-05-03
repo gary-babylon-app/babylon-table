@@ -198,6 +198,15 @@ class ColumnsTest
     }
 
     @Test
+    void newColumnSupportsBooleanType()
+    {
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.BOOLEAN);
+
+        assertInstanceOf(ColumnBoolean.Builder.class, builder);
+    }
+
+    @Test
     void newCharSliceBuilderSupportsIntType()
     {
         final ColumnName VALUES = ColumnName.of("values");
@@ -220,6 +229,19 @@ class ColumnsTest
 
         ColumnByte column = (ColumnByte) builder.build();
         assertEquals((byte) 7, column.get(0));
+        assertEquals("", column.toString(1));
+    }
+
+    @Test
+    void newCharSliceBuilderSupportsBooleanType()
+    {
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.BOOLEAN);
+        builder.add("true", 0, 4);
+        builder.add(null, 0, 0);
+
+        ColumnBoolean column = (ColumnBoolean) builder.build();
+        assertTrue(column.get(0));
         assertEquals("", column.toString(1));
     }
 

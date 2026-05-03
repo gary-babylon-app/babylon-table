@@ -13,6 +13,7 @@ package app.babylon.table.column;
 import java.util.function.DoublePredicate;
 
 import app.babylon.table.selection.Selection;
+import app.babylon.table.selection.RowPredicate;
 
 /**
  * A column of nullable double values with efficient primitive access and
@@ -302,6 +303,68 @@ public interface ColumnDouble extends Column
             }
         }
         return selection;
+    }
+
+    @Override
+    default RowPredicate predicate(Operator operator, CharSequence... values)
+    {
+        CharSequence[] supplied = values == null ? new CharSequence[0] : values;
+        double[] parsed = new double[supplied.length];
+        for (int i = 0; i < supplied.length; ++i)
+        {
+            parsed[i] = TYPE.getParser().parseDouble(supplied[i]);
+        }
+        return predicate(operator, parsed);
+    }
+
+    default RowPredicate predicate(Operator operator, double... values)
+    {
+        double[] supplied = values == null ? new double[0] : java.util.Arrays.copyOf(values, values.length);
+        requireValueCount(operator, supplied.length);
+        return row -> isSet(row) && test(get(row), operator, supplied);
+    }
+
+    private static void requireValueCount(Operator operator, int count)
+    {
+        if (operator == Operator.IN || operator == Operator.NOT_IN)
+        {
+            if (count == 0)
+            {
+                throw new IllegalArgumentException(operator + " requires at least one value.");
+            }
+            return;
+        }
+        if (count != 1)
+        {
+            throw new IllegalArgumentException(operator + " requires exactly one value.");
+        }
+    }
+
+    private static boolean test(double rowValue, Operator operator, double[] values)
+    {
+        return switch (operator)
+        {
+            case EQUAL -> Double.compare(rowValue, values[0]) == 0;
+            case NOT_EQUAL -> Double.compare(rowValue, values[0]) != 0;
+            case GREATER_THAN -> rowValue > values[0];
+            case GREATER_THAN_OR_EQUAL -> rowValue >= values[0];
+            case LESS_THAN -> rowValue < values[0];
+            case LESS_THAN_OR_EQUAL -> rowValue <= values[0];
+            case IN -> contains(rowValue, values);
+            case NOT_IN -> !contains(rowValue, values);
+        };
+    }
+
+    private static boolean contains(double rowValue, double[] values)
+    {
+        for (double value : values)
+        {
+            if (Double.compare(rowValue, value) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

@@ -194,6 +194,10 @@ public class Columns
             {
                 return ColumnObject.builder(colName, type);
             }
+            else if (boolean.class.equals(valueClass))
+            {
+                return ColumnBoolean.builder(colName);
+            }
             else if (int.class.equals(valueClass))
             {
                 return ColumnInt.builder(colName);
@@ -295,6 +299,14 @@ public class Columns
     public static ColumnInt newInt(ColumnName colName, int value, int size)
     {
         return new ColumnIntConstant(colName, value, size);
+    }
+
+    /**
+     * Creates a constant boolean column.
+     */
+    public static ColumnBoolean newBoolean(ColumnName colName, boolean value, int size)
+    {
+        return new ColumnBooleanConstant(colName, value, size);
     }
 
     /**
@@ -544,6 +556,26 @@ public class Columns
             return newColumn.build();
         }
 
+        if (ColumnBoolean.TYPE.equals(type))
+        {
+            ColumnBoolean.Builder newColumn = ColumnBoolean.builder(outputColumnName);
+            for (Column c : columns)
+            {
+                ColumnBoolean cb = (ColumnBoolean) c;
+                for (int j = 0; j < cb.size(); ++j)
+                {
+                    if (cb.isSet(j))
+                    {
+                        newColumn.add(cb.get(j));
+                    }
+                    else
+                    {
+                        newColumn.addNull();
+                    }
+                }
+            }
+            return newColumn.build();
+        }
         if (ColumnInt.TYPE.equals(type))
         {
             ColumnInt.Builder newColumn = ColumnInt.builder(outputColumnName);

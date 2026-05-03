@@ -108,6 +108,16 @@ public class StringsTest
     }
 
     @Test
+    public void cleanShouldStripxCollapseWhitespaceAndRemoveRequestedCharacters()
+    {
+        assertNull(Strings.clean(null));
+        assertEquals("Alice Bob", Strings.clean("\uFEFF Alice\t\tBob \u200B"));
+        assertEquals("HALFUP", Strings.clean(" half-up ", ' ', '_', '-').toUpperCase());
+        assertEquals("FIRSTIN", Strings.clean("first_in", ' ', '_', '-').toUpperCase());
+        assertEquals("FIRSTIN", Strings.clean("first\tin", ' ', '_', '-').toUpperCase());
+    }
+
+    @Test
     public void indexOfShouldFindHyphenInWholeSequenceAndSlices()
     {
         assertEquals(5, Strings.indexOf("trade-date", '-'));

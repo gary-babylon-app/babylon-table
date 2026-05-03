@@ -133,8 +133,7 @@ public final class RowConsumerCreateTable implements RowConsumer
         TableColumnar table = Tables.newTable(this.tableName, this.tableDescription, columns);
         if (!localDateColumns.isEmpty())
         {
-            return table
-                    .apply(new TransformToLocalDate(this.localDateFormat, localDateColumns.toArray(new ColumnName[0])));
+            return table.apply(TransformToLocalDate.builder(localDateColumns).withFormat(this.localDateFormat).build());
         }
         return table;
     }

@@ -2,6 +2,7 @@ package app.babylon.table.transform;
 
 import app.babylon.lang.ArgumentCheck;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -37,7 +38,7 @@ abstract class TransformStringColumnsBase<T> extends TransformBase
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        Column[] transformedColumns = transformColumns(getColumns(columnsByName, this.columnNames));
+        Column[] transformedColumns = transformColumns(getColumns(columnsByName, Arrays.asList(this.columnNames)));
         putColumns(columnsByName, transformedColumns);
     }
 

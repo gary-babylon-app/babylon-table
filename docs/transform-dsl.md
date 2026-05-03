@@ -30,6 +30,7 @@ strip Name into CleanName
 strip Name using ' []()-;,' into CleanName
 clean Name
 clean Name into CleanName
+clean AccountNumber using ' -' into AccountKey
 ```
 
 `strip` trims leading and trailing whitespace. Add `using` to strip any leading
@@ -37,13 +38,26 @@ or trailing character from the supplied literal; for example
 `strip Name using ' []()-;,'` changes `" [ABC-123], "` to `"ABC-123"`.
 
 `clean` first strips leading and trailing whitespace, then replaces each
-internal run of whitespace with one normal space. In the example below, the dot
-marks a space for explanation only; it is not part of the actual value. `\t`
-marks a tab.
+internal run of whitespace with one normal space.
+
+Add `using` when the cleaned value should also drop specific characters
+everywhere in the value. The characters to remove are written as one literal, so
+`clean AccountNumber using ' -' into AccountKey` removes normal spaces and
+hyphens. If the literal contains a normal space, all whitespace is removed after
+the whitespace has been cleaned.
+
+For example:
 
 ```text
+clean Name
 "··Alpha··Beta\t\tGamma··" -> "Alpha·Beta·Gamma"
+
+clean AccountNumber using ' -' into AccountKey
+"·123-45·6·" -> "123456"
 ```
+
+In these examples, the dot marks a space for explanation only; it is not part of
+the actual value. `\t` marks a tab.
 
 ## String case
 
@@ -61,6 +75,7 @@ copy Symbol into DisplaySymbol
 constant 'BrokerA' into SourceSystem
 constant 'USD' into PaymentCurrency
 constant '1' as Int into SourceRank
+constant 'true' as Boolean into IsActive
 constant 'USD' as Currency into PaymentCurrency
 ```
 
@@ -165,7 +180,30 @@ substitute Status using 'I':'Inactive', 'A':'Active' default 'Other' into Normal
 ```
 
 Patterns are regular expressions. `substitute` maps literal values and can
-optionally provide a `default` or `else` value.
+optionally provide a `default` or `else` value. The default applies only when
+the source row is set but its value is not in the map. If the source row is
+unset, the output row remains unset.
+
+## Flags
+
+```text
+flag Side = Buy into IsBuy
+flag Side <> Buy into IsNotBuy
+flag Quantity >= 100 into IsLarge
+flag Side in Buy, Sell into IsTrade
+flag Side not in Buy, Sell into IsOther
+flag Side = Buy and Quantity >= 100 into IsLargeBuy
+flag Side = Buy or Side = Sell into IsTrade
+```
+
+`flag` writes a Boolean column from a row condition. Values are parsed using the
+condition column's declared type, so `Quantity >= 100` compares numeric values
+when `Quantity` is an Int, Long, Double, or Decimal column. The parser accepts
+both `=` and `==` for equality, and both `<>` and `!=` for not-equal. The writer
+prefers `=` and `<>`. `and` binds tighter than `or`.
+
+The output column is a primitive Boolean column. It can be used as a typed
+condition column by Decimal unary transforms such as `abs` and `negate`.
 
 ## Coalesce
 
@@ -214,32 +252,40 @@ multiply Rate by 0.01 into DecimalRate
 ```text
 abs Amount
 abs Amount into AbsoluteAmount
+abs Quantity when ShouldAbs into QuantityAbs
 negate Amount
 negate Amount into SignedAmount
-negate Quantity when Type is Buy
-negate Quantity when Type is Buy into SignedQuantity
+negate QuantityAbs when IsBuy into SignedQuantity
 normalise Amount
 normalise Amount into NormalisedAmount
 ```
 
-Conditional `negate` parses the value after `is` using the condition column's
-declared type before comparing. `normalise` is Decimal-only: it removes
-insignificant trailing zeros while preserving numeric value, and clamps negative
-scale back to zero.
+`abs` and `negate` accept an optional primitive Boolean condition column with
+`when`. When the condition row is true, the unary operation is applied. When it
+is false or unset, the original Decimal value is kept. Source rows that are
+unset remain unset. `normalise` is Decimal-only: it removes insignificant
+trailing zeros while preserving numeric value, and clamps negative scale back to
+zero.
 
 ## Rounding
 
 ```text
 round Amount to 2
+round Amount to 0 when NoCents
 round Amount to 2 by halfUp into RoundedAmount
 round Amount to 2 by bankers into RoundedAmount
 round Amount using Currency
+round Amount using Currency when NeedsRound into RoundedAmount
 round Amount using Currency by halfUp into RoundedAmount
 ```
 
 `round Amount to 2` uses an explicit number of decimal places. `round Amount
 using Currency` uses a scale column. The standard parser registers
 `java.util.Currency` using `Currency::getDefaultFractionDigits`.
+
+`round` accepts an optional primitive Boolean condition column with `when`.
+Rows are rounded only when the condition is true. When it is false or unset,
+the original Decimal value is kept.
 
 Rounding modes include:
 

@@ -28,6 +28,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.transform.Transform;
+import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformToType;
 
@@ -54,6 +55,9 @@ class TransformDslParserTest
         assertParses(line);
 
         line = "clean Name into CleanName";
+        assertParses(line);
+
+        line = "clean AccountNumber using ' -' into AccountKey";
         assertParses(line);
     }
 
@@ -92,6 +96,9 @@ class TransformDslParserTest
         assertParses(line);
 
         line = "constant '1' as Int into SourceRank";
+        assertParses(line);
+
+        line = "constant 'true' as Boolean into IsActive";
         assertParses(line);
 
         line = "constant 'USD' as Currency into PaymentCurrency";
@@ -167,6 +174,7 @@ class TransformDslParserTest
 
         line = "convert AmountText to Decimal into Amount";
         assertParses(line);
+        assertInstanceOf(TransformToType.class, PARSER.parse(line));
 
         line = "convert AmountText to String into AmountDisplay";
         assertParses(line);
@@ -285,6 +293,35 @@ class TransformDslParserTest
     }
 
     @Test
+    void shouldParseFlagExamples()
+    {
+        String line = "flag Side=Buy into IsBuy";
+        assertInstanceOf(TransformFlag.class, PARSER.parse(line));
+        assertParses(line);
+
+        line = "flag Side == Buy into IsBuy";
+        assertParses(line);
+
+        line = "flag Side <> Buy into IsNotBuy";
+        assertParses(line);
+
+        line = "flag Quantity >= 100 into IsLarge";
+        assertParses(line);
+
+        line = "flag Side in Buy, Sell into IsTrade";
+        assertParses(line);
+
+        line = "flag Side not in Buy, Sell into IsOther";
+        assertParses(line);
+
+        line = "flag Side=Buy and Quantity>=100 into IsLargeBuy";
+        assertParses(line);
+
+        line = "flag Side=Buy or Side=Sell into IsTrade";
+        assertParses(line);
+    }
+
+    @Test
     void shouldParseSubstituteExamples()
     {
         String line = "substitute Status using 'A':'Active', 'I':'Inactive' default 'Other' into NormalisedStatus";
@@ -344,17 +381,22 @@ class TransformDslParserTest
         String line = "abs Amount into AbsoluteAmount";
         assertParses(line);
 
+        line = "abs Quantity when ShouldAbs into QuantityAbs";
+        assertParses(line);
+
+        line = "abs Quantity into QuantityAbs when ShouldAbs";
+        assertParses(line);
+
         line = "negate Amount into SignedAmount";
         assertParses(line);
 
-        line = "negate Quantity when Type is Buy";
+        line = "negate QuantityAbs when IsBuy into SignedQuantity";
         assertParses(line);
 
-        line = "negate Quantity when Type is Buy into SignedQuantity";
+        line = "negate QuantityAbs into SignedQuantity when IsBuy";
         assertParses(line);
 
-        line = "negate Quantity into SignedQuantity when Type is Buy";
-        assertParses(line);
+        assertThrows(TransformDslException.class, () -> PARSER.parse("negate Quantity when Type is Buy"));
 
         line = "normalise Amount";
         assertParses(line);
@@ -368,6 +410,12 @@ class TransformDslParserTest
         line = "round Amount to 2 by halfUp into RoundedAmount";
         assertParses(line);
 
+        line = "round Amount to 0 when NoCents";
+        assertParses(line);
+
+        line = "round Amount to 0 into RoundedAmount when NoCents";
+        assertParses(line);
+
         line = "round Amount to 2 into RoundedAmount by halfUp";
         assertParses(line);
 
@@ -375,6 +423,9 @@ class TransformDslParserTest
         assertParses(line);
 
         line = "round Amount using Currency by halfUp into RoundedAmount";
+        assertParses(line);
+
+        line = "round Amount using Currency when NeedsRound into RoundedAmount";
         assertParses(line);
 
         line = "round Amount using Currency into RoundedAmount by halfUp";

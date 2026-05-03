@@ -21,6 +21,7 @@ import java.util.NoSuchElementException;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnInt;
@@ -57,6 +58,21 @@ abstract class TableColumnarCommon implements TableColumnar
         if (column != null)
         {
             throw new RuntimeException(x + " not int column.");
+        }
+        return null;
+    }
+
+    @Override
+    public ColumnBoolean getBoolean(ColumnName x)
+    {
+        Column column = get(x);
+        if (column instanceof ColumnBoolean)
+        {
+            return (ColumnBoolean) column;
+        }
+        if (column != null)
+        {
+            throw new RuntimeException(x + " not boolean column.");
         }
         return null;
     }

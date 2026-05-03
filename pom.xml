@@ -9,7 +9,7 @@
     <packaging>jar</packaging>
 
     <name>babylon-table</name>
-    <description>A columnar table library with filtering, grouping, aggregation, and data transformations, where columns are immutable once built.</description>
+    <description>A columnar table library with filtering, grouping, sorting, transformations and aggregations. Columns are immutable once built. The library has no third-party runtime dependencies.</description>
     <url>https://github.com/gary-babylon-app/babylon-table</url>
 
     <licenses>

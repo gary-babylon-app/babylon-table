@@ -27,14 +27,17 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.transform.ComparisonCondition;
+import app.babylon.table.transform.ConditionExpression;
 import app.babylon.table.transform.DateFormat;
+import app.babylon.table.transform.LogicalCondition;
 import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformAbs;
 import app.babylon.table.transform.TransformAdd;
 import app.babylon.table.transform.TransformAfter;
 import app.babylon.table.transform.TransformBefore;
 import app.babylon.table.transform.TransformClassify;
-import app.babylon.table.transform.TransformCleanWhitespace;
+import app.babylon.table.transform.TransformClean;
 import app.babylon.table.transform.TransformCoalesce;
 import app.babylon.table.transform.TransformConcat;
 import app.babylon.table.transform.TransformCopy;
@@ -42,6 +45,7 @@ import app.babylon.table.transform.TransformCreateConstant;
 import app.babylon.table.transform.TransformDecimalBinaryOperator.Operand;
 import app.babylon.table.transform.TransformDivide;
 import app.babylon.table.transform.TransformExtract;
+import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformLeft;
 import app.babylon.table.transform.TransformMultiply;
 import app.babylon.table.transform.TransformNegate;
@@ -59,7 +63,6 @@ import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
 import app.babylon.table.transform.TransformMetadataConstant;
-import app.babylon.table.transform.TransformToDecimal;
 import app.babylon.table.transform.TransformToDouble;
 import app.babylon.table.transform.TransformToInt;
 import app.babylon.table.transform.TransformToLocalDate;
@@ -108,6 +111,7 @@ final class TransformDslParser
         parsers.put("copy", TransformDslParser::parseCopy);
         parsers.put("divide", TransformDslParser::parseDivide);
         parsers.put("extract", TransformDslParser::parseExtract);
+        parsers.put("flag", TransformDslParser::parseFlag);
         parsers.put("lowercase", TransformDslParser::parseLowercase);
         parsers.put("multiply", TransformDslParser::parseMultiply);
         parsers.put("negate", TransformDslParser::parseNegate);
@@ -210,10 +214,34 @@ final class TransformDslParser
     private static Transform parseAbs(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        String target = optionalInto(tokens, source);
-        return target == null
-                ? TransformAbs.of(ColumnName.of(source))
-                : TransformAbs.of(ColumnName.of(source), ColumnName.of(target));
+        String conditionColumn = null;
+        String target = null;
+        while (!tokens.isAtEnd())
+        {
+            if (tokens.matchWord("when"))
+            {
+                if (conditionColumn != null)
+                {
+                    throw new TransformDslException("Duplicate when clause", tokens.peek().position());
+                }
+                conditionColumn = tokens.expectValue();
+            }
+            else if (tokens.matchWord("into"))
+            {
+                if (target != null)
+                {
+                    throw new TransformDslException("Duplicate into clause", tokens.peek().position());
+                }
+                target = tokens.expectValue();
+            }
+            else
+            {
+                throw new TransformDslException("Expected when, into, or end of statement", tokens.peek().position());
+            }
+        }
+        TransformAbs.Builder builder = TransformAbs.builder(ColumnName.of(source))
+                .withNewColumnName(columnName(target));
+        return conditionColumn == null ? builder.build() : builder.when(ColumnName.of(conditionColumn)).build();
     }
 
     private static Transform parseAdd(TokenStream tokens)
@@ -247,12 +275,13 @@ final class TransformDslParser
     private static Transform parseClean(TokenStream tokens)
     {
         String source = tokens.expectValue();
+        String cleanCharacters = null;
         if (tokens.matchWord("using"))
         {
-            throw new TransformDslException("Named cleaners are not supported yet", tokens.peek().position());
+            cleanCharacters = tokens.expectValue();
         }
         String target = optionalInto(tokens, source);
-        return TransformCleanWhitespace.of(ColumnName.of(source), columnName(target));
+        return TransformClean.of(ColumnName.of(source), columnName(target), cleanCharacters);
     }
 
     private static Transform parseCoalesce(TokenStream tokens)
@@ -327,37 +356,33 @@ final class TransformDslParser
         return switch (normalisedType)
         {
             case "decimal" -> format == null
-                    ? parseMode == null
-                            ? TransformToDecimal.of(ColumnName.of(source), columnName(target))
-                            : TransformToType.of(ColumnTypes.DECIMAL, ColumnName.of(source), columnName(target),
-                                    ColumnObject.Mode.CATEGORICAL, parseMode)
+                    ? TransformToType.builder(ColumnTypes.DECIMAL, ColumnName.of(source))
+                            .withNewColumnName(columnName(target)).withMode(ColumnObject.Mode.CATEGORICAL)
+                            .withParseMode(parseMode).build()
                     : throwUnsupportedUsing(type, tokens);
             case "double" -> format == null
                     ? parseMode == null
                             ? TransformToDouble.of(ColumnName.of(source), columnName(target))
-                            : TransformToPrimitive.of(ColumnName.of(source), columnName(target), ColumnTypes.DOUBLE,
-                                    parseMode)
+                            : TransformToPrimitive.builder(ColumnTypes.DOUBLE, ColumnName.of(source))
+                                    .withNewColumnName(columnName(target)).withParseMode(parseMode).build()
                     : throwUnsupportedUsing(type, tokens);
             case "int",
                     "integer" ->
                 format == null
                         ? parseMode == null
                                 ? TransformToInt.of(ColumnName.of(source), columnName(target))
-                                : TransformToPrimitive.of(ColumnName.of(source), columnName(target), ColumnTypes.INT,
-                                        parseMode)
+                                : TransformToPrimitive.builder(ColumnTypes.INT, ColumnName.of(source))
+                                        .withNewColumnName(columnName(target)).withParseMode(parseMode).build()
                         : throwUnsupportedUsing(type, tokens);
             case "long" -> format == null
                     ? parseMode == null
                             ? TransformToLong.of(ColumnName.of(source), columnName(target))
-                            : TransformToPrimitive.of(ColumnName.of(source), columnName(target), ColumnTypes.LONG,
-                                    parseMode)
+                            : TransformToPrimitive.builder(ColumnTypes.LONG, ColumnName.of(source))
+                                    .withNewColumnName(columnName(target)).withParseMode(parseMode).build()
                     : throwUnsupportedUsing(type, tokens);
-            case "date",
-                    "localdate" ->
-                format == null
-                        ? TransformToLocalDate.of(ColumnName.of(source), columnName(target), null, parseMode)
-                        : TransformToLocalDate.of(ColumnName.of(source), columnName(target), DateFormat.parse(format),
-                                parseMode);
+            case "date", "localdate" ->
+                TransformToLocalDate.builder(ColumnName.of(source)).withNewColumnName(columnName(target))
+                        .withFormat(DateFormat.parse(format)).withParseMode(parseMode).build();
             case "string" -> format == null
                     ? TransformToString.of(ColumnName.of(source), columnName(target))
                     : throwUnsupportedUsing(type, tokens);
@@ -377,8 +402,13 @@ final class TransformDslParser
         {
             throw new TransformDslException("Unknown conversion type '" + type + "'", tokens.peek().position());
         }
-        return TransformToType.of(columnType, ColumnName.of(source), columnName(target), ColumnObject.Mode.CATEGORICAL,
-                parseMode);
+        if (columnType.isPrimitive())
+        {
+            return TransformToPrimitive.builder(columnType, ColumnName.of(source)).withNewColumnName(columnName(target))
+                    .withParseMode(parseMode).build();
+        }
+        return TransformToType.builder(columnType, ColumnName.of(source)).withNewColumnName(columnName(target))
+                .withMode(ColumnObject.Mode.CATEGORICAL).withParseMode(parseMode).build();
     }
 
     private static Transform throwUnsupportedParseMode(String type, TokenStream tokens)
@@ -489,6 +519,71 @@ final class TransformDslParser
         return TransformExtract.of(ColumnName.of(source), ColumnName.of(target), Pattern.compile(pattern));
     }
 
+    private static Transform parseFlag(TokenStream tokens)
+    {
+        ConditionExpression condition = parseConditionExpression(tokens);
+        tokens.expectWord("into");
+        return TransformFlag.builder(condition).withNewColumnName(ColumnName.of(tokens.expectValue())).build();
+    }
+
+    private static ConditionExpression parseConditionExpression(TokenStream tokens)
+    {
+        ConditionExpression condition = parseAndCondition(tokens);
+        while (tokens.matchWord("or"))
+        {
+            condition = new LogicalCondition(condition, LogicalCondition.Operator.OR, parseAndCondition(tokens));
+        }
+        return condition;
+    }
+
+    private static ConditionExpression parseAndCondition(TokenStream tokens)
+    {
+        ConditionExpression condition = parseComparisonCondition(tokens);
+        while (tokens.matchWord("and"))
+        {
+            condition = new LogicalCondition(condition, LogicalCondition.Operator.AND,
+                    parseComparisonCondition(tokens));
+        }
+        return condition;
+    }
+
+    private static ConditionExpression parseComparisonCondition(TokenStream tokens)
+    {
+        String source = tokens.expectValue();
+        Column.Operator operator = parseConditionOperator(tokens);
+        return new ComparisonCondition(ColumnName.of(source), operator, conditionValues(tokens, operator));
+    }
+
+    private static Column.Operator parseConditionOperator(TokenStream tokens)
+    {
+        if (tokens.peek().is(TokenType.OPERATOR))
+        {
+            return Column.Operator.parse(tokens.expectOperator());
+        }
+        if (tokens.matchWord("not"))
+        {
+            tokens.expectWord("in");
+            return Column.Operator.NOT_IN;
+        }
+        Token token = tokens.next();
+        if (!token.is(TokenType.WORD))
+        {
+            throw new TransformDslException("Expected comparison operator", token.position());
+        }
+        return Column.Operator.parse(token.value());
+    }
+
+    private static String[] conditionValues(TokenStream tokens, Column.Operator operator)
+    {
+        List<String> values = new ArrayList<>();
+        values.add(tokens.expectValue());
+        while ((operator == Column.Operator.IN || operator == Column.Operator.NOT_IN) && tokens.match(TokenType.COMMA))
+        {
+            values.add(tokens.expectValue());
+        }
+        return values.toArray(String[]::new);
+    }
+
     private static Transform parseLowercase(TokenStream tokens)
     {
         String source = tokens.expectValue();
@@ -510,7 +605,6 @@ final class TransformDslParser
     {
         String source = tokens.expectValue();
         String conditionColumn = null;
-        String conditionValue = null;
         String target = null;
         while (!tokens.isAtEnd())
         {
@@ -521,8 +615,6 @@ final class TransformDslParser
                     throw new TransformDslException("Duplicate when clause", tokens.peek().position());
                 }
                 conditionColumn = tokens.expectValue();
-                tokens.expectWord("is");
-                conditionValue = tokens.expectValue();
             }
             else if (tokens.matchWord("into"))
             {
@@ -537,14 +629,9 @@ final class TransformDslParser
                 throw new TransformDslException("Expected when, into, or end of statement", tokens.peek().position());
             }
         }
-        if (conditionColumn != null)
-        {
-            return TransformNegate.when(ColumnName.of(source), columnName(target), ColumnName.of(conditionColumn),
-                    conditionValue);
-        }
-        return target == null
-                ? TransformNegate.of(ColumnName.of(source))
-                : TransformNegate.of(ColumnName.of(source), ColumnName.of(target));
+        TransformNegate.Builder builder = TransformNegate.builder(ColumnName.of(source))
+                .withNewColumnName(columnName(target));
+        return conditionColumn == null ? builder.build() : builder.when(ColumnName.of(conditionColumn)).build();
     }
 
     private static Transform parseNormalise(TokenStream tokens)
@@ -597,6 +684,7 @@ final class TransformDslParser
             throw new TransformDslException("Expected to or using", tokens.peek().position());
         }
         RoundingMode roundingMode = null;
+        String conditionColumn = null;
         String target = null;
         while (!tokens.isAtEnd())
         {
@@ -608,6 +696,14 @@ final class TransformDslParser
                 }
                 roundingMode = TransformRound.parseRoundingMode(tokens.expectValue());
             }
+            else if (tokens.matchWord("when"))
+            {
+                if (conditionColumn != null)
+                {
+                    throw new TransformDslException("Duplicate when clause", tokens.peek().position());
+                }
+                conditionColumn = tokens.expectValue();
+            }
             else if (tokens.matchWord("into"))
             {
                 if (target != null)
@@ -618,17 +714,14 @@ final class TransformDslParser
             }
             else
             {
-                throw new TransformDslException("Expected by, into, or end of statement", tokens.peek().position());
+                throw new TransformDslException("Expected by, when, into, or end of statement",
+                        tokens.peek().position());
             }
         }
-        if (scaleColumn != null)
-        {
-            return TransformRound.using(ColumnName.of(source), ColumnName.of(scaleColumn), columnName(target),
-                    roundingMode, this.roundScales);
-        }
-        return target == null
-                ? TransformRound.of(ColumnName.of(source), scale.intValue(), roundingMode)
-                : TransformRound.of(ColumnName.of(source), ColumnName.of(target), scale.intValue(), roundingMode);
+        return TransformRound.builder(ColumnName.of(source)).withScale(scale)
+                .withScaleColumnName(columnName(scaleColumn)).withNewColumnName(columnName(target))
+                .when(columnName(conditionColumn)).withRoundingMode(roundingMode).withRoundScales(this.roundScales)
+                .build();
     }
 
     private static Transform parseSplit(TokenStream tokens)
@@ -877,6 +970,7 @@ final class TransformDslParser
     private static Map<String, Column.Type> standardTypes()
     {
         Map<String, Column.Type> types = new HashMap<>();
+        types.put("boolean", ColumnTypes.BOOLEAN);
         types.put("byte", ColumnTypes.BYTE);
         types.put("decimal", ColumnTypes.DECIMAL);
         types.put("bigdecimal", ColumnTypes.DECIMAL);

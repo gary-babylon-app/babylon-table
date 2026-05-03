@@ -2,17 +2,14 @@ package app.babylon.table.transform;
 
 import java.math.BigDecimal;
 import java.util.Map;
-import java.util.Objects;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
-import app.babylon.table.column.ColumnByte;
-import app.babylon.table.column.ColumnDouble;
-import app.babylon.table.column.ColumnInt;
-import app.babylon.table.column.ColumnLong;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 public class TransformNegate extends TransformBase
 {
@@ -21,44 +18,25 @@ public class TransformNegate extends TransformBase
     private final ColumnName columnName;
     private final ColumnName newColumnName;
     private final ColumnName conditionColumnName;
-    private final String conditionValue;
 
-    private TransformNegate(ColumnName columnName, ColumnName newColumnName)
-    {
-        this(columnName, newColumnName, null, null);
-    }
-
-    private TransformNegate(ColumnName columnName, ColumnName newColumnName, ColumnName conditionColumnName,
-            String conditionValue)
+    private TransformNegate(Builder builder)
     {
         super(FUNCTION_NAME);
-        this.columnName = ArgumentCheck.nonNull(columnName);
-        this.newColumnName = newColumnName;
-        this.conditionColumnName = conditionColumnName;
-        this.conditionValue = conditionValue;
+        this.columnName = builder.columnName;
+        this.newColumnName = builder.newColumnName;
+        this.conditionColumnName = builder.conditionColumnName;
     }
 
     public static TransformNegate of(ColumnName columnName)
     {
-        return columnName == null ? null : new TransformNegate(columnName, null);
+        return columnName == null ? null : builder(columnName).build();
     }
 
     public static TransformNegate of(ColumnName columnName, ColumnName newColumnName)
     {
-        return columnName == null || newColumnName == null ? null : new TransformNegate(columnName, newColumnName);
-    }
-
-    public static TransformNegate when(ColumnName columnName, ColumnName conditionColumnName, String conditionValue)
-    {
-        return when(columnName, null, conditionColumnName, conditionValue);
-    }
-
-    public static TransformNegate when(ColumnName columnName, ColumnName newColumnName, ColumnName conditionColumnName,
-            String conditionValue)
-    {
-        return columnName == null || conditionColumnName == null || conditionValue == null
+        return columnName == null || newColumnName == null
                 ? null
-                : new TransformNegate(columnName, newColumnName, conditionColumnName, conditionValue);
+                : builder(columnName).withNewColumnName(newColumnName).build();
     }
 
     public static TransformNegate of(String... params)
@@ -72,6 +50,11 @@ public class TransformNegate extends TransformBase
             return of(ColumnName.parse(params[0]), ColumnName.parse(params[1]));
         }
         return of(ColumnName.parse(params[0]));
+    }
+
+    public static Builder builder(ColumnName columnName)
+    {
+        return new Builder(columnName);
     }
 
     public ColumnName columnName()
@@ -94,17 +77,13 @@ public class TransformNegate extends TransformBase
         return this.conditionColumnName;
     }
 
-    public String conditionValue()
-    {
-        return this.conditionValue;
-    }
-
     public ColumnObject<BigDecimal> apply(Column column)
     {
         if (column == null)
         {
             return null;
         }
+        requireDecimal(column);
 
         @SuppressWarnings("unchecked")
         ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
@@ -124,23 +103,23 @@ public class TransformNegate extends TransformBase
         return newColumn.build();
     }
 
-    public ColumnObject<BigDecimal> apply(Column column, Column conditionColumn)
+    public ColumnObject<BigDecimal> apply(Column column, ColumnBoolean conditionColumn)
     {
         if (column == null || conditionColumn == null)
         {
             return null;
         }
+        requireDecimal(column);
 
         @SuppressWarnings("unchecked")
         ColumnObject<BigDecimal> oldColumn = (ColumnObject<BigDecimal>) column;
-        Object condition = parseConditionValue(conditionColumn);
         ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(effectiveNewColumnName());
         for (int i = 0; i < oldColumn.size(); ++i)
         {
             if (oldColumn.isSet(i))
             {
                 BigDecimal bd = oldColumn.get(i);
-                newColumn.add(matches(conditionColumn, i, condition) ? bd.negate() : bd);
+                newColumn.add(shouldNegate(conditionColumn, i) ? bd.negate() : bd);
             }
             else
             {
@@ -158,7 +137,7 @@ public class TransformNegate extends TransformBase
         {
             ColumnObject<BigDecimal> transformed = this.conditionColumnName == null
                     ? apply(column)
-                    : apply(column, columnsByName.get(this.conditionColumnName));
+                    : apply(column, requireBoolean(columnsByName.get(this.conditionColumnName)));
             if (transformed != null)
             {
                 columnsByName.put(effectiveNewColumnName(), transformed);
@@ -166,44 +145,60 @@ public class TransformNegate extends TransformBase
         }
     }
 
-    private Object parseConditionValue(Column conditionColumn)
+    private boolean shouldNegate(ColumnBoolean conditionColumn, int row)
     {
-        Object value = conditionColumn.getType().getParser().parse(this.conditionValue);
-        if (value == null && !this.conditionValue.isEmpty())
-        {
-            throw new RuntimeException(FUNCTION_NAME + " could not parse condition value '" + this.conditionValue
-                    + "' as " + conditionColumn.getType());
-        }
-        return value;
+        return row < conditionColumn.size() && conditionColumn.isSet(row) && conditionColumn.get(row);
     }
 
-    private boolean matches(Column conditionColumn, int row, Object condition)
+    private ColumnBoolean requireBoolean(Column column)
     {
-        return conditionColumn.isSet(row) && Objects.equals(value(conditionColumn, row), condition);
+        if (column instanceof ColumnBoolean booleanColumn)
+        {
+            return booleanColumn;
+        }
+        if (column == null)
+        {
+            return null;
+        }
+        throw new IllegalArgumentException(FUNCTION_NAME + " when requires Boolean column '" + column.getName()
+                + "' but found " + column.getType());
     }
 
-    private Object value(Column column, int row)
+    private void requireDecimal(Column column)
     {
-        if (column instanceof ColumnObject<?> objectColumn)
+        if (!ColumnTypes.DECIMAL.equals(column.getType()))
         {
-            return objectColumn.get(row);
+            throw new IllegalArgumentException(FUNCTION_NAME + " requires Decimal column '" + column.getName()
+                    + "' but found " + column.getType());
         }
-        if (column instanceof ColumnInt intColumn)
+    }
+
+    public static final class Builder
+    {
+        private final ColumnName columnName;
+        private ColumnName newColumnName;
+        private ColumnName conditionColumnName;
+
+        private Builder(ColumnName columnName)
         {
-            return intColumn.get(row);
+            this.columnName = ArgumentCheck.nonNull(columnName);
         }
-        if (column instanceof ColumnLong longColumn)
+
+        public Builder withNewColumnName(ColumnName newColumnName)
         {
-            return longColumn.get(row);
+            this.newColumnName = newColumnName;
+            return this;
         }
-        if (column instanceof ColumnDouble doubleColumn)
+
+        public Builder when(ColumnName conditionColumnName)
         {
-            return doubleColumn.get(row);
+            this.conditionColumnName = ArgumentCheck.nonNull(conditionColumnName);
+            return this;
         }
-        if (column instanceof ColumnByte byteColumn)
+
+        public TransformNegate build()
         {
-            return byteColumn.get(row);
+            return new TransformNegate(this);
         }
-        return column.toString(row);
     }
 }

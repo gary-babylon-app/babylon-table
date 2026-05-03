@@ -30,6 +30,12 @@ import app.babylon.table.column.type.TypeWriters;
 public final class ColumnTypes
 {
     // @formatter:off
+    /** Primitive boolean type. */
+    public static final Type BOOLEAN       = Column.Type.of(boolean.class,    TypeParsers.BOOLEAN,
+            TypeWriters.BOOLEAN);
+    /** Boxed boolean type. */
+    public static final Type BOOLEAN_OBJECT = Column.Type.of(Boolean.class,   TypeParsers.BOOLEAN,
+            TypeWriters.BOOLEAN);
     /** Primitive byte type. */
     public static final Type BYTE          = Column.Type.of(byte.class,       TypeParsers.BYTE, TypeWriters.BYTE);
     /** Boxed byte type. */

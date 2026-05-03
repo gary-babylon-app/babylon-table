@@ -38,7 +38,7 @@ class TransformToDoubleTest
 
         assertEquals(6, transformed.size());
         assertEquals(1.25d, transformed.get(0), 1.0e-12);
-        assertEquals(12.5d, transformed.get(1), 1.0e-12);
+        assertFalse(transformed.isSet(1));
         assertFalse(transformed.isSet(2));
         assertFalse(transformed.isSet(3));
         assertFalse(transformed.isSet(4));
@@ -75,7 +75,7 @@ class TransformToDoubleTest
         final ColumnName PARSED = ColumnName.of("PARSED");
         ColumnObject.Builder<String> amountBuilder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING);
         amountBuilder.add("1.25");
-        amountBuilder.add("USD 12.50");
+        amountBuilder.add("12.50");
 
         ColumnObject.Builder<String> otherBuilder = ColumnObject.builder(OTHER, ColumnTypes.STRING);
         otherBuilder.add("x");

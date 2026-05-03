@@ -68,6 +68,22 @@ public final class TypeParsers
     private static final Period PERIOD_1Y = Period.ofYears(1);
 
     public static final TypeParser<Object> NULL = (s, offset, length) -> null;
+    public static final TypeParser<Boolean> BOOLEAN = (s, offset, length) -> {
+        if (s == null || length <= 0)
+        {
+            return null;
+        }
+        String value = s.subSequence(offset, offset + length).toString();
+        if ("true".equalsIgnoreCase(value))
+        {
+            return Boolean.TRUE;
+        }
+        if ("false".equalsIgnoreCase(value))
+        {
+            return Boolean.FALSE;
+        }
+        return null;
+    };
     public static final TypeParser<String> STRING = (s, offset,
             length) -> s == null ? null : s.subSequence(offset, offset + length).toString();
     public static final TypeParser<Byte> BYTE = new TypeParser<>()

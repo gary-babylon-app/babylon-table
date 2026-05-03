@@ -1,9 +1,8 @@
 package app.babylon.table.transform;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.regex.Pattern;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Strings;

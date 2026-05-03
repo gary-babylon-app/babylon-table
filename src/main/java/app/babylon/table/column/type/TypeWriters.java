@@ -22,6 +22,7 @@ import java.util.Currency;
 
 public final class TypeWriters
 {
+    public static final TypeWriter<Boolean> BOOLEAN = appendUsingToString();
     public static final TypeWriter<Byte> BYTE = appendUsingToString();
     public static final TypeWriter<Integer> INT = appendUsingToString();
     public static final TypeWriter<Long> LONG = appendUsingToString();

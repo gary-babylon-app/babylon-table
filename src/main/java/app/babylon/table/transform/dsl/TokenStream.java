@@ -74,6 +74,16 @@ public final class TokenStream
         return false;
     }
 
+    public boolean matchOperator(String operator)
+    {
+        if (peek().isOperator(operator))
+        {
+            next();
+            return true;
+        }
+        return false;
+    }
+
     public Token expect(TokenType type)
     {
         Token token = next();
@@ -109,6 +119,16 @@ public final class TokenStream
         if (!token.is(TokenType.LITERAL))
         {
             throw error("Expected literal", token);
+        }
+        return token.value();
+    }
+
+    public String expectOperator()
+    {
+        Token token = next();
+        if (!token.is(TokenType.OPERATOR))
+        {
+            throw error("Expected operator", token);
         }
         return token.value();
     }
@@ -155,6 +175,11 @@ public final class TokenStream
                 ++i;
                 continue;
             }
+            if (isOperatorStart(c))
+            {
+                i = readOperator(line, i, tokens);
+                continue;
+            }
             if (c == '"' || c == '\'')
             {
                 i = readLiteral(line, i, tokens);
@@ -176,6 +201,10 @@ public final class TokenStream
             {
                 break;
             }
+            if (isOperatorStart(c))
+            {
+                break;
+            }
             if (c == '"' || c == '\'')
             {
                 throw new TransformDslException("Unexpected quote inside word", i);
@@ -184,6 +213,32 @@ public final class TokenStream
         }
         tokens.add(new Token(TokenType.WORD, line.subSequence(start, i).toString(), start));
         return i;
+    }
+
+    private static int readOperator(CharSequence line, int start, List<Token> tokens)
+    {
+        char c = line.charAt(start);
+        if (start + 1 < line.length())
+        {
+            char next = line.charAt(start + 1);
+            if ((c == '=' && next == '=') || (c == '!' && next == '=') || (c == '<' && next == '=')
+                    || (c == '>' && next == '=') || (c == '<' && next == '>'))
+            {
+                tokens.add(new Token(TokenType.OPERATOR, line.subSequence(start, start + 2).toString(), start));
+                return start + 2;
+            }
+        }
+        if (c == '=' || c == '<' || c == '>')
+        {
+            tokens.add(new Token(TokenType.OPERATOR, Character.toString(c), start));
+            return start + 1;
+        }
+        throw new TransformDslException("Unknown operator", start);
+    }
+
+    private static boolean isOperatorStart(char c)
+    {
+        return c == '=' || c == '!' || c == '<' || c == '>';
     }
 
     private static int readLiteral(CharSequence line, int start, List<Token> tokens)

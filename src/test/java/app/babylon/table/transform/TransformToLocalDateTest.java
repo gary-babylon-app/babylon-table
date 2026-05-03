@@ -35,7 +35,7 @@ class TransformToLocalDateTest
         TableDescription description = new TableDescription("Description here...");
         TableColumnar table = Tables.newTable(TableName.of("t"), description, (Column) tradeDates.build(),
                 (Column) settleDates.build());
-        TableColumnar transformed = table.apply(new TransformToLocalDate(TRADE_DATE, SETTLE_DATE));
+        TableColumnar transformed = table.apply(TransformToLocalDate.builder(TRADE_DATE, SETTLE_DATE).build());
 
         assertEquals(LocalDate.of(2026, 2, 15), transformed.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
         assertEquals(LocalDate.of(2026, 2, 16), transformed.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
@@ -61,7 +61,7 @@ class TransformToLocalDateTest
                 (Column) settleDates.build());
 
         assertThrows(IllegalArgumentException.class,
-                () -> table.apply(new TransformToLocalDate(TRADE_DATE, SETTLE_DATE)));
+                () -> table.apply(TransformToLocalDate.builder(TRADE_DATE, SETTLE_DATE).build()));
     }
 
     @Test
@@ -80,7 +80,8 @@ class TransformToLocalDateTest
         TableDescription description = new TableDescription("Description here...");
         TableColumnar table = Tables.newTable(TableName.of("t3"), description, (Column) tradeDates.build(),
                 (Column) settleDates.build());
-        TableColumnar transformed = table.apply(new TransformToLocalDate(DateFormat.DMY, TRADE_DATE, SETTLE_DATE));
+        TableColumnar transformed = table
+                .apply(TransformToLocalDate.builder(TRADE_DATE, SETTLE_DATE).withFormat(DateFormat.DMY).build());
 
         assertEquals(LocalDate.of(2026, 2, 1), transformed.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
         assertEquals(LocalDate.of(2026, 4, 3), transformed.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
@@ -115,7 +116,7 @@ class TransformToLocalDateTest
         TableColumnar table = Tables.newTable(TableName.of("t4"), description, (Column) dominantTradeDates.build(),
                 (Column) dominantSettleDates.build(), (Column) isoEndDates.build(), (Column) ambiguousDates.build());
         TableColumnar transformed = table
-                .apply(new TransformToLocalDate(TRADE_DATE, SETTLE_DATE, END_DATE, BOOKING_DATE));
+                .apply(TransformToLocalDate.builder(TRADE_DATE, SETTLE_DATE, END_DATE, BOOKING_DATE).build());
 
         assertEquals(LocalDate.of(2026, 2, 1), transformed.getObject(BOOKING_DATE, ColumnTypes.LOCALDATE).get(0));
         assertEquals(LocalDate.of(2026, 2, 3), transformed.getObject(BOOKING_DATE, ColumnTypes.LOCALDATE).get(1));
@@ -132,7 +133,7 @@ class TransformToLocalDateTest
 
         TableDescription description = new TableDescription("Description here...");
         TableColumnar table = Tables.newTable(TableName.of("t5"), description, (Column) tradeDates.build());
-        TableColumnar transformed = table.apply(new TransformToLocalDate(TRADE_DATE));
+        TableColumnar transformed = table.apply(TransformToLocalDate.builder(TRADE_DATE).build());
 
         assertEquals(LocalDate.of(2026, 2, 1), transformed.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
         assertEquals(LocalDate.of(2026, 4, 3), transformed.getObject(TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
@@ -146,7 +147,7 @@ class TransformToLocalDateTest
 
         TableDescription description = new TableDescription("Description here...");
         TableColumnar table = Tables.newTable(TableName.of("t6"), description, (Column) tradeDates.build());
-        TableColumnar transformed = table.apply(new TransformToLocalDate(TRADE_DATE));
+        TableColumnar transformed = table.apply(TransformToLocalDate.builder(TRADE_DATE).build());
 
         assertEquals(0, transformed.getRowCount());
         assertEquals(LocalDate.class, transformed.get(TRADE_DATE).getType().getValueClass());
@@ -171,5 +172,34 @@ class TransformToLocalDateTest
 
         assertEquals(LocalDate.of(2026, 2, 15), transformed.getObject(PARSED_TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
         assertEquals(LocalDate.of(2026, 2, 16), transformed.getObject(PARSED_TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+    }
+
+    @Test
+    void shouldCreateTransformFromBuilder()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TRADE_DATE");
+        final ColumnName PARSED_TRADE_DATE = ColumnName.of("PARSED_TRADE_DATE");
+        TransformToLocalDate transform = TransformToLocalDate.builder().withColumnName(TRADE_DATE)
+                .withFormat(DateFormat.DMY).withNewColumnName(PARSED_TRADE_DATE).build();
+
+        ColumnObject.Builder<String> tradeDates = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
+        tradeDates.add("15/02/2026");
+
+        TableDescription description = new TableDescription("Description here...");
+        TableColumnar table = Tables.newTable(TableName.of("t8"), description, (Column) tradeDates.build());
+        TableColumnar transformed = table.apply(transform);
+
+        assertEquals(LocalDate.of(2026, 2, 15), transformed.getObject(PARSED_TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+    }
+
+    @Test
+    void shouldRejectBuilderWithMultipleColumnsIntoOneColumn()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TRADE_DATE");
+        final ColumnName SETTLE_DATE = ColumnName.of("SETTLE_DATE");
+        final ColumnName PARSED_TRADE_DATE = ColumnName.of("PARSED_TRADE_DATE");
+
+        assertThrows(IllegalArgumentException.class, () -> TransformToLocalDate.builder()
+                .withColumnNames(TRADE_DATE, SETTLE_DATE).withNewColumnName(PARSED_TRADE_DATE).build());
     }
 }

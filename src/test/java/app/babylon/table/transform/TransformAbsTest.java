@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 
@@ -13,8 +15,10 @@ import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
 
 class TransformAbsTest
 {
@@ -56,6 +60,51 @@ class TransformAbsTest
         assertEquals(absAmount, transformed.getDecimal(absAmount).getName());
         assertDecimalEquals("2.5", transformed.getDecimal(absAmount).get(0));
         assertFalse(transformed.getDecimal(absAmount).isSet(1));
+    }
+
+    @Test
+    void applyMapShouldTakeAbsoluteValuesOnlyWhenBooleanColumnIsTrue()
+    {
+        final ColumnName amount = ColumnName.of("Amount");
+        final ColumnName shouldAbs = ColumnName.of("ShouldAbs");
+        final ColumnName absAmount = ColumnName.of("AbsAmount");
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builderDecimal(amount);
+        amounts.add(new BigDecimal("-2.5"));
+        amounts.add(new BigDecimal("-3.5"));
+        amounts.add(new BigDecimal("-4.5"));
+        amounts.addNull();
+        ColumnBoolean.Builder flags = ColumnBoolean.builder(shouldAbs);
+        flags.add(true);
+        flags.add(false);
+        flags.addNull();
+        flags.add(true);
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), amounts.build(), flags.build());
+        TableColumnar transformed = table
+                .apply(TransformAbs.builder(amount).when(shouldAbs).withNewColumnName(absAmount).build());
+
+        assertDecimalEquals("2.5", transformed.getDecimal(absAmount).get(0));
+        assertDecimalEquals("-3.5", transformed.getDecimal(absAmount).get(1));
+        assertDecimalEquals("-4.5", transformed.getDecimal(absAmount).get(2));
+        assertFalse(transformed.getDecimal(absAmount).isSet(3));
+    }
+
+    @Test
+    void applyMapShouldRejectNonBooleanConditionColumn()
+    {
+        final ColumnName amount = ColumnName.of("Amount");
+        final ColumnName condition = ColumnName.of("Condition");
+        ColumnObject.Builder<BigDecimal> amounts = ColumnObject.builderDecimal(amount);
+        amounts.add(new BigDecimal("-2.5"));
+        ColumnObject.Builder<String> conditions = ColumnObject.builder(condition, ColumnTypes.STRING);
+        conditions.add("true");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), amounts.build(), conditions.build());
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> table.apply(TransformAbs.builder(amount).when(condition).build()));
+
+        assertTrue(exception.getMessage().contains("when requires Boolean column"));
     }
 
     @Test

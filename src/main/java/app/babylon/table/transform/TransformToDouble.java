@@ -23,8 +23,8 @@ public class TransformToDouble extends TransformBase
     public TransformToDouble(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName), newColumnName,
-                ColumnTypes.DOUBLE, TransformParseMode.ONLY_IN);
+        this.delegate = TransformToPrimitive.builder(ColumnTypes.DOUBLE, ArgumentCheck.nonNull(existingColumnName))
+                .withNewColumnName(newColumnName).build();
     }
 
     public static TransformToDouble of(String... params)

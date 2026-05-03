@@ -251,6 +251,56 @@ class TokenStreamTest
     }
 
     @Test
+    void shouldTokenizeComparisonOperatorsWithoutWhitespace()
+    {
+        String line = "flag Side=Buy into IsBuy";
+        TokenStream tokens = TokenStream.of(line);
+
+        tokens.expectWord("flag");
+        assertEquals("Side", tokens.expectValue());
+        assertEquals("=", tokens.expectOperator());
+        assertEquals("Buy", tokens.expectValue());
+        tokens.expectWord("into");
+        assertEquals("IsBuy", tokens.expectValue());
+        assertTrue(tokens.isAtEnd());
+
+        line = "flag Quantity>=100 into IsLarge";
+        tokens = TokenStream.of(line);
+
+        tokens.expectWord("flag");
+        assertEquals("Quantity", tokens.expectValue());
+        assertEquals(">=", tokens.expectOperator());
+        assertEquals("100", tokens.expectValue());
+        tokens.expectWord("into");
+        assertEquals("IsLarge", tokens.expectValue());
+        assertTrue(tokens.isAtEnd());
+    }
+
+    @Test
+    void shouldTokenizeAllSymbolicComparisonOperators()
+    {
+        assertComparisonOperator("flag Side==Buy into IsBuy", "==");
+        assertComparisonOperator("flag Side!=Buy into IsNotBuy", "!=");
+        assertComparisonOperator("flag Side<>Buy into IsNotBuy", "<>");
+        assertComparisonOperator("flag Quantity>0 into IsPositive", ">");
+        assertComparisonOperator("flag Quantity>=0 into IsNonNegative", ">=");
+        assertComparisonOperator("flag Quantity<0 into IsNegative", "<");
+        assertComparisonOperator("flag Quantity<=0 into IsNonPositive", "<=");
+    }
+
+    @Test
+    void shouldTokenizeQuotedColumnNamesContainingOperators()
+    {
+        String line = "flag 'Side='=Buy into IsBuy";
+        TokenStream tokens = TokenStream.of(line);
+
+        tokens.expectWord("flag");
+        assertEquals("Side=", tokens.expectValue());
+        assertEquals("=", tokens.expectOperator());
+        assertEquals("Buy", tokens.expectValue());
+    }
+
+    @Test
     void shouldTokenizeSplitStatement()
     {
         String line = "split Split on / into QuantityBefore, QuantityAfter";
@@ -416,5 +466,14 @@ class TokenStreamTest
             tokens.next();
         }
         assertEquals(TokenType.EOF, tokens.peek().type());
+    }
+
+    private static void assertComparisonOperator(String line, String operator)
+    {
+        TokenStream tokens = TokenStream.of(line);
+
+        tokens.expectWord("flag");
+        tokens.expectValue();
+        assertEquals(operator, tokens.expectOperator());
     }
 }

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnByte;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnDouble;
@@ -23,29 +24,13 @@ public class TransformToPrimitive extends TransformBase
     private final Column.Type type;
     private final TransformParseMode parseMode;
 
-    public TransformToPrimitive(ColumnName columnName, Column.Type type)
-    {
-        this(columnName, null, type, null);
-    }
-
-    public TransformToPrimitive(ColumnName existingColumnName, ColumnName newColumnName, Column.Type type)
-    {
-        this(existingColumnName, newColumnName, type, null);
-    }
-
-    public TransformToPrimitive(ColumnName columnName, Column.Type type, TransformParseMode parseMode)
-    {
-        this(columnName, null, type, parseMode);
-    }
-
-    public TransformToPrimitive(ColumnName existingColumnName, ColumnName newColumnName, Column.Type type,
-            TransformParseMode parseMode)
+    private TransformToPrimitive(Builder builder)
     {
         super(FUNCTION_NAME);
-        this.existingColumnName = ArgumentCheck.nonNull(existingColumnName);
-        this.newColumnName = newColumnName;
-        this.type = ArgumentCheck.nonNull(type);
-        this.parseMode = parseMode;
+        this.existingColumnName = builder.existingColumnName;
+        this.newColumnName = builder.newColumnName;
+        this.type = builder.type;
+        this.parseMode = builder.parseMode;
         if (!this.type.isPrimitive())
         {
             throw new IllegalArgumentException(
@@ -96,7 +81,12 @@ public class TransformToPrimitive extends TransformBase
     public static TransformToPrimitive of(ColumnName existingColumnName, ColumnName newColumnName, Column.Type type,
             TransformParseMode parseMode)
     {
-        return new TransformToPrimitive(existingColumnName, newColumnName, type, parseMode);
+        return builder(type, existingColumnName).withNewColumnName(newColumnName).withParseMode(parseMode).build();
+    }
+
+    public static Builder builder(Column.Type type, ColumnName existingColumnName)
+    {
+        return new Builder(type, existingColumnName);
     }
 
     public Column apply(Column x)
@@ -158,6 +148,10 @@ public class TransformToPrimitive extends TransformBase
         if (ColumnTypes.BYTE.equals(this.type))
         {
             ((ColumnByte.Builder) builder).add(((Byte) parsed).byteValue());
+        }
+        else if (ColumnTypes.BOOLEAN.equals(this.type))
+        {
+            ((ColumnBoolean.Builder) builder).add(((Boolean) parsed).booleanValue());
         }
         else if (ColumnTypes.INT.equals(this.type))
         {
@@ -225,5 +219,36 @@ public class TransformToPrimitive extends TransformBase
     private static void addNull(Column.Builder builder)
     {
         builder.add((CharSequence) null, 0, 0);
+    }
+
+    public static final class Builder
+    {
+        private final Column.Type type;
+        private final ColumnName existingColumnName;
+        private ColumnName newColumnName;
+        private TransformParseMode parseMode;
+
+        private Builder(Column.Type type, ColumnName existingColumnName)
+        {
+            this.type = ArgumentCheck.nonNull(type);
+            this.existingColumnName = ArgumentCheck.nonNull(existingColumnName);
+        }
+
+        public Builder withNewColumnName(ColumnName newColumnName)
+        {
+            this.newColumnName = newColumnName;
+            return this;
+        }
+
+        public Builder withParseMode(TransformParseMode parseMode)
+        {
+            this.parseMode = parseMode;
+            return this;
+        }
+
+        public TransformToPrimitive build()
+        {
+            return new TransformToPrimitive(this);
+        }
     }
 }

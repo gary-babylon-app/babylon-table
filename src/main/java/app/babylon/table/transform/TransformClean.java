@@ -1,42 +1,80 @@
 package app.babylon.table.transform;
 
-import java.util.function.Function;
-import java.util.Map;
+import app.babylon.lang.Is;
+import app.babylon.text.Strings;
 
-import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
-import app.babylon.table.column.ColumnObject;
-import app.babylon.table.column.ColumnTypes;
-import app.babylon.table.ToStringSettings;
 
-public class TransformClean extends TransformBase
+public class TransformClean extends TransformStringToString
 {
     public static final String FUNCTION_NAME = "Clean";
-    private final ColumnName columnToClean;
-    private final Function<String, String> cleanFunction;
+    private final String cleanCharacters;
 
-    public TransformClean(ColumnName column, Function<String, String> cleanFunction)
+    public TransformClean(ColumnName existingColumnName)
     {
-        super(FUNCTION_NAME);
-        this.columnToClean = column;
-        this.cleanFunction = cleanFunction;
+        this(existingColumnName, null, null);
+    }
+
+    public TransformClean(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        this(existingColumnName, newColumnName, null);
+    }
+
+    public TransformClean(ColumnName existingColumnName, ColumnName newColumnName, String cleanCharacters)
+    {
+        super(FUNCTION_NAME, existingColumnName, newColumnName);
+        this.cleanCharacters = cleanCharacters;
+    }
+
+    public static TransformClean of(String... params)
+    {
+        if (Is.empty(params))
+        {
+            return null;
+        }
+        if (params.length == 1)
+        {
+            ColumnName columnName = ColumnName.of(params[0]);
+            return of(columnName);
+        }
+        if (params.length >= 2)
+        {
+            if (params.length >= 3)
+            {
+                return of(ColumnName.of(params[0]), ColumnName.of(params[1]), params[2]);
+            }
+            return of(ColumnName.of(params[0]), ColumnName.of(params[1]));
+        }
+        return null;
+    }
+
+    public static TransformClean of(ColumnName existingColumnName)
+    {
+        return new TransformClean(existingColumnName);
+    }
+
+    public static TransformClean of(ColumnName existingColumnName, ColumnName newColumnName)
+    {
+        return new TransformClean(existingColumnName, newColumnName);
+    }
+
+    public static TransformClean of(ColumnName existingColumnName, ColumnName newColumnName, String cleanCharacters)
+    {
+        return new TransformClean(existingColumnName, newColumnName, cleanCharacters);
+    }
+
+    public String cleanCharacters()
+    {
+        return this.cleanCharacters;
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    protected String transformString(String s)
     {
-        Column column = columnsByName.get(this.columnToClean);
-        if (column == null)
+        if (Strings.isEmpty(s))
         {
-            return;
+            return s;
         }
-        ColumnObject.Builder<String> cleanedColumn = ColumnObject.builder(this.columnToClean, ColumnTypes.STRING);
-        ToStringSettings settings = ToStringSettings.standard();
-
-        for (int i = 0; i < column.size(); i++)
-        {
-            cleanedColumn.add(cleanFunction.apply(column.toString(i, settings)));
-        }
-        columnsByName.put(this.columnToClean, cleanedColumn.build());
+        return this.cleanCharacters == null ? Strings.clean(s) : Strings.clean(s, this.cleanCharacters.toCharArray());
     }
 }

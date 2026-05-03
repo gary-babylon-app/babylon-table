@@ -23,8 +23,8 @@ public class TransformToLong extends TransformBase
     public TransformToLong(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName), newColumnName,
-                ColumnTypes.LONG);
+        this.delegate = TransformToPrimitive.builder(ColumnTypes.LONG, ArgumentCheck.nonNull(existingColumnName))
+                .withNewColumnName(newColumnName).build();
     }
 
     public static TransformToLong of(String... params)

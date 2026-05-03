@@ -32,8 +32,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table
-                .apply(new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.CATEGORICAL, FROM, TO));
+        TableColumnar transformed = table.apply(TransformToType.builder(ColumnTypes.DECIMAL, FROM)
+                .withMode(ColumnObject.Mode.CATEGORICAL).withNewColumnName(TO).build());
 
         assertTrue(transformed.get(TO) instanceof ColumnCategorical<?>);
         ColumnCategorical<BigDecimal> decimals = transformed.getCategorical(TO, ColumnTypes.DECIMAL);
@@ -111,7 +111,7 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.DECIMAL, FROM));
+        TableColumnar transformed = table.apply(TransformToType.builder(ColumnTypes.DECIMAL, FROM).build());
 
         ColumnObject<BigDecimal> decimals = transformed.getObject(FROM, ColumnTypes.DECIMAL);
         assertEquals(new BigDecimal("1"), decimals.get(0));
@@ -130,7 +130,7 @@ public class TransformToTypeTest
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
         TableColumnar transformed = table
-                .apply(new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.ARRAY, FROM));
+                .apply(TransformToType.builder(ColumnTypes.DECIMAL, FROM).withMode(ColumnObject.Mode.ARRAY).build());
 
         assertFalse(transformed.get(FROM) instanceof ColumnCategorical<?>);
         ColumnObject<BigDecimal> decimals = transformed.getObject(FROM, ColumnTypes.DECIMAL);
@@ -147,8 +147,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(
-                new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.AUTO, TransformParseMode.LAST_IN, FROM));
+        TableColumnar transformed = table.apply(TransformToType.builder(ColumnTypes.DECIMAL, FROM)
+                .withMode(ColumnObject.Mode.AUTO).withParseMode(TransformParseMode.LAST_IN).build());
 
         ColumnObject<BigDecimal> decimals = transformed.getObject(FROM, ColumnTypes.DECIMAL);
         assertEquals(new BigDecimal("2"), decimals.get(0));
@@ -166,8 +166,8 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table
-                .apply(new TransformToType<>(ColumnTypes.DECIMAL, ColumnObject.Mode.ARRAY, FROM, TO));
+        TableColumnar transformed = table.apply(TransformToType.builder(ColumnTypes.DECIMAL, FROM)
+                .withMode(ColumnObject.Mode.ARRAY).withNewColumnName(TO).build());
 
         assertFalse(transformed.get(TO) instanceof ColumnCategorical<?>);
         assertEquals(new BigDecimal("1"), transformed.getObject(TO, ColumnTypes.DECIMAL).get(0));
@@ -185,8 +185,9 @@ public class TransformToTypeTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformToType<>(ColumnTypes.DECIMAL,
-                ColumnObject.Mode.CATEGORICAL, TransformParseMode.FIRST_IN, FROM, TO));
+        TableColumnar transformed = table
+                .apply(TransformToType.builder(ColumnTypes.DECIMAL, FROM).withMode(ColumnObject.Mode.CATEGORICAL)
+                        .withParseMode(TransformParseMode.FIRST_IN).withNewColumnName(TO).build());
 
         assertEquals(new BigDecimal("1"), transformed.getCategorical(TO, ColumnTypes.DECIMAL).get(0));
     }

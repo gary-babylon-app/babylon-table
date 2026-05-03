@@ -14,6 +14,12 @@ import app.babylon.table.column.ColumnTypes;
 import app.babylon.text.BigDecimals;
 import app.babylon.text.Strings;
 
+/**
+ * Legacy decimal conversion transform. New transformation statements should use
+ * {@link TransformToType} with
+ * {@link app.babylon.table.column.ColumnTypes#DECIMAL}.
+ */
+@Deprecated(since = "0.3.25", forRemoval = true)
 public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
 {
     public static final String FUNCTION_NAME = "ToDecimal";
@@ -82,12 +88,7 @@ public class TransformToDecimal extends TransformStringColumnsBase<BigDecimal>
 
     static BigDecimal parseDecimal(CharSequence s)
     {
-        BigDecimal bd = BigDecimals.parse(s);
-        if (bd == null)
-        {
-            bd = BigDecimals.extract(s);
-        }
-        return bd;
+        return BigDecimals.parse(s);
     }
 
     private TransformToDecimal(ColumnName columnName, ColumnName newColumnName,

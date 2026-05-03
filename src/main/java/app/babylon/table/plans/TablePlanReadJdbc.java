@@ -32,6 +32,7 @@ import app.babylon.table.TableException;
 import app.babylon.table.Tables;
 import app.babylon.table.TableName;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnInt;
@@ -213,6 +214,7 @@ public class TablePlanReadJdbc extends TablePlanCommon<TablePlanReadJdbc>
         int jdbcType = metaData.getColumnType(columnIndex);
         return switch (jdbcType)
         {
+            case Types.BIT, Types.BOOLEAN -> ColumnTypes.BOOLEAN;
             case Types.TINYINT, Types.SMALLINT, Types.INTEGER -> ColumnTypes.INT;
             case Types.BIGINT -> ColumnTypes.LONG;
             case Types.FLOAT, Types.REAL, Types.DOUBLE -> ColumnTypes.DOUBLE;
@@ -242,6 +244,20 @@ public class TablePlanReadJdbc extends TablePlanCommon<TablePlanReadJdbc>
             else
             {
                 intBuilder.add(value);
+            }
+            return;
+        }
+        if (ColumnTypes.BOOLEAN.equals(columnType))
+        {
+            ColumnBoolean.Builder booleanBuilder = (ColumnBoolean.Builder) builder;
+            boolean value = resultSet.getBoolean(columnIndex);
+            if (resultSet.wasNull())
+            {
+                booleanBuilder.addNull();
+            }
+            else
+            {
+                booleanBuilder.add(value);
             }
             return;
         }

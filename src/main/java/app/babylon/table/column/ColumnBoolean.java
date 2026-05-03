@@ -10,35 +10,37 @@
 
 package app.babylon.table.column;
 
-import java.util.function.IntPredicate;
+import java.util.Arrays;
+import java.util.function.Predicate;
 
-import app.babylon.table.selection.Selection;
+import app.babylon.table.ViewIndex;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.table.selection.Selection;
 
 /**
- * A column of nullable int values with efficient primitive access and
- * predicate-based row selection.
+ * A nullable primitive boolean column backed by compact bit lists for both
+ * values and null-state.
  */
-public interface ColumnInt extends Column
+public interface ColumnBoolean extends Column
 {
     /**
-     * Column type descriptor for primitive int columns.
+     * Column type descriptor for primitive boolean columns.
      */
-    public static final Type TYPE = ColumnTypes.INT;
+    public static final Type TYPE = ColumnTypes.BOOLEAN;
 
     /**
-     * Builder for nullable int columns.
+     * Builder for nullable boolean columns.
      */
     public static interface Builder extends Column.Builder
     {
         /**
-         * Appends an int value.
+         * Appends a boolean value.
          *
          * @param x
          *            the value to append
          * @return this builder
          */
-        Builder add(int x);
+        Builder add(boolean x);
 
         default Builder add(CharSequence chars, int start, int length)
         {
@@ -46,14 +48,8 @@ public interface ColumnInt extends Column
             {
                 return addNull();
             }
-            try
-            {
-                return add(TYPE.getParser().parseInt(chars, start, length));
-            }
-            catch (RuntimeException e)
-            {
-                return addNull();
-            }
+            Boolean parsed = parseBoolean(chars, start, length);
+            return parsed == null ? addNull() : add(parsed.booleanValue());
         }
 
         /**
@@ -64,19 +60,19 @@ public interface ColumnInt extends Column
         Builder addNull();
 
         @Override
-        ColumnInt build();
+        ColumnBoolean build();
     }
 
     /**
-     * Creates an int column builder for the supplied column name.
+     * Creates a boolean column builder for the supplied column name.
      *
      * @param name
      *            the column name
-     * @return a new int column builder
+     * @return a new boolean column builder
      */
     public static Builder builder(ColumnName name)
     {
-        return new ColumnIntBuilderArray(name);
+        return new ColumnBooleanBuilderBitSet(name);
     }
 
     @Override
@@ -86,16 +82,13 @@ public interface ColumnInt extends Column
     }
 
     /**
-     * Returns the int value at the supplied row.
+     * Returns the boolean value at the supplied row.
      *
      * @param i
      *            the zero-based row index
-     * @return the int value
+     * @return the boolean value
      */
-    public int get(int i);
-
-    @Override
-    public boolean isSet(int i);
+    public boolean get(int i);
 
     /**
      * Copies the values into the provided array, allocating a new array when
@@ -105,81 +98,7 @@ public interface ColumnInt extends Column
      *            the destination array, or {@code null}
      * @return an array containing the column values
      */
-    public int[] toArray(int[] x);
-
-    /**
-     * Returns the maximum set value in the column.
-     *
-     * @return maximum set value
-     */
-    default int max()
-    {
-        if (isEmpty())
-        {
-            throw new RuntimeException("Can not compute max on column with no values. " + getName());
-        }
-        if (isConstant())
-        {
-            return get(0);
-        }
-
-        boolean found = false;
-        int max = 0;
-        for (int i = 0; i < size(); ++i)
-        {
-            if (isSet(i))
-            {
-                int value = get(i);
-                if (!found || value > max)
-                {
-                    max = value;
-                    found = true;
-                }
-            }
-        }
-        if (!found)
-        {
-            throw new RuntimeException("Can not compute max on column with no values. " + getName());
-        }
-        return max;
-    }
-
-    /**
-     * Returns the minimum set value in the column.
-     *
-     * @return minimum set value
-     */
-    default int min()
-    {
-        if (isEmpty())
-        {
-            throw new RuntimeException("Can not compute min on column with no values. " + getName());
-        }
-        if (isConstant())
-        {
-            return get(0);
-        }
-
-        boolean found = false;
-        int min = 0;
-        for (int i = 0; i < size(); ++i)
-        {
-            if (isSet(i))
-            {
-                int value = get(i);
-                if (!found || value < min)
-                {
-                    min = value;
-                    found = true;
-                }
-            }
-        }
-        if (!found)
-        {
-            throw new RuntimeException("Can not compute min on column with no values. " + getName());
-        }
-        return min;
-    }
+    public boolean[] toArray(boolean[] x);
 
     @Override
     default int compare(int i, int j)
@@ -192,10 +111,7 @@ public interface ColumnInt extends Column
         boolean bSet = isSet(j);
         if (aSet && bSet)
         {
-            int a = get(i);
-            int b = get(j);
-
-            return Integer.compare(a, b);
+            return Boolean.compare(get(i), get(j));
         }
         if (!aSet && !bSet)
         {
@@ -208,14 +124,14 @@ public interface ColumnInt extends Column
     default public Column selectRow(int i)
     {
         return isSet(i)
-                ? new ColumnIntConstant(getName(), get(i), 1, true)
-                : ColumnIntConstant.createNull(getName(), 1);
+                ? new ColumnBooleanConstant(getName(), get(i), 1, true)
+                : ColumnBooleanConstant.createNull(getName(), 1);
     }
 
     @Override
     default public String toString(int i)
     {
-        return isSet(i) ? Integer.toString(get(i)) : "";
+        return isSet(i) ? Boolean.toString(get(i)) : "";
     }
 
     @Override
@@ -228,9 +144,9 @@ public interface ColumnInt extends Column
     }
 
     @Override
-    default public ColumnInt copy(ColumnName x)
+    default public ColumnBoolean copy(ColumnName x)
     {
-        Builder newBuilder = ColumnInt.builder(x);
+        Builder newBuilder = ColumnBoolean.builder(x);
         for (int i = 0; i < size(); ++i)
         {
             if (isSet(i))
@@ -252,20 +168,13 @@ public interface ColumnInt extends Column
      *            the predicate to test against each set value
      * @return a selection containing the predicate result for each row
      */
-    default Selection select(IntPredicate predicate)
+    default Selection select(Predicate<Boolean> predicate)
     {
-        IntPredicate p = predicate;
+        Predicate<Boolean> p = predicate;
         Selection selection = new Selection(this.getName() + " filtered.");
         for (int i = 0; i < this.size(); ++i)
         {
-            if (isSet(i))
-            {
-                selection.add(p.test(get(i)));
-            }
-            else
-            {
-                selection.add(false);
-            }
+            selection.add(isSet(i) && p.test(Boolean.valueOf(get(i))));
         }
         return selection;
     }
@@ -274,17 +183,22 @@ public interface ColumnInt extends Column
     default RowPredicate predicate(Operator operator, CharSequence... values)
     {
         CharSequence[] supplied = values == null ? new CharSequence[0] : values;
-        int[] parsed = new int[supplied.length];
+        boolean[] parsed = new boolean[supplied.length];
         for (int i = 0; i < supplied.length; ++i)
         {
-            parsed[i] = TYPE.getParser().parseInt(supplied[i]);
+            Boolean value = parseBoolean(supplied[i], 0, supplied[i] == null ? 0 : supplied[i].length());
+            if (value == null)
+            {
+                throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
+            }
+            parsed[i] = value.booleanValue();
         }
         return predicate(operator, parsed);
     }
 
-    default RowPredicate predicate(Operator operator, int... values)
+    default RowPredicate predicate(Operator operator, boolean... values)
     {
-        int[] supplied = values == null ? new int[0] : java.util.Arrays.copyOf(values, values.length);
+        boolean[] supplied = values == null ? new boolean[0] : Arrays.copyOf(values, values.length);
         requireValueCount(operator, supplied.length);
         return row -> isSet(row) && test(get(row), operator, supplied);
     }
@@ -305,24 +219,24 @@ public interface ColumnInt extends Column
         }
     }
 
-    private static boolean test(int rowValue, Operator operator, int[] values)
+    private static boolean test(boolean rowValue, Operator operator, boolean[] values)
     {
         return switch (operator)
         {
             case EQUAL -> rowValue == values[0];
             case NOT_EQUAL -> rowValue != values[0];
-            case GREATER_THAN -> rowValue > values[0];
-            case GREATER_THAN_OR_EQUAL -> rowValue >= values[0];
-            case LESS_THAN -> rowValue < values[0];
-            case LESS_THAN_OR_EQUAL -> rowValue <= values[0];
+            case GREATER_THAN -> Boolean.compare(rowValue, values[0]) > 0;
+            case GREATER_THAN_OR_EQUAL -> Boolean.compare(rowValue, values[0]) >= 0;
+            case LESS_THAN -> Boolean.compare(rowValue, values[0]) < 0;
+            case LESS_THAN_OR_EQUAL -> Boolean.compare(rowValue, values[0]) <= 0;
             case IN -> contains(rowValue, values);
             case NOT_IN -> !contains(rowValue, values);
         };
     }
 
-    private static boolean contains(int rowValue, int[] values)
+    private static boolean contains(boolean rowValue, boolean[] values)
     {
-        for (int value : values)
+        for (boolean value : values)
         {
             if (rowValue == value)
             {
@@ -332,4 +246,9 @@ public interface ColumnInt extends Column
         return false;
     }
 
+    private static Boolean parseBoolean(CharSequence chars, int start, int length)
+    {
+        Object parsed = TYPE.getParser().parse(chars, start, length);
+        return parsed instanceof Boolean value ? value : null;
+    }
 }

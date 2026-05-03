@@ -11,6 +11,7 @@
 package app.babylon.table;
 
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
@@ -23,13 +24,14 @@ final class RowValue
 {
     private enum ValueCategory
     {
-        OBJECT, INT, LONG
+        OBJECT, BOOLEAN, INT, LONG
     }
 
     private final ColumnName[] names;
     private final ValueCategory[] valueCategories;
     private final boolean[] isSet;
     private final Object[] objects;
+    private final boolean[] booleans;
     private final int[] ints;
     private final long[] longs;
 
@@ -39,6 +41,7 @@ final class RowValue
         this.valueCategories = new ValueCategory[size];
         this.isSet = new boolean[size];
         this.objects = new Object[size];
+        this.booleans = new boolean[size];
         this.ints = new int[size];
         this.longs = new long[size];
     }
@@ -61,6 +64,15 @@ final class RowValue
                         value = decimal.stripTrailingZeros();
                     }
                     rowValue.objects[j] = value;
+                    rowValue.isSet[j] = true;
+                }
+            }
+            else if (column instanceof ColumnBoolean booleans)
+            {
+                rowValue.valueCategories[j] = ValueCategory.BOOLEAN;
+                if (booleans.isSet(rowIndex))
+                {
+                    rowValue.booleans[j] = booleans.get(rowIndex);
                     rowValue.isSet[j] = true;
                 }
             }
@@ -117,6 +129,13 @@ final class RowValue
         throw new IllegalStateException("Column " + columnName + " is not a BigDecimal value.");
     }
 
+    boolean getBoolean(ColumnName columnName)
+    {
+        int index = indexOf(columnName);
+        requireValueCategory(index, ValueCategory.BOOLEAN, columnName);
+        return this.booleans[index];
+    }
+
     int getInt(ColumnName columnName)
     {
         int index = indexOf(columnName);
@@ -152,6 +171,12 @@ final class RowValue
                 {
                     case OBJECT :
                         if (!Objects.equals(this.objects[i], that.objects[i]))
+                        {
+                            return false;
+                        }
+                        break;
+                    case BOOLEAN :
+                        if (this.booleans[i] != that.booleans[i])
                         {
                             return false;
                         }
@@ -194,6 +219,9 @@ final class RowValue
                 case OBJECT :
                     result = 31 * result + Objects.hashCode(this.objects[i]);
                     break;
+                case BOOLEAN :
+                    result = 31 * result + Boolean.hashCode(this.booleans[i]);
+                    break;
                 case INT :
                     result = 31 * result + Integer.hashCode(this.ints[i]);
                     break;
@@ -212,8 +240,8 @@ final class RowValue
     {
         return "RowValue(names=" + Arrays.toString(this.names) + ", valueCategories="
                 + Arrays.toString(this.valueCategories) + ", isSet=" + Arrays.toString(this.isSet) + ", objects="
-                + Arrays.toString(this.objects) + ", ints=" + Arrays.toString(this.ints) + ", longs="
-                + Arrays.toString(this.longs) + ")";
+                + Arrays.toString(this.objects) + ", booleans=" + Arrays.toString(this.booleans) + ", ints="
+                + Arrays.toString(this.ints) + ", longs=" + Arrays.toString(this.longs) + ")";
     }
 
     private int indexOf(ColumnName columnName)

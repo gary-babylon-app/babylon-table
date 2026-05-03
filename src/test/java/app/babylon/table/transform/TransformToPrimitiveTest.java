@@ -30,7 +30,7 @@ class TransformToPrimitiveTest
         builder.addNull();
         builder.add("-20");
 
-        TransformToPrimitive transform = new TransformToPrimitive(AMOUNT, ColumnTypes.INT);
+        TransformToPrimitive transform = TransformToPrimitive.builder(ColumnTypes.INT, AMOUNT).build();
         Column transformed = transform.apply(builder.build());
 
         ColumnInt ints = (ColumnInt) transformed;
@@ -49,8 +49,8 @@ class TransformToPrimitiveTest
         builder.add("USD 12.50");
         builder.add("abc");
 
-        TransformToPrimitive transform = new TransformToPrimitive(AMOUNT, ColumnTypes.DOUBLE,
-                TransformParseMode.ONLY_IN);
+        TransformToPrimitive transform = TransformToPrimitive.builder(ColumnTypes.DOUBLE, AMOUNT)
+                .withParseMode(TransformParseMode.ONLY_IN).build();
         ColumnDouble doubles = (ColumnDouble) transform.apply(builder.build());
 
         assertSame(TransformParseMode.ONLY_IN, transform.getParseMode());
@@ -69,7 +69,8 @@ class TransformToPrimitiveTest
         builder.add(3);
 
         ColumnInt source = builder.build();
-        TransformToPrimitive transform = new TransformToPrimitive(AMOUNT, PARSED, ColumnTypes.INT);
+        TransformToPrimitive transform = TransformToPrimitive.builder(ColumnTypes.INT, AMOUNT).withNewColumnName(PARSED)
+                .build();
         ColumnInt transformed = (ColumnInt) transform.apply(source);
 
         assertNotSame(source, transformed);
@@ -87,7 +88,7 @@ class TransformToPrimitiveTest
         builder.add("10");
         Column source = builder.buildAs(ColumnTypes.DECIMAL);
 
-        TransformToPrimitive transform = new TransformToPrimitive(AMOUNT, ColumnTypes.INT);
+        TransformToPrimitive transform = TransformToPrimitive.builder(ColumnTypes.INT, AMOUNT).build();
         assertNull(transform.apply(source));
     }
 
@@ -96,7 +97,7 @@ class TransformToPrimitiveTest
     {
         final ColumnName AMOUNT = ColumnName.of("Amount");
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new TransformToPrimitive(AMOUNT, ColumnTypes.STRING));
+                () -> TransformToPrimitive.builder(ColumnTypes.STRING, AMOUNT).build());
         assertTrue(exception.getMessage().contains("primitive target type"));
     }
 }

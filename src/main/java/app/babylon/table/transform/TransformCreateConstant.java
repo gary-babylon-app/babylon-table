@@ -5,6 +5,7 @@ import java.util.Map;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnByte;
 import app.babylon.table.column.ColumnDouble;
 import app.babylon.table.column.ColumnInt;
@@ -144,6 +145,17 @@ public class TransformCreateConstant extends TransformBase
             else
             {
                 byteBuilder.add(((Byte) value).byteValue());
+            }
+        }
+        else if (builder instanceof ColumnBoolean.Builder booleanBuilder)
+        {
+            if (value == null)
+            {
+                booleanBuilder.addNull();
+            }
+            else
+            {
+                booleanBuilder.add(((Boolean) value).booleanValue());
             }
         }
         else if (builder instanceof ColumnInt.Builder intBuilder)

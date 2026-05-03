@@ -1,5 +1,6 @@
 package app.babylon.table.transform;
 
+import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
@@ -63,7 +64,7 @@ public class TransformToString extends TransformBase
     {
         if (this.columnName != null)
         {
-            Column[] validColumns = getColumns(columnsByName, this.columnName);
+            Column[] validColumns = getColumns(columnsByName, List.of(this.columnName));
             Column[] newColumns = new Column[validColumns.length];
 
             for (int i = 0; i < validColumns.length; ++i)

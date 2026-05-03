@@ -11,6 +11,7 @@
 package app.babylon.table.column;
 
 import app.babylon.table.selection.Selection;
+import app.babylon.table.selection.RowPredicate;
 
 /**
  * A column of byte values used for compact storage of byte-oriented data and
@@ -259,6 +260,68 @@ public interface ColumnByte extends Column
             }
         }
         return selection;
+    }
+
+    @Override
+    default RowPredicate predicate(Operator operator, CharSequence... values)
+    {
+        CharSequence[] supplied = values == null ? new CharSequence[0] : values;
+        byte[] parsed = new byte[supplied.length];
+        for (int i = 0; i < supplied.length; ++i)
+        {
+            parsed[i] = TYPE.getParser().parseByte(supplied[i]);
+        }
+        return predicate(operator, parsed);
+    }
+
+    default RowPredicate predicate(Operator operator, byte... values)
+    {
+        byte[] supplied = values == null ? new byte[0] : java.util.Arrays.copyOf(values, values.length);
+        requireValueCount(operator, supplied.length);
+        return row -> isSet(row) && test(get(row), operator, supplied);
+    }
+
+    private static void requireValueCount(Operator operator, int count)
+    {
+        if (operator == Operator.IN || operator == Operator.NOT_IN)
+        {
+            if (count == 0)
+            {
+                throw new IllegalArgumentException(operator + " requires at least one value.");
+            }
+            return;
+        }
+        if (count != 1)
+        {
+            throw new IllegalArgumentException(operator + " requires exactly one value.");
+        }
+    }
+
+    private static boolean test(byte rowValue, Operator operator, byte[] values)
+    {
+        return switch (operator)
+        {
+            case EQUAL -> rowValue == values[0];
+            case NOT_EQUAL -> rowValue != values[0];
+            case GREATER_THAN -> rowValue > values[0];
+            case GREATER_THAN_OR_EQUAL -> rowValue >= values[0];
+            case LESS_THAN -> rowValue < values[0];
+            case LESS_THAN_OR_EQUAL -> rowValue <= values[0];
+            case IN -> contains(rowValue, values);
+            case NOT_IN -> !contains(rowValue, values);
+        };
+    }
+
+    private static boolean contains(byte rowValue, byte[] values)
+    {
+        for (byte value : values)
+        {
+            if (rowValue == value)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

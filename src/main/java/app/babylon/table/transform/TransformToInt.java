@@ -23,8 +23,8 @@ public class TransformToInt extends TransformBase
     public TransformToInt(ColumnName existingColumnName, ColumnName newColumnName)
     {
         super(FUNCTION_NAME);
-        this.delegate = new TransformToPrimitive(ArgumentCheck.nonNull(existingColumnName), newColumnName,
-                ColumnTypes.INT);
+        this.delegate = TransformToPrimitive.builder(ColumnTypes.INT, ArgumentCheck.nonNull(existingColumnName))
+                .withNewColumnName(newColumnName).build();
     }
 
     public static TransformToInt of(String... params)

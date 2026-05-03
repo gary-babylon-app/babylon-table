@@ -1,10 +1,11 @@
 package app.babylon.table.transform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -30,15 +31,14 @@ abstract class TransformBase implements Transform
         return name;
     }
 
-    protected Column[] getColumns(Map<ColumnName, Column> columnsByName, ColumnName... x)
+    protected Column[] getColumns(Map<ColumnName, Column> columnsByName, Collection<ColumnName> x)
     {
         if (x == null)
         {
             return null;
         }
         Collection<ColumnName> tableNames = columnsByName.keySet();
-        java.util.List<ColumnName> retainedNames = new ArrayList<>();
-        Collections.addAll(retainedNames, x);
+        List<ColumnName> retainedNames = new ArrayList<>(x);
         retainedNames.retainAll(tableNames);
 
         Column[] selectedColumns = new Column[retainedNames.size()];
@@ -53,7 +53,7 @@ abstract class TransformBase implements Transform
             ColumnName[] selectedColumnNames, ColumnName[] newColumnNames, Column.Type type,
             Function<CharSequence, T> transformFunction)
     {
-        Column[] validColumns = getColumns(columnsByName, selectedColumnNames);
+        Column[] validColumns = getColumns(columnsByName, Arrays.asList(selectedColumnNames));
         return transformStringColumns(validColumns, newColumnNames, type, transformFunction);
     }
 

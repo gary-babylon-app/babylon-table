@@ -27,6 +27,11 @@ public record Token(TokenType type, String value, int position)
         return this.type == TokenType.WORD || this.type == TokenType.LITERAL;
     }
 
+    public boolean isOperator(String operator)
+    {
+        return this.type == TokenType.OPERATOR && this.value.equals(operator);
+    }
+
     public int column()
     {
         return this.position + 1;

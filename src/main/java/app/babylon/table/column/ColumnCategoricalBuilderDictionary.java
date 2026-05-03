@@ -110,7 +110,8 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         Column.Type targetType = ArgumentCheck.nonNull(transformedType);
         if (targetType.isPrimitive())
         {
-            return new app.babylon.table.transform.TransformToPrimitive(getName(), targetType).apply(build());
+            return app.babylon.table.transform.TransformToPrimitive.builder(targetType, getName()).build()
+                    .apply(build());
         }
         Class<?> valueClass = this.type.getValueClass();
         if (!CharSequence.class.isAssignableFrom(valueClass))

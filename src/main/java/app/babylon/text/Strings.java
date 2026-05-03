@@ -832,6 +832,78 @@ public final class Strings
         return s.subSequence(actualStart, actualEnd + 1);
     }
 
+    /**
+     * Strips external text with {@link #stripx(CharSequence)}, normalises any
+     * remaining whitespace run to a single space, and removes selected characters.
+     * <p>
+     * Passing {@code ' '} as one of the removable characters removes all normalised
+     * whitespace, including tabs and other whitespace characters. This is useful
+     * for cleaning human-readable tokens such as {@code half-up}, {@code half_up},
+     * and {@code half up} to the same key before case conversion.
+     *
+     * @param s
+     *            source text
+     * @param removeCharacters
+     *            characters to remove after whitespace normalisation
+     * @return normalised text or {@code null}
+     */
+    public static String clean(CharSequence s, char... removeCharacters)
+    {
+        CharSequence stripped = stripx(s);
+        if (stripped == null)
+        {
+            return null;
+        }
+        StringBuilder out = null;
+        boolean previousWhitespace = false;
+        for (int i = 0; i < stripped.length(); ++i)
+        {
+            char original = stripped.charAt(i);
+            char c = original;
+            if (Character.isWhitespace(c) || c == '\u00A0')
+            {
+                c = ' ';
+            }
+            if (removeCharacters != null && isAny(c, removeCharacters))
+            {
+                if (out == null)
+                {
+                    out = new StringBuilder(stripped.length());
+                    out.append(stripped, 0, i);
+                }
+                previousWhitespace = false;
+                continue;
+            }
+            if (c == ' ')
+            {
+                if (previousWhitespace)
+                {
+                    if (out == null)
+                    {
+                        out = new StringBuilder(stripped.length());
+                        out.append(stripped, 0, i);
+                    }
+                    continue;
+                }
+                previousWhitespace = true;
+            }
+            else
+            {
+                previousWhitespace = false;
+            }
+            if (out == null && c != original)
+            {
+                out = new StringBuilder(stripped.length());
+                out.append(stripped, 0, i);
+            }
+            if (out != null)
+            {
+                out.append(c);
+            }
+        }
+        return out == null ? stripped.toString() : out.toString();
+    }
+
     public static CharSequence removeDiacritics(CharSequence s)
     {
         return s == null ? null : removeDiacritics(s, 0, s.length());

@@ -19,6 +19,8 @@ public class TransformDslWriterTest
         assertFormat("strip Name into CleanName using ' []()-;,'", "strip Name using ' []()-;,' into CleanName");
         assertFormat("clean Name", "clean Name");
         assertFormat("clean Name into CleanName", "clean Name into CleanName");
+        assertFormat("clean AccountNumber using ' -' into AccountKey",
+                "clean AccountNumber using ' -' into AccountKey");
     }
 
     @Test
@@ -41,6 +43,7 @@ public class TransformDslWriterTest
         assertFormat("constant 'BrokerA' into SourceSystem", "constant 'BrokerA' into SourceSystem");
         assertFormat("constant 'USD' into PaymentCurrency", "constant 'USD' into PaymentCurrency");
         assertFormat("constant '1' as Int into SourceRank", "constant '1' as Int into SourceRank");
+        assertFormat("constant 'true' as Boolean into IsActive", "constant 'true' as Boolean into IsActive");
         assertFormat("constant 'USD' as Currency into PaymentCurrency",
                 "constant 'USD' as Currency into PaymentCurrency");
     }
@@ -118,6 +121,15 @@ public class TransformDslWriterTest
                 "classify Description matching 'Dividend|Distribution' into IsIncome as Y default N");
         assertFormat("extract from Description matching '.*\\(([^)]+)\\)' into Symbol",
                 "extract from Description matching '.*\\\\(([^)]+)\\\\)' into Symbol");
+        assertFormat("flag Side=Buy into IsBuy", "flag Side = Buy into IsBuy");
+        assertFormat("flag Side == Buy into IsBuy", "flag Side = Buy into IsBuy");
+        assertFormat("flag Side != Buy into IsNotBuy", "flag Side <> Buy into IsNotBuy");
+        assertFormat("flag Quantity>=100 into IsLarge", "flag Quantity >= 100 into IsLarge");
+        assertFormat("flag Side in Buy, Sell into IsTrade", "flag Side in Buy, Sell into IsTrade");
+        assertFormat("flag Side not in Buy, Sell into IsOther", "flag Side not in Buy, Sell into IsOther");
+        assertFormat("flag Side=Buy and Quantity>=100 into IsLargeBuy",
+                "flag Side = Buy and Quantity >= 100 into IsLargeBuy");
+        assertFormat("flag Side=Buy or Side=Sell into IsTrade", "flag Side = Buy or Side = Sell into IsTrade");
         assertFormat("substitute Status using 'A':'Active', 'I':'Inactive' into NormalisedStatus",
                 "substitute Status using 'A':'Active', 'I':'Inactive' into NormalisedStatus");
         assertFormat("substitute Status using 'I':'Inactive', 'A':'Active' default 'Other' into NormalisedStatus",
@@ -146,17 +158,21 @@ public class TransformDslWriterTest
         assertFormat("divide Amount by 100 into AmountMajor", "divide Amount by 100 into AmountMajor");
         assertFormat("abs Amount", "abs Amount");
         assertFormat("abs Amount into AbsoluteAmount", "abs Amount into AbsoluteAmount");
+        assertFormat("abs Quantity when ShouldAbs into QuantityAbs", "abs Quantity when ShouldAbs into QuantityAbs");
+        assertFormat("abs Quantity into QuantityAbs when ShouldAbs", "abs Quantity when ShouldAbs into QuantityAbs");
         assertFormat("negate Amount into SignedAmount", "negate Amount into SignedAmount");
-        assertFormat("negate Quantity when Type is Buy", "negate Quantity when Type is Buy");
-        assertFormat("negate Quantity when Type is Buy into SignedQuantity",
-                "negate Quantity when Type is Buy into SignedQuantity");
-        assertFormat("negate Quantity into SignedQuantity when Type is Buy",
-                "negate Quantity when Type is Buy into SignedQuantity");
+        assertFormat("negate QuantityAbs when IsBuy into SignedQuantity",
+                "negate QuantityAbs when IsBuy into SignedQuantity");
+        assertFormat("negate QuantityAbs into SignedQuantity when IsBuy",
+                "negate QuantityAbs when IsBuy into SignedQuantity");
         assertFormat("normalise Amount", "normalise Amount");
         assertFormat("normalise Amount into NormalisedAmount", "normalise Amount into NormalisedAmount");
         assertFormat("round Amount to 2", "round Amount to 2");
         assertFormat("round Amount to 2 by halfUp into RoundedAmount",
                 "round Amount to 2 by halfUp into RoundedAmount");
+        assertFormat("round Amount to 0 when NoCents", "round Amount to 0 when NoCents");
+        assertFormat("round Amount to 0 into RoundedAmount when NoCents",
+                "round Amount to 0 when NoCents into RoundedAmount");
         assertFormat("round Amount to 2 into RoundedAmount by halfUp",
                 "round Amount to 2 by halfUp into RoundedAmount");
         assertFormat("round Amount to 2 by bankers into RoundedAmount",
@@ -166,6 +182,8 @@ public class TransformDslWriterTest
         assertFormat("round Amount using Currency", "round Amount using Currency");
         assertFormat("round Amount using Currency by halfUp into RoundedAmount",
                 "round Amount using Currency by halfUp into RoundedAmount");
+        assertFormat("round Amount using Currency when NeedsRound into RoundedAmount",
+                "round Amount using Currency when NeedsRound into RoundedAmount");
         assertFormat("round Amount using Currency into RoundedAmount by halfUp",
                 "round Amount using Currency by halfUp into RoundedAmount");
     }

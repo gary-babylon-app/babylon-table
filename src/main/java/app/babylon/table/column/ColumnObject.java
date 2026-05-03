@@ -24,6 +24,7 @@ import app.babylon.table.ToStringSettings;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.column.type.TypeWriter;
+import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
 
 /**
@@ -414,6 +415,40 @@ public interface ColumnObject<T> extends Column
         return selection;
     }
 
+    @Override
+    default RowPredicate predicate(Operator operator, CharSequence... values)
+    {
+        Operator resolvedOperator = ArgumentCheck.nonNull(operator);
+        Object[] parsedValues = parsePredicateValues(resolvedOperator, values);
+        return row -> isSet(row) && test(get(row), resolvedOperator, parsedValues);
+    }
+
+    /**
+     * Creates a row predicate from already-typed comparison values.
+     * <p>
+     * This avoids the text parser used by
+     * {@link #predicate(Operator, CharSequence...)} for object types such as
+     * {@link BigDecimal}, {@link LocalDate}, or {@link java.util.Currency}. For
+     * {@code ColumnObject<String>}, calls with string literals naturally bind to
+     * the {@code CharSequence...} overload because {@link String} is a
+     * {@link CharSequence}; that is equivalent for string columns because parsing a
+     * string value as a string returns the same value.
+     *
+     * @param operator
+     *            comparison operator
+     * @param values
+     *            already-typed comparison values
+     * @return predicate evaluated by row index
+     */
+    @SuppressWarnings("unchecked")
+    default RowPredicate predicate(Operator operator, T... values)
+    {
+        Operator resolvedOperator = ArgumentCheck.nonNull(operator);
+        Object[] supplied = values == null ? new Object[0] : values.clone();
+        requireValueCount(resolvedOperator, supplied.length);
+        return row -> isSet(row) && test(get(row), resolvedOperator, supplied);
+    }
+
     /**
      * Transforms this column into another object column using the supplied
      * transformer.
@@ -510,6 +545,90 @@ public interface ColumnObject<T> extends Column
     private static <T> void write(T value, TypeWriter<?> typeWriter, StringBuilder out)
     {
         ((TypeWriter<T>) typeWriter).write(value, out);
+    }
+
+    private Object[] parsePredicateValues(Operator operator, CharSequence... values)
+    {
+        CharSequence[] supplied = values == null ? new CharSequence[0] : values;
+        requireValueCount(operator, supplied.length);
+        Object[] parsed = new Object[supplied.length];
+        TypeParser<?> parser = getType().getParser();
+        for (int i = 0; i < supplied.length; ++i)
+        {
+            parsed[i] = parser.parse(supplied[i]);
+            if (parsed[i] == null)
+            {
+                throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
+            }
+        }
+        return parsed;
+    }
+
+    private static void requireValueCount(Operator operator, int count)
+    {
+        if (operator == Operator.IN || operator == Operator.NOT_IN)
+        {
+            if (count == 0)
+            {
+                throw new IllegalArgumentException(operator + " requires at least one value.");
+            }
+            return;
+        }
+        if (count != 1)
+        {
+            throw new IllegalArgumentException(operator + " requires exactly one value.");
+        }
+    }
+
+    @SuppressWarnings(
+    {"rawtypes", "unchecked"})
+    private static boolean test(Object rowValue, Operator operator, Object[] values)
+    {
+        return switch (operator)
+        {
+            case EQUAL -> compare(rowValue, values[0]) == 0;
+            case NOT_EQUAL -> compare(rowValue, values[0]) != 0;
+            case GREATER_THAN -> compare(rowValue, values[0]) > 0;
+            case GREATER_THAN_OR_EQUAL -> compare(rowValue, values[0]) >= 0;
+            case LESS_THAN -> compare(rowValue, values[0]) < 0;
+            case LESS_THAN_OR_EQUAL -> compare(rowValue, values[0]) <= 0;
+            case IN -> contains(rowValue, values);
+            case NOT_IN -> !contains(rowValue, values);
+        };
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int compare(Object left, Object right)
+    {
+        if (left == right)
+        {
+            return 0;
+        }
+        if (left == null)
+        {
+            return -1;
+        }
+        if (right == null)
+        {
+            return 1;
+        }
+        if (left instanceof Comparable comparable)
+        {
+            return comparable.compareTo(right);
+        }
+        throw new IllegalArgumentException("Column values are not Comparable: " + left.getClass().getName());
+    }
+
+    private static boolean contains(Object rowValue, Object[] values)
+    {
+        for (Object value : values)
+        {
+            if (compare(rowValue, value) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

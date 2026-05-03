@@ -73,4 +73,5 @@ public final class ComparisonCondition implements ConditionExpression
     {
         return columnName.toString();
     }
+
 }

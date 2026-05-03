@@ -12,6 +12,7 @@ package app.babylon.table.column;
 
 import app.babylon.table.ViewIndex;
 import app.babylon.table.aggregation.Aggregate;
+import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
 import app.babylon.table.transform.ColumnLocalDates;
 import app.babylon.table.transform.DateFormat;
@@ -147,6 +148,45 @@ class ColumnObjectTest
         ColumnObject<LocalDate> dates = dateBuilder.build();
         assertEquals(LocalDate.of(2024, 3, 15), dates.get(0));
         assertFalse(dates.isSet(1));
+    }
+
+    @Test
+    void objectColumnsShouldBuildPredicatesFromTypedValues()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builderDecimal(AMOUNT);
+        decimalBuilder.add(new BigDecimal("9.99"));
+        decimalBuilder.add(new BigDecimal("10.00"));
+        decimalBuilder.addNull();
+        decimalBuilder.add(new BigDecimal("12.50"));
+        ColumnObject<BigDecimal> decimals = decimalBuilder.build();
+
+        RowPredicate large = decimals.predicate(Column.Operator.GREATER_THAN_OR_EQUAL, new BigDecimal("10.00"));
+        RowPredicate selected = decimals.predicate(Column.Operator.IN, new BigDecimal("9.99"), new BigDecimal("12.50"));
+
+        assertFalse(large.test(0));
+        assertTrue(large.test(1));
+        assertFalse(large.test(2));
+        assertTrue(large.test(3));
+        assertTrue(selected.test(0));
+        assertFalse(selected.test(1));
+        assertFalse(selected.test(2));
+        assertTrue(selected.test(3));
+    }
+
+    @Test
+    void objectColumnsShouldStillBuildPredicatesFromParsedText()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builderDecimal(AMOUNT);
+        decimalBuilder.add(new BigDecimal("9.99"));
+        decimalBuilder.add(new BigDecimal("10.00"));
+        Column column = decimalBuilder.build();
+
+        RowPredicate predicate = column.predicate(Column.Operator.GREATER_THAN_OR_EQUAL, "10.00");
+
+        assertFalse(predicate.test(0));
+        assertTrue(predicate.test(1));
     }
 
     @Test

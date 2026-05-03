@@ -359,112 +359,16 @@ public interface Column
      */
     public Column selectRow(int i);
 
-    default RowPredicate predicate(Operator operator, CharSequence... values)
-    {
-        Operator resolvedOperator = ArgumentCheck.nonNull(operator);
-        Object[] parsedValues = parsePredicateValues(resolvedOperator, values);
-        return row -> {
-            if (!isSet(row))
-            {
-                return false;
-            }
-            Object rowValue = value(row);
-            return test(rowValue, resolvedOperator, parsedValues);
-        };
-    }
-
-    private Object value(int row)
-    {
-        if (this instanceof ColumnObject<?> objectColumn)
-        {
-            return objectColumn.get(row);
-        }
-        return toString(row);
-    }
-
-    private Object[] parsePredicateValues(Operator operator, CharSequence... values)
-    {
-        CharSequence[] supplied = values == null ? new CharSequence[0] : values;
-        requireValueCount(operator, supplied.length);
-        Object[] parsed = new Object[supplied.length];
-        TypeParser<?> parser = getType().getParser();
-        for (int i = 0; i < supplied.length; ++i)
-        {
-            parsed[i] = parser.parse(supplied[i]);
-            if (parsed[i] == null)
-            {
-                throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
-            }
-        }
-        return parsed;
-    }
-
-    private static void requireValueCount(Operator operator, int count)
-    {
-        if (operator == Operator.IN || operator == Operator.NOT_IN)
-        {
-            if (count == 0)
-            {
-                throw new IllegalArgumentException(operator + " requires at least one value.");
-            }
-            return;
-        }
-        if (count != 1)
-        {
-            throw new IllegalArgumentException(operator + " requires exactly one value.");
-        }
-    }
-
-    @SuppressWarnings(
-    {"rawtypes", "unchecked"})
-    private static boolean test(Object rowValue, Operator operator, Object[] values)
-    {
-        return switch (operator)
-        {
-            case EQUAL -> compare(rowValue, values[0]) == 0;
-            case NOT_EQUAL -> compare(rowValue, values[0]) != 0;
-            case GREATER_THAN -> compare(rowValue, values[0]) > 0;
-            case GREATER_THAN_OR_EQUAL -> compare(rowValue, values[0]) >= 0;
-            case LESS_THAN -> compare(rowValue, values[0]) < 0;
-            case LESS_THAN_OR_EQUAL -> compare(rowValue, values[0]) <= 0;
-            case IN -> contains(rowValue, values);
-            case NOT_IN -> !contains(rowValue, values);
-        };
-    }
-
-    @SuppressWarnings(
-    {"unchecked"})
-    private static int compare(Object left, Object right)
-    {
-        if (left == right)
-        {
-            return 0;
-        }
-        if (left == null)
-        {
-            return -1;
-        }
-        if (right == null)
-        {
-            return 1;
-        }
-        if (left instanceof Comparable comparable)
-        {
-            return comparable.compareTo(right);
-        }
-        throw new IllegalArgumentException("Column values are not Comparable: " + left.getClass().getName());
-    }
-
-    private static boolean contains(Object rowValue, Object[] values)
-    {
-        for (Object value : values)
-        {
-            if (compare(rowValue, value) == 0)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+    /**
+     * Creates a row predicate by parsing the supplied comparison values according
+     * to this column's type.
+     *
+     * @param operator
+     *            comparison operator
+     * @param values
+     *            comparison values as text
+     * @return predicate evaluated by row index
+     */
+    public RowPredicate predicate(Operator operator, CharSequence... values);
 
 }

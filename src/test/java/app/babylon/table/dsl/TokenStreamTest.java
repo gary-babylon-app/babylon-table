@@ -8,7 +8,7 @@
  *     https://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table.transform.dsl;
+package app.babylon.table.dsl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -169,7 +169,7 @@ class TokenStreamTest
     @Test
     void shouldTokenizeSplitAndConcatExamples()
     {
-        String line = "split Split on / into QuantityBefore, QuantityAfter";
+        String line = "split Split on '/' into QuantityBefore, QuantityAfter";
         assertCanTokenize(line);
 
         line = "concat AccountType, Country, AccountNumber using '|' into AccountKey";
@@ -303,7 +303,7 @@ class TokenStreamTest
     @Test
     void shouldTokenizeSplitStatement()
     {
-        String line = "split Split on / into QuantityBefore, QuantityAfter";
+        String line = "split Split on '/' into QuantityBefore, QuantityAfter";
 
         TokenStream tokens = TokenStream.of(line);
 
@@ -311,7 +311,7 @@ class TokenStreamTest
         tokens.expectWord("split");
         assertEquals("Split", tokens.expectValue());
         tokens.expectWord("on");
-        assertEquals("/", tokens.expectValue());
+        assertEquals("/", tokens.expectLiteral());
         tokens.expectWord("into");
         assertEquals("QuantityBefore", tokens.expectValue());
         assertTrue(tokens.match(TokenType.COMMA));
@@ -336,6 +336,114 @@ class TokenStreamTest
         assertEquals("I", tokens.expectValue());
         tokens.expect(TokenType.COLON);
         assertEquals("Inactive", tokens.expectValue());
+    }
+
+    @Test
+    void shouldTokenizeCurlyAndSquareBrackets()
+    {
+        String line = "flag { Side = Buy and Quantity >= 100 } or [ Side = Sell ] or ( Side = Hold ) into IsTrade";
+
+        TokenStream tokens = TokenStream.of(line);
+
+        tokens.expectWord("flag");
+        tokens.expect(TokenType.LEFT_CURLY);
+        assertEquals("Side", tokens.expectValue());
+        assertEquals("=", tokens.expectOperator());
+        assertEquals("Buy", tokens.expectValue());
+        tokens.expectWord("and");
+        assertEquals("Quantity", tokens.expectValue());
+        assertEquals(">=", tokens.expectOperator());
+        assertEquals("100", tokens.expectValue());
+        tokens.expect(TokenType.RIGHT_CURLY);
+        tokens.expectWord("or");
+        tokens.expect(TokenType.LEFT_SQUARE);
+        assertEquals("Side", tokens.expectValue());
+        assertEquals("=", tokens.expectOperator());
+        assertEquals("Sell", tokens.expectValue());
+        tokens.expect(TokenType.RIGHT_SQUARE);
+        tokens.expectWord("or");
+        tokens.expect(TokenType.LEFT_PAREN);
+        assertEquals("Side", tokens.expectValue());
+        assertEquals("=", tokens.expectOperator());
+        assertEquals("Hold", tokens.expectValue());
+        tokens.expect(TokenType.RIGHT_PAREN);
+        tokens.expectWord("into");
+        assertEquals("IsTrade", tokens.expectValue());
+        assertTrue(tokens.isAtEnd());
+    }
+
+    @Test
+    void shouldSplitWordsAtBrackets()
+    {
+        String line = "flag {Side=Buy}[Quantity>=100](Type=Cash)";
+
+        TokenStream tokens = TokenStream.of(line);
+
+        tokens.expectWord("flag");
+        tokens.expect(TokenType.LEFT_CURLY);
+        assertEquals("Side", tokens.expectValue());
+        assertEquals("=", tokens.expectOperator());
+        assertEquals("Buy", tokens.expectValue());
+        tokens.expect(TokenType.RIGHT_CURLY);
+        tokens.expect(TokenType.LEFT_SQUARE);
+        assertEquals("Quantity", tokens.expectValue());
+        assertEquals(">=", tokens.expectOperator());
+        assertEquals("100", tokens.expectValue());
+        tokens.expect(TokenType.RIGHT_SQUARE);
+        tokens.expect(TokenType.LEFT_PAREN);
+        assertEquals("Type", tokens.expectValue());
+        assertEquals("=", tokens.expectOperator());
+        assertEquals("Cash", tokens.expectValue());
+        tokens.expect(TokenType.RIGHT_PAREN);
+        assertTrue(tokens.isAtEnd());
+    }
+
+    @Test
+    void shouldTokenizeAdditionalSymbols()
+    {
+        String line = "a+b-c;d/e\\f";
+
+        TokenStream tokens = TokenStream.of(line);
+
+        assertEquals("a", tokens.expectValue());
+        tokens.expect(TokenType.PLUS);
+        assertEquals("b", tokens.expectValue());
+        tokens.expect(TokenType.MINUS);
+        assertEquals("c", tokens.expectValue());
+        tokens.expect(TokenType.SEMICOLON);
+        assertEquals("d", tokens.expectValue());
+        tokens.expect(TokenType.FORWARD_SLASH);
+        assertEquals("e", tokens.expectValue());
+        tokens.expect(TokenType.BACK_SLASH);
+        assertEquals("f", tokens.expectValue());
+        assertTrue(tokens.isAtEnd());
+    }
+
+    @Test
+    void shouldNotTreatAdditionalSymbolsAsValues()
+    {
+        assertThrows(TransformDslException.class, () -> TokenStream.of("+").expectValue());
+        assertThrows(TransformDslException.class, () -> TokenStream.of("-").expectValue());
+        assertThrows(TransformDslException.class, () -> TokenStream.of(";").expectValue());
+        assertThrows(TransformDslException.class, () -> TokenStream.of("/").expectValue());
+        assertThrows(TransformDslException.class, () -> TokenStream.of("\\").expectValue());
+    }
+
+    @Test
+    void shouldKeepSignedNumbersAsValues()
+    {
+        String line = "flag Amount >= -100 and Fee < +10 into IsSelected";
+
+        TokenStream tokens = TokenStream.of(line);
+
+        tokens.expectWord("flag");
+        assertEquals("Amount", tokens.expectValue());
+        assertEquals(">=", tokens.expectOperator());
+        assertEquals("-100", tokens.expectValue());
+        tokens.expectWord("and");
+        assertEquals("Fee", tokens.expectValue());
+        assertEquals("<", tokens.expectOperator());
+        assertEquals("+10", tokens.expectValue());
     }
 
     @Test
@@ -422,6 +530,8 @@ class TokenStreamTest
 
         tokens.expectWord("strip");
         assertEquals("Name", tokens.expectValue());
+        tokens.expect(TokenType.CARRIAGE_RETURN);
+        tokens.expect(TokenType.LINE_FEED);
         assertTrue(tokens.isAtEnd());
         assertEquals(TokenType.EOF, tokens.peek().type());
     }

@@ -27,6 +27,8 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.dsl.TokenStream;
+import app.babylon.table.dsl.TransformDslException;
 import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
@@ -269,7 +271,13 @@ class TransformDslParserTest
     @Test
     void shouldParseSplitAndConcatExamples()
     {
-        String line = "split Split on / into QuantityBefore, QuantityAfter";
+        String line = "split Split on '/' into QuantityBefore, QuantityAfter";
+        assertParses(line);
+
+        line = "split Name on ' ' by first into FirstName, Rest";
+        assertParses(line);
+
+        line = "split Path on '/' by last into Directory, File";
         assertParses(line);
 
         line = "concat AccountType, Country, AccountNumber using '|' into AccountKey";
@@ -311,7 +319,7 @@ class TransformDslParserTest
         line = "flag Side in Buy, Sell into IsTrade";
         assertParses(line);
 
-        line = "flag Side not in Buy, Sell into IsOther";
+        line = "flag Side nin Buy, Sell into IsOther";
         assertParses(line);
 
         line = "flag Side=Buy and Quantity>=100 into IsLargeBuy";

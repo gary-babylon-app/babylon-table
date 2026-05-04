@@ -19,6 +19,7 @@ import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.column.type.TypeWriter;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.table.dsl.ComparisonCondition;
 import app.babylon.text.Strings;
 
 /**
@@ -30,23 +31,29 @@ public interface Column
     public enum Operator
     {
         EQUAL("="), NOT_EQUAL("<>"), GREATER_THAN(">"), GREATER_THAN_OR_EQUAL(">="), LESS_THAN("<"), LESS_THAN_OR_EQUAL(
-                "<="), IN("in"), NOT_IN("not in");
+                "<="), IN("in"), NOT_IN("nin");
 
-        private final String preferredText;
+        private final String text;
 
-        Operator(String preferredText)
+        Operator(String text)
         {
-            this.preferredText = preferredText;
+            this.text = ArgumentCheck.nonEmpty(text);
         }
 
-        public String preferredText()
+        public String text()
         {
-            return this.preferredText;
+            return this.text;
+        }
+
+        @Override
+        public String toString()
+        {
+            return text();
         }
 
         public static Operator parse(String s)
         {
-            if (s == null)
+            if (Strings.isEmpty(s))
             {
                 throw new IllegalArgumentException("Expected comparison operator.");
             }
@@ -56,7 +63,11 @@ public interface Column
                 return operator;
             }
             CharSequence stripped = Strings.stripx(s);
-            operator = parseExact(stripped == null ? null : stripped.toString().toLowerCase(Locale.ROOT));
+            if (Strings.isEmpty(stripped))
+            {
+                throw new IllegalArgumentException("Expected comparison operator.");
+            }
+            operator = parseExact(stripped.toString().toLowerCase(Locale.ROOT));
             if (operator != null)
             {
                 return operator;
@@ -75,7 +86,7 @@ public interface Column
                 case "<" -> LESS_THAN;
                 case "<=" -> LESS_THAN_OR_EQUAL;
                 case "in" -> IN;
-                case "not in" -> NOT_IN;
+                case "nin" -> NOT_IN;
                 default -> null;
             };
         }
@@ -395,5 +406,16 @@ public interface Column
      * @return predicate evaluated by row index
      */
     public RowPredicate predicate(Operator operator, CharSequence... values);
+
+    default RowPredicate predicate(ComparisonCondition condition)
+    {
+        ComparisonCondition comparison = ArgumentCheck.nonNull(condition);
+        if (!getName().equals(comparison.columnName()))
+        {
+            throw new IllegalArgumentException(
+                    "Condition column '" + comparison.columnName() + "' does not match column '" + getName() + "'.");
+        }
+        return predicate(comparison.operator(), comparison.values());
+    }
 
 }

@@ -103,6 +103,10 @@ public class TransformDslWriterTest
     {
         assertFormat("split Split on '/' into QuantityBefore, QuantityAfter",
                 "split Split on '/' into QuantityBefore, QuantityAfter");
+        assertFormat("split Name on ' ' by first into FirstName, Rest",
+                "split Name on ' ' by first into FirstName, Rest");
+        assertFormat("split Path on '/' by last into Directory, File",
+                "split Path on '/' by last into Directory, File");
         assertFormat("concat AccountType, Country, AccountNumber into AccountKey",
                 "concat AccountType, Country, AccountNumber into AccountKey");
         assertFormat("concat AccountType, Country, AccountNumber using '|' into AccountKey",
@@ -125,7 +129,7 @@ public class TransformDslWriterTest
         assertFormat("flag Side != Buy into IsNotBuy", "flag Side <> Buy into IsNotBuy");
         assertFormat("flag Quantity>=100 into IsLarge", "flag Quantity >= 100 into IsLarge");
         assertFormat("flag Side in Buy, Sell into IsTrade", "flag Side in Buy, Sell into IsTrade");
-        assertFormat("flag Side not in Buy, Sell into IsOther", "flag Side not in Buy, Sell into IsOther");
+        assertFormat("flag Side nin Buy, Sell into IsOther", "flag Side nin Buy, Sell into IsOther");
         assertFormat("flag Side=Buy and Quantity>=100 into IsLargeBuy",
                 "flag Side = Buy and Quantity >= 100 into IsLargeBuy");
         assertFormat("flag Side=Buy or Side=Sell into IsTrade", "flag Side = Buy or Side = Sell into IsTrade");

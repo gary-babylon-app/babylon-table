@@ -6,6 +6,7 @@ import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnBoolean;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.dsl.ConditionExpression;
 import app.babylon.table.selection.RowPredicate;
 
 public class TransformFlag extends TransformBase

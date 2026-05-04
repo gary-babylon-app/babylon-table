@@ -8,7 +8,7 @@
  *     https://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table.transform.dsl;
+package app.babylon.table.dsl;
 
 public record Token(TokenType type, String value, int position)
 {

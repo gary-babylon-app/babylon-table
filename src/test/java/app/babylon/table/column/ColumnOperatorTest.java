@@ -20,15 +20,15 @@ class ColumnOperatorTest
     void shouldNormaliseOperatorOnlyAfterExactAliasesFail()
     {
         assertEquals(Column.Operator.IN, Column.Operator.parse(" IN "));
-        assertEquals(Column.Operator.NOT_IN, Column.Operator.parse(" Not In "));
+        assertEquals(Column.Operator.NOT_IN, Column.Operator.parse(" NIN "));
     }
 
     @Test
     void shouldPreferBusinessReadableOperatorText()
     {
-        assertEquals("=", Column.Operator.EQUAL.preferredText());
-        assertEquals("<>", Column.Operator.NOT_EQUAL.preferredText());
-        assertEquals("in", Column.Operator.IN.preferredText());
-        assertEquals("not in", Column.Operator.NOT_IN.preferredText());
+        assertEquals("=", Column.Operator.EQUAL.text());
+        assertEquals("<>", Column.Operator.NOT_EQUAL.text());
+        assertEquals("in", Column.Operator.IN.text());
+        assertEquals("nin", Column.Operator.NOT_IN.text());
     }
 }

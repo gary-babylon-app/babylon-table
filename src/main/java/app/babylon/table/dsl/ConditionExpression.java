@@ -1,4 +1,4 @@
-package app.babylon.table.transform;
+package app.babylon.table.dsl;
 
 import java.util.Map;
 import java.util.Set;
@@ -14,4 +14,14 @@ public interface ConditionExpression
     Set<ColumnName> columnNames();
 
     String toDsl();
+
+    default ConditionExpression and(ConditionExpression other)
+    {
+        return new LogicalCondition(this, LogicalCondition.Operator.AND, other);
+    }
+
+    default ConditionExpression or(ConditionExpression other)
+    {
+        return new LogicalCondition(this, LogicalCondition.Operator.OR, other);
+    }
 }

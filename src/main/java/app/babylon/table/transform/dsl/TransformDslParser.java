@@ -27,10 +27,14 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
-import app.babylon.table.transform.ComparisonCondition;
-import app.babylon.table.transform.ConditionExpression;
+import app.babylon.table.dsl.ComparisonCondition;
+import app.babylon.table.dsl.ConditionExpression;
+import app.babylon.table.dsl.LogicalCondition;
+import app.babylon.table.dsl.Token;
+import app.babylon.table.dsl.TokenStream;
+import app.babylon.table.dsl.TokenType;
+import app.babylon.table.dsl.TransformDslException;
 import app.babylon.table.transform.DateFormat;
-import app.babylon.table.transform.LogicalCondition;
 import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformAbs;
 import app.babylon.table.transform.TransformAdd;
@@ -81,7 +85,7 @@ import app.babylon.table.transform.TransformToUpperCase;
  * rules use literals for free text and patterns where punctuation or spaces
  * should be preserved.
  */
-final class TransformDslParser
+public final class TransformDslParser
 {
     private final Map<String, TransformCommandParser> parsers;
     private final Map<String, Column.Type> types;
@@ -557,11 +561,6 @@ final class TransformDslParser
         {
             return Column.Operator.parse(tokens.expectOperator());
         }
-        if (tokens.matchWord("not"))
-        {
-            tokens.expectWord("in");
-            return Column.Operator.NOT_IN;
-        }
         Token token = tokens.next();
         if (!token.is(TokenType.WORD))
         {
@@ -725,10 +724,15 @@ final class TransformDslParser
     {
         String source = tokens.expectValue();
         tokens.expectWord("on");
-        String separator = tokens.expectValue();
+        String separator = tokens.expectLiteral();
+        TransformSplit.Mode mode = TransformSplit.Mode.ALL;
+        if (tokens.matchWord("by"))
+        {
+            mode = TransformSplit.Mode.parse(tokens.expectValue());
+        }
         tokens.expectWord("into");
         List<String> targets = commaSeparatedValues(tokens);
-        return TransformSplit.of(ColumnName.of(source), separator, targets);
+        return TransformSplit.of(ColumnName.of(source), separator, mode, targets);
     }
 
     private static Transform parseStrip(TokenStream tokens)

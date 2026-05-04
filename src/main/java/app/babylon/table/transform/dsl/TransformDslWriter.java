@@ -22,10 +22,11 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
-import app.babylon.table.transform.ComparisonCondition;
-import app.babylon.table.transform.ConditionExpression;
+import app.babylon.table.dsl.ComparisonCondition;
+import app.babylon.table.dsl.ConditionExpression;
+import app.babylon.table.dsl.LogicalCondition;
+import app.babylon.table.dsl.TransformDslException;
 import app.babylon.table.transform.DateFormat;
-import app.babylon.table.transform.LogicalCondition;
 import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformAbs;
 import app.babylon.table.transform.TransformAdd;
@@ -68,7 +69,7 @@ import app.babylon.table.transform.TransformToUpperCase;
 /**
  * Writes transforms as canonical transformation DSL statements.
  */
-final class TransformDslWriter
+public final class TransformDslWriter
 {
     private final Map<Class<?>, Function<Transform, String>> writers;
 
@@ -277,7 +278,7 @@ final class TransformDslWriter
 
     private static String comparison(ComparisonCondition comparison)
     {
-        String line = column(comparison.columnName()) + " " + comparison.operator().preferredText() + " ";
+        String line = column(comparison.columnName()) + " " + comparison.operator().text() + " ";
         String[] values = comparison.values();
         List<String> formatted = new ArrayList<>();
         for (String value : values)
@@ -353,8 +354,12 @@ final class TransformDslWriter
     private static String writeSplit(Transform transform)
     {
         TransformSplit split = (TransformSplit) transform;
-        return "split " + column(split.getColumnToSplit()) + " on " + literal(split.getSplitOn()) + " into "
-                + columns(split.getSplitColumnNames());
+        String line = "split " + column(split.getColumnToSplit()) + " on " + literal(split.getSplitOn());
+        if (split.getMode() != TransformSplit.Mode.ALL)
+        {
+            line += " by " + split.getMode().name().toLowerCase(java.util.Locale.ROOT);
+        }
+        return line + " into " + columns(split.getSplitColumnNames());
     }
 
     private static String writeStrip(Transform transform)

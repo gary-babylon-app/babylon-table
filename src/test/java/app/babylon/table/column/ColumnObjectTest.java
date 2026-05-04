@@ -15,6 +15,7 @@ import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
 import app.babylon.table.transform.ColumnLocalDates;
+import app.babylon.table.dsl.Conditions;
 import app.babylon.table.transform.DateFormat;
 import app.babylon.text.BigDecimals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -187,6 +188,32 @@ class ColumnObjectTest
 
         assertFalse(predicate.test(0));
         assertTrue(predicate.test(1));
+    }
+
+    @Test
+    void columnsShouldBuildPredicatesFromComparisonConditions()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builderDecimal(AMOUNT);
+        decimalBuilder.add(new BigDecimal("9.99"));
+        decimalBuilder.add(new BigDecimal("10.00"));
+        Column column = decimalBuilder.build();
+
+        RowPredicate predicate = column.predicate(Conditions.column(AMOUNT).gte("10.00"));
+
+        assertFalse(predicate.test(0));
+        assertTrue(predicate.test(1));
+    }
+
+    @Test
+    void columnsShouldRejectComparisonConditionsForDifferentColumns()
+    {
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builderDecimal(AMOUNT);
+        decimalBuilder.add(new BigDecimal("9.99"));
+        Column column = decimalBuilder.build();
+
+        assertThrows(IllegalArgumentException.class, () -> column.predicate(Conditions.column("Other").gte("10.00")));
     }
 
     @Test

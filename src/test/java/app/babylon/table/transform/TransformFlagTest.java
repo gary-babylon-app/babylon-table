@@ -12,6 +12,9 @@ import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
+import app.babylon.table.dsl.ComparisonCondition;
+import app.babylon.table.dsl.ConditionExpression;
+import app.babylon.table.dsl.Conditions;
 
 class TransformFlagTest
 {
@@ -94,10 +97,7 @@ class TransformFlagTest
         quantities.add(100);
         quantities.add(200);
         TableColumnar table = Tables.newTable(TableName.of("t"), sides.build(), quantities.build());
-        ConditionExpression condition = new LogicalCondition(
-                new ComparisonCondition(side, app.babylon.table.column.Column.Operator.EQUAL, "Buy"),
-                LogicalCondition.Operator.AND, new ComparisonCondition(quantity,
-                        app.babylon.table.column.Column.Operator.GREATER_THAN_OR_EQUAL, "100"));
+        ConditionExpression condition = Conditions.column(side).is("Buy").and(Conditions.column(quantity).gte("100"));
 
         TableColumnar transformed = table.apply(TransformFlag.builder(condition).withNewColumnName(isLargeBuy).build());
 
@@ -105,6 +105,18 @@ class TransformFlagTest
         assertEquals(false, flag.get(0));
         assertEquals(true, flag.get(1));
         assertEquals(false, flag.get(2));
+    }
+
+    @Test
+    void shouldBuildConditionsFluently()
+    {
+        ColumnName side = ColumnName.of("Side");
+        ColumnName quantity = ColumnName.of("Quantity");
+
+        ConditionExpression condition = Conditions.column(side).in("Buy", "Sell")
+                .or(Conditions.column(quantity).lt("10"));
+
+        assertEquals("Side in Buy, Sell or Quantity < 10", condition.toDsl());
     }
 
 }

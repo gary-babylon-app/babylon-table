@@ -10,6 +10,7 @@
 
 package app.babylon.table.transform.dsl;
 
+import app.babylon.table.dsl.TokenStream;
 import app.babylon.table.transform.Transform;
 
 @FunctionalInterface

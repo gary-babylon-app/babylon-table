@@ -1,4 +1,4 @@
-package app.babylon.table.transform.dsl;
+package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;

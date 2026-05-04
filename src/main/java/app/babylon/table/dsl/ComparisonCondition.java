@@ -1,4 +1,4 @@
-package app.babylon.table.transform;
+package app.babylon.table.dsl;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -57,7 +57,7 @@ public final class ComparisonCondition implements ConditionExpression
     @Override
     public String toDsl()
     {
-        return column(this.columnName) + " " + this.operator.preferredText() + " " + joinedValues();
+        return column(this.columnName) + " " + this.operator.text() + " " + joinedValues();
     }
 
     private String joinedValues()

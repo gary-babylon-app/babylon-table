@@ -8,7 +8,7 @@
  *     https://www.apache.org/licenses/LICENSE-2.0
  */
 
-package app.babylon.table.transform.dsl;
+package app.babylon.table.dsl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -154,6 +154,18 @@ public final class TokenStream
         while (i < length)
         {
             char c = line.charAt(i);
+            if (c == '\r')
+            {
+                tokens.add(new Token(TokenType.CARRIAGE_RETURN, "\r", i));
+                ++i;
+                continue;
+            }
+            if (c == '\n')
+            {
+                tokens.add(new Token(TokenType.LINE_FEED, "\n", i));
+                ++i;
+                continue;
+            }
             if (Character.isWhitespace(c))
             {
                 ++i;
@@ -172,6 +184,72 @@ public final class TokenStream
             if (c == ':')
             {
                 tokens.add(new Token(TokenType.COLON, ":", i));
+                ++i;
+                continue;
+            }
+            if (c == '{')
+            {
+                tokens.add(new Token(TokenType.LEFT_CURLY, "{", i));
+                ++i;
+                continue;
+            }
+            if (c == '}')
+            {
+                tokens.add(new Token(TokenType.RIGHT_CURLY, "}", i));
+                ++i;
+                continue;
+            }
+            if (c == '[')
+            {
+                tokens.add(new Token(TokenType.LEFT_SQUARE, "[", i));
+                ++i;
+                continue;
+            }
+            if (c == ']')
+            {
+                tokens.add(new Token(TokenType.RIGHT_SQUARE, "]", i));
+                ++i;
+                continue;
+            }
+            if (c == '(')
+            {
+                tokens.add(new Token(TokenType.LEFT_PAREN, "(", i));
+                ++i;
+                continue;
+            }
+            if (c == ')')
+            {
+                tokens.add(new Token(TokenType.RIGHT_PAREN, ")", i));
+                ++i;
+                continue;
+            }
+            if (c == '+' && !isSignedNumberStart(line, i))
+            {
+                tokens.add(new Token(TokenType.PLUS, "+", i));
+                ++i;
+                continue;
+            }
+            if (c == '-' && !isSignedNumberStart(line, i))
+            {
+                tokens.add(new Token(TokenType.MINUS, "-", i));
+                ++i;
+                continue;
+            }
+            if (c == ';')
+            {
+                tokens.add(new Token(TokenType.SEMICOLON, ";", i));
+                ++i;
+                continue;
+            }
+            if (c == '/')
+            {
+                tokens.add(new Token(TokenType.FORWARD_SLASH, "/", i));
+                ++i;
+                continue;
+            }
+            if (c == '\\')
+            {
+                tokens.add(new Token(TokenType.BACK_SLASH, "\\", i));
                 ++i;
                 continue;
             }
@@ -197,7 +275,12 @@ public final class TokenStream
         while (i < line.length())
         {
             char c = line.charAt(i);
-            if (Character.isWhitespace(c) || c == ',' || c == ':' || c == '#')
+            if (Character.isWhitespace(c) || c == ',' || c == ':' || c == '{' || c == '}' || c == '[' || c == ']'
+                    || c == '(' || c == ')' || c == ';' || c == '/' || c == '\\' || c == '#')
+            {
+                break;
+            }
+            if ((c == '+' || c == '-') && !(i == start && isSignedNumberStart(line, i)))
             {
                 break;
             }
@@ -213,6 +296,12 @@ public final class TokenStream
         }
         tokens.add(new Token(TokenType.WORD, line.subSequence(start, i).toString(), start));
         return i;
+    }
+
+    private static boolean isSignedNumberStart(CharSequence line, int start)
+    {
+        return start + 1 < line.length() && (line.charAt(start) == '+' || line.charAt(start) == '-')
+                && Character.isDigit(line.charAt(start + 1));
     }
 
     private static int readOperator(CharSequence line, int start, List<Token> tokens)

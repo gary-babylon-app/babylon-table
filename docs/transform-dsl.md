@@ -20,7 +20,9 @@ Technically, the statement format is a small domain-specific language (DSL), but
 it is designed to read like plain operational instructions.
 
 Quoted values are literals. Use quotes for text, regex patterns, empty strings,
-and values containing punctuation or spaces.
+and values containing punctuation, reserved symbols, or spaces. For example,
+split delimiters such as `'/'`, `'\\'`, `';'`, `'+'`, and `'-'` are written as
+literals.
 
 ## String cleanup
 
@@ -161,13 +163,23 @@ replace all '\s+' with ' ' in Description into CleanDescription
 
 ```text
 split Split on '/' into QuantityBefore, QuantityAfter
+split SortCode on '-' by all into Bank, Branch, Suffix
+split Name on ' ' by first into FirstName, Rest
+split Path on '\\' by last into Directory, FileName
 concat AccountType, Country, AccountNumber into AccountKey
 concat AccountType, Country, AccountNumber using '|' into AccountKey
 concat AccountType, Country using '' into AccountKey
 ```
 
-`split` keeps the declared output shape. `concat` uses no separator unless a
-separator is supplied with `using`.
+`split` requires the delimiter after `on` to be a quoted literal. This keeps
+reserved symbols such as `/`, `\`, `+`, `-`, and `;` available for DSL syntax
+while still allowing them to be used as data. By default, `split` uses every
+delimiter it finds; `by all` is the explicit form of that default. Use `by
+first` to split into the text before the first delimiter and the remaining text,
+or `by last` to split into the text before the last delimiter and the trailing
+text. `first` and `last` require exactly two output columns. `split` keeps the
+declared output shape for `all`. `concat` uses no separator unless a separator
+is supplied with `using`.
 
 ## Classify, extract, and substitute
 
@@ -191,7 +203,7 @@ flag Side = Buy into IsBuy
 flag Side <> Buy into IsNotBuy
 flag Quantity >= 100 into IsLarge
 flag Side in Buy, Sell into IsTrade
-flag Side not in Buy, Sell into IsOther
+flag Side nin Buy, Sell into IsOther
 flag Side = Buy and Quantity >= 100 into IsLargeBuy
 flag Side = Buy or Side = Sell into IsTrade
 ```

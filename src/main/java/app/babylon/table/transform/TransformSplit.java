@@ -16,24 +16,59 @@ public class TransformSplit extends TransformBase
 {
     public static final String FUNCTION_NAME = "Split";
 
+    public enum Mode
+    {
+        ALL, FIRST, LAST;
+
+        public static Mode parse(String s)
+        {
+            if (Strings.isEmpty(s))
+            {
+                return ALL;
+            }
+            return switch (s.toLowerCase(java.util.Locale.ROOT))
+            {
+                case "all" -> ALL;
+                case "first" -> FIRST;
+                case "last" -> LAST;
+                default -> throw new IllegalArgumentException("Unknown split mode: " + s);
+            };
+        }
+    }
+
     private final ColumnName columnToSplit;
     private final String splitOn;
+    private final Mode mode;
     private final ColumnName[] splitColumnNames;
 
     public TransformSplit(ColumnName columnToSplit, String splitOn, ColumnName... splitColumnNames)
     {
-        super(FUNCTION_NAME);
-        this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
-        this.splitOn = oneCharacter(splitOn);
-        this.splitColumnNames = Arrays.copyOf(ArgumentCheck.nonNull(splitColumnNames), splitColumnNames.length);
+        this(columnToSplit, splitOn, Mode.ALL, splitColumnNames);
     }
 
-    public TransformSplit(ColumnName columnToSplit, String splitOn, Collection<String> splitColumnNames)
+    public TransformSplit(ColumnName columnToSplit, String splitOn, Mode mode, ColumnName... splitColumnNames)
     {
         super(FUNCTION_NAME);
         this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
         this.splitOn = oneCharacter(splitOn);
+        this.mode = mode == null ? Mode.ALL : mode;
+        this.splitColumnNames = Arrays.copyOf(ArgumentCheck.nonNull(splitColumnNames), splitColumnNames.length);
+        requireColumnCount(this.mode, this.splitColumnNames);
+    }
+
+    public TransformSplit(ColumnName columnToSplit, String splitOn, Collection<String> splitColumnNames)
+    {
+        this(columnToSplit, splitOn, Mode.ALL, splitColumnNames);
+    }
+
+    public TransformSplit(ColumnName columnToSplit, String splitOn, Mode mode, Collection<String> splitColumnNames)
+    {
+        super(FUNCTION_NAME);
+        this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
+        this.splitOn = oneCharacter(splitOn);
+        this.mode = mode == null ? Mode.ALL : mode;
         this.splitColumnNames = columnNames(splitColumnNames);
+        requireColumnCount(this.mode, this.splitColumnNames);
     }
 
     public ColumnName getColumnToSplit()
@@ -46,6 +81,11 @@ public class TransformSplit extends TransformBase
         return this.splitOn;
     }
 
+    public Mode getMode()
+    {
+        return this.mode;
+    }
+
     public ColumnName[] getSplitColumnNames()
     {
         return Arrays.copyOf(this.splitColumnNames, this.splitColumnNames.length);
@@ -55,7 +95,15 @@ public class TransformSplit extends TransformBase
     {
         if (!Is.empty(params) && params.length >= 4)
         {
-            return of(ColumnName.of(params[0]), params[1], Arrays.asList(params).subList(2, params.length));
+            Mode mode = Mode.ALL;
+            int columnStart = 2;
+            if (params.length >= 5 && isMode(params[2]))
+            {
+                mode = Mode.parse(params[2]);
+                columnStart = 3;
+            }
+            return of(ColumnName.of(params[0]), params[1], mode,
+                    Arrays.asList(params).subList(columnStart, params.length));
         }
         return null;
     }
@@ -65,9 +113,20 @@ public class TransformSplit extends TransformBase
         return new TransformSplit(columnToSplit, splitOn, splitColumnNames);
     }
 
+    public static TransformSplit of(ColumnName columnToSplit, String splitOn, Mode mode, ColumnName... splitColumnNames)
+    {
+        return new TransformSplit(columnToSplit, splitOn, mode, splitColumnNames);
+    }
+
     public static TransformSplit of(ColumnName columnToSplit, String splitOn, Collection<String> splitColumnNames)
     {
         return new TransformSplit(columnToSplit, splitOn, splitColumnNames);
+    }
+
+    public static TransformSplit of(ColumnName columnToSplit, String splitOn, Mode mode,
+            Collection<String> splitColumnNames)
+    {
+        return new TransformSplit(columnToSplit, splitOn, mode, splitColumnNames);
     }
 
     @Override
@@ -91,16 +150,7 @@ public class TransformSplit extends TransformBase
             String s = toSplit.get(i);
             if (!Strings.isEmpty(s))
             {
-                String[] splitValues = splitter.split(s);
-                int size = Math.min(splitValues.length, newColumns.length);
-                for (int j = 0; j < size; ++j)
-                {
-                    newColumns[j].add(splitValues[j]);
-                }
-                for (int j = size; j < newColumns.length; ++j)
-                {
-                    newColumns[j].addNull();
-                }
+                addSplitValues(newColumns, splitter, s);
             }
             else
             {
@@ -117,6 +167,42 @@ public class TransformSplit extends TransformBase
             builtColumns[i] = newColumns[i].build();
         }
         putColumns(columnsByName, builtColumns);
+    }
+
+    private void addSplitValues(ColumnObject.Builder<String>[] newColumns, Strings.Splitter splitter, String s)
+    {
+        if (this.mode == Mode.ALL)
+        {
+            String[] splitValues = splitter.split(s);
+            int size = Math.min(splitValues.length, newColumns.length);
+            for (int j = 0; j < size; ++j)
+            {
+                newColumns[j].add(splitValues[j]);
+            }
+            for (int j = size; j < newColumns.length; ++j)
+            {
+                newColumns[j].addNull();
+            }
+            return;
+        }
+
+        int splitIndex = this.mode == Mode.FIRST
+                ? s.indexOf(this.splitOn.charAt(0))
+                : s.lastIndexOf(this.splitOn.charAt(0));
+        if (splitIndex < 0)
+        {
+            addPart(newColumns[0], s, 0, s.length());
+            newColumns[1].addNull();
+            return;
+        }
+        addPart(newColumns[0], s, 0, splitIndex);
+        addPart(newColumns[1], s, splitIndex + 1, s.length() - splitIndex - 1);
+    }
+
+    private static void addPart(ColumnObject.Builder<String> column, String source, int start, int length)
+    {
+        CharSequence stripped = Strings.stripx(source, start, length);
+        column.add(stripped == null ? "" : stripped.toString());
     }
 
     private static String oneCharacter(String splitOn)
@@ -139,5 +225,23 @@ public class TransformSplit extends TransformBase
             copy[i++] = ColumnName.of(name);
         }
         return copy;
+    }
+
+    private static boolean isMode(String s)
+    {
+        if (Strings.isEmpty(s))
+        {
+            return false;
+        }
+        return "all".equalsIgnoreCase(s) || "first".equalsIgnoreCase(s) || "last".equalsIgnoreCase(s);
+    }
+
+    private static void requireColumnCount(Mode mode, ColumnName[] splitColumnNames)
+    {
+        if ((mode == Mode.FIRST || mode == Mode.LAST) && splitColumnNames.length != 2)
+        {
+            throw new IllegalArgumentException("Split mode " + mode.name().toLowerCase(java.util.Locale.ROOT)
+                    + " requires exactly two output columns.");
+        }
     }
 }

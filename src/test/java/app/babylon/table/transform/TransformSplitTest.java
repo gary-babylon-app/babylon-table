@@ -50,6 +50,57 @@ public class TransformSplitTest
     }
 
     @Test
+    public void shouldSplitOnFirstDelimiter()
+    {
+        final ColumnName NAME = ColumnName.of("Name");
+        final ColumnName FIRST = ColumnName.of("FirstName");
+        final ColumnName REST = ColumnName.of("Rest");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, ColumnTypes.STRING);
+        strings.add("Ada Lovelace Byron");
+        strings.add("Plato");
+        strings.addNull();
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table.apply(new TransformSplit(NAME, " ", TransformSplit.Mode.FIRST, FIRST, REST));
+
+        ColumnObject<String> first = transformed.getString(FIRST);
+        ColumnObject<String> rest = transformed.getString(REST);
+        assertEquals("Ada", first.get(0));
+        assertEquals("Lovelace Byron", rest.get(0));
+        assertEquals("Plato", first.get(1));
+        assertFalse(rest.isSet(1));
+        assertFalse(first.isSet(2));
+        assertFalse(rest.isSet(2));
+    }
+
+    @Test
+    public void shouldSplitOnLastDelimiter()
+    {
+        final ColumnName PATH = ColumnName.of("Path");
+        final ColumnName DIRECTORY = ColumnName.of("Directory");
+        final ColumnName FILE = ColumnName.of("File");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(PATH, ColumnTypes.STRING);
+        strings.add("/tmp/reports/file.csv");
+        strings.add("file.csv");
+        strings.add("/tmp/reports/");
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table
+                .apply(new TransformSplit(PATH, "/", TransformSplit.Mode.LAST, DIRECTORY, FILE));
+
+        ColumnObject<String> directory = transformed.getString(DIRECTORY);
+        ColumnObject<String> file = transformed.getString(FILE);
+        assertEquals("/tmp/reports", directory.get(0));
+        assertEquals("file.csv", file.get(0));
+        assertEquals("file.csv", directory.get(1));
+        assertFalse(file.isSet(1));
+        assertEquals("/tmp/reports", directory.get(2));
+        assertEquals("", file.get(2));
+    }
+
+    @Test
     public void shouldBeAvailableFromBaseRegistry()
     {
         Transform transform = Transforms.registry().create("Split", "Split", "/", "QuantityBefore", "QuantityAfter");
@@ -67,6 +118,19 @@ public class TransformSplitTest
         assertEquals("/", transform.getSplitOn());
         assertEquals(ColumnName.of("QuantityBefore"), transform.getSplitColumnNames()[0]);
         assertEquals(ColumnName.of("QuantityAfter"), transform.getSplitColumnNames()[1]);
+    }
+
+    @Test
+    public void ofShouldParseModeStringParameters()
+    {
+        TransformSplit transform = TransformSplit.of(new String[]
+        {"Path", "/", "last", "Directory", "File"});
+
+        assertEquals(ColumnName.of("Path"), transform.getColumnToSplit());
+        assertEquals("/", transform.getSplitOn());
+        assertEquals(TransformSplit.Mode.LAST, transform.getMode());
+        assertEquals(ColumnName.of("Directory"), transform.getSplitColumnNames()[0]);
+        assertEquals(ColumnName.of("File"), transform.getSplitColumnNames()[1]);
     }
 
     @Test
@@ -91,5 +155,14 @@ public class TransformSplitTest
                 () -> new TransformSplit(ColumnName.of("AccountKey"), "::", ColumnName.of("AccountType")));
 
         assertEquals("Split split delimiter must be exactly one character.", exception.getMessage());
+    }
+
+    @Test
+    public void shouldRejectFirstOrLastModeWithOtherThanTwoColumns()
+    {
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+                () -> new TransformSplit(ColumnName.of("Path"), "/", TransformSplit.Mode.LAST, ColumnName.of("Only")));
+
+        assertEquals("Split mode last requires exactly two output columns.", exception.getMessage());
     }
 }

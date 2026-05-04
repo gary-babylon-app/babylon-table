@@ -33,6 +33,7 @@ import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformStringToType;
+import app.babylon.text.Sentence.ParseMode;
 
 class TransformDslParserTest
 {
@@ -231,6 +232,15 @@ class TransformDslParserTest
         String line = "convert AmountText to Double using YMD into Amount";
 
         assertThrows(TransformDslException.class, () -> PARSER.parse(line));
+    }
+
+    @Test
+    void shouldParsePrimitiveConversionWithParseMode()
+    {
+        String line = "convert AmountText to Double by firstIn into Amount";
+
+        TransformStringToType<?> transform = assertInstanceOf(TransformStringToType.class, PARSER.parse(line));
+        assertEquals(ParseMode.FIRST_IN, transform.parseMode());
     }
 
     @Test

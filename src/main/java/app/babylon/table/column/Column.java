@@ -20,6 +20,7 @@ import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.column.type.TypeWriter;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.dsl.ComparisonCondition;
+import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
 
 /**
@@ -105,7 +106,19 @@ public interface Column
         public ColumnName getName();
 
         /**
-         * Appends a value directly from a character slice.
+         * Appends a value directly from a whole character sequence using exact parsing.
+         *
+         * @param chars
+         *            the source text
+         * @return this builder
+         */
+        default Builder add(CharSequence chars)
+        {
+            return chars == null ? addNull() : add(chars, 0, chars.length());
+        }
+
+        /**
+         * Appends a value directly from a character slice using exact parsing.
          *
          * @param chars
          *            the source text
@@ -116,6 +129,40 @@ public interface Column
          * @return this builder
          */
         default Builder add(CharSequence chars, int start, int length)
+        {
+            return add(ParseMode.EXACT, chars, start, length);
+        }
+
+        /**
+         * Appends a value directly from a whole character sequence using the supplied
+         * parse mode.
+         *
+         * @param parseMode
+         *            sentence parse mode, or {@code null} for exact parsing
+         * @param chars
+         *            the source text
+         * @return this builder
+         */
+        default Builder add(ParseMode parseMode, CharSequence chars)
+        {
+            return chars == null ? addNull() : add(parseMode, chars, 0, chars.length());
+        }
+
+        /**
+         * Appends a value directly from a character slice using the supplied parse
+         * mode.
+         *
+         * @param parseMode
+         *            sentence parse mode, or {@code null} for exact parsing
+         * @param chars
+         *            the source text
+         * @param start
+         *            the start offset
+         * @param length
+         *            the slice length
+         * @return this builder
+         */
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
         {
             throw new UnsupportedOperationException("Character-slice add not supported by " + getClass().getName());
         }

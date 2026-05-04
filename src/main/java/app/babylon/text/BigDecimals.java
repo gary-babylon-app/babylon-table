@@ -177,7 +177,7 @@ public final class BigDecimals
      * @param sentence
      *            source text
      * @return parsed decimal or {@code null} if none or more than one are found
-     * @deprecated use {@code TransformParseMode.ONLY_IN} with
+     * @deprecated use {@code Sentence.ParseMode.ONLY_IN} with
      *             {@link BigDecimals#parse(CharSequence)} instead
      */
     @Deprecated(since = "0.3.25", forRemoval = true)
@@ -210,7 +210,7 @@ public final class BigDecimals
      * @param sentence
      *            source text
      * @return parsed double or {@code null} if none or more than one are found
-     * @deprecated use {@code TransformParseMode.ONLY_IN} with
+     * @deprecated use {@code Sentence.ParseMode.ONLY_IN} with
      *             {@link BigDecimals#parseDouble(CharSequence)} instead
      */
     @Deprecated(since = "0.3.25", forRemoval = true)

@@ -120,6 +120,43 @@ public final class Strings
         return isAlpha(c) || (c >= '0' && c <= '9');
     }
 
+    private static boolean isDigit(char c)
+    {
+        return c >= '0' && c <= '9';
+    }
+
+    public static boolean equals(CharSequence s, int start, int length, CharSequence expected)
+    {
+        return equals(s, start, length, expected, false);
+    }
+
+    public static boolean equalsIgnoreCase(CharSequence s, int start, int length, CharSequence expected)
+    {
+        return equals(s, start, length, expected, true);
+    }
+
+    private static boolean equals(CharSequence s, int start, int length, CharSequence expected, boolean ignoreCase)
+    {
+        if (s == null || expected == null || length != expected.length())
+        {
+            return false;
+        }
+        for (int i = 0; i < length; ++i)
+        {
+            char left = s.charAt(start + i);
+            char right = expected.charAt(i);
+            if (left == right)
+            {
+                continue;
+            }
+            if (!ignoreCase || Character.toLowerCase(left) != Character.toLowerCase(right))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static boolean isEmpty(CharSequence s)
     {
         return s == null || s.length() == 0;
@@ -672,6 +709,73 @@ public final class Strings
     public static boolean isLong(CharSequence s, int start, int length)
     {
         return isBoundedWholeNumber(s, start, length, "9223372036854775807", "9223372036854775808");
+    }
+
+    public static boolean isDouble(CharSequence s)
+    {
+        return s != null && isDouble(s, 0, s.length());
+    }
+
+    public static boolean isDouble(CharSequence s, int start, int length)
+    {
+        if (s == null || length <= 0)
+        {
+            return false;
+        }
+
+        int end = start + length;
+        int i = start;
+        char first = s.charAt(i);
+        if (first == '-' || first == '+')
+        {
+            ++i;
+            if (i >= end)
+            {
+                return false;
+            }
+        }
+
+        boolean hasDigit = false;
+        while (i < end && isDigit(s.charAt(i)))
+        {
+            hasDigit = true;
+            ++i;
+        }
+
+        if (i < end && s.charAt(i) == '.')
+        {
+            ++i;
+            while (i < end && isDigit(s.charAt(i)))
+            {
+                hasDigit = true;
+                ++i;
+            }
+        }
+
+        if (!hasDigit)
+        {
+            return false;
+        }
+
+        if (i < end && (s.charAt(i) == 'e' || s.charAt(i) == 'E'))
+        {
+            ++i;
+            if (i < end && (s.charAt(i) == '-' || s.charAt(i) == '+'))
+            {
+                ++i;
+            }
+            int exponentStart = i;
+            while (i < end && isDigit(s.charAt(i)))
+            {
+                ++i;
+            }
+            if (i == exponentStart)
+            {
+                return false;
+            }
+        }
+
+        return i == end;
     }
 
     /**

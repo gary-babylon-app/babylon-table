@@ -13,8 +13,11 @@ package app.babylon.table.column;
 import java.util.Arrays;
 import java.util.function.DoublePredicate;
 
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
+import app.babylon.text.Sentence.ParseMode;
+import app.babylon.text.Strings;
 
 /**
  * A column of nullable double values with efficient primitive access and
@@ -48,20 +51,16 @@ public interface ColumnDouble extends Column
          *            the text to parse
          * @return this builder
          */
+        @Override
         default Builder add(CharSequence x)
         {
-            if (x == null)
-            {
-                return addNull();
-            }
-            try
-            {
-                return add(TYPE.getParser().parseDouble(x));
-            }
-            catch (RuntimeException e)
-            {
-                return addNull();
-            }
+            return x == null ? addNull() : add(x, 0, x.length());
+        }
+
+        @Override
+        default Builder add(CharSequence chars, int start, int length)
+        {
+            return add(ParseMode.EXACT, chars, start, length);
         }
 
         /**
@@ -76,20 +75,33 @@ public interface ColumnDouble extends Column
          *            the number of characters to parse
          * @return this builder
          */
-        default Builder add(CharSequence chars, int start, int length)
+        @Override
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
         {
-            if (chars == null || length == 0)
+            if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                return addNull();
+                if (!Strings.isDouble(chars, start, length))
+                {
+                    return addNull();
+                }
+                try
+                {
+                    return add(Double.parseDouble(chars.subSequence(start, start + length).toString()));
+                }
+                catch (NumberFormatException e)
+                {
+                    return addNull();
+                }
             }
-            try
-            {
-                return add(TYPE.getParser().parseDouble(chars, start, length));
-            }
-            catch (RuntimeException e)
-            {
-                return addNull();
-            }
+            TypeParser<Double> parser = parser();
+            Double value = parseMode.apply(parser, chars, start, length);
+            return value == null ? addNull() : add(value.doubleValue());
+        }
+
+        @SuppressWarnings("unchecked")
+        private static TypeParser<Double> parser()
+        {
+            return (TypeParser<Double>) TYPE.getParser();
         }
 
         /**
@@ -313,7 +325,12 @@ public interface ColumnDouble extends Column
         double[] parsed = new double[supplied.length];
         for (int i = 0; i < supplied.length; ++i)
         {
-            parsed[i] = TYPE.getParser().parseDouble(supplied[i]);
+            Double value = Builder.parser().parse(supplied[i]);
+            if (value == null)
+            {
+                throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
+            }
+            parsed[i] = value.doubleValue();
         }
         return predicate(operator, parsed);
     }

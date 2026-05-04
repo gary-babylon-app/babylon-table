@@ -117,9 +117,9 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
         if (targetType.isPrimitive())
         {
             @SuppressWarnings("unchecked")
-            ColumnObject<String> strings = (ColumnObject<String>) build();
-            return app.babylon.table.transform.TransformToPrimitive.builder(targetType, getName()).build()
-                    .apply(strings);
+            ColumnObject<String> stringColumn = (ColumnObject<String>) build();
+            return app.babylon.table.transform.TransformStringToType.builder(targetType, getName()).build()
+                    .apply(stringColumn);
         }
         if (targetType.equals(this.type))
         {

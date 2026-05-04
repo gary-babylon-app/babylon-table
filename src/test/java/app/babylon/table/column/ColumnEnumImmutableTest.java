@@ -49,8 +49,8 @@ public class ColumnEnumImmutableTest
         assertFalse(mixed.isConstant());
 
         ColumnCategorical.Builder<TestEnum> nullsBuilder = ColumnCategorical.builder(NULLS, TEST_ENUM_TYPE);
-        nullsBuilder.add(null);
-        nullsBuilder.add(null);
+        nullsBuilder.addNull();
+        nullsBuilder.addNull();
         ColumnCategorical<TestEnum> nulls = nullsBuilder.build();
         assertTrue(nulls.isConstant());
     }
@@ -61,7 +61,7 @@ public class ColumnEnumImmutableTest
         final ColumnName E = ColumnName.of("E");
         ColumnCategorical.Builder<TestEnum> mutable = ColumnCategorical.builder(E, TEST_ENUM_TYPE);
         mutable.add(TestEnum.A);
-        mutable.add(null);
+        mutable.addNull();
         mutable.add(TestEnum.C);
 
         ColumnCategorical<TestEnum> immutable = mutable.build();
@@ -81,8 +81,8 @@ public class ColumnEnumImmutableTest
     {
         final ColumnName E = ColumnName.of("E");
         ColumnCategorical.Builder<TestEnum> mutable = ColumnCategorical.builder(E, TEST_ENUM_TYPE);
-        mutable.add(null);
-        mutable.add(null);
+        mutable.addNull();
+        mutable.addNull();
 
         ColumnCategorical<TestEnum> immutable = mutable.build();
 

@@ -10,8 +10,11 @@
 
 package app.babylon.table.column;
 
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.Selection;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.text.Sentence.ParseMode;
+import app.babylon.text.Strings;
 
 /**
  * A column of byte values used for compact storage of byte-oriented data and
@@ -38,20 +41,40 @@ public interface ColumnByte extends Column
          */
         public Builder add(byte x);
 
+        @Override
         default Builder add(CharSequence chars, int start, int length)
         {
-            if (chars == null || length == 0)
+            return add(ParseMode.EXACT, chars, start, length);
+        }
+
+        @Override
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        {
+            if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                return addNull();
+                if (!Strings.isInt(chars, start, length))
+                {
+                    return addNull();
+                }
+                try
+                {
+                    int value = Integer.parseInt(chars, start, start + length, 10);
+                    return value < Byte.MIN_VALUE || value > Byte.MAX_VALUE ? addNull() : add((byte) value);
+                }
+                catch (NumberFormatException e)
+                {
+                    return addNull();
+                }
             }
-            try
-            {
-                return add(TYPE.getParser().parseByte(chars, start, length));
-            }
-            catch (RuntimeException e)
-            {
-                return addNull();
-            }
+            TypeParser<Byte> parser = parser();
+            Byte value = parseMode.apply(parser, chars, start, length);
+            return value == null ? addNull() : add(value.byteValue());
+        }
+
+        @SuppressWarnings("unchecked")
+        private static TypeParser<Byte> parser()
+        {
+            return (TypeParser<Byte>) TYPE.getParser();
         }
 
         /**
@@ -269,7 +292,12 @@ public interface ColumnByte extends Column
         byte[] parsed = new byte[supplied.length];
         for (int i = 0; i < supplied.length; ++i)
         {
-            parsed[i] = TYPE.getParser().parseByte(supplied[i]);
+            Byte value = Builder.parser().parse(supplied[i]);
+            if (value == null)
+            {
+                throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
+            }
+            parsed[i] = value.byteValue();
         }
         return predicate(operator, parsed);
     }

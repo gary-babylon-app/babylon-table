@@ -18,13 +18,14 @@ import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.table.column.Transformer;
+import app.babylon.text.Sentence.ParseMode;
 
 public class TransformToLocalDate extends TransformBase
 {
     public static final String FUNCTION_NAME = "ToDate";
     private final Collection<ColumnName> columnNames;
     private final DateFormat format;
-    private final TransformParseMode parseMode;
+    private final ParseMode parseMode;
     private final ColumnName newColumnName;
 
     private TransformToLocalDate(Builder builder)
@@ -61,7 +62,7 @@ public class TransformToLocalDate extends TransformBase
         private ColumnName columnName;
         private ColumnName[] additionalColumnNames;
         private DateFormat format;
-        private TransformParseMode parseMode;
+        private ParseMode parseMode;
         private ColumnName newColumnName;
 
         private Builder()
@@ -93,7 +94,7 @@ public class TransformToLocalDate extends TransformBase
             return this;
         }
 
-        public Builder withParseMode(TransformParseMode parseMode)
+        public Builder withParseMode(ParseMode parseMode)
         {
             this.parseMode = parseMode;
             return this;
@@ -143,7 +144,7 @@ public class TransformToLocalDate extends TransformBase
                 ColumnName columnName = ColumnName.parse(params[0]);
                 ColumnName newColumnName = ColumnName.parse(params[1]);
                 DateFormat dateFormat = DateFormat.parse(params[2]);
-                TransformParseMode parseMode = params.length >= 4 ? TransformParseMode.parse(params[3]) : null;
+                ParseMode parseMode = params.length >= 4 ? ParseMode.parse(params[3]) : null;
 
                 return builder(columnName).withNewColumnName(newColumnName).withFormat(dateFormat)
                         .withParseMode(parseMode).build();
@@ -153,7 +154,7 @@ public class TransformToLocalDate extends TransformBase
         return null;
     }
 
-    public TransformParseMode parseMode()
+    public ParseMode parseMode()
     {
         return this.parseMode;
     }
@@ -173,9 +174,9 @@ public class TransformToLocalDate extends TransformBase
         return this.format;
     }
 
-    public TransformParseMode effectiveParseMode()
+    public ParseMode effectiveParseMode()
     {
-        return this.parseMode == null ? TransformParseMode.EXACT : this.parseMode;
+        return this.parseMode == null ? ParseMode.EXACT : this.parseMode;
     }
 
     @Override

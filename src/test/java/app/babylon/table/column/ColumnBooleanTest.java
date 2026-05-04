@@ -51,12 +51,18 @@ class ColumnBooleanTest
     void builderParsesCharacterSlices()
     {
         ColumnName values = ColumnName.of("values");
-        ColumnBoolean column = ColumnBoolean.builder(values).add("true", 0, 4).add("false", 0, 5).add("bad", 0, 3)
-                .build();
+        ColumnBoolean column = ColumnBoolean.builder(values).add("true", 0, 4).add("false", 0, 5).add("T", 0, 1)
+                .add("t", 0, 1).add("1", 0, 1).add("F", 0, 1).add("f", 0, 1).add("0", 0, 1).add("bad", 0, 3).build();
 
         assertTrue(column.get(0));
         assertFalse(column.get(1));
-        assertFalse(column.isSet(2));
+        assertTrue(column.get(2));
+        assertTrue(column.get(3));
+        assertTrue(column.get(4));
+        assertFalse(column.get(5));
+        assertFalse(column.get(6));
+        assertFalse(column.get(7));
+        assertFalse(column.isSet(8));
     }
 
     @Test

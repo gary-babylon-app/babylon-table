@@ -54,7 +54,7 @@ import app.babylon.table.transform.TransformLeft;
 import app.babylon.table.transform.TransformMultiply;
 import app.babylon.table.transform.TransformNegate;
 import app.babylon.table.transform.TransformNormalise;
-import app.babylon.table.transform.TransformParseMode;
+import app.babylon.text.Sentence.ParseMode;
 import app.babylon.table.transform.TransformPrefix;
 import app.babylon.table.transform.TransformRight;
 import app.babylon.table.transform.TransformRound;
@@ -69,7 +69,6 @@ import app.babylon.table.transform.TransformSuffix;
 import app.babylon.table.transform.TransformMetadataConstant;
 import app.babylon.table.transform.TransformToLocalDate;
 import app.babylon.table.transform.TransformToLowerCase;
-import app.babylon.table.transform.TransformToPrimitive;
 import app.babylon.table.transform.TransformAnyToString;
 import app.babylon.table.transform.TransformStringToType;
 import app.babylon.table.transform.TransformToUpperCase;
@@ -319,7 +318,7 @@ public final class TransformDslParser
         tokens.expectWord("to");
         String type = tokens.expectValue();
         String format = null;
-        TransformParseMode parseMode = null;
+        ParseMode parseMode = null;
         String target = null;
         while (!tokens.isAtEnd())
         {
@@ -337,7 +336,7 @@ public final class TransformDslParser
                 {
                     throw new TransformDslException("Duplicate by clause", tokens.peek().position());
                 }
-                parseMode = TransformParseMode.parse(tokens.expectValue());
+                parseMode = ParseMode.parse(tokens.expectValue());
             }
             else if (tokens.matchWord("into"))
             {
@@ -362,15 +361,15 @@ public final class TransformDslParser
                             .withParseMode(parseMode).build()
                     : throwUnsupportedUsing(type, tokens);
             case "double" -> format == null
-                    ? primitiveConvert(ColumnTypes.DOUBLE, source, target, parseMode, tokens)
+                    ? primitiveConvert(ColumnTypes.DOUBLE, source, target, parseMode)
                     : throwUnsupportedUsing(type, tokens);
             case "int",
                     "integer" ->
                 format == null
-                        ? primitiveConvert(ColumnTypes.INT, source, target, parseMode, tokens)
+                        ? primitiveConvert(ColumnTypes.INT, source, target, parseMode)
                         : throwUnsupportedUsing(type, tokens);
             case "long" -> format == null
-                    ? primitiveConvert(ColumnTypes.LONG, source, target, parseMode, tokens)
+                    ? primitiveConvert(ColumnTypes.LONG, source, target, parseMode)
                     : throwUnsupportedUsing(type, tokens);
             case "date", "localdate" ->
                 TransformToLocalDate.builder(ColumnName.of(source)).withNewColumnName(columnName(target))
@@ -383,7 +382,7 @@ public final class TransformDslParser
     }
 
     private Transform parseRegisteredType(String source, String target, String type, String normalisedType,
-            String format, TransformParseMode parseMode, TokenStream tokens)
+            String format, ParseMode parseMode, TokenStream tokens)
     {
         if (format != null)
         {
@@ -396,26 +395,16 @@ public final class TransformDslParser
         }
         if (columnType.isPrimitive())
         {
-            return primitiveConvert(columnType, source, target, parseMode, tokens);
+            return primitiveConvert(columnType, source, target, parseMode);
         }
         return TransformStringToType.builder(columnType, ColumnName.of(source)).withNewColumnName(columnName(target))
                 .withMode(ColumnObject.Mode.CATEGORICAL).withParseMode(parseMode).build();
     }
 
-    private static Transform primitiveConvert(Column.Type type, String source, String target,
-            TransformParseMode parseMode, TokenStream tokens)
+    private static Transform primitiveConvert(Column.Type type, String source, String target, ParseMode parseMode)
     {
-        if (parseMode != null && parseMode != TransformParseMode.EXACT)
-        {
-            return throwUnsupportedParseMode(type.toString(), tokens);
-        }
-        return TransformToPrimitive.builder(type, ColumnName.of(source)).withNewColumnName(columnName(target)).build();
-    }
-
-    private static Transform throwUnsupportedParseMode(String type, TokenStream tokens)
-    {
-        throw new TransformDslException("Parse mode is not supported for conversion type '" + type + "'",
-                tokens.peek().position());
+        return TransformStringToType.builder(type, ColumnName.of(source)).withNewColumnName(columnName(target))
+                .withParseMode(parseMode).build();
     }
 
     private static Transform throwUnsupportedUsing(String type, TokenStream tokens)

@@ -12,8 +12,11 @@ package app.babylon.table.column;
 
 import java.util.function.LongPredicate;
 
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.Selection;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.text.Sentence.ParseMode;
+import app.babylon.text.Strings;
 
 /**
  * A column of nullable long values with efficient primitive access and
@@ -40,20 +43,39 @@ public interface ColumnLong extends Column
          */
         Builder add(long x);
 
+        @Override
         default Builder add(CharSequence chars, int start, int length)
         {
-            if (chars == null || length == 0)
+            return add(ParseMode.EXACT, chars, start, length);
+        }
+
+        @Override
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        {
+            if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                return addNull();
+                if (!Strings.isLong(chars, start, length))
+                {
+                    return addNull();
+                }
+                try
+                {
+                    return add(Long.parseLong(chars, start, start + length, 10));
+                }
+                catch (NumberFormatException e)
+                {
+                    return addNull();
+                }
             }
-            try
-            {
-                return add(TYPE.getParser().parseLong(chars, start, length));
-            }
-            catch (RuntimeException e)
-            {
-                return addNull();
-            }
+            TypeParser<Long> parser = parser();
+            Long value = parseMode.apply(parser, chars, start, length);
+            return value == null ? addNull() : add(value.longValue());
+        }
+
+        @SuppressWarnings("unchecked")
+        private static TypeParser<Long> parser()
+        {
+            return (TypeParser<Long>) TYPE.getParser();
         }
 
         /**
@@ -291,7 +313,12 @@ public interface ColumnLong extends Column
         long[] parsed = new long[supplied.length];
         for (int i = 0; i < supplied.length; ++i)
         {
-            parsed[i] = TYPE.getParser().parseLong(supplied[i]);
+            Long value = Builder.parser().parse(supplied[i]);
+            if (value == null)
+            {
+                throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
+            }
+            parsed[i] = value.longValue();
         }
         return predicate(operator, parsed);
     }

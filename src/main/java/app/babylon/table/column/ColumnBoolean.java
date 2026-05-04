@@ -14,8 +14,10 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 
 import app.babylon.table.ViewIndex;
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
+import app.babylon.text.Sentence.ParseMode;
 
 /**
  * A nullable primitive boolean column backed by compact bit lists for both
@@ -42,14 +44,28 @@ public interface ColumnBoolean extends Column
          */
         Builder add(boolean x);
 
+        @Override
         default Builder add(CharSequence chars, int start, int length)
+        {
+            return add(ParseMode.EXACT, chars, start, length);
+        }
+
+        @Override
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
         {
             if (chars == null || length == 0)
             {
                 return addNull();
             }
-            Boolean parsed = parseBoolean(chars, start, length);
-            return parsed == null ? addNull() : add(parsed.booleanValue());
+            TypeParser<Boolean> parser = parser();
+            Boolean value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, length);
+            return value == null ? addNull() : add(value.booleanValue());
+        }
+
+        @SuppressWarnings("unchecked")
+        private static TypeParser<Boolean> parser()
+        {
+            return (TypeParser<Boolean>) TYPE.getParser();
         }
 
         /**
@@ -186,7 +202,7 @@ public interface ColumnBoolean extends Column
         boolean[] parsed = new boolean[supplied.length];
         for (int i = 0; i < supplied.length; ++i)
         {
-            Boolean value = parseBoolean(supplied[i], 0, supplied[i] == null ? 0 : supplied[i].length());
+            Boolean value = Builder.parser().parse(supplied[i]);
             if (value == null)
             {
                 throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
@@ -246,9 +262,4 @@ public interface ColumnBoolean extends Column
         return false;
     }
 
-    private static Boolean parseBoolean(CharSequence chars, int start, int length)
-    {
-        Object parsed = TYPE.getParser().parse(chars, start, length);
-        return parsed instanceof Boolean value ? value : null;
-    }
 }

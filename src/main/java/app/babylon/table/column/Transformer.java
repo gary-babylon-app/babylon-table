@@ -13,7 +13,7 @@ package app.babylon.table.column;
 import java.util.function.Function;
 
 import app.babylon.lang.ArgumentCheck;
-import app.babylon.table.transform.TransformParseMode;
+import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
 
 /**
@@ -74,16 +74,16 @@ public interface Transformer<T, S> extends Function<T, S>
         };
     }
 
-    static <S> Transformer<String, S> parser(Column.Type type, TransformParseMode parseMode)
+    static <S> Transformer<String, S> parser(Column.Type type, ParseMode parseMode)
     {
         return parser(type, parseMode, null);
     }
 
     @SuppressWarnings("unchecked")
-    static <S> Transformer<String, S> parser(Column.Type type, TransformParseMode parseMode, ColumnName columnName)
+    static <S> Transformer<String, S> parser(Column.Type type, ParseMode parseMode, ColumnName columnName)
     {
         Column.Type targetType = ArgumentCheck.nonNull(type);
-        TransformParseMode resolvedParseMode = parseMode == null ? TransformParseMode.EXACT : parseMode;
+        ParseMode resolvedParseMode = parseMode == null ? ParseMode.EXACT : parseMode;
         return of(s -> {
             if (Strings.isEmpty(s))
             {

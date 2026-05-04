@@ -119,11 +119,15 @@ words, where one word is the useful value:
 convert Description to Currency by firstIn into Currency
 convert Description to Currency by lastIn into SettlementCurrency
 convert Description to Currency by onlyIn into Currency
+convert Description to Int by firstIn into Quantity
+convert Description to Double by lastIn into Amount
 ```
 
 `firstIn` uses the first parseable value found in the sentence. `lastIn` uses
 the last parseable value. `onlyIn` uses the value only when exactly one
-parseable value is found.
+parseable value is found. These modes work for primitive conversions such as
+`Int`, `Long`, and `Double` as well as object conversions such as `Decimal`,
+`Currency`, and custom registered types.
 
 Date conversion accepts a date format with `using`:
 

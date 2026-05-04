@@ -24,6 +24,7 @@ import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.transform.ColumnLocalDates;
 import app.babylon.table.transform.DateFormat;
 import app.babylon.text.BigDecimals;
+import app.babylon.text.Booleans;
 import app.babylon.text.Currencys;
 import app.babylon.text.Strings;
 
@@ -66,23 +67,32 @@ public final class TypeParsers
     private static final Period PERIOD_6M = Period.ofMonths(6);
     private static final Period PERIOD_12M = Period.ofMonths(12);
     private static final Period PERIOD_1Y = Period.ofYears(1);
-
     public static final TypeParser<Object> NULL = (s, offset, length) -> null;
-    public static final TypeParser<Boolean> BOOLEAN = (s, offset, length) -> {
-        if (s == null || length <= 0)
+    public static final TypeParser<Boolean> BOOLEAN = new TypeParser<>()
+    {
+        @Override
+        public Boolean parse(CharSequence s, int offset, int length)
         {
-            return null;
+            if (Booleans.isBooleanTrue(s, offset, length))
+            {
+                return Boolean.TRUE;
+            }
+            return Booleans.isBooleanFalse(s, offset, length) ? Boolean.FALSE : null;
         }
-        String value = s.subSequence(offset, offset + length).toString();
-        if ("true".equalsIgnoreCase(value))
+
+        @Override
+        public boolean parseBoolean(CharSequence s, int offset, int length)
         {
-            return Boolean.TRUE;
+            if (Booleans.isBooleanTrue(s, offset, length))
+            {
+                return true;
+            }
+            if (Booleans.isBooleanFalse(s, offset, length))
+            {
+                return false;
+            }
+            throw new IllegalArgumentException("Could not parse boolean: " + s.subSequence(offset, offset + length));
         }
-        if ("false".equalsIgnoreCase(value))
-        {
-            return Boolean.FALSE;
-        }
-        return null;
     };
     public static final TypeParser<String> STRING = (s, offset,
             length) -> s == null ? null : s.subSequence(offset, offset + length).toString();
@@ -97,7 +107,7 @@ public final class TypeParsers
             }
             try
             {
-                return parseByte(s);
+                return Byte.valueOf(parseByte(s));
             }
             catch (RuntimeException e)
             {
@@ -114,7 +124,7 @@ public final class TypeParsers
             }
             try
             {
-                return parseByte(s, offset, length);
+                return Byte.valueOf(parseByte(s, offset, length));
             }
             catch (RuntimeException e)
             {
@@ -133,7 +143,7 @@ public final class TypeParsers
             }
             try
             {
-                return parseInt(s);
+                return Integer.valueOf(parseInt(s));
             }
             catch (RuntimeException e)
             {
@@ -150,7 +160,7 @@ public final class TypeParsers
             }
             try
             {
-                return parseInt(s, offset, length);
+                return Integer.valueOf(parseInt(s, offset, length));
             }
             catch (RuntimeException e)
             {
@@ -169,7 +179,7 @@ public final class TypeParsers
             }
             try
             {
-                return parseLong(s);
+                return Long.valueOf(parseLong(s));
             }
             catch (RuntimeException e)
             {
@@ -186,7 +196,7 @@ public final class TypeParsers
             }
             try
             {
-                return parseLong(s, offset, length);
+                return Long.valueOf(parseLong(s, offset, length));
             }
             catch (RuntimeException e)
             {

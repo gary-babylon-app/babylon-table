@@ -5,16 +5,17 @@ import java.util.Map;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
+import app.babylon.text.Sentence.ParseMode;
 
 abstract class TransformConvert extends TransformBase
 {
     private final ColumnName columnName;
     private final ColumnName newColumnName;
     private final Column.Type type;
-    private final TransformParseMode parseMode;
+    private final ParseMode parseMode;
 
     protected TransformConvert(String name, ColumnName columnName, ColumnName newColumnName, Column.Type type,
-            TransformParseMode parseMode)
+            ParseMode parseMode)
     {
         super(name);
         this.columnName = ArgumentCheck.nonNull(columnName);
@@ -43,14 +44,14 @@ abstract class TransformConvert extends TransformBase
         return this.type;
     }
 
-    public TransformParseMode parseMode()
+    public ParseMode parseMode()
     {
         return this.parseMode;
     }
 
-    public TransformParseMode effectiveParseMode()
+    public ParseMode effectiveParseMode()
     {
-        return this.parseMode == null ? TransformParseMode.EXACT : this.parseMode;
+        return this.parseMode == null ? ParseMode.EXACT : this.parseMode;
     }
 
     public abstract Column apply(Column column);

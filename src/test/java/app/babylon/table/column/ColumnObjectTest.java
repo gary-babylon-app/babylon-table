@@ -258,7 +258,7 @@ class ColumnObjectTest
     }
 
     @Test
-    void objectBuildersShouldBuildPrimitiveTargetsViaTransformToPrimitive()
+    void objectBuildersShouldBuildPrimitiveTargetsViaTransformStringToType()
     {
         final ColumnName AMOUNT = ColumnName.of("Amount");
         ColumnObject.Builder<String> arrayBuilder = ColumnObject.builder(AMOUNT, ColumnTypes.STRING,

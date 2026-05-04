@@ -11,9 +11,57 @@
 package app.babylon.text;
 
 import java.util.BitSet;
+import java.util.Locale;
+import java.util.function.Function;
 
 public final class Sentence
 {
+    public enum ParseMode
+    {
+        EXACT, FIRST_IN, LAST_IN, ONLY_IN;
+
+        public static ParseMode parse(CharSequence s)
+        {
+            if (s == null)
+            {
+                return EXACT;
+            }
+            String normalised = Strings.clean(s, ' ', '_', '-').toUpperCase(Locale.ROOT);
+            return switch (normalised)
+            {
+                case "EXACT" -> EXACT;
+                case "FIRSTIN" -> FIRST_IN;
+                case "LASTIN" -> LAST_IN;
+                case "ONLYIN" -> ONLY_IN;
+                default -> throw new IllegalArgumentException("Unknown sentence parse mode: " + s);
+            };
+        }
+
+        public <T> T apply(Function<CharSequence, T> parser, CharSequence value)
+        {
+            return apply(SliceParser.from(parser), value);
+        }
+
+        public <T> T apply(SliceParser<T> parser, CharSequence value)
+        {
+            return value == null ? null : apply(parser, value, 0, value.length());
+        }
+
+        public <T> T apply(SliceParser<T> parser, CharSequence value, int start, int length)
+        {
+            if (value == null)
+            {
+                return null;
+            }
+            return switch (this)
+            {
+                case EXACT -> parser.parse(value, start, length);
+                case FIRST_IN -> Sentence.firstIn(parser, value, start, length);
+                case LAST_IN -> Sentence.lastIn(parser, value, start, length);
+                case ONLY_IN -> Sentence.onlyIn(parser, value, start, length);
+            };
+        }
+    }
 
     /**
      * Finds the <em>first</em> parsed value <em>in</em> a space-separated sentence.
@@ -32,13 +80,20 @@ public final class Sentence
      */
     public static <T> T firstIn(SliceParser<T> parser, CharSequence sentence)
     {
+        return sentence == null ? null : firstIn(parser, sentence, 0, sentence.length());
+    }
+
+    public static <T> T firstIn(SliceParser<T> parser, CharSequence sentence, int offset, int length)
+    {
         if (sentence == null)
         {
             return null;
         }
-        BitSet separators = Strings.trace(sentence, ' ');
-        int start = 0;
-        for (int separator = separators.nextSetBit(0); separator >= 0; separator = separators.nextSetBit(separator + 1))
+        BitSet separators = Strings.trace(sentence, offset, length, ' ');
+        int start = offset;
+        int end = offset + length;
+        for (int separator = separators.nextSetBit(offset); separator >= 0
+                && separator < end; separator = separators.nextSetBit(separator + 1))
         {
             T value = parse(parser, sentence, start, separator);
             if (value != null)
@@ -47,7 +102,7 @@ public final class Sentence
             }
             start = separator + 1;
         }
-        return parse(parser, sentence, start, sentence.length());
+        return parse(parser, sentence, start, end);
     }
 
     /**
@@ -63,7 +118,7 @@ public final class Sentence
      * The parser receives the original sentence plus each word's start and length,
      * avoiding intermediate strings.
      */
-    public static <T> T lastIn(SliceParser<T> parser, String sentence)
+    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence)
     {
         return lastIn(parser, sentence, ' ');
     }
@@ -75,15 +130,25 @@ public final class Sentence
      * The parser receives the original sentence plus each field's start and length,
      * avoiding intermediate strings.
      */
-    public static <T> T lastIn(SliceParser<T> parser, String sentence, char separator)
+    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, char separator)
+    {
+        return sentence == null ? null : lastIn(parser, sentence, 0, sentence.length(), separator);
+    }
+
+    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, int offset, int length)
+    {
+        return lastIn(parser, sentence, offset, length, ' ');
+    }
+
+    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, int offset, int length, char separator)
     {
         if (sentence == null)
         {
             return null;
         }
-        BitSet separators = Strings.trace(sentence, separator);
-        int end = sentence.length();
-        for (int i = separators.previousSetBit(sentence.length() - 1); i >= 0; i = separators.previousSetBit(i - 1))
+        BitSet separators = Strings.trace(sentence, offset, length, separator);
+        int end = offset + length;
+        for (int i = separators.previousSetBit(end - 1); i >= offset; i = separators.previousSetBit(i - 1))
         {
             T value = parse(parser, sentence, i + 1, end);
             if (value != null)
@@ -92,7 +157,7 @@ public final class Sentence
             }
             end = i;
         }
-        return parse(parser, sentence, 0, end);
+        return parse(parser, sentence, offset, end);
     }
 
     /**
@@ -111,14 +176,21 @@ public final class Sentence
      */
     public static <T> T onlyIn(SliceParser<T> parser, CharSequence sentence)
     {
+        return sentence == null ? null : onlyIn(parser, sentence, 0, sentence.length());
+    }
+
+    public static <T> T onlyIn(SliceParser<T> parser, CharSequence sentence, int offset, int length)
+    {
         if (sentence == null)
         {
             return null;
         }
-        BitSet separators = Strings.trace(sentence, ' ');
+        BitSet separators = Strings.trace(sentence, offset, length, ' ');
         T only = null;
-        int start = 0;
-        for (int separator = separators.nextSetBit(0); separator >= 0; separator = separators.nextSetBit(separator + 1))
+        int start = offset;
+        int end = offset + length;
+        for (int separator = separators.nextSetBit(offset); separator >= 0
+                && separator < end; separator = separators.nextSetBit(separator + 1))
         {
             T value = parse(parser, sentence, start, separator);
             if (value != null)
@@ -131,7 +203,7 @@ public final class Sentence
             }
             start = separator + 1;
         }
-        T value = parse(parser, sentence, start, sentence.length());
+        T value = parse(parser, sentence, start, end);
         if (value != null)
         {
             if (only != null)

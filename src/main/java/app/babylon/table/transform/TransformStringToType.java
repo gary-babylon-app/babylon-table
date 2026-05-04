@@ -7,6 +7,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
 import app.babylon.table.column.Transformer;
+import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
 
 public class TransformStringToType<T> extends TransformConvert
@@ -18,6 +19,11 @@ public class TransformStringToType<T> extends TransformConvert
     private TransformStringToType(Builder<T> builder)
     {
         super(FUNCTION_NAME, builder.columnName, builder.newColumnName, builder.type, builder.parseMode);
+        if (type().isPrimitive() && builder.mode != null)
+        {
+            throw new IllegalArgumentException("Conversion mode is only supported for non-primitive target types: "
+                    + type().getValueClass().getName());
+        }
         this.mode = builder.mode;
     }
 
@@ -42,7 +48,7 @@ public class TransformStringToType<T> extends TransformConvert
         private ColumnName newColumnName;
         private Column.Type type;
         private ColumnObject.Mode mode;
-        private TransformParseMode parseMode;
+        private ParseMode parseMode;
 
         private Builder()
         {
@@ -72,7 +78,7 @@ public class TransformStringToType<T> extends TransformConvert
             return this;
         }
 
-        public Builder<T> withParseMode(TransformParseMode parseMode)
+        public Builder<T> withParseMode(ParseMode parseMode)
         {
             this.parseMode = parseMode;
             return this;
@@ -93,8 +99,8 @@ public class TransformStringToType<T> extends TransformConvert
             ColumnObject.Mode mode = (params.length >= 3 && !Strings.isEmpty(params[2]))
                     ? ColumnObject.Mode.parse(params[2])
                     : null;
-            TransformParseMode parseMode = (params.length >= 4 && !Strings.isEmpty(params[3]))
-                    ? TransformParseMode.parse(params[3])
+            ParseMode parseMode = (params.length >= 4 && !Strings.isEmpty(params[3]))
+                    ? ParseMode.parse(params[3])
                     : null;
             return TransformStringToType.<T>builder(type, from).withNewColumnName(to).withMode(mode)
                     .withParseMode(parseMode).build();
@@ -119,6 +125,18 @@ public class TransformStringToType<T> extends TransformConvert
         {
             return null;
         }
+        if (type().equals(column.getType()))
+        {
+            if (newColumnName() == null)
+            {
+                return column;
+            }
+            return column.copy(effectiveNewColumnName());
+        }
+        if (type().isPrimitive())
+        {
+            return rebuildPrimitive(column);
+        }
         if (String.class.equals(column.getType().getValueClass()))
         {
             ColumnObject<String> stringColumn = Columns.asStringColumn(column);
@@ -133,6 +151,28 @@ public class TransformStringToType<T> extends TransformConvert
         }
         throw new RuntimeException("Can only convert String columns to " + type().getValueClass().getSimpleName() + ": "
                 + column.getName());
+    }
+
+    private Column rebuildPrimitive(Column column)
+    {
+        if (!Columns.isStringColumn(column))
+        {
+            return null;
+        }
+        ColumnObject<String> stringColumn = Columns.asStringColumn(column);
+        Column.Builder builder = Columns.newBuilder(effectiveNewColumnName(), type());
+        ParseMode resolvedParseMode = effectiveParseMode();
+        for (int i = 0; i < stringColumn.size(); ++i)
+        {
+            if (!stringColumn.isSet(i))
+            {
+                builder.addNull();
+                continue;
+            }
+            String s = stringColumn.get(i);
+            builder.add(resolvedParseMode, s);
+        }
+        return builder.build();
     }
 
     private ColumnObject<T> rebuild(ColumnObject<String> input, ColumnName newColumnName, ColumnObject.Mode mode,

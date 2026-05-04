@@ -12,8 +12,11 @@ package app.babylon.table.column;
 
 import java.util.function.IntPredicate;
 
-import app.babylon.table.selection.Selection;
+import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.table.selection.Selection;
+import app.babylon.text.Sentence.ParseMode;
+import app.babylon.text.Strings;
 
 /**
  * A column of nullable int values with efficient primitive access and
@@ -40,20 +43,42 @@ public interface ColumnInt extends Column
          */
         Builder add(int x);
 
+        @Override
         default Builder add(CharSequence chars, int start, int length)
         {
-            if (chars == null || length == 0)
+            return add(ParseMode.EXACT, chars, start, length);
+        }
+
+        @Override
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        {
+            if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                return addNull();
+                if (!Strings.isInt(chars, start, length))
+                {
+                    return addNull();
+                }
+                try
+                {
+                    return add(Integer.parseInt(chars, start, start + length, 10));
+                }
+                catch (NumberFormatException e)
+                {
+                    return addNull();
+                }
             }
-            try
+            else
             {
-                return add(TYPE.getParser().parseInt(chars, start, length));
+                TypeParser<Integer> parser = parser();
+                Integer value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, length);
+                return value == null ? addNull() : add(value.intValue());
             }
-            catch (RuntimeException e)
-            {
-                return addNull();
-            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private static TypeParser<Integer> parser()
+        {
+            return (TypeParser<Integer>) TYPE.getParser();
         }
 
         /**
@@ -277,7 +302,12 @@ public interface ColumnInt extends Column
         int[] parsed = new int[supplied.length];
         for (int i = 0; i < supplied.length; ++i)
         {
-            parsed[i] = TYPE.getParser().parseInt(supplied[i]);
+            Integer value = Builder.parser().parse(supplied[i]);
+            if (value == null)
+            {
+                throw new IllegalArgumentException("Could not parse '" + supplied[i] + "' as " + getType() + ".");
+            }
+            parsed[i] = value.intValue();
         }
         return predicate(operator, parsed);
     }

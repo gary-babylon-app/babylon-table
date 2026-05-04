@@ -220,6 +220,27 @@ class ColumnsTest
     }
 
     @Test
+    void newBuilderSupportsWholeCharSequenceValues()
+    {
+        final ColumnName VALUES = ColumnName.of("values");
+        Column.Builder intBuilder = Columns.newBuilder(VALUES, ColumnTypes.INT);
+        intBuilder.add("12");
+        intBuilder.add((CharSequence) null);
+
+        ColumnInt ints = (ColumnInt) intBuilder.build();
+        assertEquals(12, ints.get(0));
+        assertFalse(ints.isSet(1));
+
+        Column.Builder decimalBuilder = Columns.newBuilder(VALUES, ColumnTypes.DECIMAL);
+        decimalBuilder.add("1234.50");
+        decimalBuilder.add("bad");
+
+        ColumnObject<BigDecimal> decimals = (ColumnObject<BigDecimal>) decimalBuilder.build();
+        assertEquals(0, new BigDecimal("1234.50").compareTo(decimals.get(0)));
+        assertFalse(decimals.isSet(1));
+    }
+
+    @Test
     void newCharSliceBuilderSupportsByteType()
     {
         final ColumnName VALUES = ColumnName.of("values");

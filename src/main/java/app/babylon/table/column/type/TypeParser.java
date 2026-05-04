@@ -92,6 +92,39 @@ public interface TypeParser<T> extends SliceParser<T>
     }
 
     /**
+     * Parses a whole character sequence into a boolean value.
+     *
+     * @param s
+     *            the source text
+     * @return the parsed boolean
+     */
+    default boolean parseBoolean(CharSequence s)
+    {
+        return parseBoolean(s, 0, s.length());
+    }
+
+    /**
+     * Parses a slice of a character sequence into a boolean value.
+     *
+     * @param s
+     *            the source text
+     * @param offset
+     *            the start index
+     * @param length
+     *            the slice length
+     * @return the parsed boolean
+     */
+    default boolean parseBoolean(CharSequence s, int offset, int length)
+    {
+        T parsed = parse(s, offset, length);
+        if (parsed instanceof Boolean value)
+        {
+            return value.booleanValue();
+        }
+        throw new IllegalArgumentException("Could not parse boolean: " + s.subSequence(offset, offset + length));
+    }
+
+    /**
      * Parses a whole character sequence into an int value.
      *
      * @param s

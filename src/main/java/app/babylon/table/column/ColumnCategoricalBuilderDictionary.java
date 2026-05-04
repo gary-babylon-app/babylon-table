@@ -67,7 +67,7 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
     @Override
     public ColumnCategorical.Builder<T> addNull()
     {
-        return add(null);
+        return add((T) null);
     }
 
     @Override
@@ -110,7 +110,7 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
         Column.Type targetType = ArgumentCheck.nonNull(transformedType);
         if (targetType.isPrimitive())
         {
-            return app.babylon.table.transform.TransformToPrimitive.builder(targetType, getName()).build()
+            return app.babylon.table.transform.TransformStringToType.builder(targetType, getName()).build()
                     .apply(build());
         }
         Class<?> valueClass = this.type.getValueClass();

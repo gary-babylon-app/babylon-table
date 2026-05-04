@@ -70,6 +70,18 @@ public class StringsTest
     }
 
     @Test
+    public void equalsShouldCompareWholeAndSlicedCharacterSequences()
+    {
+        assertTrue(Strings.equals("xxtrueyy", 2, 4, "true"));
+        assertFalse(Strings.equals("xxTrueyy", 2, 4, "true"));
+        assertTrue(Strings.equalsIgnoreCase("xxTrueyy", 2, 4, "true"));
+        assertTrue(Strings.equalsIgnoreCase("xxFALSEyy", 2, 5, "false"));
+        assertFalse(Strings.equalsIgnoreCase("xxfalseyy", 2, 4, "false"));
+        assertFalse(Strings.equalsIgnoreCase(null, 0, 4, "true"));
+        assertFalse(Strings.equalsIgnoreCase("true", 0, 4, null));
+    }
+
+    @Test
     public void isEmptyShouldRecogniseNullAndEmptyCharSequences()
     {
         assertTrue(Strings.isEmpty(null));
@@ -429,6 +441,34 @@ public class StringsTest
         assertTrue(Strings.isLong("x-9223372036854775808y", 1, 20));
         assertFalse(Strings.isLong("9223372036854775808%", 0, 19));
         assertFalse(Strings.isLong("12.3%", 0, 4));
+    }
+
+    @Test
+    public void isDoubleShouldRecogniseStrictDoubleText()
+    {
+        assertTrue(Strings.isDouble("12"));
+        assertTrue(Strings.isDouble("-12.5"));
+        assertTrue(Strings.isDouble("+.5"));
+        assertTrue(Strings.isDouble("1."));
+        assertTrue(Strings.isDouble("1e3"));
+        assertTrue(Strings.isDouble("-1.25E-3"));
+
+        assertFalse(Strings.isDouble(""));
+        assertFalse(Strings.isDouble("+"));
+        assertFalse(Strings.isDouble("."));
+        assertFalse(Strings.isDouble("1 2 3"));
+        assertFalse(Strings.isDouble("(1,234.50)"));
+        assertFalse(Strings.isDouble("12.5%"));
+        assertFalse(Strings.isDouble("abc"));
+    }
+
+    @Test
+    public void isDoubleShouldRecogniseStrictDoubleSlices()
+    {
+        assertTrue(Strings.isDouble("xx-12.5e+2yy", 2, 8));
+        assertTrue(Strings.isDouble("xx.5yy", 2, 2));
+        assertFalse(Strings.isDouble("xx1,234yy", 2, 5));
+        assertFalse(Strings.isDouble("xx1eyy", 2, 2));
     }
 
     @Test

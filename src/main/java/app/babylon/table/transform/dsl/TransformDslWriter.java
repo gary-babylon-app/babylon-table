@@ -46,7 +46,7 @@ import app.babylon.table.transform.TransformLeft;
 import app.babylon.table.transform.TransformMultiply;
 import app.babylon.table.transform.TransformNegate;
 import app.babylon.table.transform.TransformNormalise;
-import app.babylon.table.transform.TransformParseMode;
+import app.babylon.text.Sentence.ParseMode;
 import app.babylon.table.transform.TransformPrefix;
 import app.babylon.table.transform.TransformRight;
 import app.babylon.table.transform.TransformRound;
@@ -61,7 +61,6 @@ import app.babylon.table.transform.TransformSuffix;
 import app.babylon.table.transform.TransformMetadataConstant;
 import app.babylon.table.transform.TransformToLocalDate;
 import app.babylon.table.transform.TransformToLowerCase;
-import app.babylon.table.transform.TransformToPrimitive;
 import app.babylon.table.transform.TransformAnyToString;
 import app.babylon.table.transform.TransformStringToType;
 import app.babylon.table.transform.TransformToUpperCase;
@@ -112,7 +111,6 @@ public final class TransformDslWriter
         writers.put(TransformMetadataConstant.class, TransformDslWriter::writeMetadataConstant);
         writers.put(TransformToLocalDate.class, TransformDslWriter::writeDate);
         writers.put(TransformToLowerCase.class, TransformDslWriter::writeLowercase);
-        writers.put(TransformToPrimitive.class, TransformDslWriter::writePrimitive);
         writers.put(TransformAnyToString.class, t -> writeConvert("String", t));
         writers.put(TransformStringToType.class, TransformDslWriter::writeStringToType);
         writers.put(TransformToUpperCase.class, TransformDslWriter::writeUppercase);
@@ -452,12 +450,6 @@ public final class TransformDslWriter
         return command + " " + operand(left) + " " + word + " " + operand(right) + " into " + column(target);
     }
 
-    private static String writePrimitive(Transform transform)
-    {
-        TransformToPrimitive primitive = (TransformToPrimitive) transform;
-        return writeConvert(typeName(primitive.type()), primitive);
-    }
-
     private static String writeStringToType(Transform transform)
     {
         TransformStringToType<?> toType = (TransformStringToType<?>) transform;
@@ -469,13 +461,13 @@ public final class TransformDslWriter
         TransformToLocalDate date = (TransformToLocalDate) transform;
         ColumnName[] sources = date.columnNames();
         DateFormat format = date.format();
-        TransformParseMode parseMode = date.parseMode();
+        ParseMode parseMode = date.parseMode();
         String line = "convert " + column(sources[0]) + " to Date";
         if (format != null && format != DateFormat.Unknown)
         {
             line += " using " + format.name();
         }
-        if (parseMode != null && parseMode != TransformParseMode.EXACT)
+        if (parseMode != null && parseMode != ParseMode.EXACT)
         {
             line += " by " + parseModeName(parseMode);
         }
@@ -487,8 +479,8 @@ public final class TransformDslWriter
         ColumnName source = firstConfiguredSource(transform);
         ColumnName target = firstConfiguredTarget(transform);
         String line = "convert " + column(source) + " to " + type;
-        TransformParseMode parseMode = parseMode(transform);
-        if (parseMode != null && parseMode != TransformParseMode.EXACT)
+        ParseMode parseMode = parseMode(transform);
+        if (parseMode != null && parseMode != ParseMode.EXACT)
         {
             line += " by " + parseModeName(parseMode);
         }
@@ -497,10 +489,6 @@ public final class TransformDslWriter
 
     private static ColumnName firstConfiguredSource(Transform transform)
     {
-        if (transform instanceof TransformToPrimitive primitive)
-        {
-            return primitive.columnName();
-        }
         if (transform instanceof TransformStringToType<?> toType)
         {
             return toType.columnName();
@@ -514,10 +502,6 @@ public final class TransformDslWriter
 
     private static ColumnName firstConfiguredTarget(Transform transform)
     {
-        if (transform instanceof TransformToPrimitive primitive)
-        {
-            return primitive.newColumnName();
-        }
         if (transform instanceof TransformStringToType<?> toType)
         {
             return toType.newColumnName();
@@ -530,10 +514,8 @@ public final class TransformDslWriter
         return null;
     }
 
-    private static TransformParseMode parseMode(Transform transform)
+    private static ParseMode parseMode(Transform transform)
     {
-        if (transform instanceof TransformToPrimitive primitive)
-            return null;
         if (transform instanceof TransformStringToType<?> toType)
         {
             return toType.parseMode();
@@ -748,7 +730,7 @@ public final class TransformDslWriter
         return type.toString();
     }
 
-    private static String parseModeName(TransformParseMode parseMode)
+    private static String parseModeName(ParseMode parseMode)
     {
         return switch (parseMode)
         {

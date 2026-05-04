@@ -26,6 +26,7 @@ import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.column.type.TypeWriter;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
+import app.babylon.text.Sentence.ParseMode;
 
 /**
  * A column that stores object values, including strings, dates, decimals, and
@@ -186,13 +187,19 @@ public interface ColumnObject<T> extends Column
         @Override
         default Builder<T> add(CharSequence chars, int offset, int length)
         {
+            return add(ParseMode.EXACT, chars, offset, length);
+        }
+
+        @Override
+        default Builder<T> add(ParseMode parseMode, CharSequence chars, int offset, int length)
+        {
             if (chars == null || length == 0)
             {
                 return addNull();
             }
             @SuppressWarnings("unchecked")
             TypeParser<T> parser = (TypeParser<T>) getType().getParser();
-            T value = parser.parse(chars, offset, length);
+            T value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, offset, length);
             if (value == null)
             {
                 addNull();
@@ -230,7 +237,7 @@ public interface ColumnObject<T> extends Column
          */
         public default Builder<T> addNull()
         {
-            return add(null);
+            return add((T) null);
         }
 
         /**

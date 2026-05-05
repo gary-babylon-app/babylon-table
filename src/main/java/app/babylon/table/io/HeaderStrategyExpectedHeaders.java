@@ -36,14 +36,14 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
         this(scanLimit, toColumnNames(expectedHeaders));
     }
 
-    public HeaderStrategyExpectedHeaders(int scanLimit, Collection<ColumnName> expectedHeaders)
+    public HeaderStrategyExpectedHeaders(int scanLimit, Iterable<ColumnName> expectedHeaders)
     {
         if (scanLimit < 1)
         {
             throw new IllegalArgumentException("Header scan limit must be at least 1.");
         }
         this.scanLimit = scanLimit;
-        this.expectedHeaders = new LinkedHashSet<>(ArgumentCheck.nonNull(expectedHeaders));
+        this.expectedHeaders = expectedHeaders(expectedHeaders);
     }
 
     public int getScanLimit()
@@ -109,6 +109,17 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
             {
                 values.add(expectedHeader);
             }
+        }
+        return values;
+    }
+
+    private static Collection<ColumnName> expectedHeaders(Iterable<ColumnName> expectedHeaders)
+    {
+        Iterable<ColumnName> headers = ArgumentCheck.nonNull(expectedHeaders);
+        Collection<ColumnName> values = new LinkedHashSet<>();
+        for (ColumnName expectedHeader : headers)
+        {
+            values.add(ArgumentCheck.nonNull(expectedHeader));
         }
         return values;
     }

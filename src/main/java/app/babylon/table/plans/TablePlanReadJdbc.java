@@ -77,9 +77,17 @@ public class TablePlanReadJdbc extends TablePlanCommon<TablePlanReadJdbc>
 
     public TablePlanReadJdbc withSelectedColumns(Collection<ColumnName> columnNames)
     {
+        return withSelectedColumns((Iterable<ColumnName>) columnNames);
+    }
+
+    public TablePlanReadJdbc withSelectedColumns(Iterable<ColumnName> columnNames)
+    {
         if (columnNames != null)
         {
-            this.selectedColumns.addAll(columnNames);
+            for (ColumnName columnName : columnNames)
+            {
+                this.selectedColumns.add(columnName);
+            }
         }
         return this;
     }

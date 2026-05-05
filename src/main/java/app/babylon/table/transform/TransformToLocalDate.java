@@ -52,7 +52,7 @@ public class TransformToLocalDate extends TransformBase
         return builder().withColumnNames(columnName, additionalColumnNames);
     }
 
-    public static Builder builder(Collection<ColumnName> columnNames)
+    public static Builder builder(Iterable<ColumnName> columnNames)
     {
         return builder().withColumnNames(columnNames);
     }
@@ -81,10 +81,9 @@ public class TransformToLocalDate extends TransformBase
             return this;
         }
 
-        public Builder withColumnNames(Collection<ColumnName> columnNames)
+        public Builder withColumnNames(Iterable<ColumnName> columnNames)
         {
-            ArgumentCheck.nonEmpty(columnNames);
-            ColumnName[] copy = columnNames.toArray(new ColumnName[columnNames.size()]);
+            ColumnName[] copy = columnNames(columnNames);
             return withColumnNames(copy[0], Arrays.copyOfRange(copy, 1, copy.length));
         }
 
@@ -302,5 +301,16 @@ public class TransformToLocalDate extends TransformBase
             ArgumentCheck.nonNull(columnName);
         }
         return copy;
+    }
+
+    private static ColumnName[] columnNames(Iterable<ColumnName> columnNames)
+    {
+        Iterable<ColumnName> names = ArgumentCheck.nonNull(columnNames);
+        List<ColumnName> copy = new ArrayList<>();
+        for (ColumnName columnName : names)
+        {
+            copy.add(ArgumentCheck.nonNull(columnName));
+        }
+        return ArgumentCheck.nonEmpty(copy).toArray(ColumnName[]::new);
     }
 }

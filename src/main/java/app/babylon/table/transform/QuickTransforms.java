@@ -1,7 +1,7 @@
 package app.babylon.table.transform;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -70,7 +70,20 @@ public final class QuickTransforms
         return this.parser.parse(tokens);
     }
 
-    public List<Transform> parseAll(Collection<String> statements)
+    public List<Transform> parseAll(Iterable<String> statements)
+    {
+        List<Transform> transforms = new ArrayList<>();
+        if (statements != null)
+        {
+            for (String statement : statements)
+            {
+                transforms.add(parse(statement));
+            }
+        }
+        return transforms;
+    }
+
+    public List<Transform> parseAll(String... statements)
     {
         List<Transform> transforms = new ArrayList<>();
         if (statements != null)
@@ -88,9 +101,16 @@ public final class QuickTransforms
         return this.writer.write(transform);
     }
 
-    public List<String> writeAll(Collection<? extends Transform> transforms)
+    public List<String> writeAll(Iterable<? extends Transform> transforms)
     {
         return this.writer.writeAll(transforms);
+    }
+
+    public List<String> writeAll(Transform... transforms)
+    {
+        return transforms == null
+                ? writeAll((Iterable<? extends Transform>) null)
+                : writeAll(Arrays.asList(transforms));
     }
 
     public String format(String statement)

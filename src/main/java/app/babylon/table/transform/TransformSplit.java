@@ -1,7 +1,8 @@
 package app.babylon.table.transform;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
@@ -41,12 +42,12 @@ public class TransformSplit extends TransformBase
     private final Mode mode;
     private final ColumnName[] splitColumnNames;
 
-    public TransformSplit(ColumnName columnToSplit, String splitOn, ColumnName... splitColumnNames)
+    private TransformSplit(ColumnName columnToSplit, String splitOn, ColumnName... splitColumnNames)
     {
         this(columnToSplit, splitOn, Mode.ALL, splitColumnNames);
     }
 
-    public TransformSplit(ColumnName columnToSplit, String splitOn, Mode mode, ColumnName... splitColumnNames)
+    private TransformSplit(ColumnName columnToSplit, String splitOn, Mode mode, ColumnName... splitColumnNames)
     {
         super(FUNCTION_NAME);
         this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
@@ -56,12 +57,12 @@ public class TransformSplit extends TransformBase
         requireColumnCount(this.mode, this.splitColumnNames);
     }
 
-    public TransformSplit(ColumnName columnToSplit, String splitOn, Collection<String> splitColumnNames)
+    private TransformSplit(ColumnName columnToSplit, String splitOn, Iterable<ColumnName> splitColumnNames)
     {
         this(columnToSplit, splitOn, Mode.ALL, splitColumnNames);
     }
 
-    public TransformSplit(ColumnName columnToSplit, String splitOn, Mode mode, Collection<String> splitColumnNames)
+    private TransformSplit(ColumnName columnToSplit, String splitOn, Mode mode, Iterable<ColumnName> splitColumnNames)
     {
         super(FUNCTION_NAME);
         this.columnToSplit = ArgumentCheck.nonNull(columnToSplit);
@@ -91,7 +92,15 @@ public class TransformSplit extends TransformBase
         return Arrays.copyOf(this.splitColumnNames, this.splitColumnNames.length);
     }
 
-    public static TransformSplit of(String[] params)
+    /**
+     * Creates a split transform from the legacy registry parameter shape: source
+     * column, delimiter, optional mode, then output column names.
+     *
+     * @deprecated Use transform DSL through {@link QuickTransforms}, or typed
+     *             factories with {@link ColumnName}.
+     */
+    @Deprecated(since = "0.3.22", forRemoval = true)
+    public static TransformSplit of(String... params)
     {
         if (!Is.empty(params) && params.length >= 4)
         {
@@ -102,8 +111,7 @@ public class TransformSplit extends TransformBase
                 mode = Mode.parse(params[2]);
                 columnStart = 3;
             }
-            return of(ColumnName.of(params[0]), params[1], mode,
-                    Arrays.asList(params).subList(columnStart, params.length));
+            return of(ColumnName.of(params[0]), params[1], mode, columnNames(params, columnStart));
         }
         return null;
     }
@@ -118,13 +126,13 @@ public class TransformSplit extends TransformBase
         return new TransformSplit(columnToSplit, splitOn, mode, splitColumnNames);
     }
 
-    public static TransformSplit of(ColumnName columnToSplit, String splitOn, Collection<String> splitColumnNames)
+    public static TransformSplit of(ColumnName columnToSplit, String splitOn, Iterable<ColumnName> splitColumnNames)
     {
         return new TransformSplit(columnToSplit, splitOn, splitColumnNames);
     }
 
     public static TransformSplit of(ColumnName columnToSplit, String splitOn, Mode mode,
-            Collection<String> splitColumnNames)
+            Iterable<ColumnName> splitColumnNames)
     {
         return new TransformSplit(columnToSplit, splitOn, mode, splitColumnNames);
     }
@@ -215,16 +223,25 @@ public class TransformSplit extends TransformBase
         return splitOn;
     }
 
-    private static ColumnName[] columnNames(Collection<String> splitColumnNames)
+    private static ColumnName[] columnNames(Iterable<ColumnName> splitColumnNames)
     {
-        Collection<String> names = ArgumentCheck.nonEmpty(splitColumnNames);
-        ColumnName[] copy = new ColumnName[names.size()];
-        int i = 0;
-        for (String name : names)
+        Iterable<ColumnName> names = ArgumentCheck.nonNull(splitColumnNames);
+        List<ColumnName> copy = new ArrayList<>();
+        for (ColumnName name : names)
         {
-            copy[i++] = ColumnName.of(name);
+            copy.add(ArgumentCheck.nonNull(name));
         }
-        return copy;
+        return ArgumentCheck.nonEmpty(copy).toArray(ColumnName[]::new);
+    }
+
+    private static ColumnName[] columnNames(String[] params, int startIndex)
+    {
+        List<ColumnName> columnNames = new ArrayList<>();
+        for (int i = startIndex; i < params.length; ++i)
+        {
+            columnNames.add(ColumnName.of(params[i]));
+        }
+        return columnNames.toArray(ColumnName[]::new);
     }
 
     private static boolean isMode(String s)

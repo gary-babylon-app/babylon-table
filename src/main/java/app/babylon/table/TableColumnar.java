@@ -206,15 +206,18 @@ public interface TableColumnar extends Table
         return Tables.newTable(getName(), getDescription(), columnsByName.values());
     }
 
-    default public TableColumnar apply(Collection<Transform> transforms)
+    default public TableColumnar apply(Iterable<? extends Transform> transforms)
     {
         Map<ColumnName, Column> columnsByName = getColumns(new LinkedHashMap<>());
         SourceMetadata metadata = sourceMetadata();
-        for (Transform transform : transforms)
+        if (transforms != null)
         {
-            if (transform != null)
+            for (Transform transform : transforms)
             {
-                transform.apply(metadata, columnsByName);
+                if (transform != null)
+                {
+                    transform.apply(metadata, columnsByName);
+                }
             }
         }
         return Tables.newTable(getName(), getDescription(), columnsByName.values());

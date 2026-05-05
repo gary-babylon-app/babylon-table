@@ -301,7 +301,7 @@ public final class TransformDslParser
         String target = tokens.expectValue();
         requireMinimumValueCount("coalesce", sources, 1);
         ColumnObject.Mode columnMode = mode == null ? null : ColumnObject.Mode.parse(mode);
-        return TransformCoalesce.of(ColumnName.of(target), columnMode, sources);
+        return TransformCoalesce.of(ColumnName.of(target), columnMode, columnNames(sources));
     }
 
     private static Transform parseConcat(TokenStream tokens)
@@ -314,7 +314,7 @@ public final class TransformDslParser
         }
         tokens.expectWord("into");
         String target = tokens.expectValue();
-        return TransformConcat.of(ColumnName.of(target), separator, sources.sourceColumns(), sources.literalValues());
+        return TransformConcat.of(ColumnName.of(target), separator, sources.parts());
     }
 
     private Transform parseConvert(TokenStream tokens)
@@ -774,7 +774,7 @@ public final class TransformDslParser
         }
         tokens.expectWord("into");
         List<String> targets = commaSeparatedValues(tokens);
-        return TransformSplit.of(ColumnName.of(source), separator, mode, targets);
+        return TransformSplit.of(ColumnName.of(source), separator, mode, columnNames(targets));
     }
 
     private static Transform parseStrip(TokenStream tokens)
@@ -951,6 +951,16 @@ public final class TransformDslParser
         return name == null ? null : ColumnName.of(name);
     }
 
+    private static List<ColumnName> columnNames(List<String> names)
+    {
+        List<ColumnName> columnNames = new ArrayList<>(names.size());
+        for (String name : names)
+        {
+            columnNames.add(ColumnName.of(name));
+        }
+        return columnNames;
+    }
+
     private static Transform replace(ColumnName source, ColumnName target, String targetText, String replacement)
     {
         return target == null
@@ -995,22 +1005,21 @@ public final class TransformDslParser
 
     private static ConcatParts concatPartsUntil(TokenStream tokens, String... words)
     {
-        List<ColumnName> sourceColumns = new ArrayList<>();
-        List<String> literalValues = new ArrayList<>();
-        addConcatPart(tokens.next(), sourceColumns, literalValues);
+        List<TransformConcat.Part> parts = new ArrayList<>();
+        addConcatPart(tokens.next(), parts);
         while (tokens.match(TokenType.COMMA))
         {
-            addConcatPart(tokens.next(), sourceColumns, literalValues);
+            addConcatPart(tokens.next(), parts);
         }
         if (!isAnyWord(tokens.peek(), words))
         {
             throw new TransformDslException("Expected '" + String.join("' or '", words) + "'",
                     tokens.peek().position());
         }
-        return new ConcatParts(sourceColumns.toArray(ColumnName[]::new), literalValues.toArray(String[]::new));
+        return new ConcatParts(parts.toArray(TransformConcat.Part[]::new));
     }
 
-    private static void addConcatPart(Token token, List<ColumnName> sourceColumns, List<String> literalValues)
+    private static void addConcatPart(Token token, List<TransformConcat.Part> parts)
     {
         if (!token.isValue())
         {
@@ -1018,17 +1027,15 @@ public final class TransformDslParser
         }
         if (token.is(TokenType.LITERAL))
         {
-            sourceColumns.add(null);
-            literalValues.add(token.value());
+            parts.add(TransformConcat.Part.literal(token.value()));
         }
         else
         {
-            sourceColumns.add(ColumnName.of(token.value()));
-            literalValues.add(null);
+            parts.add(TransformConcat.Part.column(ColumnName.of(token.value())));
         }
     }
 
-    private record ConcatParts(ColumnName[] sourceColumns, String[] literalValues)
+    private record ConcatParts(TransformConcat.Part[] parts)
     {
     }
 

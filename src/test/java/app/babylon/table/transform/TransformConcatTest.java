@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import app.babylon.table.TableColumnar;
@@ -32,7 +34,7 @@ class TransformConcatTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), first.build(), last.build());
 
-        TableColumnar transformed = table.apply(new TransformConcat(FULL, " ", FIRST, LAST));
+        TableColumnar transformed = table.apply(TransformConcat.of(FULL, " ", FIRST, LAST));
 
         ColumnObject<String> full = transformed.getString(FULL);
         assertEquals("Ada Lovelace", full.get(0));
@@ -62,13 +64,34 @@ class TransformConcatTest
         TableColumnar table = Tables.newTable(TableName.of("t"), accountType.build(), country.build(),
                 accountNumber.build());
 
-        TableColumnar transformed = table.apply(TransformConcat.of(ACCOUNT_KEY, "|", new ColumnName[]
-        {ACCOUNT_TYPE, COUNTRY, null, ACCOUNT_NUMBER}, new String[]
-        {null, null, "ACCT", null}));
+        TableColumnar transformed = table.apply(TransformConcat.of(ACCOUNT_KEY, "|",
+                TransformConcat.Part.column(ACCOUNT_TYPE), TransformConcat.Part.column(COUNTRY),
+                TransformConcat.Part.literal("ACCT"), TransformConcat.Part.column(ACCOUNT_NUMBER)));
 
         ColumnObject<String> accountKey = transformed.getString(ACCOUNT_KEY);
         assertEquals("CASH|GB|ACCT|12345", accountKey.get(0));
         assertEquals("MARGIN|US|ACCT|67890", accountKey.get(1));
+    }
+
+    @Test
+    void shouldConcatIterableParts()
+    {
+        final ColumnName FIRST = ColumnName.of("First");
+        final ColumnName LAST = ColumnName.of("Last");
+        final ColumnName FULL = ColumnName.of("Full");
+
+        ColumnObject.Builder<String> first = ColumnObject.builder(FIRST, ColumnTypes.STRING);
+        first.add("Ada");
+
+        ColumnObject.Builder<String> last = ColumnObject.builder(LAST, ColumnTypes.STRING);
+        last.add("Lovelace");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), first.build(), last.build());
+
+        TableColumnar transformed = table.apply(TransformConcat.of(FULL, "", List.of(TransformConcat.Part.column(FIRST),
+                TransformConcat.Part.literal(" "), TransformConcat.Part.column(LAST))));
+
+        assertEquals("Ada Lovelace", transformed.getString(FULL).get(0));
     }
 
     @Test
@@ -83,11 +106,11 @@ class TransformConcatTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), first.build());
 
-        assertThrows(IllegalArgumentException.class, () -> table.apply(new TransformConcat(FULL, " ", FIRST, LAST)));
+        assertThrows(IllegalArgumentException.class, () -> table.apply(TransformConcat.of(FULL, " ", FIRST, LAST)));
     }
 
     @Test
-    void shouldBeAvailableFromFactory()
+    void shouldBeAvailableFromLegacyRegistryFactory()
     {
         Transform transform = TransformConcat.of("Full", " ", "First", "Last");
 

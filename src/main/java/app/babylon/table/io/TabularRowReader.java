@@ -22,6 +22,8 @@ public interface TabularRowReader
 
     TabularRowReader withSelectedColumns(ColumnName... columnNames);
 
+    TabularRowReader withSelectedColumns(Iterable<ColumnName> columnNames);
+
     TabularRowReader withColumnRename(ColumnName original, ColumnName newName);
 
     TabularRowReader withColumnRenames(Map<ColumnName, ColumnName> renames);

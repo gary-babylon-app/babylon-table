@@ -11,7 +11,7 @@
 package app.babylon.table.transform.dsl;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -144,7 +144,7 @@ public final class TransformDslWriter
         return writer.apply(transform);
     }
 
-    public List<String> writeAll(Collection<? extends Transform> transforms)
+    public List<String> writeAll(Iterable<? extends Transform> transforms)
     {
         List<String> lines = new ArrayList<>();
         if (transforms != null)
@@ -155,6 +155,13 @@ public final class TransformDslWriter
             }
         }
         return lines;
+    }
+
+    public List<String> writeAll(Transform... transforms)
+    {
+        return transforms == null
+                ? writeAll((Iterable<? extends Transform>) null)
+                : writeAll(Arrays.asList(transforms));
     }
 
     public String format(String line)
@@ -218,7 +225,7 @@ public final class TransformDslWriter
         TransformConcat concat = (TransformConcat) transform;
         ColumnName target = concat.concatColumn();
         String separator = concat.separator();
-        String line = "concat " + concatParts(concat.sourceColumns(), concat.literalValues());
+        String line = "concat " + concatParts(concat.parts());
         if (separator != null)
         {
             line += " using " + literal(separator);
@@ -689,12 +696,12 @@ public final class TransformDslWriter
         return String.join(", ", values);
     }
 
-    private static String concatParts(ColumnName[] sourceColumns, String[] literalValues)
+    private static String concatParts(TransformConcat.Part[] parts)
     {
         List<String> values = new ArrayList<>();
-        for (int i = 0; i < sourceColumns.length; ++i)
+        for (TransformConcat.Part part : parts)
         {
-            values.add(sourceColumns[i] == null ? literal(literalValues[i]) : column(sourceColumns[i]));
+            values.add(part.isColumn() ? column(part.columnName()) : literal(part.literalValue()));
         }
         return String.join(", ", values);
     }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -190,6 +191,18 @@ class TransformToLocalDateTest
         TableColumnar transformed = table.apply(transform);
 
         assertEquals(LocalDate.of(2026, 2, 15), transformed.getObject(PARSED_TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+    }
+
+    @Test
+    void shouldCreateTransformFromIterableBuilderColumns()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("TRADE_DATE");
+        final ColumnName SETTLE_DATE = ColumnName.of("SETTLE_DATE");
+
+        TransformToLocalDate transform = TransformToLocalDate.builder(List.of(TRADE_DATE, SETTLE_DATE)).build();
+
+        assertEquals(TRADE_DATE, transform.columnNames()[0]);
+        assertEquals(SETTLE_DATE, transform.columnNames()[1]);
     }
 
     @Test

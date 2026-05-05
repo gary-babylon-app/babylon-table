@@ -1,7 +1,8 @@
 package app.babylon.table.transform;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
@@ -19,7 +20,7 @@ public class TransformCoalesce extends TransformBase
     private final ColumnObject.Mode mode;
     private final ColumnName[] columnNames;
 
-    public TransformCoalesce(ColumnName newColumnName, ColumnObject.Mode mode, ColumnName firstColumnName,
+    private TransformCoalesce(ColumnName newColumnName, ColumnObject.Mode mode, ColumnName firstColumnName,
             ColumnName... additionalColumnNames)
     {
         super(FUNCTION_NAME);
@@ -28,7 +29,7 @@ public class TransformCoalesce extends TransformBase
         this.columnNames = columnNames(firstColumnName, additionalColumnNames);
     }
 
-    public TransformCoalesce(ColumnName newColumnName, ColumnObject.Mode mode, Collection<String> sourceColumnNames)
+    private TransformCoalesce(ColumnName newColumnName, ColumnObject.Mode mode, Iterable<ColumnName> sourceColumnNames)
     {
         super(FUNCTION_NAME);
         this.newColumnName = ArgumentCheck.nonNull(newColumnName);
@@ -36,6 +37,14 @@ public class TransformCoalesce extends TransformBase
         this.columnNames = columnNames(sourceColumnNames);
     }
 
+    /**
+     * Creates a coalesce transform from the legacy registry parameter shape: output
+     * column, optional mode, then source column names.
+     *
+     * @deprecated Use transform DSL through {@link QuickTransforms}, or typed
+     *             factories with {@link ColumnName}.
+     */
+    @Deprecated(since = "0.3.22", forRemoval = true)
     public static TransformCoalesce of(String... params)
     {
         if (Is.empty(params) || params.length < 2)
@@ -58,7 +67,7 @@ public class TransformCoalesce extends TransformBase
     }
 
     public static TransformCoalesce of(ColumnName newColumnName, ColumnObject.Mode mode,
-            Collection<String> sourceColumnNames)
+            Iterable<ColumnName> sourceColumnNames)
     {
         return new TransformCoalesce(newColumnName, mode, sourceColumnNames);
     }
@@ -172,16 +181,15 @@ public class TransformCoalesce extends TransformBase
         return columnNames;
     }
 
-    private static ColumnName[] columnNames(Collection<String> sourceColumnNames)
+    private static ColumnName[] columnNames(Iterable<ColumnName> sourceColumnNames)
     {
-        Collection<String> names = ArgumentCheck.nonEmpty(sourceColumnNames);
-        ColumnName[] copy = new ColumnName[names.size()];
-        int i = 0;
-        for (String name : names)
+        Iterable<ColumnName> names = ArgumentCheck.nonNull(sourceColumnNames);
+        List<ColumnName> copy = new ArrayList<>();
+        for (ColumnName name : names)
         {
-            copy[i++] = ColumnName.of(name);
+            copy.add(ArgumentCheck.nonNull(name));
         }
-        return copy;
+        return ArgumentCheck.nonEmpty(copy).toArray(ColumnName[]::new);
     }
 
     private static ColumnObject.Mode parseMode(String s)
@@ -214,9 +222,14 @@ public class TransformCoalesce extends TransformBase
         return length;
     }
 
-    private static Collection<String> sourceColumnNames(String[] params, int sourceStartIndex)
+    private static Iterable<ColumnName> sourceColumnNames(String[] params, int sourceStartIndex)
     {
         int length = sourceColumnNamesLength(params, sourceStartIndex);
-        return Arrays.asList(params).subList(sourceStartIndex, sourceStartIndex + length);
+        List<ColumnName> columnNames = new ArrayList<>();
+        for (String name : Arrays.asList(params).subList(sourceStartIndex, sourceStartIndex + length))
+        {
+            columnNames.add(ColumnName.of(name));
+        }
+        return columnNames;
     }
 }

@@ -1,11 +1,11 @@
 package app.babylon.table.transform;
 
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
-import app.babylon.lang.Is;
 import app.babylon.table.ToStringSettings;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
@@ -18,72 +18,85 @@ public class TransformConcat extends TransformBase
 
     private final ColumnName concatColumn;
     private final String separator;
-    private final ColumnName[] sourceColumns;
-    private final String[] literalValues;
+    private final Part[] parts;
 
-    public TransformConcat(ColumnName concatColumn, String separator, ColumnName... sourceColumns)
+    public record Part(ColumnName columnName, String literalValue)
     {
-        super(FUNCTION_NAME);
-        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
-        this.separator = separator;
-        this.sourceColumns = Arrays.copyOf(ArgumentCheck.nonNull(sourceColumns), sourceColumns.length);
-        this.literalValues = new String[sourceColumns.length];
-    }
-
-    public TransformConcat(ColumnName concatColumn, String separator, Collection<String> sourceColumns)
-    {
-        super(FUNCTION_NAME);
-        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
-        this.separator = separator;
-        this.sourceColumns = columnNames(sourceColumns);
-        this.literalValues = new String[this.sourceColumns.length];
-    }
-
-    private TransformConcat(ColumnName concatColumn, String separator, ColumnName[] sourceColumns,
-            String[] literalValues)
-    {
-        super(FUNCTION_NAME);
-        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
-        this.separator = separator;
-        this.sourceColumns = Arrays.copyOf(ArgumentCheck.nonNull(sourceColumns), sourceColumns.length);
-        this.literalValues = Arrays.copyOf(ArgumentCheck.nonNull(literalValues), literalValues.length);
-        if (this.sourceColumns.length != this.literalValues.length)
+        public Part
         {
-            throw new IllegalArgumentException("Require the same number of source columns and literal values.");
-        }
-        for (int i = 0; i < this.sourceColumns.length; ++i)
-        {
-            if ((this.sourceColumns[i] == null) == (this.literalValues[i] == null))
+            if ((columnName == null) == (literalValue == null))
             {
-                throw new IllegalArgumentException("Require exactly one source column or literal value at " + i + ".");
+                throw new IllegalArgumentException("Require exactly one source column or literal value.");
             }
         }
+
+        public static Part column(ColumnName columnName)
+        {
+            return new Part(ArgumentCheck.nonNull(columnName), null);
+        }
+
+        public static Part literal(String value)
+        {
+            return new Part(null, ArgumentCheck.nonNull(value));
+        }
+
+        public boolean isColumn()
+        {
+            return this.columnName != null;
+        }
     }
 
+    private TransformConcat(ColumnName concatColumn, String separator, Part... parts)
+    {
+        super(FUNCTION_NAME);
+        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
+        this.separator = separator;
+        this.parts = parts(parts);
+    }
+
+    private TransformConcat(ColumnName concatColumn, String separator, Iterable<Part> parts)
+    {
+        super(FUNCTION_NAME);
+        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
+        this.separator = separator;
+        this.parts = parts(parts);
+    }
+
+    /**
+     * Creates a concat transform from the legacy registry parameter shape: output
+     * column, separator, then source column names.
+     *
+     * @deprecated Use transform DSL through {@link QuickTransforms}, or typed
+     *             factories with {@link ColumnName} and {@link Part}.
+     */
+    @Deprecated(since = "0.3.22", forRemoval = true)
     public static TransformConcat of(String... params)
     {
-        if (Is.empty(params) || params.length < 3)
+        if (params == null || params.length < 3)
         {
             return null;
         }
-
-        return of(ColumnName.parse(params[0]), params[1], Arrays.asList(params).subList(2, params.length));
+        ColumnName[] sourceColumns = new ColumnName[params.length - 2];
+        for (int i = 2; i < params.length; ++i)
+        {
+            sourceColumns[i - 2] = ColumnName.of(params[i]);
+        }
+        return of(ColumnName.parse(params[0]), params[1], sourceColumns);
     }
 
     public static TransformConcat of(ColumnName concatColumn, String separator, ColumnName... sourceColumns)
     {
-        return new TransformConcat(concatColumn, separator, sourceColumns);
+        return new TransformConcat(concatColumn, separator, parts(sourceColumns));
     }
 
-    public static TransformConcat of(ColumnName concatColumn, String separator, Collection<String> sourceColumns)
+    public static TransformConcat of(ColumnName concatColumn, String separator, Part... parts)
     {
-        return new TransformConcat(concatColumn, separator, sourceColumns);
+        return new TransformConcat(concatColumn, separator, parts);
     }
 
-    public static TransformConcat of(ColumnName concatColumn, String separator, ColumnName[] sourceColumns,
-            String[] literalValues)
+    public static TransformConcat of(ColumnName concatColumn, String separator, Iterable<Part> parts)
     {
-        return new TransformConcat(concatColumn, separator, sourceColumns, literalValues);
+        return new TransformConcat(concatColumn, separator, parts);
     }
 
     public String separator()
@@ -101,34 +114,30 @@ public class TransformConcat extends TransformBase
         return this.concatColumn;
     }
 
-    public ColumnName[] sourceColumns()
+    public Part[] parts()
     {
-        return Arrays.copyOf(this.sourceColumns, this.sourceColumns.length);
-    }
-
-    public String[] literalValues()
-    {
-        return Arrays.copyOf(this.literalValues, this.literalValues.length);
+        return Arrays.copyOf(this.parts, this.parts.length);
     }
 
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
         ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn, ColumnTypes.STRING);
-        Column[] columns = new Column[this.sourceColumns.length];
-        String[] values = new String[this.sourceColumns.length];
+        Column[] columns = new Column[this.parts.length];
+        String[] values = new String[this.parts.length];
         ToStringSettings settings = ToStringSettings.standard();
 
-        for (int i = 0; i < this.sourceColumns.length; ++i)
+        for (int i = 0; i < this.parts.length; ++i)
         {
-            if (this.literalValues[i] != null)
+            Part part = this.parts[i];
+            if (!part.isColumn())
             {
                 continue;
             }
-            Column column = columnsByName.get(this.sourceColumns[i]);
+            Column column = columnsByName.get(part.columnName());
             if (column == null)
             {
-                throw new IllegalArgumentException("No column " + this.sourceColumns[i] + " found");
+                throw new IllegalArgumentException("No column " + part.columnName() + " found");
             }
             columns[i] = column;
         }
@@ -138,7 +147,8 @@ public class TransformConcat extends TransformBase
         {
             for (int j = 0; j < columns.length; ++j)
             {
-                values[j] = this.literalValues[j] == null ? columns[j].toString(i, settings) : this.literalValues[j];
+                Part part = this.parts[j];
+                values[j] = part.isColumn() ? columns[j].toString(i, settings) : part.literalValue();
             }
             if (columns.length > 1)
             {
@@ -156,15 +166,35 @@ public class TransformConcat extends TransformBase
         columnsByName.put(this.concatColumn, newColumn.build());
     }
 
-    private static ColumnName[] columnNames(Collection<String> sourceColumns)
+    private static Part[] parts(ColumnName... sourceColumns)
     {
-        Collection<String> names = ArgumentCheck.nonEmpty(sourceColumns);
-        ColumnName[] copy = new ColumnName[names.size()];
-        int i = 0;
-        for (String name : names)
+        ColumnName[] columns = ArgumentCheck.nonNull(sourceColumns);
+        Part[] parts = new Part[columns.length];
+        for (int i = 0; i < parts.length; ++i)
         {
-            copy[i++] = ColumnName.of(name);
+            parts[i] = Part.column(columns[i]);
+        }
+        return parts;
+    }
+
+    private static Part[] parts(Part... parts)
+    {
+        Part[] copy = Arrays.copyOf(ArgumentCheck.nonNull(parts), parts.length);
+        for (int i = 0; i < copy.length; ++i)
+        {
+            copy[i] = ArgumentCheck.nonNull(copy[i]);
         }
         return copy;
+    }
+
+    private static Part[] parts(Iterable<Part> parts)
+    {
+        Iterable<Part> checked = ArgumentCheck.nonNull(parts);
+        List<Part> copy = new ArrayList<>();
+        for (Part part : checked)
+        {
+            copy.add(ArgumentCheck.nonNull(part));
+        }
+        return copy.toArray(Part[]::new);
     }
 }

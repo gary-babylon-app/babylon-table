@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import app.babylon.table.TableColumnar;
@@ -38,6 +40,21 @@ public class TransformCleanTest
         assertEquals("Eve Finch", cleaned.get(2));
         assertEquals("", cleaned.get(3));
         assertFalse(cleaned.isSet(4));
+    }
+
+    @Test
+    public void shouldApplyIterableTransforms()
+    {
+        final ColumnName NAME = ColumnName.of("Name");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(NAME, ColumnTypes.STRING);
+        strings.add("  Alice   Bob  ");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table.apply(List.of(new TransformClean(NAME)));
+
+        assertEquals("Alice Bob", transformed.getString(NAME).get(0));
     }
 
     @Test

@@ -47,7 +47,7 @@ public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>
     @Override
     public R withSelectedColumns(ColumnName... columnNames)
     {
-        if (!Is.empty(columnNames))
+        if (columnNames != null)
         {
             this.selectedColumns.addAll(Arrays.asList(columnNames));
         }
@@ -56,9 +56,18 @@ public abstract class TabularRowReaderCommon<R extends TabularRowReaderCommon<R>
 
     public R withSelectedColumns(Collection<ColumnName> columnNames)
     {
-        if (!Is.empty(columnNames))
+        return withSelectedColumns((Iterable<ColumnName>) columnNames);
+    }
+
+    @Override
+    public R withSelectedColumns(Iterable<ColumnName> columnNames)
+    {
+        if (columnNames != null)
         {
-            this.selectedColumns.addAll(columnNames);
+            for (ColumnName columnName : columnNames)
+            {
+                this.selectedColumns.add(columnName);
+            }
         }
         return self();
     }

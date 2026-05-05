@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +27,18 @@ class HeaderStrategyExpectedHeadersTest
         assertEquals(3, strategy.getScanLimit());
         assertEquals(2, actual.size());
         assertThrows(IllegalArgumentException.class, () -> new HeaderStrategyExpectedHeaders(0));
+    }
+
+    @Test
+    void shouldAcceptIterableExpectedHeaders()
+    {
+        final ColumnName DATE = ColumnName.of("Date");
+        final ColumnName PRICE = ColumnName.of("Price");
+        HeaderStrategyExpectedHeaders strategy = new HeaderStrategyExpectedHeaders(3, List.of(DATE, PRICE));
+
+        Collection<ColumnName> actual = strategy.getExpectedHeaders(new ArrayList<>());
+
+        assertEquals(List.of(DATE, PRICE), actual.stream().toList());
     }
 
     @Test

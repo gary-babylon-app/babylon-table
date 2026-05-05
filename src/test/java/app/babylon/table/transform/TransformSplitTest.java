@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import app.babylon.table.TableColumnar;
@@ -31,7 +33,7 @@ public class TransformSplitTest
 
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformSplit(SPLIT, "/", QUANTITY_BEFORE, QUANTITY_AFTER));
+        TableColumnar transformed = table.apply(TransformSplit.of(SPLIT, "/", QUANTITY_BEFORE, QUANTITY_AFTER));
 
         ColumnObject<String> quantitiesBefore = transformed.getString(QUANTITY_BEFORE);
         ColumnObject<String> quantitiesAfter = transformed.getString(QUANTITY_AFTER);
@@ -62,7 +64,7 @@ public class TransformSplitTest
         strings.addNull();
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
-        TableColumnar transformed = table.apply(new TransformSplit(NAME, " ", TransformSplit.Mode.FIRST, FIRST, REST));
+        TableColumnar transformed = table.apply(TransformSplit.of(NAME, " ", TransformSplit.Mode.FIRST, FIRST, REST));
 
         ColumnObject<String> first = transformed.getString(FIRST);
         ColumnObject<String> rest = transformed.getString(REST);
@@ -88,7 +90,7 @@ public class TransformSplitTest
         TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
 
         TableColumnar transformed = table
-                .apply(new TransformSplit(PATH, "/", TransformSplit.Mode.LAST, DIRECTORY, FILE));
+                .apply(TransformSplit.of(PATH, "/", TransformSplit.Mode.LAST, DIRECTORY, FILE));
 
         ColumnObject<String> directory = transformed.getString(DIRECTORY);
         ColumnObject<String> file = transformed.getString(FILE);
@@ -139,7 +141,7 @@ public class TransformSplitTest
         ColumnName[] splitColumnNames = new ColumnName[]
         {ColumnName.of("QuantityBefore"), ColumnName.of("QuantityAfter")};
 
-        TransformSplit transform = new TransformSplit(ColumnName.of("Split"), "/", splitColumnNames);
+        TransformSplit transform = TransformSplit.of(ColumnName.of("Split"), "/", splitColumnNames);
         splitColumnNames[0] = ColumnName.of("Mutated");
         ColumnName[] actual = transform.getSplitColumnNames();
         actual[1] = ColumnName.of("AlsoMutated");
@@ -149,10 +151,21 @@ public class TransformSplitTest
     }
 
     @Test
+    public void shouldAcceptIterableSplitColumnNames()
+    {
+        List<ColumnName> splitColumnNames = List.of(ColumnName.of("QuantityBefore"), ColumnName.of("QuantityAfter"));
+
+        TransformSplit transform = TransformSplit.of(ColumnName.of("Split"), "/", splitColumnNames);
+
+        assertEquals(ColumnName.of("QuantityBefore"), transform.getSplitColumnNames()[0]);
+        assertEquals(ColumnName.of("QuantityAfter"), transform.getSplitColumnNames()[1]);
+    }
+
+    @Test
     public void shouldRejectMultiCharacterDelimiter()
     {
         RuntimeException exception = assertThrows(RuntimeException.class,
-                () -> new TransformSplit(ColumnName.of("AccountKey"), "::", ColumnName.of("AccountType")));
+                () -> TransformSplit.of(ColumnName.of("AccountKey"), "::", ColumnName.of("AccountType")));
 
         assertEquals("Split split delimiter must be exactly one character.", exception.getMessage());
     }
@@ -161,7 +174,7 @@ public class TransformSplitTest
     public void shouldRejectFirstOrLastModeWithOtherThanTwoColumns()
     {
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> new TransformSplit(ColumnName.of("Path"), "/", TransformSplit.Mode.LAST, ColumnName.of("Only")));
+                () -> TransformSplit.of(ColumnName.of("Path"), "/", TransformSplit.Mode.LAST, ColumnName.of("Only")));
 
         assertEquals("Split mode last requires exactly two output columns.", exception.getMessage());
     }

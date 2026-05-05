@@ -175,9 +175,17 @@ abstract class RowCursorLineReaderCommon implements RowCursor
 
         public B withSelectedColumns(Collection<ColumnName> columnNames)
         {
-            if (!Is.empty(columnNames))
+            return withSelectedColumns((Iterable<ColumnName>) columnNames);
+        }
+
+        public B withSelectedColumns(Iterable<ColumnName> columnNames)
+        {
+            if (columnNames != null)
             {
-                this.selectedColumns.addAll(columnNames);
+                for (ColumnName columnName : columnNames)
+                {
+                    this.selectedColumns.add(columnName);
+                }
             }
             return self();
         }

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +49,7 @@ public class TransformCoalesceTest
                 thirdBuilder.build());
 
         TableColumnar transformed = table
-                .apply(new TransformCoalesce(CHOSEN, ColumnObject.Mode.AUTO, FIRST, SECOND, THIRD));
+                .apply(TransformCoalesce.of(CHOSEN, ColumnObject.Mode.AUTO, FIRST, SECOND, THIRD));
 
         ColumnObject<String> chosen = transformed.getString(CHOSEN);
         assertEquals("b", chosen.get(0));
@@ -110,6 +111,19 @@ public class TransformCoalesceTest
         ColumnObject<String> chosen = transformed.getString(CHOSEN);
         assertEquals("a", chosen.get(0));
         assertFalse(chosen.isSet(1));
+    }
+
+    @Test
+    public void shouldAcceptIterableSourceColumnNames()
+    {
+        final ColumnName CHOSEN = ColumnName.of("Chosen");
+        final ColumnName FIRST = ColumnName.of("First");
+        final ColumnName SECOND = ColumnName.of("Second");
+
+        TransformCoalesce transform = TransformCoalesce.of(CHOSEN, ColumnObject.Mode.AUTO, List.of(FIRST, SECOND));
+
+        assertEquals(FIRST, transform.columnNames()[0]);
+        assertEquals(SECOND, transform.columnNames()[1]);
     }
 
     @Test
@@ -180,7 +194,7 @@ public class TransformCoalesceTest
                 thirdBuilder.build());
 
         TableColumnar transformed = table
-                .apply(new TransformCoalesce(AMOUNT, ColumnObject.Mode.AUTO, FIRST, SECOND, THIRD));
+                .apply(TransformCoalesce.of(AMOUNT, ColumnObject.Mode.AUTO, FIRST, SECOND, THIRD));
 
         ColumnObject<BigDecimal> chosen = transformed.getDecimal(AMOUNT);
         assertEquals(0, new BigDecimal("2.50").compareTo(chosen.get(0)));

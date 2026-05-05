@@ -27,7 +27,13 @@ public final class QuickTransforms
 
     public static QuickTransforms standard()
     {
-        return new QuickTransforms(TransformDslParser.standard(), TransformDslWriter.standard());
+        return StandardHolder.INSTANCE;
+    }
+
+    private static final class StandardHolder
+    {
+        private static final QuickTransforms INSTANCE = new QuickTransforms(TransformDslParser.standard(),
+                TransformDslWriter.standard());
     }
 
     public QuickTransforms with(String command, TransformCommandParser parser)

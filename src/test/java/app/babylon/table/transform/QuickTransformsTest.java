@@ -2,6 +2,7 @@ package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.List;
 
@@ -15,6 +16,12 @@ import app.babylon.table.transform.TransformStringToType;
 
 class QuickTransformsTest
 {
+    @Test
+    void standardShouldReturnLazySingleton()
+    {
+        assertSame(QuickTransforms.standard(), QuickTransforms.standard());
+    }
+
     @Test
     void shouldParseAndWriteStatement()
     {

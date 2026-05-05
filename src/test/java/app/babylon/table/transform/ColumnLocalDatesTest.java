@@ -24,6 +24,7 @@ class ColumnLocalDatesTest
         assertEquals(LocalDate.of(2026, 3, 1), ColumnLocalDates.stringToDate("01/03/2026", DateFormat.DMY));
         assertEquals(LocalDate.of(2024, 2, 29), ColumnLocalDates.stringToDate("20240229", DateFormat.YMD));
         assertEquals(LocalDate.of(2026, 2, 15), ColumnLocalDates.stringToDate("15-02-2026", DateFormat.DMY));
+        assertEquals(LocalDate.of(2026, 2, 15), ColumnLocalDates.stringToDate("15.02.2026", DateFormat.DMY));
         assertEquals(LocalDate.of(2026, 1, 1), ColumnLocalDates.stringToDate("1-Jan-2026", DateFormat.DMY));
         assertEquals(LocalDate.of(2026, 1, 1), ColumnLocalDates.stringToDate("2026Jan1", DateFormat.YMD));
         assertEquals(LocalDate.ofEpochDay(45200L + (LocalDate.EPOCH.toEpochDay() - 25569L)),

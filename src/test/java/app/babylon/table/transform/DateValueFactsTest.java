@@ -42,7 +42,19 @@ class DateValueFactsTest
         assertEquals(LocalDate.of(2026, 3, 1), DateValueFacts.from("01-Mar-2026").toLocalDate(DateFormat.DMY));
         assertEquals(LocalDate.of(2024, 5, 24), DateValueFacts.from("45436").toLocalDate(DateFormat.YMD));
         assertEquals(LocalDate.of(2024, 5, 24), DateValueFacts.from("45436.25").toLocalDate(DateFormat.YMD));
-        assertEquals(null, DateValueFacts.from("2026.03.01").toLocalDate(DateFormat.YMD));
+        assertEquals(LocalDate.of(2026, 3, 1), DateValueFacts.from("2026.03.01").toLocalDate(DateFormat.YMD));
+        assertEquals(LocalDate.of(2026, 2, 15), DateValueFacts.from("15.02.2026").toLocalDate(DateFormat.DMY));
+        assertEquals(LocalDate.of(2026, 2, 15), DateValueFacts.from("15?02?2026").toLocalDate(DateFormat.DMY));
+        assertEquals(LocalDate.of(2026, 2, 15), DateValueFacts.from("15#02#2026").toLocalDate(DateFormat.DMY));
+        assertEquals(LocalDate.of(2026, 2, 15), DateValueFacts.from("15+02+2026").toLocalDate(DateFormat.DMY));
+        assertEquals(LocalDate.of(2026, 2, 15), DateValueFacts.from("15@02@2026").toLocalDate(DateFormat.DMY));
+        assertEquals(LocalDate.of(2026, 2, 15), DateValueFacts.from("15^02^2026").toLocalDate(DateFormat.DMY));
+        assertEquals(null, DateValueFacts.from("20-May2005").toLocalDate(DateFormat.DMY));
+        assertEquals(null, DateValueFacts.from("20May-2005").toLocalDate(DateFormat.DMY));
+        assertEquals(null, DateValueFacts.from("15??02??2026").toLocalDate(DateFormat.DMY));
+        assertEquals(null, DateValueFacts.from("15##02##2026").toLocalDate(DateFormat.DMY));
+        assertEquals(null, DateValueFacts.from("15/02-2026").toLocalDate(DateFormat.DMY));
+        assertEquals(null, DateValueFacts.from("15?02#2026").toLocalDate(DateFormat.DMY));
         assertEquals(null, DateValueFacts.from("202603").toLocalDate(DateFormat.YMD));
     }
 

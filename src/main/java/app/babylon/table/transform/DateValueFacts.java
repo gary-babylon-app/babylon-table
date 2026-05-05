@@ -180,7 +180,7 @@ public final class DateValueFacts
      */
     public boolean invalidForDateTokens()
     {
-        if (this.commaCount > 0 || this.periodCount > 0)
+        if (this.commaCount > 0 || this.periodCount == 1 || this.periodCount > 2)
         {
             return true;
         }
@@ -214,92 +214,102 @@ public final class DateValueFacts
     public String[] naturalDateSplit()
     {
         String s = this.text;
+        int len = s.length();
 
         String[] chronoFields = new String[3];
         StringBuilder sb = new StringBuilder();
 
         int i = 0;
-        char c = s.charAt(i++);
-        while (isDigit(c))
+        while (i < len && isDigit(s.charAt(i)))
         {
-            sb.append(c);
-            if (i < s.length())
-            {
-                c = s.charAt(i++);
-            }
-            else
-            {
-                break;
-            }
+            sb.append(s.charAt(i++));
+        }
+        if (sb.length() == 0 || i >= len)
+        {
+            return null;
         }
         chronoFields[0] = sb.toString();
-        while (!isDigit(c) && !isAlpha(c))
+
+        char separator = s.charAt(i);
+        if (isSeparator(separator))
         {
-            if (i < s.length())
+            ++i;
+            if (i >= len)
             {
-                c = s.charAt(i++);
+                return null;
+            }
+
+            sb.setLength(0);
+            if (isAlpha(s.charAt(i)))
+            {
+                while (i < len && isAlpha(s.charAt(i)))
+                {
+                    sb.append(s.charAt(i++));
+                }
+            }
+            else if (isDigit(s.charAt(i)))
+            {
+                while (i < len && isDigit(s.charAt(i)))
+                {
+                    sb.append(s.charAt(i++));
+                }
             }
             else
             {
-                break;
+                return null;
             }
+            if (sb.length() == 0 || i >= len)
+            {
+                return null;
+            }
+            chronoFields[1] = sb.toString();
+
+            if (s.charAt(i) != separator)
+            {
+                return null;
+            }
+            ++i;
+            if (i >= len || !isDigit(s.charAt(i)))
+            {
+                return null;
+            }
+
+            sb.setLength(0);
+            while (i < len && isDigit(s.charAt(i)))
+            {
+                sb.append(s.charAt(i++));
+            }
+            if (sb.length() == 0)
+            {
+                return null;
+            }
+            chronoFields[2] = sb.toString();
+            return chronoFields;
         }
-        sb = new StringBuilder();
-        if (isAlpha(c))
+        if (!isAlpha(separator))
         {
-            while (isAlpha(c))
-            {
-                sb.append(c);
-                if (i < s.length())
-                {
-                    c = s.charAt(i++);
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        else
-        {
-            while (isDigit(c))
-            {
-                sb.append(c);
-                if (i < s.length())
-                {
-                    c = s.charAt(i++);
-                }
-                else
-                {
-                    break;
-                }
-            }
-        }
-        chronoFields[1] = sb.toString();
-        while (!isDigit(c) && !isAlpha(c))
-        {
-            if (i < s.length())
-            {
-                c = s.charAt(i++);
-            }
-            else
-            {
-                break;
-            }
+            return null;
         }
 
-        sb = new StringBuilder();
-        while (isDigit(c))
+        sb.setLength(0);
+        while (i < len && isAlpha(s.charAt(i)))
         {
-            sb.append(c);
-            if (i < s.length())
-            {
-                c = s.charAt(i++);
-            }
-            else
-            {
-                break;
-            }
+            sb.append(s.charAt(i++));
+        }
+        if (sb.length() == 0 || i >= len || !isDigit(s.charAt(i)))
+        {
+            return null;
+        }
+        chronoFields[1] = sb.toString();
+
+        sb.setLength(0);
+        while (i < len && isDigit(s.charAt(i)))
+        {
+            sb.append(s.charAt(i++));
+        }
+        if (sb.length() == 0)
+        {
+            return null;
         }
         chronoFields[2] = sb.toString();
         return chronoFields;
@@ -312,91 +322,58 @@ public final class DateValueFacts
     {
         String s = this.text;
         int len = s.length();
-        int i = 0;
 
-        int a = 0;
-        int aDigits = 0;
-        while (i < len)
+        int firstEnd = 0;
+        while (firstEnd < len && isDigit(s.charAt(firstEnd)))
         {
-            char c = s.charAt(i);
-            if (c < '0' || c > '9')
-            {
-                break;
-            }
-            a = (a * 10) + (c - '0');
-            ++aDigits;
-            ++i;
+            ++firstEnd;
         }
-        if (aDigits == 0)
+        if (firstEnd == 0 || firstEnd >= len)
+        {
+            return null;
+        }
+        char separator = s.charAt(firstEnd);
+        if (!isSeparator(separator))
+        {
+            return null;
+        }
+        int secondStart = firstEnd + 1;
+        if (secondStart >= len || !isDigit(s.charAt(secondStart)))
         {
             return null;
         }
 
-        while (i < len)
+        int secondEnd = secondStart;
+        while (secondEnd < len && isDigit(s.charAt(secondEnd)))
         {
-            char c = s.charAt(i);
-            if (c >= '0' && c <= '9')
-            {
-                break;
-            }
-            ++i;
+            ++secondEnd;
         }
-        if (i >= len)
+        if (secondEnd == secondStart || secondEnd >= len)
+        {
+            return null;
+        }
+        if (s.charAt(secondEnd) != separator)
+        {
+            return null;
+        }
+        int thirdStart = secondEnd + 1;
+        if (thirdStart >= len || !isDigit(s.charAt(thirdStart)))
         {
             return null;
         }
 
-        int b = 0;
-        int bDigits = 0;
-        while (i < len)
+        int thirdEnd = thirdStart;
+        while (thirdEnd < len && isDigit(s.charAt(thirdEnd)))
         {
-            char c = s.charAt(i);
-            if (c < '0' || c > '9')
-            {
-                break;
-            }
-            b = (b * 10) + (c - '0');
-            ++bDigits;
-            ++i;
+            ++thirdEnd;
         }
-        if (bDigits == 0)
-        {
-            return null;
-        }
-
-        while (i < len)
-        {
-            char c = s.charAt(i);
-            if (c >= '0' && c <= '9')
-            {
-                break;
-            }
-            ++i;
-        }
-        if (i >= len)
-        {
-            return null;
-        }
-
-        int c = 0;
-        int cDigits = 0;
-        while (i < len)
-        {
-            char ch = s.charAt(i);
-            if (ch < '0' || ch > '9')
-            {
-                break;
-            }
-            c = (c * 10) + (ch - '0');
-            ++cDigits;
-            ++i;
-        }
-        if (cDigits == 0)
+        if (thirdEnd == thirdStart)
         {
             return null;
         }
         return new int[]
-        {a, b, c};
+        {Integer.parseInt(s, 0, firstEnd, 10), Integer.parseInt(s, secondStart, secondEnd, 10),
+                Integer.parseInt(s, thirdStart, thirdEnd, 10)};
     }
 
     private static boolean isDigit(char c)
@@ -407,6 +384,11 @@ public final class DateValueFacts
     private static boolean isAlpha(char c)
     {
         return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
+    private static boolean isSeparator(char c)
+    {
+        return !isDigit(c) && !isAlpha(c) && !Character.isWhitespace(c);
     }
 
     private int[] toYearMonthDay(DateFormat format)
@@ -502,7 +484,7 @@ public final class DateValueFacts
         {
             return null;
         }
-        if (this.hasCommas() || this.hasPeriods() || this.alphaCount() > 3)
+        if (this.hasCommas() || this.periodCount == 1 || this.periodCount > 2 || this.alphaCount() > 3)
         {
             return null;
         }

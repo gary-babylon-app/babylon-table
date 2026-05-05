@@ -305,6 +305,22 @@ class DateFormatInferenceTest
     }
 
     @Test
+    void inferFormatsShouldAllowPeriodSeparatedDmyDates()
+    {
+        final ColumnName TRADE_DATE = ColumnName.of("trade_date");
+        ColumnObject.Builder<String> numeric = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
+        numeric.add("15.02.2026");
+        numeric.add("16.02.2026");
+
+        @SuppressWarnings("unchecked")
+        ColumnObject<String>[] columns = new ColumnObject[]
+        {numeric.build()};
+        DateFormat[] inferred = DateFormatInference.inferFormats(columns);
+
+        assertEquals(DateFormat.DMY, inferred[0]);
+    }
+
+    @Test
     void inferFormatsShouldReturnUnknownForNoisyMixedColumn()
     {
         final ColumnName DATE_MIXED = ColumnName.of("date_mixed");

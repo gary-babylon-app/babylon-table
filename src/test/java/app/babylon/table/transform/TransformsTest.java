@@ -15,7 +15,9 @@ class TransformsTest
 
         assertSame(first, second);
         assertTrue(first.create("After", "Code", "After", "-") instanceof TransformAfter);
-        assertTrue(first.create("NewConstant", "Value", "X") instanceof TransformCreateConstant);
+        assertTrue(first.create("Constant", "Value", "X") instanceof TransformConstant);
+        assertTrue(first.create("CreateConstant", "Value", "X") instanceof TransformConstant);
+        assertTrue(first.create("NewConstant", "Value", "X") instanceof TransformConstant);
         assertTrue(first.create("AppendSuffix", "Code", "Out", "_X") instanceof TransformSuffix);
     }
 }

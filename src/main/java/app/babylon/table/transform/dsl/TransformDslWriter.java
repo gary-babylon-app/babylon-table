@@ -37,10 +37,11 @@ import app.babylon.table.transform.TransformClassify;
 import app.babylon.table.transform.TransformCoalesce;
 import app.babylon.table.transform.TransformConcat;
 import app.babylon.table.transform.TransformCopy;
-import app.babylon.table.transform.TransformCreateConstant;
+import app.babylon.table.transform.TransformConstant;
 import app.babylon.table.transform.TransformDecimalBinaryOperator.Operand;
 import app.babylon.table.transform.TransformDivide;
 import app.babylon.table.transform.TransformExtract;
+import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformLeft;
 import app.babylon.table.transform.TransformMultiply;
@@ -48,6 +49,8 @@ import app.babylon.table.transform.TransformNegate;
 import app.babylon.table.transform.TransformNormalise;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.table.transform.TransformPrefix;
+import app.babylon.table.transform.TransformRemove;
+import app.babylon.table.transform.TransformRetain;
 import app.babylon.table.transform.TransformRight;
 import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformSplit;
@@ -89,15 +92,18 @@ public final class TransformDslWriter
         writers.put(TransformCoalesce.class, TransformDslWriter::writeCoalesce);
         writers.put(TransformConcat.class, TransformDslWriter::writeConcat);
         writers.put(TransformCopy.class, TransformDslWriter::writeCopy);
-        writers.put(TransformCreateConstant.class, TransformDslWriter::writeCreateConstant);
+        writers.put(TransformConstant.class, TransformDslWriter::writeConstant);
         writers.put(TransformDivide.class, t -> writeDecimal("divide", "by", t));
         writers.put(TransformExtract.class, TransformDslWriter::writeExtract);
+        writers.put(TransformExtractFromColumnName.class, TransformDslWriter::writeExtractFromColumnName);
         writers.put(TransformFlag.class, TransformDslWriter::writeFlag);
         writers.put(TransformLeft.class, TransformDslWriter::writeLeft);
         writers.put(TransformMultiply.class, t -> writeDecimal("multiply", "by", t));
         writers.put(TransformNegate.class, TransformDslWriter::writeNegate);
         writers.put(TransformNormalise.class, TransformDslWriter::writeNormalise);
         writers.put(TransformPrefix.class, TransformDslWriter::writePrefix);
+        writers.put(TransformRemove.class, TransformDslWriter::writeRemove);
+        writers.put(TransformRetain.class, TransformDslWriter::writeRetain);
         writers.put(TransformRight.class, TransformDslWriter::writeRight);
         writers.put(TransformRound.class, TransformDslWriter::writeRound);
         writers.put(TransformSplit.class, TransformDslWriter::writeSplit);
@@ -212,7 +218,7 @@ public final class TransformDslWriter
         TransformConcat concat = (TransformConcat) transform;
         ColumnName target = concat.concatColumn();
         String separator = concat.separator();
-        String line = "concat " + columns(concat.sourceColumns());
+        String line = "concat " + concatParts(concat.sourceColumns(), concat.literalValues());
         if (separator != null)
         {
             line += " using " + literal(separator);
@@ -226,18 +232,15 @@ public final class TransformDslWriter
         return "copy " + column(copy.columnToCopy()) + " into " + column(copy.newCopyName());
     }
 
-    private static String writeCreateConstant(Transform transform)
+    private static String writeConstant(Transform transform)
     {
-        TransformCreateConstant constant = (TransformCreateConstant) transform;
-        ColumnName[] names = constant.newColumnNames();
-        Object[] values = constant.newColumnValues();
-        Column.Type[] types = constant.types();
-        String line = "constant " + literal(String.valueOf(values[0]));
-        if (!ColumnTypes.STRING.equals(types[0]))
+        TransformConstant constant = (TransformConstant) transform;
+        String line = "constant " + literal(String.valueOf(constant.value()));
+        if (!ColumnTypes.STRING.equals(constant.type()))
         {
-            line += " as " + typeName(types[0]);
+            line += " as " + typeName(constant.type());
         }
-        return line + " into " + column(names[0]);
+        return line + " into " + column(constant.newColumnName());
     }
 
     private static String writeMetadataConstant(Transform transform)
@@ -246,12 +249,36 @@ public final class TransformDslWriter
         return "constant " + metadata.key().dslName() + " into " + column(metadata.newColumnName());
     }
 
+    private static String writeRemove(Transform transform)
+    {
+        TransformRemove remove = (TransformRemove) transform;
+        return "remove " + columns(remove.columnNames());
+    }
+
+    private static String writeRetain(Transform transform)
+    {
+        TransformRetain retain = (TransformRetain) transform;
+        return "retain " + columns(retain.columnNames());
+    }
+
     private static String writeExtract(Transform transform)
     {
         TransformExtract extract = (TransformExtract) transform;
         Pattern pattern = extract.pattern();
         return "extract from " + column(extract.existingColumnName()) + " matching " + literal(pattern.pattern())
                 + " into " + column(extract.effectiveNewColumnName());
+    }
+
+    private static String writeExtractFromColumnName(Transform transform)
+    {
+        TransformExtractFromColumnName extract = (TransformExtractFromColumnName) transform;
+        String line = "extract from columnName " + column(extract.sourceColumnName()) + " using "
+                + literal(extract.pattern().pattern());
+        if (!ColumnTypes.STRING.equals(extract.type()))
+        {
+            line += " as " + typeName(extract.type());
+        }
+        return line + " into " + column(extract.newColumnName());
     }
 
     private static String writeFlag(Transform transform)
@@ -658,6 +685,16 @@ public final class TransformDslWriter
         for (ColumnName name : names)
         {
             values.add(column(name));
+        }
+        return String.join(", ", values);
+    }
+
+    private static String concatParts(ColumnName[] sourceColumns, String[] literalValues)
+    {
+        List<String> values = new ArrayList<>();
+        for (int i = 0; i < sourceColumns.length; ++i)
+        {
+            values.add(sourceColumns[i] == null ? literal(literalValues[i]) : column(sourceColumns[i]));
         }
         return String.join(", ", values);
     }

@@ -30,6 +30,7 @@ import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.dsl.TokenStream;
 import app.babylon.table.dsl.TransformDslException;
 import app.babylon.table.transform.Transform;
+import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformStringToType;
@@ -298,6 +299,16 @@ class TransformDslParserTest
 
         line = "concat AccountType, Country, AccountNumber using '' into AccountKey";
         assertParses(line);
+
+        line = "concat AccountType, Country, 'ACCT', AccountNumber using '|' into AccountKey";
+        assertParses(line);
+    }
+
+    @Test
+    void shouldParseFinalShapingExamples()
+    {
+        assertParses("retain AccountKey, Currency, Amount");
+        assertParses("remove RawAmount, Notes");
     }
 
     @Test
@@ -307,6 +318,10 @@ class TransformDslParserTest
         assertParses(line);
 
         line = "extract from Description matching '.*\\(([^)]+)\\)' into Symbol";
+        assertParses(line);
+
+        line = "extract from columnName AmountUSD using '([A-Z]{3})$' as Currency into Currency";
+        assertInstanceOf(TransformExtractFromColumnName.class, PARSER.parse(line));
         assertParses(line);
     }
 

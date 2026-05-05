@@ -19,6 +19,7 @@ public class TransformConcat extends TransformBase
     private final ColumnName concatColumn;
     private final String separator;
     private final ColumnName[] sourceColumns;
+    private final String[] literalValues;
 
     public TransformConcat(ColumnName concatColumn, String separator, ColumnName... sourceColumns)
     {
@@ -26,6 +27,7 @@ public class TransformConcat extends TransformBase
         this.concatColumn = ArgumentCheck.nonNull(concatColumn);
         this.separator = separator;
         this.sourceColumns = Arrays.copyOf(ArgumentCheck.nonNull(sourceColumns), sourceColumns.length);
+        this.literalValues = new String[sourceColumns.length];
     }
 
     public TransformConcat(ColumnName concatColumn, String separator, Collection<String> sourceColumns)
@@ -34,6 +36,28 @@ public class TransformConcat extends TransformBase
         this.concatColumn = ArgumentCheck.nonNull(concatColumn);
         this.separator = separator;
         this.sourceColumns = columnNames(sourceColumns);
+        this.literalValues = new String[this.sourceColumns.length];
+    }
+
+    private TransformConcat(ColumnName concatColumn, String separator, ColumnName[] sourceColumns,
+            String[] literalValues)
+    {
+        super(FUNCTION_NAME);
+        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
+        this.separator = separator;
+        this.sourceColumns = Arrays.copyOf(ArgumentCheck.nonNull(sourceColumns), sourceColumns.length);
+        this.literalValues = Arrays.copyOf(ArgumentCheck.nonNull(literalValues), literalValues.length);
+        if (this.sourceColumns.length != this.literalValues.length)
+        {
+            throw new IllegalArgumentException("Require the same number of source columns and literal values.");
+        }
+        for (int i = 0; i < this.sourceColumns.length; ++i)
+        {
+            if ((this.sourceColumns[i] == null) == (this.literalValues[i] == null))
+            {
+                throw new IllegalArgumentException("Require exactly one source column or literal value at " + i + ".");
+            }
+        }
     }
 
     public static TransformConcat of(String... params)
@@ -56,6 +80,12 @@ public class TransformConcat extends TransformBase
         return new TransformConcat(concatColumn, separator, sourceColumns);
     }
 
+    public static TransformConcat of(ColumnName concatColumn, String separator, ColumnName[] sourceColumns,
+            String[] literalValues)
+    {
+        return new TransformConcat(concatColumn, separator, sourceColumns, literalValues);
+    }
+
     public String separator()
     {
         return this.separator;
@@ -76,6 +106,11 @@ public class TransformConcat extends TransformBase
         return Arrays.copyOf(this.sourceColumns, this.sourceColumns.length);
     }
 
+    public String[] literalValues()
+    {
+        return Arrays.copyOf(this.literalValues, this.literalValues.length);
+    }
+
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
@@ -86,6 +121,10 @@ public class TransformConcat extends TransformBase
 
         for (int i = 0; i < this.sourceColumns.length; ++i)
         {
+            if (this.literalValues[i] != null)
+            {
+                continue;
+            }
             Column column = columnsByName.get(this.sourceColumns[i]);
             if (column == null)
             {
@@ -94,12 +133,12 @@ public class TransformConcat extends TransformBase
             columns[i] = column;
         }
 
-        int rowCount = columns.length == 0 ? 0 : columns[0].size();
+        int rowCount = rowCount(columnsByName);
         for (int i = 0; i < rowCount; ++i)
         {
             for (int j = 0; j < columns.length; ++j)
             {
-                values[j] = columns[j].toString(i, settings);
+                values[j] = this.literalValues[j] == null ? columns[j].toString(i, settings) : this.literalValues[j];
             }
             if (columns.length > 1)
             {

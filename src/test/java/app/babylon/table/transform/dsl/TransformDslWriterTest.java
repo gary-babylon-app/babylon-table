@@ -113,6 +113,15 @@ public class TransformDslWriterTest
                 "concat AccountType, Country, AccountNumber using '|' into AccountKey");
         assertFormat("concat AccountType, Country using '' into AccountKey",
                 "concat AccountType, Country using '' into AccountKey");
+        assertFormat("concat AccountType, Country, 'ACCT', AccountNumber using '|' into AccountKey",
+                "concat AccountType, Country, 'ACCT', AccountNumber using '|' into AccountKey");
+    }
+
+    @Test
+    void shouldWriteFinalShaping()
+    {
+        assertFormat("retain AccountKey, Currency, Amount", "retain AccountKey, Currency, Amount");
+        assertFormat("remove RawAmount, Notes", "remove RawAmount, Notes");
     }
 
     @Test
@@ -124,6 +133,8 @@ public class TransformDslWriterTest
                 "classify Description matching 'Dividend|Distribution' into IsIncome as Y default N");
         assertFormat("extract from Description matching '.*\\(([^)]+)\\)' into Symbol",
                 "extract from Description matching '.*\\\\(([^)]+)\\\\)' into Symbol");
+        assertFormat("extract from columnName AmountUSD using '([A-Z]{3})$' as Currency into Currency",
+                "extract from columnName AmountUSD using '([A-Z]{3})$' as Currency into Currency");
         assertFormat("flag Side=Buy into IsBuy", "flag Side = Buy into IsBuy");
         assertFormat("flag Side == Buy into IsBuy", "flag Side = Buy into IsBuy");
         assertFormat("flag Side != Buy into IsNotBuy", "flag Side <> Buy into IsNotBuy");

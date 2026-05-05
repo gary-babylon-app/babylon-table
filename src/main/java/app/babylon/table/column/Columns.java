@@ -302,6 +302,14 @@ public class Columns
     }
 
     /**
+     * Creates a constant long column.
+     */
+    public static ColumnLong newLong(ColumnName colName, long value, int size)
+    {
+        return new ColumnLongConstant(colName, value, size);
+    }
+
+    /**
      * Creates a constant boolean column.
      */
     public static ColumnBoolean newBoolean(ColumnName colName, boolean value, int size)

@@ -58,6 +58,17 @@ public interface ColumnBoolean extends Column
                 return addNull();
             }
             TypeParser<Boolean> parser = parser();
+            if (parseMode == null || parseMode == ParseMode.EXACT)
+            {
+                try
+                {
+                    return add(parser.parseBoolean(chars, start, length));
+                }
+                catch (IllegalArgumentException e)
+                {
+                    return addNull();
+                }
+            }
             Boolean value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, length);
             return value == null ? addNull() : add(value.booleanValue());
         }

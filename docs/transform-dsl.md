@@ -173,6 +173,7 @@ split Path on '\\' by last into Directory, FileName
 concat AccountType, Country, AccountNumber into AccountKey
 concat AccountType, Country, AccountNumber using '|' into AccountKey
 concat AccountType, Country using '' into AccountKey
+concat AccountType, Country, 'ACCT', AccountNumber using '|' into AccountKey
 ```
 
 `split` requires the delimiter after `on` to be a quoted literal. This keeps
@@ -183,7 +184,9 @@ first` to split into the text before the first delimiter and the remaining text,
 or `by last` to split into the text before the last delimiter and the trailing
 text. `first` and `last` require exactly two output columns. `split` keeps the
 declared output shape for `all`. `concat` uses no separator unless a separator
-is supplied with `using`.
+is supplied with `using`. Bare concat values are column names. Quoted concat
+values are literal string parts, which is useful for fixed key components such
+as `'ACCT'`.
 
 ## Classify, extract, and substitute
 
@@ -191,6 +194,7 @@ is supplied with `using`.
 classify Description matching 'Dividend|Distribution' into IsIncome as Y
 classify Description matching 'Dividend|Distribution' into IsIncome as Y else N
 extract from Description matching '.*\(([^)]+)\)' into Symbol
+extract from columnName AmountUSD using '([A-Z]{3})$' as Currency into Currency
 substitute Status using 'A':'Active', 'I':'Inactive' into NormalisedStatus
 substitute Status using 'I':'Inactive', 'A':'Active' default 'Other' into NormalisedStatus
 ```
@@ -199,6 +203,23 @@ Patterns are regular expressions. `substitute` maps literal values and can
 optionally provide a `default` or `else` value. The default applies only when
 the source row is set but its value is not in the map. If the source row is
 unset, the output row remains unset.
+
+`extract from columnName` applies the pattern to the source column name rather
+than to row values, then creates a constant output column. When the pattern has
+a capture group, group 1 is used; otherwise the whole match is used. Use `as
+Type` to parse the extracted value, for example extracting `USD` from
+`AmountUSD` as `Currency`.
+
+## Final shaping
+
+```text
+retain AccountKey, Currency, Amount
+remove RawAmount, Notes
+```
+
+Use `retain` near the end of a transform list to keep only the named columns.
+The output column order follows the order in the statement. Use `remove` to
+drop named columns while preserving the order of the remaining columns.
 
 ## Flags
 

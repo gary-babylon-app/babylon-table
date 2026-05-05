@@ -45,10 +45,11 @@ import app.babylon.table.transform.TransformClean;
 import app.babylon.table.transform.TransformCoalesce;
 import app.babylon.table.transform.TransformConcat;
 import app.babylon.table.transform.TransformCopy;
-import app.babylon.table.transform.TransformCreateConstant;
+import app.babylon.table.transform.TransformConstant;
 import app.babylon.table.transform.TransformDecimalBinaryOperator.Operand;
 import app.babylon.table.transform.TransformDivide;
 import app.babylon.table.transform.TransformExtract;
+import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformLeft;
 import app.babylon.table.transform.TransformMultiply;
@@ -56,6 +57,8 @@ import app.babylon.table.transform.TransformNegate;
 import app.babylon.table.transform.TransformNormalise;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.table.transform.TransformPrefix;
+import app.babylon.table.transform.TransformRemove;
+import app.babylon.table.transform.TransformRetain;
 import app.babylon.table.transform.TransformRight;
 import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformSplit;
@@ -118,6 +121,8 @@ public final class TransformDslParser
         parsers.put("normalise", TransformDslParser::parseNormalise);
         parsers.put("prefix", TransformDslParser::parsePrefix);
         parsers.put("replace", TransformDslParser::parseReplace);
+        parsers.put("remove", TransformDslParser::parseRemove);
+        parsers.put("retain", TransformDslParser::parseRetain);
         parsers.put("split", TransformDslParser::parseSplit);
         parsers.put("strip", TransformDslParser::parseStrip);
         parsers.put("substitute", TransformDslParser::parseSubstitute);
@@ -301,7 +306,7 @@ public final class TransformDslParser
 
     private static Transform parseConcat(TokenStream tokens)
     {
-        List<String> sources = valuesUntil(tokens, "using", "into");
+        ConcatParts sources = concatPartsUntil(tokens, "using", "into");
         String separator = null;
         if (tokens.matchWord("using"))
         {
@@ -309,7 +314,7 @@ public final class TransformDslParser
         }
         tokens.expectWord("into");
         String target = tokens.expectValue();
-        return TransformConcat.of(ColumnName.of(target), separator, sources);
+        return TransformConcat.of(ColumnName.of(target), separator, sources.sourceColumns(), sources.literalValues());
     }
 
     private Transform parseConvert(TokenStream tokens)
@@ -473,19 +478,15 @@ public final class TransformDslParser
         {
             throw new TransformDslException("Expected literal", tokens.peek().position());
         }
-        Object parsed = parseConstantValue(type, value, tokens);
-        return TransformCreateConstant.of(type, ColumnName.of(target), parsed);
-    }
-
-    private static Object parseConstantValue(Column.Type type, String value, TokenStream tokens)
-    {
-        Object parsed = type.getParser().parse(value);
-        if (parsed == null && value != null && !value.isEmpty())
+        try
+        {
+            return TransformConstant.of(type, ColumnName.of(target), value);
+        }
+        catch (IllegalArgumentException e)
         {
             throw new TransformDslException("Could not parse constant value '" + value + "' as " + type,
                     tokens.peek().position());
         }
-        return parsed;
     }
 
     private static Transform parseDivide(TokenStream tokens)
@@ -501,12 +502,54 @@ public final class TransformDslParser
     private static Transform parseExtract(TokenStream tokens)
     {
         tokens.expectWord("from");
+        if (tokens.matchWord("columnName"))
+        {
+            return parseExtractFromColumnName(tokens);
+        }
         String source = tokens.expectValue();
         tokens.expectWord("matching");
         String pattern = tokens.expectLiteral();
         tokens.expectWord("into");
         String target = tokens.expectValue();
         return TransformExtract.of(ColumnName.of(source), ColumnName.of(target), Pattern.compile(pattern));
+    }
+
+    private static Transform parseExtractFromColumnName(TokenStream tokens)
+    {
+        String source = tokens.expectValue();
+        tokens.expectWord("using");
+        String pattern = tokens.expectLiteral();
+        Column.Type type = ColumnTypes.STRING;
+        String target = null;
+        while (!tokens.isAtEnd())
+        {
+            if (tokens.matchWord("as"))
+            {
+                if (!ColumnTypes.STRING.equals(type))
+                {
+                    throw new TransformDslException("Duplicate as clause", tokens.peek().position());
+                }
+                type = parseColumnType(tokens.expectValue());
+            }
+            else if (tokens.matchWord("into"))
+            {
+                if (target != null)
+                {
+                    throw new TransformDslException("Duplicate into clause", tokens.peek().position());
+                }
+                target = tokens.expectValue();
+            }
+            else
+            {
+                throw new TransformDslException("Expected as, into, or end of statement", tokens.peek().position());
+            }
+        }
+        if (target == null)
+        {
+            throw new TransformDslException("Expected into clause", tokens.peek().position());
+        }
+        return TransformExtractFromColumnName.of(ColumnName.of(source), Pattern.compile(pattern), type,
+                ColumnName.of(target));
     }
 
     private static Transform parseFlag(TokenStream tokens)
@@ -649,6 +692,16 @@ public final class TransformDslParser
         return all
                 ? replaceAll(ColumnName.of(source), columnName(target), targetText, replacement)
                 : replace(ColumnName.of(source), columnName(target), targetText, replacement);
+    }
+
+    private static Transform parseRemove(TokenStream tokens)
+    {
+        return TransformRemove.of(ColumnName.of(valuesUntilEnd(tokens)));
+    }
+
+    private static Transform parseRetain(TokenStream tokens)
+    {
+        return TransformRetain.of(ColumnName.of(valuesUntilEnd(tokens)));
     }
 
     private Transform parseRound(TokenStream tokens)
@@ -926,6 +979,57 @@ public final class TransformDslParser
                     tokens.peek().position());
         }
         return values;
+    }
+
+    private static List<String> valuesUntilEnd(TokenStream tokens)
+    {
+        List<String> values = new ArrayList<>();
+        values.add(tokens.expectValue());
+        while (tokens.match(TokenType.COMMA))
+        {
+            values.add(tokens.expectValue());
+        }
+        tokens.expectEnd();
+        return values;
+    }
+
+    private static ConcatParts concatPartsUntil(TokenStream tokens, String... words)
+    {
+        List<ColumnName> sourceColumns = new ArrayList<>();
+        List<String> literalValues = new ArrayList<>();
+        addConcatPart(tokens.next(), sourceColumns, literalValues);
+        while (tokens.match(TokenType.COMMA))
+        {
+            addConcatPart(tokens.next(), sourceColumns, literalValues);
+        }
+        if (!isAnyWord(tokens.peek(), words))
+        {
+            throw new TransformDslException("Expected '" + String.join("' or '", words) + "'",
+                    tokens.peek().position());
+        }
+        return new ConcatParts(sourceColumns.toArray(ColumnName[]::new), literalValues.toArray(String[]::new));
+    }
+
+    private static void addConcatPart(Token token, List<ColumnName> sourceColumns, List<String> literalValues)
+    {
+        if (!token.isValue())
+        {
+            throw new TransformDslException("Expected value", token.position());
+        }
+        if (token.is(TokenType.LITERAL))
+        {
+            sourceColumns.add(null);
+            literalValues.add(token.value());
+        }
+        else
+        {
+            sourceColumns.add(ColumnName.of(token.value()));
+            literalValues.add(null);
+        }
+    }
+
+    private record ConcatParts(ColumnName[] sourceColumns, String[] literalValues)
+    {
     }
 
     private static boolean isAnyWord(Token token, String... words)

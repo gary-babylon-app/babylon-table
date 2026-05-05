@@ -10,11 +10,10 @@
 
 package app.babylon.table.column;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.util.ArrayList;
 import java.util.Collection;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
 
@@ -68,13 +67,6 @@ class ColumnCategoricalBuilderDictionary<T> implements ColumnCategorical.Builder
     public ColumnCategorical.Builder<T> addNull()
     {
         return add((T) null);
-    }
-
-    @Override
-    public int size()
-    {
-        ensureActive();
-        return this.codes.size();
     }
 
     @Override

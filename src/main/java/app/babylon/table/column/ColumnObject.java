@@ -239,13 +239,6 @@ public interface ColumnObject<T> extends Column
         {
             return add((T) null);
         }
-
-        /**
-         * Returns the number of rows currently accumulated by the builder.
-         *
-         * @return the builder size
-         */
-        public int size();
     }
 
     @Override

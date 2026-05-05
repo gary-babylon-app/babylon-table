@@ -110,13 +110,6 @@ final class ColumnObjectBuilderComposite<T> implements ColumnObject.Builder<T>
         return builtColumn;
     }
 
-    @Override
-    public int size()
-    {
-        ensureActive();
-        return this.size;
-    }
-
     private void ensureActive()
     {
         if (this.built)

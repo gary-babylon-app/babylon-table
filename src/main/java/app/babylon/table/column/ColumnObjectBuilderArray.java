@@ -50,13 +50,6 @@ final class ColumnObjectBuilderArray<T> implements ColumnObject.Builder<T>
     }
 
     @Override
-    public int size()
-    {
-        ensureActive();
-        return this.size;
-    }
-
-    @Override
     public ColumnObject.Builder<T> add(T value)
     {
         ensureActive();

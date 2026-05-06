@@ -10,6 +10,67 @@
 
 package app.babylon.table.transform.dsl;
 
+import static app.babylon.table.transform.dsl.TransformDslWords.ABS;
+import static app.babylon.table.transform.dsl.TransformDslWords.ADD;
+import static app.babylon.table.transform.dsl.TransformDslWords.AFTER;
+import static app.babylon.table.transform.dsl.TransformDslWords.ALL;
+import static app.babylon.table.transform.dsl.TransformDslWords.AND;
+import static app.babylon.table.transform.dsl.TransformDslWords.AS;
+import static app.babylon.table.transform.dsl.TransformDslWords.BEFORE;
+import static app.babylon.table.transform.dsl.TransformDslWords.BY;
+import static app.babylon.table.transform.dsl.TransformDslWords.CLASSIFY;
+import static app.babylon.table.transform.dsl.TransformDslWords.CLEAN;
+import static app.babylon.table.transform.dsl.TransformDslWords.COALESCE;
+import static app.babylon.table.transform.dsl.TransformDslWords.COLUMN_NAME;
+import static app.babylon.table.transform.dsl.TransformDslWords.CONCAT;
+import static app.babylon.table.transform.dsl.TransformDslWords.CONSTANT;
+import static app.babylon.table.transform.dsl.TransformDslWords.CONVERT;
+import static app.babylon.table.transform.dsl.TransformDslWords.COPY;
+import static app.babylon.table.transform.dsl.TransformDslWords.DEFAULT;
+import static app.babylon.table.transform.dsl.TransformDslWords.DIVIDE;
+import static app.babylon.table.transform.dsl.TransformDslWords.EXTRACT;
+import static app.babylon.table.transform.dsl.TransformDslWords.FLAG;
+import static app.babylon.table.transform.dsl.TransformDslWords.FROM;
+import static app.babylon.table.transform.dsl.TransformDslWords.IN;
+import static app.babylon.table.transform.dsl.TransformDslWords.INTO;
+import static app.babylon.table.transform.dsl.TransformDslWords.LEFT;
+import static app.babylon.table.transform.dsl.TransformDslWords.LOWERCASE;
+import static app.babylon.table.transform.dsl.TransformDslWords.MATCHING;
+import static app.babylon.table.transform.dsl.TransformDslWords.MODE_EXACT;
+import static app.babylon.table.transform.dsl.TransformDslWords.MODE_FIRST_IN;
+import static app.babylon.table.transform.dsl.TransformDslWords.MODE_LAST_IN;
+import static app.babylon.table.transform.dsl.TransformDslWords.MODE_ONLY_IN;
+import static app.babylon.table.transform.dsl.TransformDslWords.MULTIPLY;
+import static app.babylon.table.transform.dsl.TransformDslWords.NEGATE;
+import static app.babylon.table.transform.dsl.TransformDslWords.NORMALISE;
+import static app.babylon.table.transform.dsl.TransformDslWords.ON;
+import static app.babylon.table.transform.dsl.TransformDslWords.OR;
+import static app.babylon.table.transform.dsl.TransformDslWords.PREFIX;
+import static app.babylon.table.transform.dsl.TransformDslWords.REMOVE;
+import static app.babylon.table.transform.dsl.TransformDslWords.REPLACE;
+import static app.babylon.table.transform.dsl.TransformDslWords.RETAIN;
+import static app.babylon.table.transform.dsl.TransformDslWords.RIGHT;
+import static app.babylon.table.transform.dsl.TransformDslWords.ROUND;
+import static app.babylon.table.transform.dsl.TransformDslWords.SPLIT;
+import static app.babylon.table.transform.dsl.TransformDslWords.STRIP;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUBSTITUTE;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUBSTRING;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUBTRACT;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUFFIX;
+import static app.babylon.table.transform.dsl.TransformDslWords.TAKE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TO;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_NAME_BOOLEAN;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_NAME_DATE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_NAME_DECIMAL;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_NAME_DOUBLE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_NAME_INT;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_NAME_LONG;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_NAME_STRING;
+import static app.babylon.table.transform.dsl.TransformDslWords.UPPERCASE;
+import static app.babylon.table.transform.dsl.TransformDslWords.USING;
+import static app.babylon.table.transform.dsl.TransformDslWords.WHEN;
+import static app.babylon.table.transform.dsl.TransformDslWords.WITH;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,23 +92,24 @@ import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformAbs;
 import app.babylon.table.transform.TransformAdd;
 import app.babylon.table.transform.TransformAfter;
+import app.babylon.table.transform.TransformAnyToString;
 import app.babylon.table.transform.TransformBefore;
-import app.babylon.table.transform.TransformClean;
 import app.babylon.table.transform.TransformClassify;
+import app.babylon.table.transform.TransformClean;
 import app.babylon.table.transform.TransformCoalesce;
 import app.babylon.table.transform.TransformConcat;
-import app.babylon.table.transform.TransformCopy;
 import app.babylon.table.transform.TransformConstant;
+import app.babylon.table.transform.TransformCopy;
 import app.babylon.table.transform.TransformDecimalBinaryOperator.Operand;
 import app.babylon.table.transform.TransformDivide;
 import app.babylon.table.transform.TransformExtract;
 import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformLeft;
+import app.babylon.table.transform.TransformMetadataConstant;
 import app.babylon.table.transform.TransformMultiply;
 import app.babylon.table.transform.TransformNegate;
 import app.babylon.table.transform.TransformNormalise;
-import app.babylon.text.Sentence.ParseMode;
 import app.babylon.table.transform.TransformPrefix;
 import app.babylon.table.transform.TransformRemove;
 import app.babylon.table.transform.TransformRetain;
@@ -56,17 +118,16 @@ import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformSplit;
 import app.babylon.table.transform.TransformStringReplace;
 import app.babylon.table.transform.TransformStringReplaceAll;
+import app.babylon.table.transform.TransformStringToType;
 import app.babylon.table.transform.TransformStrip;
 import app.babylon.table.transform.TransformSubstitute;
 import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
-import app.babylon.table.transform.TransformMetadataConstant;
 import app.babylon.table.transform.TransformToLocalDate;
 import app.babylon.table.transform.TransformToLowerCase;
-import app.babylon.table.transform.TransformAnyToString;
-import app.babylon.table.transform.TransformStringToType;
 import app.babylon.table.transform.TransformToUpperCase;
+import app.babylon.text.Sentence.ParseMode;
 
 /**
  * Writes transforms as canonical transformation DSL statements.
@@ -84,7 +145,7 @@ public final class TransformDslWriter
     {
         Map<Class<?>, Function<Transform, String>> writers = new java.util.HashMap<>();
         writers.put(TransformAbs.class, TransformDslWriter::writeAbs);
-        writers.put(TransformAdd.class, t -> writeDecimal("add", "and", t));
+        writers.put(TransformAdd.class, t -> writeDecimal(ADD, AND, t));
         writers.put(TransformAfter.class, TransformDslWriter::writeAfter);
         writers.put(TransformBefore.class, TransformDslWriter::writeBefore);
         writers.put(TransformClassify.class, TransformDslWriter::writeClassify);
@@ -93,12 +154,12 @@ public final class TransformDslWriter
         writers.put(TransformConcat.class, TransformDslWriter::writeConcat);
         writers.put(TransformCopy.class, TransformDslWriter::writeCopy);
         writers.put(TransformConstant.class, TransformDslWriter::writeConstant);
-        writers.put(TransformDivide.class, t -> writeDecimal("divide", "by", t));
+        writers.put(TransformDivide.class, t -> writeDecimal(DIVIDE, BY, t));
         writers.put(TransformExtract.class, TransformDslWriter::writeExtract);
         writers.put(TransformExtractFromColumnName.class, TransformDslWriter::writeExtractFromColumnName);
         writers.put(TransformFlag.class, TransformDslWriter::writeFlag);
         writers.put(TransformLeft.class, TransformDslWriter::writeLeft);
-        writers.put(TransformMultiply.class, t -> writeDecimal("multiply", "by", t));
+        writers.put(TransformMultiply.class, t -> writeDecimal(MULTIPLY, BY, t));
         writers.put(TransformNegate.class, TransformDslWriter::writeNegate);
         writers.put(TransformNormalise.class, TransformDslWriter::writeNormalise);
         writers.put(TransformPrefix.class, TransformDslWriter::writePrefix);
@@ -112,12 +173,12 @@ public final class TransformDslWriter
         writers.put(TransformStrip.class, TransformDslWriter::writeStrip);
         writers.put(TransformSubstitute.class, TransformDslWriter::writeSubstitute);
         writers.put(TransformSubstring.class, TransformDslWriter::writeSubstring);
-        writers.put(TransformSubtract.class, t -> writeDecimal("subtract", "from", t));
+        writers.put(TransformSubtract.class, t -> writeDecimal(SUBTRACT, FROM, t));
         writers.put(TransformSuffix.class, TransformDslWriter::writeSuffix);
         writers.put(TransformMetadataConstant.class, TransformDslWriter::writeMetadataConstant);
         writers.put(TransformToLocalDate.class, TransformDslWriter::writeDate);
         writers.put(TransformToLowerCase.class, TransformDslWriter::writeLowercase);
-        writers.put(TransformAnyToString.class, t -> writeConvert("String", t));
+        writers.put(TransformAnyToString.class, t -> writeConvert(TYPE_NAME_STRING, t));
         writers.put(TransformStringToType.class, TransformDslWriter::writeStringToType);
         writers.put(TransformToUpperCase.class, TransformDslWriter::writeUppercase);
         return new TransformDslWriter(writers);
@@ -173,10 +234,10 @@ public final class TransformDslWriter
     {
         TransformAbs abs = (TransformAbs) transform;
         ColumnName source = abs.columnName();
-        String line = "abs " + column(source);
+        String line = ABS + " " + column(source);
         if (abs.conditionColumnName() != null)
         {
-            line += " when " + column(abs.conditionColumnName());
+            line += " " + WHEN + " " + column(abs.conditionColumnName());
         }
         return line + into(source, abs.newColumnName());
     }
@@ -187,11 +248,12 @@ public final class TransformDslWriter
         Pattern pattern = classify.pattern();
         String found = classify.newColumnFoundValue();
         String notFound = classify.newColumnNotFoundValue();
-        String line = "classify " + column(classify.existingColumnName()) + " matching " + literal(pattern.pattern())
-                + " into " + column(classify.effectiveNewColumnName()) + " as " + value(found);
+        String line = CLASSIFY + " " + column(classify.existingColumnName()) + " " + MATCHING + " "
+                + literal(pattern.pattern()) + " " + INTO + " " + column(classify.effectiveNewColumnName()) + " " + AS
+                + " " + value(found);
         if (notFound != null)
         {
-            line += " default " + value(notFound);
+            line += " " + DEFAULT + " " + value(notFound);
         }
         return line;
     }
@@ -199,10 +261,10 @@ public final class TransformDslWriter
     private static String writeClean(Transform transform)
     {
         TransformClean clean = (TransformClean) transform;
-        String line = "clean " + column(clean.existingColumnName());
+        String line = CLEAN + " " + column(clean.existingColumnName());
         if (clean.cleanCharacters() != null)
         {
-            line += " using " + literal(clean.cleanCharacters());
+            line += " " + USING + " " + literal(clean.cleanCharacters());
         }
         return line + into(clean.existingColumnName(), clean.newColumnName());
     }
@@ -212,12 +274,12 @@ public final class TransformDslWriter
         TransformCoalesce coalesce = (TransformCoalesce) transform;
         ColumnName[] columns = coalesce.columnNames();
         ColumnObject.Mode mode = coalesce.mode();
-        String line = "coalesce " + columns(columns);
+        String line = COALESCE + " " + columns(columns);
         if (mode != null)
         {
-            line += " as " + mode.name();
+            line += " " + AS + " " + mode.name();
         }
-        return line + " into " + column(coalesce.newColumnName());
+        return line + " " + INTO + " " + column(coalesce.newColumnName());
     }
 
     private static String writeConcat(Transform transform)
@@ -225,73 +287,73 @@ public final class TransformDslWriter
         TransformConcat concat = (TransformConcat) transform;
         ColumnName target = concat.concatColumn();
         String separator = concat.separator();
-        String line = "concat " + concatParts(concat.parts());
+        String line = CONCAT + " " + concatParts(concat.parts());
         if (separator != null)
         {
-            line += " using " + literal(separator);
+            line += " " + USING + " " + literal(separator);
         }
-        return line + " into " + column(target);
+        return line + " " + INTO + " " + column(target);
     }
 
     private static String writeCopy(Transform transform)
     {
         TransformCopy copy = (TransformCopy) transform;
-        return "copy " + column(copy.columnToCopy()) + " into " + column(copy.newCopyName());
+        return COPY + " " + column(copy.columnToCopy()) + " " + INTO + " " + column(copy.newCopyName());
     }
 
     private static String writeConstant(Transform transform)
     {
         TransformConstant constant = (TransformConstant) transform;
-        String line = "constant " + literal(String.valueOf(constant.value()));
+        String line = CONSTANT + " " + literal(String.valueOf(constant.value()));
         if (!ColumnTypes.STRING.equals(constant.type()))
         {
-            line += " as " + typeName(constant.type());
+            line += " " + AS + " " + typeName(constant.type());
         }
-        return line + " into " + column(constant.newColumnName());
+        return line + " " + INTO + " " + column(constant.newColumnName());
     }
 
     private static String writeMetadataConstant(Transform transform)
     {
         TransformMetadataConstant metadata = (TransformMetadataConstant) transform;
-        return "constant " + metadata.key().dslName() + " into " + column(metadata.newColumnName());
+        return CONSTANT + " " + metadata.key().dslName() + " " + INTO + " " + column(metadata.newColumnName());
     }
 
     private static String writeRemove(Transform transform)
     {
         TransformRemove remove = (TransformRemove) transform;
-        return "remove " + columns(remove.columnNames());
+        return REMOVE + " " + columns(remove.columnNames());
     }
 
     private static String writeRetain(Transform transform)
     {
         TransformRetain retain = (TransformRetain) transform;
-        return "retain " + columns(retain.columnNames());
+        return RETAIN + " " + columns(retain.columnNames());
     }
 
     private static String writeExtract(Transform transform)
     {
         TransformExtract extract = (TransformExtract) transform;
         Pattern pattern = extract.pattern();
-        return "extract from " + column(extract.existingColumnName()) + " matching " + literal(pattern.pattern())
-                + " into " + column(extract.effectiveNewColumnName());
+        return EXTRACT + " " + FROM + " " + column(extract.existingColumnName()) + " " + MATCHING + " "
+                + literal(pattern.pattern()) + " " + INTO + " " + column(extract.effectiveNewColumnName());
     }
 
     private static String writeExtractFromColumnName(Transform transform)
     {
         TransformExtractFromColumnName extract = (TransformExtractFromColumnName) transform;
-        String line = "extract from columnName " + column(extract.sourceColumnName()) + " using "
-                + literal(extract.pattern().pattern());
+        String line = EXTRACT + " " + FROM + " " + COLUMN_NAME + " " + column(extract.sourceColumnName()) + " " + USING
+                + " " + literal(extract.pattern().pattern());
         if (!ColumnTypes.STRING.equals(extract.type()))
         {
-            line += " as " + typeName(extract.type());
+            line += " " + AS + " " + typeName(extract.type());
         }
-        return line + " into " + column(extract.newColumnName());
+        return line + " " + INTO + " " + column(extract.newColumnName());
     }
 
     private static String writeFlag(Transform transform)
     {
         TransformFlag flag = (TransformFlag) transform;
-        return "flag " + condition(flag.condition()) + " into " + column(flag.newColumnName());
+        return FLAG + " " + condition(flag.condition()) + " " + INTO + " " + column(flag.newColumnName());
     }
 
     private static String condition(ConditionExpression condition)
@@ -302,10 +364,19 @@ public final class TransformDslWriter
         }
         if (condition instanceof LogicalCondition logical)
         {
-            return condition(logical.left()) + " " + logical.operator().name().toLowerCase() + " "
+            return condition(logical.left()) + " " + logicalOperatorName(logical.operator()) + " "
                     + condition(logical.right());
         }
         return condition.toDsl();
+    }
+
+    private static String logicalOperatorName(LogicalCondition.Operator operator)
+    {
+        return switch (operator)
+        {
+            case AND -> AND;
+            case OR -> OR;
+        };
     }
 
     private static String comparison(ComparisonCondition comparison)
@@ -323,84 +394,86 @@ public final class TransformDslWriter
     private static String writeLeft(Transform transform)
     {
         TransformLeft left = (TransformLeft) transform;
-        return "take left " + left.length() + " from " + column(left.existingColumnName()) + " into "
-                + column(left.effectiveNewColumnName());
+        return TAKE + " " + LEFT + " " + left.length() + " " + FROM + " " + column(left.existingColumnName()) + " "
+                + INTO + " " + column(left.effectiveNewColumnName());
     }
 
     private static String writeRight(Transform transform)
     {
         TransformRight right = (TransformRight) transform;
-        return "take right " + right.length() + " from " + column(right.existingColumnName()) + " into "
-                + column(right.effectiveNewColumnName());
+        return TAKE + " " + RIGHT + " " + right.length() + " " + FROM + " " + column(right.existingColumnName()) + " "
+                + INTO + " " + column(right.effectiveNewColumnName());
     }
 
     private static String writeSubstring(Transform transform)
     {
         TransformSubstring substring = (TransformSubstring) transform;
-        return "take substring " + substring.first() + ", " + substring.last() + " from "
-                + column(substring.existingColumnName()) + " into " + column(substring.newColumnName());
+        return TAKE + " " + SUBSTRING + " " + substring.first() + ", " + substring.last() + " " + FROM + " "
+                + column(substring.existingColumnName()) + " " + INTO + " " + column(substring.newColumnName());
     }
 
     private static String writeBefore(Transform transform)
     {
         TransformBefore before = (TransformBefore) transform;
-        return "take before " + value(before.delimiter()) + " from " + column(before.existingColumnName()) + " into "
-                + column(before.effectiveNewColumnName());
+        return TAKE + " " + BEFORE + " " + value(before.delimiter()) + " " + FROM + " "
+                + column(before.existingColumnName()) + " " + INTO + " " + column(before.effectiveNewColumnName());
     }
 
     private static String writeAfter(Transform transform)
     {
         TransformAfter after = (TransformAfter) transform;
-        return "take after " + value(after.delimiter()) + " from " + column(after.existingColumnName()) + " into "
-                + column(after.effectiveNewColumnName());
+        return TAKE + " " + AFTER + " " + value(after.delimiter()) + " " + FROM + " "
+                + column(after.existingColumnName()) + " " + INTO + " " + column(after.effectiveNewColumnName());
     }
 
     private static String writePrefix(Transform transform)
     {
         TransformPrefix prefix = (TransformPrefix) transform;
-        return "prefix " + column(prefix.existingColumnName()) + " with " + value(prefix.prefix())
+        return PREFIX + " " + column(prefix.existingColumnName()) + " " + WITH + " " + value(prefix.prefix())
                 + into(prefix.existingColumnName(), prefix.newColumnName());
     }
 
     private static String writeSuffix(Transform transform)
     {
         TransformSuffix suffix = (TransformSuffix) transform;
-        return "suffix " + column(suffix.existingColumnName()) + " with " + value(suffix.suffix())
+        return SUFFIX + " " + column(suffix.existingColumnName()) + " " + WITH + " " + value(suffix.suffix())
                 + into(suffix.existingColumnName(), suffix.newColumnName());
     }
 
     private static String writeReplace(Transform transform)
     {
         TransformStringReplace replace = (TransformStringReplace) transform;
-        return "replace " + value(replace.target()) + " with " + value(replace.replacement()) + " in "
-                + column(replace.existingColumnName()) + into(replace.existingColumnName(), replace.newColumnName());
+        return REPLACE + " " + value(replace.target()) + " " + WITH + " " + value(replace.replacement()) + " " + IN
+                + " " + column(replace.existingColumnName())
+                + into(replace.existingColumnName(), replace.newColumnName());
     }
 
     private static String writeReplaceAll(Transform transform)
     {
         TransformStringReplaceAll replace = (TransformStringReplaceAll) transform;
-        return "replace all " + literal(replace.target()) + " with " + value(replace.replacement()) + " in "
-                + column(replace.existingColumnName()) + into(replace.existingColumnName(), replace.newColumnName());
+        return REPLACE + " " + ALL + " " + literal(replace.target()) + " " + WITH + " " + value(replace.replacement())
+                + " " + IN + " " + column(replace.existingColumnName())
+                + into(replace.existingColumnName(), replace.newColumnName());
     }
 
     private static String writeSplit(Transform transform)
     {
         TransformSplit split = (TransformSplit) transform;
-        String line = "split " + column(split.getColumnToSplit()) + " on " + literal(split.getSplitOn());
+        String line = SPLIT + " " + column(split.getColumnToSplit()) + " " + ON + " " + literal(split.getSplitOn());
         if (split.getMode() != TransformSplit.Mode.ALL)
         {
-            line += " by " + split.getMode().name().toLowerCase(java.util.Locale.ROOT);
+            line += " " + BY + " " + split.getMode().name().toLowerCase(java.util.Locale.ROOT);
         }
-        return line + " into " + columns(split.getSplitColumnNames());
+        return line + " " + INTO + " " + columns(split.getSplitColumnNames());
     }
 
     private static String writeStrip(Transform transform)
     {
         TransformStrip strip = (TransformStrip) transform;
-        String line = "strip " + column(strip.existingColumnName());
+        String line = STRIP + " " + column(strip.existingColumnName());
         if (strip.stripCharacters() != null)
         {
-            line += " using " + literal(strip.stripCharacters());
+            line += " " + USING + " " + literal(strip.stripCharacters());
         }
         return line + into(strip.existingColumnName(), strip.newColumnName());
     }
@@ -409,36 +482,36 @@ public final class TransformDslWriter
     {
         TransformSubstitute substitute = (TransformSubstitute) transform;
         Map<String, String> replaces = substitute.replaces();
-        String line = "substitute " + column(substitute.columnName()) + " using " + map(replaces);
+        String line = SUBSTITUTE + " " + column(substitute.columnName()) + " " + USING + " " + map(replaces);
         String defaultValue = substitute.defaultValueNewColumn();
         if (defaultValue != null)
         {
-            line += " default " + value(defaultValue);
+            line += " " + DEFAULT + " " + value(defaultValue);
         }
-        return line + " into " + column(substitute.newColumnName());
+        return line + " " + INTO + " " + column(substitute.newColumnName());
     }
 
     private static String writeUppercase(Transform transform)
     {
         TransformToUpperCase uppercase = (TransformToUpperCase) transform;
-        return "uppercase " + column(uppercase.existingColumnName())
+        return UPPERCASE + " " + column(uppercase.existingColumnName())
                 + into(uppercase.existingColumnName(), uppercase.newColumnName());
     }
 
     private static String writeLowercase(Transform transform)
     {
         TransformToLowerCase lowercase = (TransformToLowerCase) transform;
-        return "lowercase " + column(lowercase.existingColumnName())
+        return LOWERCASE + " " + column(lowercase.existingColumnName())
                 + into(lowercase.existingColumnName(), lowercase.newColumnName());
     }
 
     private static String writeNegate(Transform transform)
     {
         TransformNegate negate = (TransformNegate) transform;
-        String line = "negate " + column(negate.columnName());
+        String line = NEGATE + " " + column(negate.columnName());
         if (negate.conditionColumnName() != null)
         {
-            line += " when " + column(negate.conditionColumnName());
+            line += " " + WHEN + " " + column(negate.conditionColumnName());
         }
         return line + into(negate.columnName(), negate.newColumnName());
     }
@@ -446,28 +519,29 @@ public final class TransformDslWriter
     private static String writeNormalise(Transform transform)
     {
         TransformNormalise normalise = (TransformNormalise) transform;
-        return "normalise " + column(normalise.columnName()) + into(normalise.columnName(), normalise.newColumnName());
+        return NORMALISE + " " + column(normalise.columnName())
+                + into(normalise.columnName(), normalise.newColumnName());
     }
 
     private static String writeRound(Transform transform)
     {
         TransformRound round = (TransformRound) transform;
-        String line = "round " + column(round.columnName());
+        String line = ROUND + " " + column(round.columnName());
         if (round.scaleColumnName() == null)
         {
-            line += " to " + round.scale();
+            line += " " + TO + " " + round.scale();
         }
         else
         {
-            line += " using " + column(round.scaleColumnName());
+            line += " " + USING + " " + column(round.scaleColumnName());
         }
         if (round.roundingMode() != null)
         {
-            line += " by " + TransformRound.roundingModeName(round.roundingMode());
+            line += " " + BY + " " + TransformRound.roundingModeName(round.roundingMode());
         }
         if (round.conditionColumnName() != null)
         {
-            line += " when " + column(round.conditionColumnName());
+            line += " " + WHEN + " " + column(round.conditionColumnName());
         }
         return line + into(round.columnName(), round.newColumnName());
     }
@@ -479,9 +553,10 @@ public final class TransformDslWriter
         ColumnName target = newColumnName(transform);
         if (transform instanceof TransformSubtract)
         {
-            return command + " " + operand(right) + " " + word + " " + operand(left) + " into " + column(target);
+            return command + " " + operand(right) + " " + word + " " + operand(left) + " " + INTO + " "
+                    + column(target);
         }
-        return command + " " + operand(left) + " " + word + " " + operand(right) + " into " + column(target);
+        return command + " " + operand(left) + " " + word + " " + operand(right) + " " + INTO + " " + column(target);
     }
 
     private static String writeStringToType(Transform transform)
@@ -496,14 +571,14 @@ public final class TransformDslWriter
         ColumnName[] sources = date.columnNames();
         DateFormat format = date.format();
         ParseMode parseMode = date.parseMode();
-        String line = "convert " + column(sources[0]) + " to Date";
+        String line = CONVERT + " " + column(sources[0]) + " " + TO + " " + TYPE_NAME_DATE;
         if (format != null && format != DateFormat.Unknown)
         {
-            line += " using " + format.name();
+            line += " " + USING + " " + format.name();
         }
         if (parseMode != null && parseMode != ParseMode.EXACT)
         {
-            line += " by " + parseModeName(parseMode);
+            line += " " + BY + " " + parseModeName(parseMode);
         }
         return line + into(sources[0], date.newColumnName());
     }
@@ -512,11 +587,11 @@ public final class TransformDslWriter
     {
         ColumnName source = firstConfiguredSource(transform);
         ColumnName target = firstConfiguredTarget(transform);
-        String line = "convert " + column(source) + " to " + type;
+        String line = CONVERT + " " + column(source) + " " + TO + " " + type;
         ParseMode parseMode = parseMode(transform);
         if (parseMode != null && parseMode != ParseMode.EXACT)
         {
-            line += " by " + parseModeName(parseMode);
+            line += " " + BY + " " + parseModeName(parseMode);
         }
         return line + into(source, target);
     }
@@ -557,27 +632,6 @@ public final class TransformDslWriter
         return null;
     }
 
-    private static ColumnName leftColumnName(Transform transform)
-    {
-        if (transform instanceof TransformAdd add)
-        {
-            return add.leftColumnName();
-        }
-        if (transform instanceof TransformDivide divide)
-        {
-            return divide.leftColumnName();
-        }
-        if (transform instanceof TransformMultiply multiply)
-        {
-            return multiply.leftColumnName();
-        }
-        if (transform instanceof TransformSubtract subtract)
-        {
-            return subtract.leftColumnName();
-        }
-        throw new TransformDslException("No left column for " + transform.getClass().getName(), 0);
-    }
-
     private static Operand leftOperand(Transform transform)
     {
         if (transform instanceof TransformAdd add)
@@ -597,27 +651,6 @@ public final class TransformDslWriter
             return subtract.left();
         }
         throw new TransformDslException("No left operand for " + transform.getClass().getName(), 0);
-    }
-
-    private static ColumnName rightColumnName(Transform transform)
-    {
-        if (transform instanceof TransformAdd add)
-        {
-            return add.rightColumnName();
-        }
-        if (transform instanceof TransformDivide divide)
-        {
-            return divide.rightColumnName();
-        }
-        if (transform instanceof TransformMultiply multiply)
-        {
-            return multiply.rightColumnName();
-        }
-        if (transform instanceof TransformSubtract subtract)
-        {
-            return subtract.rightColumnName();
-        }
-        throw new TransformDslException("No right column for " + transform.getClass().getName(), 0);
     }
 
     private static Operand rightOperand(Transform transform)
@@ -662,18 +695,13 @@ public final class TransformDslWriter
         throw new TransformDslException("No new column for " + transform.getClass().getName(), 0);
     }
 
-    private static ColumnName firstOrNull(ColumnName[] names)
-    {
-        return names == null || names.length == 0 ? null : names[0];
-    }
-
     private static String into(ColumnName source, ColumnName target)
     {
         if (target == null || target.equals(source))
         {
             return "";
         }
-        return " into " + column(target);
+        return " " + INTO + " " + column(target);
     }
 
     private static String map(Map<String, String> map)
@@ -745,31 +773,31 @@ public final class TransformDslWriter
     {
         if (ColumnTypes.DECIMAL.equals(type))
         {
-            return "Decimal";
+            return TYPE_NAME_DECIMAL;
         }
         if (ColumnTypes.BOOLEAN.equals(type))
         {
-            return "Boolean";
+            return TYPE_NAME_BOOLEAN;
         }
         if (ColumnTypes.DOUBLE.equals(type))
         {
-            return "Double";
+            return TYPE_NAME_DOUBLE;
         }
         if (ColumnTypes.INT.equals(type))
         {
-            return "Int";
+            return TYPE_NAME_INT;
         }
         if (ColumnTypes.LONG.equals(type))
         {
-            return "Long";
+            return TYPE_NAME_LONG;
         }
         if (ColumnTypes.LOCALDATE.equals(type))
         {
-            return "Date";
+            return TYPE_NAME_DATE;
         }
         if (ColumnTypes.STRING.equals(type))
         {
-            return "String";
+            return TYPE_NAME_STRING;
         }
         return type.toString();
     }
@@ -778,10 +806,10 @@ public final class TransformDslWriter
     {
         return switch (parseMode)
         {
-            case FIRST_IN -> "firstIn";
-            case LAST_IN -> "lastIn";
-            case ONLY_IN -> "onlyIn";
-            case EXACT -> "exact";
+            case FIRST_IN -> MODE_FIRST_IN;
+            case LAST_IN -> MODE_LAST_IN;
+            case ONLY_IN -> MODE_ONLY_IN;
+            case EXACT -> MODE_EXACT;
         };
     }
 

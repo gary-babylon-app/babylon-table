@@ -10,6 +10,75 @@
 
 package app.babylon.table.transform.dsl;
 
+import static app.babylon.table.transform.dsl.TransformDslWords.ABS;
+import static app.babylon.table.transform.dsl.TransformDslWords.ADD;
+import static app.babylon.table.transform.dsl.TransformDslWords.AFTER;
+import static app.babylon.table.transform.dsl.TransformDslWords.ALL;
+import static app.babylon.table.transform.dsl.TransformDslWords.AND;
+import static app.babylon.table.transform.dsl.TransformDslWords.AS;
+import static app.babylon.table.transform.dsl.TransformDslWords.BEFORE;
+import static app.babylon.table.transform.dsl.TransformDslWords.BY;
+import static app.babylon.table.transform.dsl.TransformDslWords.CLASSIFY;
+import static app.babylon.table.transform.dsl.TransformDslWords.CLEAN;
+import static app.babylon.table.transform.dsl.TransformDslWords.COALESCE;
+import static app.babylon.table.transform.dsl.TransformDslWords.COLUMN_NAME;
+import static app.babylon.table.transform.dsl.TransformDslWords.CONCAT;
+import static app.babylon.table.transform.dsl.TransformDslWords.CONSTANT;
+import static app.babylon.table.transform.dsl.TransformDslWords.CONVERT;
+import static app.babylon.table.transform.dsl.TransformDslWords.COPY;
+import static app.babylon.table.transform.dsl.TransformDslWords.DEFAULT;
+import static app.babylon.table.transform.dsl.TransformDslWords.DIVIDE;
+import static app.babylon.table.transform.dsl.TransformDslWords.ELSE;
+import static app.babylon.table.transform.dsl.TransformDslWords.EXTRACT;
+import static app.babylon.table.transform.dsl.TransformDslWords.FLAG;
+import static app.babylon.table.transform.dsl.TransformDslWords.FROM;
+import static app.babylon.table.transform.dsl.TransformDslWords.IN;
+import static app.babylon.table.transform.dsl.TransformDslWords.INTO;
+import static app.babylon.table.transform.dsl.TransformDslWords.LEFT;
+import static app.babylon.table.transform.dsl.TransformDslWords.LOWERCASE;
+import static app.babylon.table.transform.dsl.TransformDslWords.MATCHING;
+import static app.babylon.table.transform.dsl.TransformDslWords.MULTIPLY;
+import static app.babylon.table.transform.dsl.TransformDslWords.NEGATE;
+import static app.babylon.table.transform.dsl.TransformDslWords.NORMALISE;
+import static app.babylon.table.transform.dsl.TransformDslWords.ON;
+import static app.babylon.table.transform.dsl.TransformDslWords.OR;
+import static app.babylon.table.transform.dsl.TransformDslWords.PREFIX;
+import static app.babylon.table.transform.dsl.TransformDslWords.REMOVE;
+import static app.babylon.table.transform.dsl.TransformDslWords.REPLACE;
+import static app.babylon.table.transform.dsl.TransformDslWords.RETAIN;
+import static app.babylon.table.transform.dsl.TransformDslWords.RIGHT;
+import static app.babylon.table.transform.dsl.TransformDslWords.ROUND;
+import static app.babylon.table.transform.dsl.TransformDslWords.SPLIT;
+import static app.babylon.table.transform.dsl.TransformDslWords.STRIP;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUBSTITUTE;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUBSTRING;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUBTRACT;
+import static app.babylon.table.transform.dsl.TransformDslWords.SUFFIX;
+import static app.babylon.table.transform.dsl.TransformDslWords.TAKE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TO;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_BIG_DECIMAL;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_BOOLEAN;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_BYTE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_CURRENCY;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_DATE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_DECIMAL;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_DOUBLE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_INSTANT;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_INT;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_INTEGER;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_LOCAL_DATE;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_LOCAL_DATE_TIME;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_LOCAL_TIME;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_LONG;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_OFFSET_DATE_TIME;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_PERIOD;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_STRING;
+import static app.babylon.table.transform.dsl.TransformDslWords.TYPE_YEAR_MONTH;
+import static app.babylon.table.transform.dsl.TransformDslWords.UPPERCASE;
+import static app.babylon.table.transform.dsl.TransformDslWords.USING;
+import static app.babylon.table.transform.dsl.TransformDslWords.WHEN;
+import static app.babylon.table.transform.dsl.TransformDslWords.WITH;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -104,32 +173,32 @@ public final class TransformDslParser
     public static TransformDslParser standard()
     {
         Map<String, TransformCommandParser> parsers = new HashMap<>();
-        parsers.put("abs", TransformDslParser::parseAbs);
-        parsers.put("add", TransformDslParser::parseAdd);
-        parsers.put("classify", TransformDslParser::parseClassify);
-        parsers.put("clean", TransformDslParser::parseClean);
-        parsers.put("coalesce", TransformDslParser::parseCoalesce);
-        parsers.put("concat", TransformDslParser::parseConcat);
-        parsers.put("constant", TransformDslParser::parseConstant);
-        parsers.put("copy", TransformDslParser::parseCopy);
-        parsers.put("divide", TransformDslParser::parseDivide);
-        parsers.put("extract", TransformDslParser::parseExtract);
-        parsers.put("flag", TransformDslParser::parseFlag);
-        parsers.put("lowercase", TransformDslParser::parseLowercase);
-        parsers.put("multiply", TransformDslParser::parseMultiply);
-        parsers.put("negate", TransformDslParser::parseNegate);
-        parsers.put("normalise", TransformDslParser::parseNormalise);
-        parsers.put("prefix", TransformDslParser::parsePrefix);
-        parsers.put("replace", TransformDslParser::parseReplace);
-        parsers.put("remove", TransformDslParser::parseRemove);
-        parsers.put("retain", TransformDslParser::parseRetain);
-        parsers.put("split", TransformDslParser::parseSplit);
-        parsers.put("strip", TransformDslParser::parseStrip);
-        parsers.put("substitute", TransformDslParser::parseSubstitute);
-        parsers.put("subtract", TransformDslParser::parseSubtract);
-        parsers.put("suffix", TransformDslParser::parseSuffix);
-        parsers.put("take", TransformDslParser::parseTake);
-        parsers.put("uppercase", TransformDslParser::parseUppercase);
+        parsers.put(ABS, TransformDslParser::parseAbs);
+        parsers.put(ADD, TransformDslParser::parseAdd);
+        parsers.put(CLASSIFY, TransformDslParser::parseClassify);
+        parsers.put(CLEAN, TransformDslParser::parseClean);
+        parsers.put(COALESCE, TransformDslParser::parseCoalesce);
+        parsers.put(CONCAT, TransformDslParser::parseConcat);
+        parsers.put(CONSTANT, TransformDslParser::parseConstant);
+        parsers.put(COPY, TransformDslParser::parseCopy);
+        parsers.put(DIVIDE, TransformDslParser::parseDivide);
+        parsers.put(EXTRACT, TransformDslParser::parseExtract);
+        parsers.put(FLAG, TransformDslParser::parseFlag);
+        parsers.put(LOWERCASE, TransformDslParser::parseLowercase);
+        parsers.put(MULTIPLY, TransformDslParser::parseMultiply);
+        parsers.put(NEGATE, TransformDslParser::parseNegate);
+        parsers.put(NORMALISE, TransformDslParser::parseNormalise);
+        parsers.put(PREFIX, TransformDslParser::parsePrefix);
+        parsers.put(REPLACE, TransformDslParser::parseReplace);
+        parsers.put(REMOVE, TransformDslParser::parseRemove);
+        parsers.put(RETAIN, TransformDslParser::parseRetain);
+        parsers.put(SPLIT, TransformDslParser::parseSplit);
+        parsers.put(STRIP, TransformDslParser::parseStrip);
+        parsers.put(SUBSTITUTE, TransformDslParser::parseSubstitute);
+        parsers.put(SUBTRACT, TransformDslParser::parseSubtract);
+        parsers.put(SUFFIX, TransformDslParser::parseSuffix);
+        parsers.put(TAKE, TransformDslParser::parseTake);
+        parsers.put(UPPERCASE, TransformDslParser::parseUppercase);
         return new TransformDslParser(parsers, standardTypes(), standardRoundScales());
     }
 
@@ -191,11 +260,11 @@ public final class TransformDslParser
         Transform transform;
         if (parser == null)
         {
-            if ("convert".equals(command))
+            if (CONVERT.equals(command))
             {
                 transform = parseConvert(tokens);
             }
-            else if ("round".equals(command))
+            else if (ROUND.equals(command))
             {
                 transform = parseRound(tokens);
             }
@@ -223,7 +292,7 @@ public final class TransformDslParser
         String target = null;
         while (!tokens.isAtEnd())
         {
-            if (tokens.matchWord("when"))
+            if (tokens.matchWord(WHEN))
             {
                 if (conditionColumn != null)
                 {
@@ -231,7 +300,7 @@ public final class TransformDslParser
                 }
                 conditionColumn = tokens.expectValue();
             }
-            else if (tokens.matchWord("into"))
+            else if (tokens.matchWord(INTO))
             {
                 if (target != null)
                 {
@@ -252,9 +321,9 @@ public final class TransformDslParser
     private static Transform parseAdd(TokenStream tokens)
     {
         Operand left = operand(tokens.expectValue());
-        tokens.expectWord("and");
+        tokens.expectWord(AND);
         Operand right = operand(tokens.expectValue());
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformAdd.of(left, right, ColumnName.of(target));
     }
@@ -262,14 +331,14 @@ public final class TransformDslParser
     private static Transform parseClassify(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("matching");
+        tokens.expectWord(MATCHING);
         String pattern = tokens.expectLiteral();
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
-        tokens.expectWord("as");
+        tokens.expectWord(AS);
         String found = tokens.expectValue();
         String notFound = null;
-        if (tokens.matchWord("else") || tokens.matchWord("default"))
+        if (tokens.matchWord(ELSE) || tokens.matchWord(DEFAULT))
         {
             notFound = tokens.expectValue();
         }
@@ -281,7 +350,7 @@ public final class TransformDslParser
     {
         String source = tokens.expectValue();
         String cleanCharacters = null;
-        if (tokens.matchWord("using"))
+        if (tokens.matchWord(USING))
         {
             cleanCharacters = tokens.expectValue();
         }
@@ -291,28 +360,28 @@ public final class TransformDslParser
 
     private static Transform parseCoalesce(TokenStream tokens)
     {
-        List<String> sources = valuesUntil(tokens, "as", "into");
+        List<String> sources = valuesUntil(tokens, AS, INTO);
         String mode = null;
-        if (tokens.matchWord("as"))
+        if (tokens.matchWord(AS))
         {
             mode = tokens.expectValue();
         }
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
-        requireMinimumValueCount("coalesce", sources, 1);
+        requireMinimumValueCount(COALESCE, sources, 1);
         ColumnObject.Mode columnMode = mode == null ? null : ColumnObject.Mode.parse(mode);
         return TransformCoalesce.of(ColumnName.of(target), columnMode, columnNames(sources));
     }
 
     private static Transform parseConcat(TokenStream tokens)
     {
-        ConcatParts sources = concatPartsUntil(tokens, "using", "into");
+        ConcatParts sources = concatPartsUntil(tokens, USING, INTO);
         String separator = null;
-        if (tokens.matchWord("using"))
+        if (tokens.matchWord(USING))
         {
             separator = tokens.expectValue();
         }
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformConcat.of(ColumnName.of(target), separator, sources.parts());
     }
@@ -320,14 +389,14 @@ public final class TransformDslParser
     private Transform parseConvert(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("to");
+        tokens.expectWord(TO);
         String type = tokens.expectValue();
         String format = null;
         ParseMode parseMode = null;
         String target = null;
         while (!tokens.isAtEnd())
         {
-            if (tokens.matchWord("using"))
+            if (tokens.matchWord(USING))
             {
                 if (format != null)
                 {
@@ -335,7 +404,7 @@ public final class TransformDslParser
                 }
                 format = tokens.expectValue();
             }
-            else if (tokens.matchWord("by"))
+            else if (tokens.matchWord(BY))
             {
                 if (parseMode != null)
                 {
@@ -343,7 +412,7 @@ public final class TransformDslParser
                 }
                 parseMode = ParseMode.parse(tokens.expectValue());
             }
-            else if (tokens.matchWord("into"))
+            else if (tokens.matchWord(INTO))
             {
                 if (target != null)
                 {
@@ -360,26 +429,26 @@ public final class TransformDslParser
         String normalisedType = normalise(type);
         return switch (normalisedType)
         {
-            case "decimal" -> format == null
+            case TYPE_DECIMAL -> format == null
                     ? TransformStringToType.builder(ColumnTypes.DECIMAL, ColumnName.of(source))
                             .withNewColumnName(columnName(target)).withMode(ColumnObject.Mode.CATEGORICAL)
                             .withParseMode(parseMode).build()
                     : throwUnsupportedUsing(type, tokens);
-            case "double" -> format == null
+            case TYPE_DOUBLE -> format == null
                     ? primitiveConvert(ColumnTypes.DOUBLE, source, target, parseMode)
                     : throwUnsupportedUsing(type, tokens);
-            case "int",
-                    "integer" ->
+            case TYPE_INT,
+                    TYPE_INTEGER ->
                 format == null
                         ? primitiveConvert(ColumnTypes.INT, source, target, parseMode)
                         : throwUnsupportedUsing(type, tokens);
-            case "long" -> format == null
+            case TYPE_LONG -> format == null
                     ? primitiveConvert(ColumnTypes.LONG, source, target, parseMode)
                     : throwUnsupportedUsing(type, tokens);
-            case "date", "localdate" ->
+            case TYPE_DATE, TYPE_LOCAL_DATE ->
                 TransformToLocalDate.builder(ColumnName.of(source)).withNewColumnName(columnName(target))
                         .withFormat(DateFormat.parse(format)).withParseMode(parseMode).build();
-            case "string" -> format == null
+            case TYPE_STRING -> format == null
                     ? TransformAnyToString.of(ColumnName.of(source), columnName(target))
                     : throwUnsupportedUsing(type, tokens);
             default -> parseRegisteredType(source, target, type, normalisedType, format, parseMode, tokens);
@@ -421,7 +490,7 @@ public final class TransformDslParser
     private static Transform parseCopy(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformCopy.of(ColumnName.of(source), ColumnName.of(target));
     }
@@ -441,7 +510,7 @@ public final class TransformDslParser
         String target = null;
         while (!tokens.isAtEnd())
         {
-            if (tokens.matchWord("as"))
+            if (tokens.matchWord(AS))
             {
                 if (!ColumnTypes.STRING.equals(type))
                 {
@@ -449,7 +518,7 @@ public final class TransformDslParser
                 }
                 type = parseColumnType(tokens.expectValue());
             }
-            else if (tokens.matchWord("into"))
+            else if (tokens.matchWord(INTO))
             {
                 if (target != null)
                 {
@@ -492,24 +561,24 @@ public final class TransformDslParser
     private static Transform parseDivide(TokenStream tokens)
     {
         Operand left = operand(tokens.expectValue());
-        tokens.expectWord("by");
+        tokens.expectWord(BY);
         Operand right = operand(tokens.expectValue());
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformDivide.of(left, right, ColumnName.of(target));
     }
 
     private static Transform parseExtract(TokenStream tokens)
     {
-        tokens.expectWord("from");
-        if (tokens.matchWord("columnName"))
+        tokens.expectWord(FROM);
+        if (tokens.matchWord(COLUMN_NAME))
         {
             return parseExtractFromColumnName(tokens);
         }
         String source = tokens.expectValue();
-        tokens.expectWord("matching");
+        tokens.expectWord(MATCHING);
         String pattern = tokens.expectLiteral();
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformExtract.of(ColumnName.of(source), ColumnName.of(target), Pattern.compile(pattern));
     }
@@ -517,13 +586,13 @@ public final class TransformDslParser
     private static Transform parseExtractFromColumnName(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("using");
+        tokens.expectWord(USING);
         String pattern = tokens.expectLiteral();
         Column.Type type = ColumnTypes.STRING;
         String target = null;
         while (!tokens.isAtEnd())
         {
-            if (tokens.matchWord("as"))
+            if (tokens.matchWord(AS))
             {
                 if (!ColumnTypes.STRING.equals(type))
                 {
@@ -531,7 +600,7 @@ public final class TransformDslParser
                 }
                 type = parseColumnType(tokens.expectValue());
             }
-            else if (tokens.matchWord("into"))
+            else if (tokens.matchWord(INTO))
             {
                 if (target != null)
                 {
@@ -555,14 +624,14 @@ public final class TransformDslParser
     private static Transform parseFlag(TokenStream tokens)
     {
         ConditionExpression condition = parseConditionExpression(tokens);
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         return TransformFlag.builder(condition).withNewColumnName(ColumnName.of(tokens.expectValue())).build();
     }
 
     private static ConditionExpression parseConditionExpression(TokenStream tokens)
     {
         ConditionExpression condition = parseAndCondition(tokens);
-        while (tokens.matchWord("or"))
+        while (tokens.matchWord(OR))
         {
             condition = new LogicalCondition(condition, LogicalCondition.Operator.OR, parseAndCondition(tokens));
         }
@@ -572,7 +641,7 @@ public final class TransformDslParser
     private static ConditionExpression parseAndCondition(TokenStream tokens)
     {
         ConditionExpression condition = parseComparisonCondition(tokens);
-        while (tokens.matchWord("and"))
+        while (tokens.matchWord(AND))
         {
             condition = new LogicalCondition(condition, LogicalCondition.Operator.AND,
                     parseComparisonCondition(tokens));
@@ -622,9 +691,9 @@ public final class TransformDslParser
     private static Transform parseMultiply(TokenStream tokens)
     {
         Operand left = operand(tokens.expectValue());
-        tokens.expectWord("by");
+        tokens.expectWord(BY);
         Operand right = operand(tokens.expectValue());
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformMultiply.of(left, right, ColumnName.of(target));
     }
@@ -636,7 +705,7 @@ public final class TransformDslParser
         String target = null;
         while (!tokens.isAtEnd())
         {
-            if (tokens.matchWord("when"))
+            if (tokens.matchWord(WHEN))
             {
                 if (conditionColumn != null)
                 {
@@ -644,7 +713,7 @@ public final class TransformDslParser
                 }
                 conditionColumn = tokens.expectValue();
             }
-            else if (tokens.matchWord("into"))
+            else if (tokens.matchWord(INTO))
             {
                 if (target != null)
                 {
@@ -674,7 +743,7 @@ public final class TransformDslParser
     private static Transform parsePrefix(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("with");
+        tokens.expectWord(WITH);
         String prefix = tokens.expectValue();
         String target = optionalInto(tokens, source);
         return TransformPrefix.of(prefix, ColumnName.of(source), columnName(target));
@@ -682,11 +751,11 @@ public final class TransformDslParser
 
     private static Transform parseReplace(TokenStream tokens)
     {
-        boolean all = tokens.matchWord("all");
+        boolean all = tokens.matchWord(ALL);
         String targetText = all ? tokens.expectLiteral() : tokens.expectValue();
-        tokens.expectWord("with");
+        tokens.expectWord(WITH);
         String replacement = tokens.expectValue();
-        tokens.expectWord("in");
+        tokens.expectWord(IN);
         String source = tokens.expectValue();
         String target = optionalInto(tokens, source);
         return all
@@ -709,11 +778,11 @@ public final class TransformDslParser
         String source = tokens.expectValue();
         Integer scale = null;
         String scaleColumn = null;
-        if (tokens.matchWord("to"))
+        if (tokens.matchWord(TO))
         {
             scale = Integer.parseInt(tokens.expectValue());
         }
-        else if (tokens.matchWord("using"))
+        else if (tokens.matchWord(USING))
         {
             scaleColumn = tokens.expectValue();
         }
@@ -726,7 +795,7 @@ public final class TransformDslParser
         String target = null;
         while (!tokens.isAtEnd())
         {
-            if (tokens.matchWord("by"))
+            if (tokens.matchWord(BY))
             {
                 if (roundingMode != null)
                 {
@@ -734,7 +803,7 @@ public final class TransformDslParser
                 }
                 roundingMode = TransformRound.parseRoundingMode(tokens.expectValue());
             }
-            else if (tokens.matchWord("when"))
+            else if (tokens.matchWord(WHEN))
             {
                 if (conditionColumn != null)
                 {
@@ -742,7 +811,7 @@ public final class TransformDslParser
                 }
                 conditionColumn = tokens.expectValue();
             }
-            else if (tokens.matchWord("into"))
+            else if (tokens.matchWord(INTO))
             {
                 if (target != null)
                 {
@@ -765,14 +834,14 @@ public final class TransformDslParser
     private static Transform parseSplit(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("on");
+        tokens.expectWord(ON);
         String separator = tokens.expectLiteral();
         TransformSplit.Mode mode = TransformSplit.Mode.ALL;
-        if (tokens.matchWord("by"))
+        if (tokens.matchWord(BY))
         {
             mode = TransformSplit.Mode.parse(tokens.expectValue());
         }
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         List<String> targets = commaSeparatedValues(tokens);
         return TransformSplit.of(ColumnName.of(source), separator, mode, columnNames(targets));
     }
@@ -784,7 +853,7 @@ public final class TransformDslParser
         String stripCharacters = null;
         while (!tokens.isAtEnd())
         {
-            if (tokens.matchWord("using"))
+            if (tokens.matchWord(USING))
             {
                 if (stripCharacters != null)
                 {
@@ -792,7 +861,7 @@ public final class TransformDslParser
                 }
                 stripCharacters = tokens.expectLiteral();
             }
-            else if (tokens.matchWord("into"))
+            else if (tokens.matchWord(INTO))
             {
                 if (target != null)
                 {
@@ -811,14 +880,14 @@ public final class TransformDslParser
     private static Transform parseSubstitute(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("using");
+        tokens.expectWord(USING);
         Map<String, String> replacements = parseMap(tokens);
         String defaultValue = null;
-        if (tokens.matchWord("default") || tokens.matchWord("else"))
+        if (tokens.matchWord(DEFAULT) || tokens.matchWord(ELSE))
         {
             defaultValue = tokens.expectValue();
         }
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformSubstitute.of(ColumnName.of(source), ColumnName.of(target), replacements, defaultValue);
     }
@@ -826,9 +895,9 @@ public final class TransformDslParser
     private static Transform parseSubtract(TokenStream tokens)
     {
         Operand right = operand(tokens.expectValue());
-        tokens.expectWord("from");
+        tokens.expectWord(FROM);
         Operand left = operand(tokens.expectValue());
-        tokens.expectWord("into");
+        tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformSubtract.of(left, right, ColumnName.of(target));
     }
@@ -836,7 +905,7 @@ public final class TransformDslParser
     private static Transform parseSuffix(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord("with");
+        tokens.expectWord(WITH);
         String suffix = tokens.expectValue();
         String target = optionalInto(tokens, source);
         return TransformSuffix.of(suffix, ColumnName.of(source), columnName(target));
@@ -844,51 +913,51 @@ public final class TransformDslParser
 
     private static Transform parseTake(TokenStream tokens)
     {
-        if (tokens.matchWord("left"))
+        if (tokens.matchWord(LEFT))
         {
             String length = tokens.expectValue();
-            tokens.expectWord("from");
+            tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord("into");
+            tokens.expectWord(INTO);
             String target = tokens.expectValue();
             return TransformLeft.of(ColumnName.of(source), ColumnName.of(target), Integer.parseInt(length));
         }
-        if (tokens.matchWord("right"))
+        if (tokens.matchWord(RIGHT))
         {
             String length = tokens.expectValue();
-            tokens.expectWord("from");
+            tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord("into");
+            tokens.expectWord(INTO);
             String target = tokens.expectValue();
             return TransformRight.of(ColumnName.of(source), ColumnName.of(target), Integer.parseInt(length));
         }
-        if (tokens.matchWord("substring"))
+        if (tokens.matchWord(SUBSTRING))
         {
             String first = tokens.expectValue();
             tokens.expect(TokenType.COMMA);
             String last = tokens.expectValue();
-            tokens.expectWord("from");
+            tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord("into");
+            tokens.expectWord(INTO);
             String target = tokens.expectValue();
             return TransformSubstring.of(ColumnName.of(source), ColumnName.of(target), Integer.parseInt(first),
                     Integer.parseInt(last));
         }
-        if (tokens.matchWord("before"))
+        if (tokens.matchWord(BEFORE))
         {
             String delimiter = tokens.expectValue();
-            tokens.expectWord("from");
+            tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord("into");
+            tokens.expectWord(INTO);
             String target = tokens.expectValue();
             return TransformBefore.of(ColumnName.of(source), ColumnName.of(target), delimiter);
         }
-        if (tokens.matchWord("after"))
+        if (tokens.matchWord(AFTER))
         {
             String delimiter = tokens.expectValue();
-            tokens.expectWord("from");
+            tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord("into");
+            tokens.expectWord(INTO);
             String target = tokens.expectValue();
             return TransformAfter.of(ColumnName.of(source), ColumnName.of(target), delimiter);
         }
@@ -939,7 +1008,7 @@ public final class TransformDslParser
 
     private static String optionalInto(TokenStream tokens, String fallback)
     {
-        if (tokens.matchWord("into"))
+        if (tokens.matchWord(INTO))
         {
             return tokens.expectValue();
         }
@@ -1071,24 +1140,24 @@ public final class TransformDslParser
     private static Map<String, Column.Type> standardTypes()
     {
         Map<String, Column.Type> types = new HashMap<>();
-        types.put("boolean", ColumnTypes.BOOLEAN);
-        types.put("byte", ColumnTypes.BYTE);
-        types.put("decimal", ColumnTypes.DECIMAL);
-        types.put("bigdecimal", ColumnTypes.DECIMAL);
-        types.put("double", ColumnTypes.DOUBLE);
-        types.put("int", ColumnTypes.INT);
-        types.put("integer", ColumnTypes.INT);
-        types.put("instant", ColumnTypes.INSTANT);
-        types.put("localdate", ColumnTypes.LOCALDATE);
-        types.put("date", ColumnTypes.LOCALDATE);
-        types.put("localdatetime", ColumnTypes.LOCAL_DATE_TIME);
-        types.put("localtime", ColumnTypes.LOCAL_TIME);
-        types.put("long", ColumnTypes.LONG);
-        types.put("offsetdatetime", ColumnTypes.OFFSET_DATE_TIME);
-        types.put("period", ColumnTypes.PERIOD);
-        types.put("string", ColumnTypes.STRING);
-        types.put("yearmonth", ColumnTypes.YEAR_MONTH);
-        types.put("currency", ColumnTypes.CURRENCY);
+        types.put(TYPE_BOOLEAN, ColumnTypes.BOOLEAN);
+        types.put(TYPE_BYTE, ColumnTypes.BYTE);
+        types.put(TYPE_DECIMAL, ColumnTypes.DECIMAL);
+        types.put(TYPE_BIG_DECIMAL, ColumnTypes.DECIMAL);
+        types.put(TYPE_DOUBLE, ColumnTypes.DOUBLE);
+        types.put(TYPE_INT, ColumnTypes.INT);
+        types.put(TYPE_INTEGER, ColumnTypes.INT);
+        types.put(TYPE_INSTANT, ColumnTypes.INSTANT);
+        types.put(TYPE_LOCAL_DATE, ColumnTypes.LOCALDATE);
+        types.put(TYPE_DATE, ColumnTypes.LOCALDATE);
+        types.put(TYPE_LOCAL_DATE_TIME, ColumnTypes.LOCAL_DATE_TIME);
+        types.put(TYPE_LOCAL_TIME, ColumnTypes.LOCAL_TIME);
+        types.put(TYPE_LONG, ColumnTypes.LONG);
+        types.put(TYPE_OFFSET_DATE_TIME, ColumnTypes.OFFSET_DATE_TIME);
+        types.put(TYPE_PERIOD, ColumnTypes.PERIOD);
+        types.put(TYPE_STRING, ColumnTypes.STRING);
+        types.put(TYPE_YEAR_MONTH, ColumnTypes.YEAR_MONTH);
+        types.put(TYPE_CURRENCY, ColumnTypes.CURRENCY);
         return types;
     }
 

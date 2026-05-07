@@ -8,12 +8,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.table.transform.Transform;
-import app.babylon.table.transform.TransformClean;
-import app.babylon.table.transform.TransformCopy;
-import app.babylon.table.transform.TransformRound;
-import app.babylon.table.transform.TransformStringToType;
-
 class QuickTransformsTest
 {
     @Test
@@ -27,37 +21,47 @@ class QuickTransformsTest
     {
         QuickTransforms quickTransforms = QuickTransforms.standard();
 
-        Transform transform = quickTransforms.parse("clean Name");
+        Transform transform = quickTransforms.parse(QuickTransformScript.of("clean Name")).transforms()[0];
 
         assertInstanceOf(TransformClean.class, transform);
         assertEquals("clean Name", quickTransforms.write(transform));
     }
 
     @Test
-    void shouldParseAndWriteAllStatements()
+    void shouldParseTransformSet()
     {
         QuickTransforms quickTransforms = QuickTransforms.standard();
 
-        Iterable<String> statements = List.of("clean Name", "copy Symbol into DisplaySymbol");
-        List<Transform> transforms = quickTransforms.parseAll(statements);
+        Transform[] transforms = quickTransforms.parse(QuickTransformScript.of("""
+                # cleanup
+                clean Name into CleanName # trailing comment
+                constant 'A
+                B' into Multiline
 
-        assertInstanceOf(TransformClean.class, transforms.get(0));
-        assertInstanceOf(TransformCopy.class, transforms.get(1));
-        assertEquals(List.of("clean Name", "copy Symbol into DisplaySymbol"), quickTransforms.writeAll(transforms));
+                uppercase CleanName
+                """)).transforms();
+
+        assertInstanceOf(TransformClean.class, transforms[0]);
+        assertInstanceOf(TransformConstant.class, transforms[1]);
+        assertInstanceOf(TransformToUpperCase.class, transforms[2]);
     }
 
     @Test
-    void shouldParseAllVarargsStatements()
+    void shouldParseTransformSetIntoCollection()
+    {
+        QuickTransforms quickTransforms = QuickTransforms.standard();
+        List<Transform> transforms = new java.util.ArrayList<>();
+
+        assertSame(transforms, quickTransforms.parse(QuickTransformScript.of("clean Name")).transforms(transforms));
+        assertInstanceOf(TransformClean.class, transforms.get(0));
+    }
+
+    @Test
+    void shouldApplyTransformSet()
     {
         QuickTransforms quickTransforms = QuickTransforms.standard();
 
-        List<Transform> transforms = quickTransforms.parseAll("convert Currency to Currency by exact",
-                "round Amount using Currency into Rounded");
-
-        assertInstanceOf(TransformStringToType.class, transforms.get(0));
-        assertInstanceOf(TransformRound.class, transforms.get(1));
-        assertEquals(List.of("convert Currency to Currency", "round Amount using Currency into Rounded"),
-                quickTransforms.writeAll(transforms));
+        assertEquals(1, quickTransforms.parse(QuickTransformScript.of("clean Name")).transforms().length);
     }
 
     @Test
@@ -65,8 +69,9 @@ class QuickTransformsTest
     {
         QuickTransforms quickTransforms = QuickTransforms.standard();
 
-        List<String> lines = quickTransforms.writeAll(quickTransforms.parse("clean Name"),
-                quickTransforms.parse("copy Symbol into DisplaySymbol"));
+        List<String> lines = quickTransforms.writeAll(
+                quickTransforms.parse(QuickTransformScript.of("clean Name")).transforms()[0],
+                quickTransforms.parse(QuickTransformScript.of("copy Symbol into DisplaySymbol")).transforms()[0]);
 
         assertEquals(List.of("clean Name", "copy Symbol into DisplaySymbol"), lines);
     }
@@ -76,7 +81,9 @@ class QuickTransformsTest
     {
         QuickTransforms quickTransforms = QuickTransforms.standard();
 
-        assertEquals("constant metadata.description into SourceDescription",
-                quickTransforms.format("constant METADATA.DESCRIPTION into SourceDescription"));
+        Transform transform = quickTransforms
+                .parse(QuickTransformScript.of("constant METADATA.DESCRIPTION into SourceDescription")).transforms()[0];
+
+        assertEquals("constant metadata.description into SourceDescription", quickTransforms.write(transform));
     }
 }

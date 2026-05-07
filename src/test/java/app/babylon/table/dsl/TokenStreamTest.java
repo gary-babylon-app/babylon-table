@@ -463,6 +463,19 @@ class TokenStreamTest
     }
 
     @Test
+    void shouldContinueAfterCommentLine()
+    {
+        String line = "# comment\nclean Name";
+
+        TokenStream tokens = TokenStream.of(line);
+
+        tokens.expect(TokenType.LINE_FEED);
+        tokens.expectWord("clean");
+        assertEquals("Name", tokens.expectValue());
+        assertTrue(tokens.isAtEnd());
+    }
+
+    @Test
     void shouldTokenizeDoubleQuotedStrings()
     {
         String line = "substitute Status using \"N/A\":Missing default Other";

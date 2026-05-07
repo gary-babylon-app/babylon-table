@@ -13,7 +13,6 @@ package app.babylon.table.column;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
-import app.babylon.table.ViewIndex;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;

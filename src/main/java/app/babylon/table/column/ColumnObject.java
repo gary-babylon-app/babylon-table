@@ -580,8 +580,6 @@ public interface ColumnObject<T> extends Column
         }
     }
 
-    @SuppressWarnings(
-    {"rawtypes", "unchecked"})
     private static boolean test(Object rowValue, Operator operator, Object[] values)
     {
         return switch (operator)

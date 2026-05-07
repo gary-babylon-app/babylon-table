@@ -248,7 +248,38 @@ public final class TransformDslParser
         return parse(TokenStream.of(line));
     }
 
+    public List<Transform> parseScript(CharSequence script)
+    {
+        List<Transform> transforms = new ArrayList<>();
+        TokenStream tokens = TokenStream.of(script);
+        skipStatementEnd(tokens);
+        while (!tokens.isAtEnd())
+        {
+            transforms.add(parseStatement(tokens));
+            skipStatementEnd(tokens);
+        }
+        return transforms;
+    }
+
+    public String readStatement(TokenStream tokens)
+    {
+        StringBuilder statement = new StringBuilder();
+        while (!isAtStatementEnd(tokens))
+        {
+            Token token = tokens.next();
+            append(statement, token);
+        }
+        return statement.toString();
+    }
+
     public Transform parse(TokenStream tokens)
+    {
+        Transform transform = parseStatement(tokens);
+        tokens.expectEnd();
+        return transform;
+    }
+
+    private Transform parseStatement(TokenStream tokens)
     {
         Token token = tokens.next();
         if (!token.is(TokenType.WORD))
@@ -277,7 +308,7 @@ public final class TransformDslParser
         {
             transform = parser.parse(tokens);
         }
-        tokens.expectEnd();
+        expectStatementEnd(tokens);
         if (transform == null)
         {
             throw new TransformDslException("Could not create transform '" + token.value() + "'", token.position());
@@ -285,12 +316,66 @@ public final class TransformDslParser
         return transform;
     }
 
+    private static boolean isAtStatementEnd(TokenStream tokens)
+    {
+        Token token = tokens.peek();
+        return token.is(TokenType.CARRIAGE_RETURN) || token.is(TokenType.LINE_FEED) || token.is(TokenType.EOF);
+    }
+
+    private static void expectStatementEnd(TokenStream tokens)
+    {
+        if (!isAtStatementEnd(tokens))
+        {
+            throw new TransformDslException("Expected end of statement", tokens.peek().position());
+        }
+        skipStatementEnd(tokens);
+    }
+
+    private static void skipStatementEnd(TokenStream tokens)
+    {
+        while (tokens.match(TokenType.CARRIAGE_RETURN) || tokens.match(TokenType.LINE_FEED))
+        {
+            continue;
+        }
+    }
+
+    private static void append(StringBuilder statement, Token token)
+    {
+        if (statement.length() > 0)
+        {
+            statement.append(' ');
+        }
+        if (token.is(TokenType.LITERAL))
+        {
+            appendLiteral(statement, token.value());
+        }
+        else
+        {
+            statement.append(token.value());
+        }
+    }
+
+    private static void appendLiteral(StringBuilder statement, String value)
+    {
+        statement.append('\'');
+        for (int i = 0; i < value.length(); ++i)
+        {
+            char c = value.charAt(i);
+            if (c == '\'' || c == '\\')
+            {
+                statement.append('\\');
+            }
+            statement.append(c);
+        }
+        statement.append('\'');
+    }
+
     private static Transform parseAbs(TokenStream tokens)
     {
         String source = tokens.expectValue();
         String conditionColumn = null;
         String target = null;
-        while (!tokens.isAtEnd())
+        while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(WHEN))
             {
@@ -394,7 +479,7 @@ public final class TransformDslParser
         String format = null;
         ParseMode parseMode = null;
         String target = null;
-        while (!tokens.isAtEnd())
+        while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(USING))
             {
@@ -508,7 +593,7 @@ public final class TransformDslParser
                 : null;
         Column.Type type = ColumnTypes.STRING;
         String target = null;
-        while (!tokens.isAtEnd())
+        while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(AS))
             {
@@ -590,7 +675,7 @@ public final class TransformDslParser
         String pattern = tokens.expectLiteral();
         Column.Type type = ColumnTypes.STRING;
         String target = null;
-        while (!tokens.isAtEnd())
+        while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(AS))
             {
@@ -703,7 +788,7 @@ public final class TransformDslParser
         String source = tokens.expectValue();
         String conditionColumn = null;
         String target = null;
-        while (!tokens.isAtEnd())
+        while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(WHEN))
             {
@@ -793,7 +878,7 @@ public final class TransformDslParser
         RoundingMode roundingMode = null;
         String conditionColumn = null;
         String target = null;
-        while (!tokens.isAtEnd())
+        while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(BY))
             {
@@ -851,7 +936,7 @@ public final class TransformDslParser
         String source = tokens.expectValue();
         String target = null;
         String stripCharacters = null;
-        while (!tokens.isAtEnd())
+        while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(USING))
             {
@@ -1068,7 +1153,6 @@ public final class TransformDslParser
         {
             values.add(tokens.expectValue());
         }
-        tokens.expectEnd();
         return values;
     }
 

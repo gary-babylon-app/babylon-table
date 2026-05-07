@@ -173,7 +173,8 @@ public final class TokenStream
             }
             if (c == '#')
             {
-                break;
+                i = skipComment(line, i);
+                continue;
             }
             if (c == ',')
             {
@@ -267,6 +268,21 @@ public final class TokenStream
         }
         tokens.add(new Token(TokenType.EOF, "", length));
         return tokens;
+    }
+
+    private static int skipComment(CharSequence line, int start)
+    {
+        int i = start;
+        while (i < line.length())
+        {
+            char c = line.charAt(i);
+            if (c == '\r' || c == '\n')
+            {
+                break;
+            }
+            ++i;
+        }
+        return i;
     }
 
     private static int readWord(CharSequence line, int start, List<Token> tokens)

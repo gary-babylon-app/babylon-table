@@ -228,11 +228,6 @@ public class TransformRound extends TransformDecimalUnary
         }
     }
 
-    private ColumnObject<BigDecimal> apply(Column column, Column scaleColumn)
-    {
-        return apply(column, scaleColumn, null);
-    }
-
     private ColumnObject<BigDecimal> apply(Column column, Column scaleColumn, ColumnBoolean conditionColumn)
     {
         if (column == null || scaleColumn == null)

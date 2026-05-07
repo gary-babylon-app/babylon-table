@@ -1,6 +1,5 @@
 package app.babylon.table.transform;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -66,40 +65,14 @@ public final class QuickTransforms
         return new QuickTransforms(this.parser, this.writer.with(transformClass, writer));
     }
 
-    public Transform parse(String statement)
+    public TransformSet parse(QuickTransformScript script)
     {
-        return this.parser.parse(statement);
+        return TransformSet.of(this.parser.parseScript(ArgumentCheck.nonNull(script).text()));
     }
 
     public Transform parse(TokenStream tokens)
     {
         return this.parser.parse(tokens);
-    }
-
-    public List<Transform> parseAll(Iterable<String> statements)
-    {
-        List<Transform> transforms = new ArrayList<>();
-        if (statements != null)
-        {
-            for (String statement : statements)
-            {
-                transforms.add(parse(statement));
-            }
-        }
-        return transforms;
-    }
-
-    public List<Transform> parseAll(String... statements)
-    {
-        List<Transform> transforms = new ArrayList<>();
-        if (statements != null)
-        {
-            for (String statement : statements)
-            {
-                transforms.add(parse(statement));
-            }
-        }
-        return transforms;
     }
 
     public String write(Transform transform)
@@ -119,8 +92,4 @@ public final class QuickTransforms
                 : writeAll(Arrays.asList(transforms));
     }
 
-    public String format(String statement)
-    {
-        return write(parse(statement));
-    }
 }

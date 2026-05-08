@@ -115,6 +115,8 @@ public class TransformDslWriterTest
                 "concat AccountType, Country using '' into AccountKey");
         assertFormat("concat AccountType, Country, 'ACCT', AccountNumber using '|' into AccountKey",
                 "concat AccountType, Country, 'ACCT', AccountNumber using '|' into AccountKey");
+        assertFormat("concat QuantityBefore, QuantityAfter using '.' as Double into Quantity",
+                "concat QuantityBefore, QuantityAfter using '.' as Double into Quantity");
     }
 
     @Test

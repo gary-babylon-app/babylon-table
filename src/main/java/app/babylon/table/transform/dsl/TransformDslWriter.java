@@ -292,6 +292,10 @@ public final class TransformDslWriter
         {
             line += " " + USING + " " + literal(separator);
         }
+        if (!ColumnTypes.STRING.equals(concat.type()))
+        {
+            line += " " + AS + " " + typeName(concat.type());
+        }
         return line + " " + INTO + " " + column(target);
     }
 

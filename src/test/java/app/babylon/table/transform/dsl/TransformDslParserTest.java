@@ -30,6 +30,7 @@ import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.dsl.TokenStream;
 import app.babylon.table.dsl.TransformDslException;
 import app.babylon.table.transform.Transform;
+import app.babylon.table.transform.TransformConcat;
 import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
@@ -201,6 +202,17 @@ class TransformDslParserTest
     }
 
     @Test
+    void shouldParseTypedConcat()
+    {
+        String line = "concat Date, Time using 'T' as LocalDateTime into DateTime";
+
+        TransformConcat transform = assertInstanceOf(TransformConcat.class, PARSER.parse(line));
+
+        assertEquals(ColumnTypes.LOCAL_DATE_TIME, transform.type());
+        assertEquals(ColumnObject.Mode.CATEGORICAL, transform.mode());
+    }
+
+    @Test
     void shouldAllowStandardConversionTypesToBeOverwritten()
     {
         Column.Type currency = Column.Type.of(AppCurrency.class,
@@ -301,6 +313,9 @@ class TransformDslParserTest
         assertParses(line);
 
         line = "concat AccountType, Country, 'ACCT', AccountNumber using '|' into AccountKey";
+        assertParses(line);
+
+        line = "concat QuantityBefore, QuantityAfter using '.' as Double into Quantity";
         assertParses(line);
     }
 

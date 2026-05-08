@@ -178,7 +178,6 @@ public final class TransformDslParser
         parsers.put(CLASSIFY, TransformDslParser::parseClassify);
         parsers.put(CLEAN, TransformDslParser::parseClean);
         parsers.put(COALESCE, TransformDslParser::parseCoalesce);
-        parsers.put(CONCAT, TransformDslParser::parseConcat);
         parsers.put(CONSTANT, TransformDslParser::parseConstant);
         parsers.put(COPY, TransformDslParser::parseCopy);
         parsers.put(DIVIDE, TransformDslParser::parseDivide);
@@ -291,7 +290,11 @@ public final class TransformDslParser
         Transform transform;
         if (parser == null)
         {
-            if (CONVERT.equals(command))
+            if (CONCAT.equals(command))
+            {
+                transform = parseConcat(tokens);
+            }
+            else if (CONVERT.equals(command))
             {
                 transform = parseConvert(tokens);
             }
@@ -458,17 +461,30 @@ public final class TransformDslParser
         return TransformCoalesce.of(ColumnName.of(target), columnMode, columnNames(sources));
     }
 
-    private static Transform parseConcat(TokenStream tokens)
+    private Transform parseConcat(TokenStream tokens)
     {
-        ConcatParts sources = concatPartsUntil(tokens, USING, INTO);
+        ConcatParts sources = concatPartsUntil(tokens, USING, AS, INTO);
         String separator = null;
         if (tokens.matchWord(USING))
         {
             separator = tokens.expectValue();
         }
+        Column.Type type = ColumnTypes.STRING;
+        if (tokens.matchWord(AS))
+        {
+            String typeName = tokens.expectValue();
+            type = this.types.get(normalise(typeName));
+            if (type == null)
+            {
+                throw new TransformDslException("Unknown concat type '" + typeName + "'", tokens.peek().position());
+            }
+        }
         tokens.expectWord(INTO);
         String target = tokens.expectValue();
-        return TransformConcat.of(ColumnName.of(target), separator, sources.parts());
+        ColumnObject.Mode mode = ColumnTypes.STRING.equals(type) || type.isPrimitive()
+                ? ColumnObject.Mode.AUTO
+                : ColumnObject.Mode.CATEGORICAL;
+        return TransformConcat.of(ColumnName.of(target), separator, type, mode, sources.parts());
     }
 
     private Transform parseConvert(TokenStream tokens)

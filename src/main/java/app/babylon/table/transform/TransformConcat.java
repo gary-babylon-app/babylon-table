@@ -18,6 +18,8 @@ public class TransformConcat extends TransformBase
 
     private final ColumnName concatColumn;
     private final String separator;
+    private final Column.Type type;
+    private final ColumnObject.Mode mode;
     private final Part[] parts;
 
     public record Part(ColumnName columnName, String literalValue)
@@ -48,17 +50,33 @@ public class TransformConcat extends TransformBase
 
     private TransformConcat(ColumnName concatColumn, String separator, Part... parts)
     {
-        super(FUNCTION_NAME);
-        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
-        this.separator = separator;
-        this.parts = parts(parts);
+        this(concatColumn, separator, ColumnTypes.STRING, ColumnObject.Mode.AUTO, parts);
     }
 
     private TransformConcat(ColumnName concatColumn, String separator, Iterable<Part> parts)
     {
+        this(concatColumn, separator, ColumnTypes.STRING, ColumnObject.Mode.AUTO, parts);
+    }
+
+    private TransformConcat(ColumnName concatColumn, String separator, Column.Type type, ColumnObject.Mode mode,
+            Part... parts)
+    {
         super(FUNCTION_NAME);
         this.concatColumn = ArgumentCheck.nonNull(concatColumn);
         this.separator = separator;
+        this.type = type(type);
+        this.mode = mode(mode);
+        this.parts = parts(parts);
+    }
+
+    private TransformConcat(ColumnName concatColumn, String separator, Column.Type type, ColumnObject.Mode mode,
+            Iterable<Part> parts)
+    {
+        super(FUNCTION_NAME);
+        this.concatColumn = ArgumentCheck.nonNull(concatColumn);
+        this.separator = separator;
+        this.type = type(type);
+        this.mode = mode(mode);
         this.parts = parts(parts);
     }
 
@@ -89,14 +107,32 @@ public class TransformConcat extends TransformBase
         return new TransformConcat(concatColumn, separator, parts(sourceColumns));
     }
 
+    public static TransformConcat of(ColumnName concatColumn, String separator, Column.Type type,
+            ColumnObject.Mode mode, ColumnName... sourceColumns)
+    {
+        return new TransformConcat(concatColumn, separator, type, mode, parts(sourceColumns));
+    }
+
     public static TransformConcat of(ColumnName concatColumn, String separator, Part... parts)
     {
         return new TransformConcat(concatColumn, separator, parts);
     }
 
+    public static TransformConcat of(ColumnName concatColumn, String separator, Column.Type type,
+            ColumnObject.Mode mode, Part... parts)
+    {
+        return new TransformConcat(concatColumn, separator, type, mode, parts);
+    }
+
     public static TransformConcat of(ColumnName concatColumn, String separator, Iterable<Part> parts)
     {
         return new TransformConcat(concatColumn, separator, parts);
+    }
+
+    public static TransformConcat of(ColumnName concatColumn, String separator, Column.Type type,
+            ColumnObject.Mode mode, Iterable<Part> parts)
+    {
+        return new TransformConcat(concatColumn, separator, type, mode, parts);
     }
 
     public String separator()
@@ -114,6 +150,16 @@ public class TransformConcat extends TransformBase
         return this.concatColumn;
     }
 
+    public Column.Type type()
+    {
+        return this.type;
+    }
+
+    public ColumnObject.Mode mode()
+    {
+        return this.mode;
+    }
+
     public Part[] parts()
     {
         return Arrays.copyOf(this.parts, this.parts.length);
@@ -122,7 +168,7 @@ public class TransformConcat extends TransformBase
     @Override
     public void apply(Map<ColumnName, Column> columnsByName)
     {
-        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn, ColumnTypes.STRING);
+        ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn, ColumnTypes.STRING, this.mode);
         Column[] columns = new Column[this.parts.length];
         String[] values = new String[this.parts.length];
         ToStringSettings settings = ToStringSettings.standard();
@@ -163,7 +209,8 @@ public class TransformConcat extends TransformBase
                 newColumn.addNull();
             }
         }
-        columnsByName.put(this.concatColumn, newColumn.build());
+        columnsByName.put(this.concatColumn,
+                ColumnTypes.STRING.equals(this.type) ? newColumn.build() : newColumn.buildAs(this.type));
     }
 
     private static Part[] parts(ColumnName... sourceColumns)
@@ -197,4 +244,15 @@ public class TransformConcat extends TransformBase
         }
         return copy.toArray(Part[]::new);
     }
+
+    private static Column.Type type(Column.Type type)
+    {
+        return type == null ? ColumnTypes.STRING : type;
+    }
+
+    private static ColumnObject.Mode mode(ColumnObject.Mode mode)
+    {
+        return mode == null ? ColumnObject.Mode.AUTO : mode;
+    }
+
 }

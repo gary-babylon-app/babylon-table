@@ -1,9 +1,12 @@
 package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -11,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
+import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
@@ -92,6 +96,61 @@ class TransformConcatTest
                 TransformConcat.Part.literal(" "), TransformConcat.Part.column(LAST))));
 
         assertEquals("Ada Lovelace", transformed.getString(FULL).get(0));
+    }
+
+    @Test
+    void shouldConcatDateAndTimeTextToLocalDateTime()
+    {
+        final ColumnName DATE = ColumnName.of("Date");
+        final ColumnName TIME = ColumnName.of("Time");
+        final ColumnName DATE_TIME = ColumnName.of("DateTime");
+
+        ColumnObject.Builder<String> date = ColumnObject.builder(DATE, ColumnTypes.STRING);
+        date.add("2026-05-08");
+        date.add("bad");
+
+        ColumnObject.Builder<String> time = ColumnObject.builder(TIME, ColumnTypes.STRING);
+        time.add("13:45:30");
+        time.add("09:00:00");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), date.build(), time.build());
+
+        TableColumnar transformed = table.apply(
+                TransformConcat.of(DATE_TIME, "T", ColumnTypes.LOCAL_DATE_TIME, ColumnObject.Mode.AUTO, DATE, TIME));
+
+        ColumnObject<LocalDateTime> dateTimes = transformed.getObject(DATE_TIME, ColumnTypes.LOCAL_DATE_TIME);
+        assertEquals(LocalDateTime.of(2026, 5, 8, 13, 45, 30), dateTimes.get(0));
+        assertFalse(dateTimes.isSet(1));
+    }
+
+    @Test
+    void shouldConcatToCategoricalTargetType()
+    {
+        final ColumnName DATE = ColumnName.of("Date");
+        final ColumnName TIME = ColumnName.of("Time");
+        final ColumnName DATE_TIME = ColumnName.of("DateTime");
+
+        ColumnObject.Builder<String> date = ColumnObject.builder(DATE, ColumnTypes.STRING);
+        date.add("2026-05-08");
+        date.add("2026-05-09");
+        date.add("2026-05-08");
+
+        ColumnObject.Builder<String> time = ColumnObject.builder(TIME, ColumnTypes.STRING);
+        time.add("13:45:30");
+        time.add("09:00:00");
+        time.add("13:45:30");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), date.build(), time.build());
+
+        TableColumnar transformed = table.apply(TransformConcat.of(DATE_TIME, "T", ColumnTypes.LOCAL_DATE_TIME,
+                ColumnObject.Mode.CATEGORICAL, DATE, TIME));
+
+        ColumnCategorical<LocalDateTime> dateTimes = assertInstanceOf(ColumnCategorical.class,
+                transformed.get(DATE_TIME));
+        assertEquals(ColumnTypes.LOCAL_DATE_TIME, dateTimes.getType());
+        assertEquals(LocalDateTime.of(2026, 5, 8, 13, 45, 30), dateTimes.get(0));
+        assertEquals(LocalDateTime.of(2026, 5, 9, 9, 0), dateTimes.get(1));
+        assertEquals(LocalDateTime.of(2026, 5, 8, 13, 45, 30), dateTimes.get(2));
     }
 
     @Test

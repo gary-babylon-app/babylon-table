@@ -1,6 +1,8 @@
 package app.babylon.table.transform;
 
 import java.util.Map;
+import java.util.Collection;
+import java.util.List;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.lang.Is;
@@ -9,7 +11,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 
-public class TransformAnyToString extends TransformBase
+public class TransformAnyToString extends TransformBase implements TransformToColumn
 {
     public static final String FUNCTION_NAME = "ToString";
 
@@ -59,12 +61,24 @@ public class TransformAnyToString extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public ColumnName outputColumnName()
+    {
+        return this.newColumnName == null ? this.columnName : this.newColumnName;
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        return List.of(this.columnName);
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         Column column = columnsByName.get(this.columnName);
         if (column == null)
         {
-            return;
+            return null;
         }
         ColumnName targetColumnName = this.newColumnName == null ? column.getName() : this.newColumnName;
         ColumnObject.Builder<String> builder = ColumnObject.builder(targetColumnName, ColumnTypes.STRING);
@@ -72,6 +86,6 @@ public class TransformAnyToString extends TransformBase
         {
             builder.add(column.toString(row));
         }
-        columnsByName.put(targetColumnName, builder.build());
+        return builder.build();
     }
 }

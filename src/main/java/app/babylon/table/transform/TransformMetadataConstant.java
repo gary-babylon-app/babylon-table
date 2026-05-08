@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -8,7 +10,7 @@ import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 
-public class TransformMetadataConstant extends TransformBase
+public class TransformMetadataConstant extends TransformBase implements TransformToColumn
 {
     public static final String FUNCTION_NAME = "MetadataConstant";
 
@@ -69,6 +71,18 @@ public class TransformMetadataConstant extends TransformBase
     }
 
     @Override
+    public ColumnName outputColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        return List.of();
+    }
+
+    @Override
     public void apply(SourceMetadata metadata, Map<ColumnName, Column> columnsByName)
     {
         if (columnsByName == null)
@@ -77,14 +91,19 @@ public class TransformMetadataConstant extends TransformBase
         }
         SourceMetadata source = metadata == null ? new SourceMetadata("", "") : metadata;
         int rowCount = rowCount(columnsByName);
-        columnsByName.put(this.newColumnName,
-                ColumnCategorical.constant(this.newColumnName, value(source), rowCount, ColumnTypes.STRING));
+        columnsByName.put(this.newColumnName, transformMetadata(source, rowCount));
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
-        apply(null, columnsByName);
+        return transformMetadata(null, rowCount);
+    }
+
+    private Column transformMetadata(SourceMetadata metadata, int rowCount)
+    {
+        SourceMetadata source = metadata == null ? new SourceMetadata("", "") : metadata;
+        return ColumnCategorical.constant(this.newColumnName, value(source), rowCount, ColumnTypes.STRING);
     }
 
     private String value(SourceMetadata metadata)

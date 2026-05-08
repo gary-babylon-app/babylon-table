@@ -2,6 +2,8 @@ package app.babylon.table.transform;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -204,28 +206,34 @@ public class TransformRound extends TransformDecimalUnary
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        Collection<ColumnName> columnNames = new ArrayList<>(super.sourceColumnNames());
+        if (this.scaleColumnName != null)
+        {
+            columnNames.add(this.scaleColumnName);
+        }
+        return columnNames;
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         Column column = columnsByName.get(columnName());
         if (column != null)
         {
             if (this.scaleColumnName == null)
             {
-                super.apply(columnsByName);
-                return;
+                return super.transform(columnsByName, rowCount);
             }
             ColumnBoolean conditionColumn = requireBoolean(columnsByName.get(conditionColumnName()));
             if (conditionColumnName() != null && conditionColumn == null)
             {
-                return;
+                return null;
             }
-            ColumnObject<BigDecimal> transformed = apply(column, columnsByName.get(this.scaleColumnName),
-                    conditionColumn);
-            if (transformed != null)
-            {
-                columnsByName.put(effectiveNewColumnName(), transformed);
-            }
+            return apply(column, columnsByName.get(this.scaleColumnName), conditionColumn);
         }
+        return null;
     }
 
     private ColumnObject<BigDecimal> apply(Column column, Column scaleColumn, ColumnBoolean conditionColumn)

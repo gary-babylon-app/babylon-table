@@ -3,6 +3,8 @@ package app.babylon.table.transform;
 import app.babylon.lang.ArgumentCheck;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 import app.babylon.table.column.Column;
@@ -11,7 +13,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 
-abstract class TransformDecimalUnary extends TransformBase
+abstract class TransformDecimalUnary extends TransformBase implements TransformToColumn
 {
     private final ColumnName columnName;
     private final ColumnName newColumnName;
@@ -56,25 +58,37 @@ abstract class TransformDecimalUnary extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public ColumnName outputColumnName()
+    {
+        return effectiveNewColumnName();
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        Collection<ColumnName> columnNames = new ArrayList<>();
+        columnNames.add(this.columnName);
+        if (this.conditionColumnName != null)
+        {
+            columnNames.add(this.conditionColumnName);
+        }
+        return columnNames;
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         Column column = columnsByName.get(this.columnName);
         if (column == null)
         {
-            return;
+            return null;
         }
         ColumnBoolean conditionColumn = requireBoolean(columnsByName.get(this.conditionColumnName));
         if (this.conditionColumnName != null && conditionColumn == null)
         {
-            return;
+            return null;
         }
-        ColumnObject<BigDecimal> transformed = this.conditionColumnName == null
-                ? apply(column)
-                : apply(column, conditionColumn);
-        if (transformed != null)
-        {
-            columnsByName.put(effectiveNewColumnName(), transformed);
-        }
+        return this.conditionColumnName == null ? apply(column) : apply(column, conditionColumn);
     }
 
     protected boolean shouldApply(ColumnBoolean conditionColumn, int row)

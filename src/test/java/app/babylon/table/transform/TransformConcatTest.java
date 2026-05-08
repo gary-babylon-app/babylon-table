@@ -7,13 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
+import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnCategorical;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -121,6 +124,54 @@ class TransformConcatTest
         ColumnObject<LocalDateTime> dateTimes = transformed.getObject(DATE_TIME, ColumnTypes.LOCAL_DATE_TIME);
         assertEquals(LocalDateTime.of(2026, 5, 8, 13, 45, 30), dateTimes.get(0));
         assertFalse(dateTimes.isSet(1));
+    }
+
+    @Test
+    void shouldBuildColumnFromTable()
+    {
+        final ColumnName DATE = ColumnName.of("Date");
+        final ColumnName TIME = ColumnName.of("Time");
+        final ColumnName DATE_TIME = ColumnName.of("DateTime");
+
+        ColumnObject.Builder<String> date = ColumnObject.builder(DATE, ColumnTypes.STRING);
+        date.add("2026-05-08");
+
+        ColumnObject.Builder<String> time = ColumnObject.builder(TIME, ColumnTypes.STRING);
+        time.add("13:45:30");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), date.build(), time.build());
+
+        Column column = TransformConcat
+                .of(DATE_TIME, "T", ColumnTypes.LOCAL_DATE_TIME, ColumnObject.Mode.AUTO, DATE, TIME).transform(table);
+
+        ColumnObject<LocalDateTime> dateTimes = assertInstanceOf(ColumnObject.class, column);
+        assertEquals(DATE_TIME, dateTimes.getName());
+        assertEquals(ColumnTypes.LOCAL_DATE_TIME, dateTimes.getType());
+        assertEquals(LocalDateTime.of(2026, 5, 8, 13, 45, 30), dateTimes.get(0));
+    }
+
+    @Test
+    void shouldBuildColumnFromColumnMap()
+    {
+        final ColumnName FIRST = ColumnName.of("First");
+        final ColumnName LAST = ColumnName.of("Last");
+        final ColumnName FULL = ColumnName.of("Full");
+
+        ColumnObject.Builder<String> first = ColumnObject.builder(FIRST, ColumnTypes.STRING);
+        first.add("Ada");
+
+        ColumnObject.Builder<String> last = ColumnObject.builder(LAST, ColumnTypes.STRING);
+        last.add("Lovelace");
+
+        Map<ColumnName, Column> columnsByName = new LinkedHashMap<>();
+        columnsByName.put(FIRST, first.build());
+        columnsByName.put(LAST, last.build());
+
+        ColumnObject<String> full = assertInstanceOf(ColumnObject.class,
+                TransformConcat.of(FULL, " ", FIRST, LAST).transform(columnsByName, 1));
+
+        assertEquals(FULL, full.getName());
+        assertEquals("Ada Lovelace", full.get(0));
     }
 
     @Test

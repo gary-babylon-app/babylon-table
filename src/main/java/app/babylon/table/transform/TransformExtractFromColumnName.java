@@ -1,6 +1,8 @@
 package app.babylon.table.transform;
 
 import java.util.Map;
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +11,7 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnTypes;
 
-public class TransformExtractFromColumnName extends TransformBase
+public class TransformExtractFromColumnName extends TransformBase implements TransformToColumn
 {
     public static final String FUNCTION_NAME = "ExtractFromColumnName";
 
@@ -65,13 +67,25 @@ public class TransformExtractFromColumnName extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public ColumnName outputColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        return List.of(this.sourceColumnName);
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         if (columnsByName == null || !columnsByName.containsKey(this.sourceColumnName))
         {
-            return;
+            return null;
         }
-        TransformConstant.of(this.type, this.newColumnName, extractedValue()).apply(columnsByName);
+        return TransformConstant.of(this.type, this.newColumnName, extractedValue()).transform(columnsByName, rowCount);
     }
 
     private String extractedValue()

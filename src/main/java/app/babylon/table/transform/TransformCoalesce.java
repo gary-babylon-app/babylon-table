@@ -2,6 +2,7 @@ package app.babylon.table.transform;
 
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.text.Strings;
 
-public class TransformCoalesce extends TransformBase
+public class TransformCoalesce extends TransformBase implements TransformToColumn
 {
     public static final String FUNCTION_NAME = "Coalesce";
 
@@ -93,21 +94,33 @@ public class TransformCoalesce extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public ColumnName outputColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        return List.of(this.columnNames);
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         ColumnObject<?>[] columns = columns(columnsByName);
         if (columns == null)
         {
-            return;
+            return null;
         }
 
         validate(columns);
-        coalesce(columnsByName, columns, columns[0].getType());
+        return coalesce(columns, columns[0].getType());
     }
 
     @SuppressWarnings(
     {"unchecked", "rawtypes"})
-    private void coalesce(Map<ColumnName, Column> columnsByName, ColumnObject<?>[] columns, Column.Type type)
+    private Column coalesce(ColumnObject<?>[] columns, Column.Type type)
     {
         ColumnObject.Builder builder = ColumnObject.builder(this.newColumnName, type, effectiveMode());
         for (int i = 0; i < columns[0].size(); ++i)
@@ -132,7 +145,7 @@ public class TransformCoalesce extends TransformBase
                 builder.addNull();
             }
         }
-        columnsByName.put(this.newColumnName, builder.build());
+        return builder.build();
     }
 
     private ColumnObject<?>[] columns(Map<ColumnName, Column> columnsByName)

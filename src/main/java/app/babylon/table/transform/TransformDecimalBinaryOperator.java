@@ -4,6 +4,8 @@ import app.babylon.lang.ArgumentCheck;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Map;
 
 import app.babylon.table.column.Column;
@@ -11,7 +13,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.text.Strings;
 
-public class TransformDecimalBinaryOperator extends TransformBase
+public class TransformDecimalBinaryOperator extends TransformBase implements TransformToColumn
 {
     protected enum OPERATOR
     {
@@ -73,7 +75,28 @@ public class TransformDecimalBinaryOperator extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public ColumnName outputColumnName()
+    {
+        return this.newColumnName;
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        Collection<ColumnName> columnNames = new ArrayList<>();
+        if (this.left.isColumn())
+        {
+            columnNames.add(this.left.columnName());
+        }
+        if (this.right.isColumn())
+        {
+            columnNames.add(this.right.columnName());
+        }
+        return columnNames;
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         @SuppressWarnings("unchecked")
         ColumnObject<BigDecimal> leftColumn = this.left.isColumn()
@@ -94,8 +117,7 @@ public class TransformDecimalBinaryOperator extends TransformBase
         }
 
         ColumnObject.Builder<BigDecimal> newColumn = ColumnObject.builderDecimal(newColumnName);
-        int size = leftColumn == null ? rightColumn.size() : leftColumn.size();
-        for (int i = 0; i < size; ++i)
+        for (int i = 0; i < rowCount; ++i)
         {
             BigDecimal left = value(leftColumn, this.left, i);
             BigDecimal right = value(rightColumn, this.right, i);
@@ -127,7 +149,7 @@ public class TransformDecimalBinaryOperator extends TransformBase
             }
         }
 
-        columnsByName.put(newColumnName, (ColumnObject<BigDecimal>) newColumn.build());
+        return newColumn.build();
     }
 
     public static TransformDecimalBinaryOperator of(String s)

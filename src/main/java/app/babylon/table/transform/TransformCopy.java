@@ -2,13 +2,15 @@ package app.babylon.table.transform;
 
 import app.babylon.lang.ArgumentCheck;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 
-public class TransformCopy extends TransformBase
+public class TransformCopy extends TransformBase implements TransformToColumn
 {
     public static final String FUNCTION_NAME = "Copy";
 
@@ -47,12 +49,21 @@ public class TransformCopy extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public ColumnName outputColumnName()
     {
-        Column column = columnsByName.get(columnToCopy);
-        if (column != null)
-        {
-            columnsByName.put(newCopyName, column.copy(newCopyName));
-        }
+        return this.newCopyName;
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        return List.of(this.columnToCopy);
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
+    {
+        Column column = columnsByName.get(this.columnToCopy);
+        return column == null ? null : column.copy(this.newCopyName);
     }
 }

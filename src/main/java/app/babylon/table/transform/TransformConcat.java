@@ -2,6 +2,7 @@ package app.babylon.table.transform;
 
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -12,7 +13,7 @@ import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 
-public class TransformConcat extends TransformBase
+public class TransformConcat extends TransformBase implements TransformToColumn
 {
     public static final String FUNCTION_NAME = "Concat";
 
@@ -150,6 +151,12 @@ public class TransformConcat extends TransformBase
         return this.concatColumn;
     }
 
+    @Override
+    public ColumnName outputColumnName()
+    {
+        return this.concatColumn;
+    }
+
     public Column.Type type()
     {
         return this.type;
@@ -166,12 +173,27 @@ public class TransformConcat extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        List<ColumnName> columnNames = new ArrayList<>();
+        for (Part part : this.parts)
+        {
+            if (part.isColumn())
+            {
+                columnNames.add(part.columnName());
+            }
+        }
+        return columnNames;
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         ColumnObject.Builder<String> newColumn = ColumnObject.builder(this.concatColumn, ColumnTypes.STRING, this.mode);
         Column[] columns = new Column[this.parts.length];
         String[] values = new String[this.parts.length];
         ToStringSettings settings = ToStringSettings.standard();
+        Map<ColumnName, Column> checkedColumnsByName = ArgumentCheck.nonNull(columnsByName);
 
         for (int i = 0; i < this.parts.length; ++i)
         {
@@ -180,7 +202,7 @@ public class TransformConcat extends TransformBase
             {
                 continue;
             }
-            Column column = columnsByName.get(part.columnName());
+            Column column = checkedColumnsByName.get(part.columnName());
             if (column == null)
             {
                 throw new IllegalArgumentException("No column " + part.columnName() + " found");
@@ -188,7 +210,6 @@ public class TransformConcat extends TransformBase
             columns[i] = column;
         }
 
-        int rowCount = rowCount(columnsByName);
         for (int i = 0; i < rowCount; ++i)
         {
             for (int j = 0; j < columns.length; ++j)
@@ -209,8 +230,7 @@ public class TransformConcat extends TransformBase
                 newColumn.addNull();
             }
         }
-        columnsByName.put(this.concatColumn,
-                ColumnTypes.STRING.equals(this.type) ? newColumn.build() : newColumn.buildAs(this.type));
+        return ColumnTypes.STRING.equals(this.type) ? newColumn.build() : newColumn.buildAs(this.type);
     }
 
     private static Part[] parts(ColumnName... sourceColumns)

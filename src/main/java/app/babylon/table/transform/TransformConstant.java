@@ -1,5 +1,7 @@
 package app.babylon.table.transform;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import app.babylon.lang.ArgumentCheck;
@@ -11,7 +13,7 @@ import app.babylon.table.column.Columns;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.text.Strings;
 
-public class TransformConstant extends TransformBase
+public class TransformConstant extends TransformBase implements TransformToColumn
 {
     public static final String FUNCTION_NAME = "Constant";
     public static final String LEGACY_FUNCTION_NAME = "CreateConstant";
@@ -69,13 +71,21 @@ public class TransformConstant extends TransformBase
     }
 
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public ColumnName outputColumnName()
     {
-        if (columnsByName == null)
-        {
-            return;
-        }
-        columnsByName.put(this.newColumnName, newConstantColumn(rowCount(columnsByName)));
+        return this.newColumnName;
+    }
+
+    @Override
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        return List.of();
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
+    {
+        return newConstantColumn(rowCount);
     }
 
     @Override

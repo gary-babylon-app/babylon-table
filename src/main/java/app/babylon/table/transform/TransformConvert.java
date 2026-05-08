@@ -1,13 +1,15 @@
 package app.babylon.table.transform;
 
 import java.util.Map;
+import java.util.Collection;
+import java.util.List;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnName;
 import app.babylon.text.Sentence.ParseMode;
 
-abstract class TransformConvert extends TransformBase
+abstract class TransformConvert extends TransformBase implements TransformToColumn
 {
     private final ColumnName columnName;
     private final ColumnName newColumnName;
@@ -56,18 +58,25 @@ abstract class TransformConvert extends TransformBase
 
     public abstract Column apply(Column column);
 
+    public ColumnName outputColumnName()
+    {
+        return effectiveNewColumnName();
+    }
+
     @Override
-    public void apply(Map<ColumnName, Column> columnsByName)
+    public Collection<ColumnName> sourceColumnNames()
+    {
+        return List.of(this.columnName);
+    }
+
+    @Override
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         if (columnsByName == null)
         {
-            return;
+            return null;
         }
         Column source = columnsByName.get(this.columnName);
-        Column transformed = apply(source);
-        if (transformed != null)
-        {
-            columnsByName.put(effectiveNewColumnName(), transformed);
-        }
+        return apply(source);
     }
 }

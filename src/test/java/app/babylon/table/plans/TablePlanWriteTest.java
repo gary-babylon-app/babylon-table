@@ -1,12 +1,11 @@
 package app.babylon.table.plans;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.StringWriter;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +15,8 @@ import app.babylon.table.TableName;
 import app.babylon.table.Tables;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
-import app.babylon.table.io.SinkStream;
+import app.babylon.table.io.TableSink;
+import app.babylon.table.io.TableSinkCsv;
 
 class TablePlanWriteTest
 {
@@ -27,29 +27,38 @@ class TablePlanWriteTest
     void shouldWriteCsvUsingSelectedColumnsAndHeaders()
     {
         TableColumnar table = sampleTable();
-        InMemorySink sink = new InMemorySink("cashflows.csv");
+        StringWriter writer = new StringWriter();
+        TableSinkCsv sink = TableSinkCsv.toWriter("cashflows.csv", writer).build();
 
         new TablePlanWrite().withSink(sink).withSelectedColumns(CATEGORY, AMOUNT).execute(table);
 
         assertEquals("""
-                Category,Amount
-                Pay,1000000
-                Receive,1250000.5
-                """, sink.getText());
+                Category,Amount\r
+                Pay,1000000\r
+                Receive,1250000.5\r
+                """, writer.toString());
     }
 
     @Test
-    void shouldWriteCsvWithoutHeaders()
+    void shouldExposeConfiguredSink()
     {
-        TableColumnar table = sampleTable();
-        InMemorySink sink = new InMemorySink("cashflows.csv");
+        StringWriter writer = new StringWriter();
+        TableSinkCsv sink = TableSinkCsv.toWriter("cashflows.csv", writer).build();
 
-        new TablePlanWrite().withSink(sink).withIncludeHeaders(false).withSelectedColumns(AMOUNT).execute(table);
+        TablePlanWrite plan = new TablePlanWrite().withSink(sink);
 
-        assertEquals("""
-                1000000
-                1250000.5
-                """, sink.getText());
+        assertSame(sink, plan.getSink());
+    }
+
+    @Test
+    void shouldDelegateSelectedTableToSink()
+    {
+        CapturingSink sink = new CapturingSink();
+
+        new TablePlanWrite().withSink(sink).withSelectedColumns(AMOUNT).execute(sampleTable());
+
+        assertEquals(1, sink.table.getColumnCount());
+        assertEquals(AMOUNT, sink.table.getColumnNames()[0]);
     }
 
     private static TableColumnar sampleTable()
@@ -66,33 +75,20 @@ class TablePlanWriteTest
                 amounts.build());
     }
 
-    private static final class InMemorySink implements SinkStream
+    private static final class CapturingSink implements TableSink
     {
-        private final String name;
-        private final ByteArrayOutputStream outputStream;
-
-        private InMemorySink(String name)
-        {
-            this.name = name;
-            this.outputStream = new ByteArrayOutputStream();
-        }
+        private TableColumnar table;
 
         @Override
         public String getName()
         {
-            return this.name;
+            return "capturing";
         }
 
         @Override
-        public OutputStream openStream() throws IOException
+        public void write(TableColumnar table) throws IOException
         {
-            this.outputStream.reset();
-            return this.outputStream;
-        }
-
-        private String getText()
-        {
-            return this.outputStream.toString(StandardCharsets.UTF_8);
+            this.table = table;
         }
     }
 }

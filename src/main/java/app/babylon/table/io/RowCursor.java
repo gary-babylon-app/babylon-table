@@ -44,19 +44,17 @@ import app.babylon.table.column.ColumnDefinition;
 public interface RowCursor extends AutoCloseable
 {
     /**
-     * Returns the source-side column definitions exposed by this cursor.
+     * Returns source-native column definitions when the physical source has them.
      * <p>
-     * A non-null {@link ColumnDefinition#type() type} here is not just metadata. It
-     * can be used by downstream row consumers to choose a more direct builder from
-     * the start, bypassing intermediate {@code String} materialization when the
-     * source type already has an efficient slice-based parser.
-     * <p>
-     * That is most useful for primitive numerics and for special object types whose
-     * direct parser is genuinely better than first building a string dictionary.
+     * Line-oriented sources normally return no definitions; their logical columns
+     * are detected later from the row stream.
      *
-     * @return the source column definitions in source order
+     * @return source-native column definitions, or an empty array
      */
-    ColumnDefinition[] columns();
+    default ColumnDefinition[] columns()
+    {
+        return new ColumnDefinition[0];
+    }
 
     boolean next();
 

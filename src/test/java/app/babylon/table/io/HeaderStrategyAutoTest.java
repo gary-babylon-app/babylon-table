@@ -47,7 +47,7 @@ class HeaderStrategyAutoTest
                         HeaderStrategyTestSupport.row("2026-01-02", "", "10.25")), Set.of(TRADE_DATE, PRICE));
 
         assertArrayEquals(new ColumnName[]
-        {ColumnName.of("Trade Date"), ColumnName.of("Column2"), ColumnName.of("Price")}, detection.getHeadersFound());
+        {ColumnName.of("Trade Date"), ColumnName.of("Price")}, detection.getHeadersFound());
         assertArrayEquals(new ColumnName[]
         {ColumnName.of("Trade Date"), ColumnName.of("Price")}, detection.getSelectedHeaders());
         assertArrayEquals(new int[]

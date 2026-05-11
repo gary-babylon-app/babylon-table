@@ -39,8 +39,10 @@ import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.io.HeaderStrategyExplicitRow;
 import app.babylon.table.io.HeaderStrategyNoHeaders;
 import app.babylon.table.io.RowFilters;
-import app.babylon.table.io.RowSourceCsv;
+import app.babylon.table.io.ReadOptionsCsv;
+import app.babylon.table.io.RowSource;
 import app.babylon.table.io.RowSourceResultSet;
+import app.babylon.table.io.RowSources;
 import app.babylon.table.transform.DateFormat;
 
 class TablePlanReadTest
@@ -149,10 +151,10 @@ class TablePlanReadTest
                 105,9
                 """;
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .withSeparator(',').withColumnType(UNIQUE_ID, ColumnTypes.INT).withColumnType(BUCKET, ColumnTypes.INT)
-                .build();
-        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+        ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(',').build();
+        RowSource rowSource = RowSources.create(csvFormat, StreamSources.fromString(csv, "values.csv"));
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS).withColumnType(UNIQUE_ID, ColumnTypes.INT)
+                .withColumnType(BUCKET, ColumnTypes.INT);
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -186,8 +188,8 @@ class TablePlanReadTest
                 105,9
                 """;
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .withSeparator(',').build();
+        ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(',').build();
+        RowSource rowSource = RowSources.create(csvFormat, StreamSources.fromString(csv, "values.csv"));
         TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS).withColumnType(UNIQUE_ID, ColumnTypes.INT)
                 .withColumnType(BUCKET, ColumnTypes.INT);
 
@@ -439,8 +441,7 @@ class TablePlanReadTest
         final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .build();
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "values.csv"));
         TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE)
                 .withIncludeResourceName(RESOURCE_NAME);
 
@@ -463,8 +464,7 @@ class TablePlanReadTest
         final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "Code,Amount\n";
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .build();
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "values.csv"));
         TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE)
                 .withIncludeResourceName(RESOURCE_NAME);
 
@@ -488,9 +488,9 @@ class TablePlanReadTest
         String csv = "Code,Amount\nabc,10.5\nxyz,20.0\n";
 
         StreamSource streamSource = StreamSources.fromString(csv, "values.csv");
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(streamSource)
-                .withColumnType(AMOUNT, ColumnTypes.DOUBLE).build();
-        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE);
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), streamSource);
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE).withColumnType(AMOUNT,
+                ColumnTypes.DOUBLE);
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -517,10 +517,9 @@ class TablePlanReadTest
                 xyz,20.0,y
                 """;
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .withSelectedColumns(CODE, AMOUNT).withColumnRename(CODE, IDENTIFIER)
-                .withColumnType(AMOUNT, ColumnTypes.DOUBLE).build();
-        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "values.csv"));
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS).withSelectedColumns(CODE, AMOUNT)
+                .withColumnRename(CODE, IDENTIFIER).withColumnType(AMOUNT, ColumnTypes.DOUBLE);
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -545,13 +544,13 @@ class TablePlanReadTest
         String csv = """
                 Code,Amount
                 abc,10.5
-                ,
+                drop,
                 xyz,20.0
                 """;
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .withRowFilter(RowFilters.excludeEmpty(CODE, AMOUNT)).build();
-        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "values.csv"));
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS)
+                .withRowFilter(RowFilters.excludeEmpty(CODE, AMOUNT));
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -577,11 +576,11 @@ class TablePlanReadTest
                 T3,300,keep
                 """;
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "values.csv"));
+        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS)
                 .withHeaderStrategy(new HeaderStrategyExplicitRow(1)).withSelectedColumns(TRADE_CODE, NOTIONAL)
                 .withColumnRename(TRADE_CODE, ID).withRowFilter(RowFilters.excludeEmpty(ID))
-                .withColumnType(NOTIONAL, ColumnTypes.INT).build();
-        TablePlanRead plan = new TablePlanRead().withTableName(CASHFLOWS);
+                .withColumnType(NOTIONAL, ColumnTypes.INT);
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -605,11 +604,10 @@ class TablePlanReadTest
         final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "Code,Amount,\nabc,10.5,\ndef,\nxyz,20.0,\n";
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .withHeaderStrategy(new HeaderStrategyExplicitRow(0)).withColumnType(AMOUNT, ColumnTypes.DECIMAL)
-                .build();
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "values.csv"));
 
-        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE);
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE)
+                .withHeaderStrategy(new HeaderStrategyExplicitRow(0)).withColumnType(AMOUNT, ColumnTypes.DECIMAL);
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -636,10 +634,10 @@ class TablePlanReadTest
         final TableName BUILT_FROM_ROW_SOURCE = TableName.of("BuiltFromRowSource");
         String csv = "abc,10.5,\nxyz,20.0,\n";
 
-        RowSourceCsv rowSource = RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv"))
-                .withHeaderStrategy(new HeaderStrategyNoHeaders(10)).build();
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "values.csv"));
 
-        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE);
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_ROW_SOURCE)
+                .withHeaderStrategy(new HeaderStrategyNoHeaders(10));
 
         TableColumnar table = plan.execute(rowSource);
 
@@ -917,9 +915,9 @@ class TablePlanReadTest
         {ResultSetMetaData.class}, handler);
     }
 
-    private static RowSourceCsv csvRowSource(String csv)
+    private static RowSource csvRowSource(String csv)
     {
-        return RowSourceCsv.builder().withStreamSource(StreamSources.fromString(csv, "values.csv")).withSeparator(',')
-                .build();
+        ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(',').build();
+        return RowSources.create(csvFormat, StreamSources.fromString(csv, "values.csv"));
     }
 }

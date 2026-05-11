@@ -12,10 +12,14 @@ package app.babylon.table.plans;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
@@ -27,9 +31,16 @@ import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnDefinition;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.Columns;
+import app.babylon.table.io.HeaderDetection;
+import app.babylon.table.io.HeaderStrategy;
+import app.babylon.table.io.HeaderStrategyAuto;
+import app.babylon.table.io.ProjectedRowReader;
 import app.babylon.table.io.RowConsumerCreateTable;
 import app.babylon.table.io.RowCursor;
+import app.babylon.table.io.RowFilter;
 import app.babylon.table.io.RowSource;
+import app.babylon.table.io.RowStreamBuffered;
+import app.babylon.table.io.RowStreamMarkable;
 import app.babylon.table.transform.DateFormat;
 import app.babylon.table.transform.Transform;
 import app.babylon.text.Strings;
@@ -41,7 +52,8 @@ import app.babylon.text.Strings;
  *
  * <pre>{@code
  * StreamSource streamSource = StreamSources.fromString("Code,Amount\nabc,10.5\n", "values.csv");
- * RowSource rowSource = RowSourceCsv.builder().withStreamSource(streamSource).withSeparator(',').build();
+ * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(',').build();
+ * RowSource rowSource = RowSources.create(options, streamSource);
  *
  * TableColumnar table = new TablePlanRead().withTableName(TableName.of("Trades")).execute(rowSource);
  * }</pre>
@@ -50,7 +62,7 @@ import app.babylon.text.Strings;
  * <p>
  * - source-side types from {@link RowCursor#columns()} choose the low-level
  * builder before rows are consumed and are therefore the best place to avoid
- * intermediate string materialization when that direct parser is genuinely
+ * intermediate string materialisation when that direct parser is genuinely
  * worthwhile
  * <p>
  * - plan-side types configured on this class describe the desired output type
@@ -60,15 +72,27 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
 {
     private final List<Transform> transforms;
     private final Map<ColumnName, Column.Type> columnTypes;
+    private final Set<ColumnName> selectedColumns;
+    private final Map<ColumnName, ColumnName> columnRenames;
+    private final Set<ColumnName> renamedTargets;
     private ColumnName dataSourceNameColumnName;
     private DateFormat localDateFormat;
+    private HeaderStrategy headerStrategy;
+    private RowFilter rowFilter;
+    private boolean stripping;
 
     public TablePlanRead()
     {
         this.transforms = new ArrayList<>();
         this.columnTypes = new LinkedHashMap<>();
+        this.selectedColumns = new LinkedHashSet<>();
+        this.columnRenames = new LinkedHashMap<>();
+        this.renamedTargets = new HashSet<>();
         this.dataSourceNameColumnName = null;
         this.localDateFormat = null;
+        this.headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
+        this.rowFilter = null;
+        this.stripping = true;
     }
 
     public TablePlanRead withIncludeResourceName(ColumnName resourceName)
@@ -117,6 +141,110 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
     public List<Transform> getTransforms()
     {
         return Collections.unmodifiableList(this.transforms);
+    }
+
+    public TablePlanRead withHeaderStrategy(HeaderStrategy headerStrategy)
+    {
+        this.headerStrategy = ArgumentCheck.nonNull(headerStrategy);
+        return this;
+    }
+
+    public HeaderStrategy getHeaderStrategy()
+    {
+        return this.headerStrategy;
+    }
+
+    public TablePlanRead withSelectedColumn(ColumnName columnName)
+    {
+        this.selectedColumns.add(ArgumentCheck.nonNull(columnName));
+        return this;
+    }
+
+    public TablePlanRead withSelectedColumns(ColumnName... columnNames)
+    {
+        if (columnNames != null)
+        {
+            this.selectedColumns.addAll(Arrays.asList(columnNames));
+        }
+        return this;
+    }
+
+    public TablePlanRead withSelectedColumns(Collection<ColumnName> columnNames)
+    {
+        return withSelectedColumns((Iterable<ColumnName>) columnNames);
+    }
+
+    public TablePlanRead withSelectedColumns(Iterable<ColumnName> columnNames)
+    {
+        if (columnNames != null)
+        {
+            for (ColumnName columnName : columnNames)
+            {
+                this.selectedColumns.add(columnName);
+            }
+        }
+        return this;
+    }
+
+    public Set<ColumnName> getSelectedColumns()
+    {
+        return Collections.unmodifiableSet(this.selectedColumns);
+    }
+
+    public TablePlanRead withColumnRename(ColumnName original, ColumnName newName)
+    {
+        ColumnName originalChecked = ArgumentCheck.nonNull(original);
+        ColumnName newNameChecked = ArgumentCheck.nonNull(newName);
+        if (this.columnRenames.containsKey(originalChecked))
+        {
+            throw new IllegalArgumentException("Rename failed, column " + originalChecked + " already renamed");
+        }
+        if (this.renamedTargets.contains(newNameChecked))
+        {
+            throw new IllegalArgumentException("Rename failed, target column " + newNameChecked + " already used");
+        }
+        this.columnRenames.put(originalChecked, newNameChecked);
+        this.renamedTargets.add(newNameChecked);
+        return this;
+    }
+
+    public TablePlanRead withColumnRenames(Map<ColumnName, ColumnName> renames)
+    {
+        if (renames != null)
+        {
+            for (Map.Entry<ColumnName, ColumnName> entry : renames.entrySet())
+            {
+                withColumnRename(entry.getKey(), entry.getValue());
+            }
+        }
+        return this;
+    }
+
+    public Map<ColumnName, ColumnName> getColumnRenames()
+    {
+        return Collections.unmodifiableMap(this.columnRenames);
+    }
+
+    public TablePlanRead withRowFilter(RowFilter rowFilter)
+    {
+        this.rowFilter = ArgumentCheck.nonNull(rowFilter);
+        return this;
+    }
+
+    public RowFilter getRowFilter()
+    {
+        return this.rowFilter;
+    }
+
+    public TablePlanRead withStripping(boolean stripping)
+    {
+        this.stripping = stripping;
+        return this;
+    }
+
+    public boolean isStripping()
+    {
+        return this.stripping;
     }
 
     /**
@@ -242,19 +370,41 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
     private TableColumnar execute(RowCursor rowCursor, String sourceName)
     {
         RowCursor checkedRowCursor = ArgumentCheck.nonNull(rowCursor);
-        ColumnDefinition[] columnDefinitions = checkedRowCursor.columns();
-        ColumnName[] columnNames = toColumnNames(columnDefinitions);
-        Map<ColumnName, Column.Type> sourceColumnTypes = sourceColumnTypes(columnDefinitions);
-
-        RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(effectiveParsedTableName(sourceName),
-                getTableDescription(), sourceColumnTypes, this.columnTypes, this.localDateFormat);
-        rowConsumer.start(columnNames);
-        while (checkedRowCursor.next())
+        try
         {
-            rowConsumer.accept(checkedRowCursor.current());
+            RowStreamMarkable rowStream = new RowStreamBuffered(checkedRowCursor);
+            ColumnDefinition[] nativeColumns = checkedRowCursor.columns();
+            HeaderDetection headerDetection = nativeColumns.length == 0
+                    ? this.headerStrategy.detect(rowStream, this.selectedColumns)
+                    : ProjectedRowReader.headerDetection(nativeColumns, this.selectedColumns);
+            Map<ColumnName, Column.Type> nativeColumnTypes = sourceColumnTypes(nativeColumns);
+            rowStream.reset();
+            ProjectedRowReader projectedRows = ProjectedRowReader.builder().withRows(rowStream)
+                    .withHeaderDetection(headerDetection).withColumnRenames(this.columnRenames)
+                    .withNativeColumnTypes(nativeColumnTypes).withColumnTypes(this.columnTypes)
+                    .withRowFilter(this.rowFilter).withStripping(this.stripping).build();
+            ColumnDefinition[] columnDefinitions = projectedRows.columns();
+            ColumnName[] columnNames = toColumnNames(columnDefinitions);
+            Map<ColumnName, Column.Type> sourceColumnTypes = sourceColumnTypes(columnDefinitions);
+
+            RowConsumerCreateTable rowConsumer = RowConsumerCreateTable.create(effectiveParsedTableName(sourceName),
+                    getTableDescription(), sourceColumnTypes, this.columnTypes, this.localDateFormat);
+            rowConsumer.start(columnNames);
+            while (projectedRows.next())
+            {
+                rowConsumer.accept(projectedRows.current());
+            }
+            TableColumnar parsed = appendResourceNameColumn(rowConsumer.build(), sourceName);
+            return apply(parsed);
         }
-        TableColumnar parsed = appendResourceNameColumn(rowConsumer.build(), sourceName);
-        return apply(parsed);
+        catch (Exception e)
+        {
+            if (e instanceof RuntimeException runtimeException)
+            {
+                throw runtimeException;
+            }
+            throw new TableException("Failed to read rows.", e);
+        }
     }
 
     private TableName effectiveParsedTableName(String sourceName)

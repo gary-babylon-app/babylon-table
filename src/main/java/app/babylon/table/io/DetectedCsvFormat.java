@@ -12,6 +12,6 @@ package app.babylon.table.io;
 
 import java.nio.charset.Charset;
 
-record CsvFormat(Charset charset, char separator, char quote, double confidence)
+record DetectedCsvFormat(Charset charset, char separator, char quote, double confidence)
 {
 }

@@ -24,7 +24,7 @@ final class CsvFormatProbe
     {
     }
 
-    static CsvFormat detect(BufferedInputStream stream, String resourceName, Charset fallbackCharset,
+    static DetectedCsvFormat detect(BufferedInputStream stream, String resourceName, Charset fallbackCharset,
             char defaultSeparator, char defaultQuote) throws IOException
     {
         BufferedInputStream checkedStream = ArgumentCheck.nonNull(stream);
@@ -40,22 +40,23 @@ final class CsvFormatProbe
         return detect(sample, charset, defaultSeparator, defaultQuote);
     }
 
-    static CsvFormat detect(String sample, Charset charset, char defaultSeparator, char defaultQuote)
+    static DetectedCsvFormat detect(String sample, Charset charset, char defaultSeparator, char defaultQuote)
     {
         String checkedSample = sample == null ? "" : sample;
         if (checkedSample.isEmpty())
         {
-            return new CsvFormat(charset, defaultSeparator, defaultQuote, 0.0d);
+            return new DetectedCsvFormat(charset, defaultSeparator, defaultQuote, 0.0d);
         }
 
         CharacterCount tally = CharacterCount.of(checkedSample);
-        CsvFormat noSeparatorFormat = detectWithoutSeparatorCandidates(tally, charset, defaultSeparator, defaultQuote);
+        DetectedCsvFormat noSeparatorFormat = detectWithoutSeparatorCandidates(tally, charset, defaultSeparator,
+                defaultQuote);
         if (noSeparatorFormat != null)
         {
             return noSeparatorFormat;
         }
 
-        CsvFormat singleSeparatorFormat = detectSingleSeparatorFastPath(tally, charset, defaultQuote);
+        DetectedCsvFormat singleSeparatorFormat = detectSingleSeparatorFastPath(tally, charset, defaultQuote);
         if (singleSeparatorFormat != null)
         {
             return singleSeparatorFormat;
@@ -81,26 +82,27 @@ final class CsvFormatProbe
         double confidence = bestRowCount <= 1
                 ? 0.0d
                 : Math.min(1.0d, (double) bestConsistentPairs / (bestRowCount - 1));
-        return new CsvFormat(charset, bestSeparator, defaultQuote, confidence);
+        return new DetectedCsvFormat(charset, bestSeparator, defaultQuote, confidence);
     }
 
-    private static CsvFormat detectWithoutSeparatorCandidates(CharacterCount tally, Charset charset,
+    private static DetectedCsvFormat detectWithoutSeparatorCandidates(CharacterCount tally, Charset charset,
             char defaultSeparator, char defaultQuote)
     {
         if (tally.getDistinctSeparatorCount() != 0)
         {
             return null;
         }
-        return new CsvFormat(charset, defaultSeparator, defaultQuote, 0.0d);
+        return new DetectedCsvFormat(charset, defaultSeparator, defaultQuote, 0.0d);
     }
 
-    private static CsvFormat detectSingleSeparatorFastPath(CharacterCount tally, Charset charset, char defaultQuote)
+    private static DetectedCsvFormat detectSingleSeparatorFastPath(CharacterCount tally, Charset charset,
+            char defaultQuote)
     {
         if (tally.getDistinctSeparatorCount() != 1)
         {
             return null;
         }
-        return new CsvFormat(charset, firstSeparatorCandidate(tally), defaultQuote, 0.5d);
+        return new DetectedCsvFormat(charset, firstSeparatorCandidate(tally), defaultQuote, 0.5d);
     }
 
     private static char[] separatorCandidates(CharacterCount tally)

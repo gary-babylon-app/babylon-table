@@ -99,21 +99,19 @@ public interface HeaderStrategy
     private static HeaderDetection normalise(HeaderDetection detection)
     {
         ColumnName[] headersFound = detection.getHeadersFound();
-        int trimmedLength = headersFound.length;
-        while (trimmedLength > 0 && headersFound[trimmedLength - 1] == null)
-        {
-            --trimmedLength;
-        }
-
-        ColumnName[] normalizedHeaders = new ColumnName[trimmedLength];
-        int[] normalizedPositions = new int[trimmedLength];
-        for (int i = 0; i < trimmedLength; ++i)
+        List<ColumnName> normalizedHeaders = new ArrayList<>();
+        List<Integer> normalizedPositions = new ArrayList<>();
+        for (int i = 0; i < headersFound.length; ++i)
         {
             ColumnName header = headersFound[i];
-            normalizedHeaders[i] = header == null ? ColumnName.of("Column" + (i + 1)) : header;
-            normalizedPositions[i] = i;
+            if (header != null)
+            {
+                normalizedHeaders.add(header);
+                normalizedPositions.add(i);
+            }
         }
-        return new HeaderDetection(normalizedHeaders, false, normalizedHeaders, normalizedPositions);
+        ColumnName[] headers = normalizedHeaders.toArray(new ColumnName[normalizedHeaders.size()]);
+        return new HeaderDetection(headers, false, headers, toIntArray(normalizedPositions));
     }
 
     static ColumnName[] toColumnNames(Row row)

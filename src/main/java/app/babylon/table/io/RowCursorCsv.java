@@ -15,8 +15,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 
 import app.babylon.io.StreamSourceProbe;
 import app.babylon.lang.ArgumentCheck;
@@ -28,69 +26,44 @@ import app.babylon.table.TableException;
  * Instances are created by a configured {@link RowSourceCsv} and own the CSV
  * reader resources for the lifetime of iteration.
  */
-public final class RowCursorCsv extends RowCursorLineReaderCommon
+final class RowCursorCsv extends RowCursorLineReaderCommon
 {
     private static final Charset LEGACY_CSV_FALLBACK = Charset.forName("windows-1252");
 
-    private final char separator;
-    private final char quote;
-    private final int[] fixedWidths;
-    private final Charset charset;
-    private final boolean autoDetectEncoding;
+    private final ReadOptionsCsv options;
 
-    RowCursorCsv(InputStream inputStream, Builder builder)
+    RowCursorCsv(InputStream inputStream, ReadOptionsCsv options)
     {
-        super(createLineReader(ArgumentCheck.nonNull(inputStream), builder), builder);
-        this.separator = builder.separator;
-        this.quote = builder.quote;
-        this.fixedWidths = builder.fixedWidths == null
-                ? null
-                : Arrays.copyOf(builder.fixedWidths, builder.fixedWidths.length);
-        this.charset = ArgumentCheck.nonNull(builder.charset);
-        this.autoDetectEncoding = builder.autoDetectEncoding;
-    }
-
-    public static Builder builder()
-    {
-        return new Builder();
-    }
-
-    public HeaderStrategy getHeaderStrategy()
-    {
-        return super.getHeaderStrategy();
+        super(createLineReader(ArgumentCheck.nonNull(inputStream), ArgumentCheck.nonNull(options)));
+        this.options = options;
     }
 
     public char getSeparator()
     {
-        return this.separator;
-    }
-
-    public boolean isStripping()
-    {
-        return super.isStripping();
+        return this.options.separator();
     }
 
     public char getQuote()
     {
-        return this.quote;
+        return this.options.quote();
     }
 
     public int[] getFixedWidths()
     {
-        return this.fixedWidths == null ? null : Arrays.copyOf(this.fixedWidths, this.fixedWidths.length);
+        return this.options.fixedWidths();
     }
 
     public Charset getCharset()
     {
-        return this.charset;
+        return this.options.charset();
     }
 
     public boolean isAutoDetectEncoding()
     {
-        return this.autoDetectEncoding;
+        return this.options.autoDetectEncoding();
     }
 
-    private static LineReader createLineReader(InputStream inputStream, Builder builder)
+    private static LineReader createLineReader(InputStream inputStream, ReadOptionsCsv options)
     {
         BufferedInputStream bufferedInputStream = toBufferedStream(inputStream);
         try
@@ -101,45 +74,39 @@ public final class RowCursorCsv extends RowCursorLineReaderCommon
                 throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
             }
 
-            int bomLength = builder.resolveBomLength(probe);
-            CsvFormat format = builder.autoDetectEncoding
-                    ? CsvFormatProbe.detect(bufferedInputStream, "stream.csv", LEGACY_CSV_FALLBACK, builder.separator,
-                            builder.quote)
-                    : new CsvFormat(builder.resolveCharset(probe), builder.separator, builder.quote, 1.0d);
-            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, format.charset(), bomLength);
-            return builder.isFixedWidths()
-                    ? new LineReaderCSVFixedWidth(reader, toReaderOptions(builder, format))
-                    : new LineReaderCSV(reader, toReaderOptions(builder, format));
+            int bomLength = options.autoDetectEncoding() ? probe.bomLengthBytes() : 0;
+            DetectedCsvFormat detectedFormat = options.autoDetectEncoding()
+                    ? CsvFormatProbe.detect(bufferedInputStream, "stream.csv", LEGACY_CSV_FALLBACK, options.separator(),
+                            options.quote())
+                    : new DetectedCsvFormat(options.charset(), options.separator(), options.quote(), 1.0d);
+            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, detectedFormat.charset(),
+                    bomLength);
+            return options.isFixedWidths()
+                    ? new LineReaderCSVFixedWidth(reader, options.fixedWidths())
+                    : new LineReaderCSV(reader, detectedFormat.separator(), detectedFormat.quote());
         }
         catch (IOException | RuntimeException e)
         {
-            try
-            {
-                bufferedInputStream.close();
-            }
-            catch (IOException closeException)
-            {
-                e.addSuppressed(closeException);
-            }
-            if (e instanceof RuntimeException runtimeException)
-            {
-                throw runtimeException;
-            }
-            throw new TableException("Failed to prepare CSV row supplier.", e);
+            closeAndThrow(bufferedInputStream, e);
+            throw new AssertionError("unreachable");
         }
     }
 
-    private static TabularRowReaderCsv toReaderOptions(Builder builder, CsvFormat format)
+    private static void closeAndThrow(BufferedInputStream bufferedInputStream, Exception e)
     {
-        TabularRowReaderCsv options = new TabularRowReaderCsv();
-        options.withHeaderStrategy(builder.headerStrategy);
-        options.withStripping(builder.stripping);
-        options.withSeparator(format.separator());
-        options.withQuote(format.quote());
-        options.withFixedWidths(builder.fixedWidths);
-        options.withCharset(format.charset());
-        options.withAutoDetectEncoding(builder.autoDetectEncoding);
-        return options;
+        try
+        {
+            bufferedInputStream.close();
+        }
+        catch (IOException closeException)
+        {
+            e.addSuppressed(closeException);
+        }
+        if (e instanceof RuntimeException runtimeException)
+        {
+            throw runtimeException;
+        }
+        throw new TableException("Failed to prepare CSV row supplier.", e);
     }
 
     private static BufferedCharReader createBufferedCharReader(InputStream inputStream, Charset charset, int bomLength)
@@ -184,96 +151,4 @@ public final class RowCursorCsv extends RowCursorLineReaderCommon
         }
     }
 
-    public static final class Builder extends RowCursorLineReaderCommon.BuilderBase<Builder>
-    {
-        private char separator;
-        private char quote;
-        private int[] fixedWidths;
-        private Charset charset;
-        private boolean autoDetectEncoding;
-
-        private Builder()
-        {
-            super();
-            this.separator = ',';
-            this.quote = '"';
-            this.fixedWidths = null;
-            this.charset = StandardCharsets.UTF_8;
-            this.autoDetectEncoding = true;
-        }
-
-        public Builder withSeparator(char separator)
-        {
-            this.separator = separator;
-            return this;
-        }
-
-        public Builder withQuote(char quote)
-        {
-            this.quote = quote;
-            return this;
-        }
-
-        public Builder withFixedWidths(int[] fixedWidths)
-        {
-            this.fixedWidths = fixedWidths == null ? null : Arrays.copyOf(fixedWidths, fixedWidths.length);
-            return this;
-        }
-
-        public Builder withCharset(Charset charset)
-        {
-            this.charset = ArgumentCheck.nonNull(charset);
-            return this;
-        }
-
-        public Builder withAutoDetectEncoding(boolean autoDetectEncoding)
-        {
-            this.autoDetectEncoding = autoDetectEncoding;
-            return this;
-        }
-
-        Builder copy()
-        {
-            Builder copy = new Builder();
-            copyCommonTo(copy);
-            copy.separator = this.separator;
-            copy.quote = this.quote;
-            copy.fixedWidths = this.fixedWidths == null
-                    ? null
-                    : Arrays.copyOf(this.fixedWidths, this.fixedWidths.length);
-            copy.charset = this.charset;
-            copy.autoDetectEncoding = this.autoDetectEncoding;
-            return copy;
-        }
-
-        private boolean isFixedWidths()
-        {
-            return this.fixedWidths != null && this.fixedWidths.length > 0;
-        }
-
-        private Charset resolveCharset(StreamSourceProbe probe)
-        {
-            if (this.autoDetectEncoding)
-            {
-                return probe.getCharset(LEGACY_CSV_FALLBACK);
-            }
-            return this.charset;
-        }
-
-        private int resolveBomLength(StreamSourceProbe probe)
-        {
-            return this.autoDetectEncoding ? probe.bomLengthBytes() : 0;
-        }
-
-        @Override
-        protected Builder self()
-        {
-            return this;
-        }
-
-        public RowCursorCsv build(InputStream inputStream)
-        {
-            return new RowCursorCsv(inputStream, this);
-        }
-    }
 }

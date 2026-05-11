@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-final class RowStreamBuffered implements RowStreamMarkable
+public final class RowStreamBuffered implements RowStreamMarkable
 {
     private final LineReader lineReader;
     private final List<Row> cachedRows;
@@ -25,7 +25,7 @@ final class RowStreamBuffered implements RowStreamMarkable
     private int dataStartIndex;
     private int replayIndex;
 
-    RowStreamBuffered(LineReader lineReader)
+    public RowStreamBuffered(LineReader lineReader)
     {
         this.lineReader = ArgumentCheck.nonNull(lineReader, "lineReader must not be null");
         this.cachedRows = new ArrayList<>();
@@ -33,6 +33,29 @@ final class RowStreamBuffered implements RowStreamMarkable
         this.recording = true;
         this.dataStartIndex = 0;
         this.replayIndex = -1;
+    }
+
+    public RowStreamBuffered(RowCursor rowCursor)
+    {
+        this(new LineReader()
+        {
+            @Override
+            public boolean next()
+            {
+                return rowCursor.next();
+            }
+
+            @Override
+            public Row current()
+            {
+                return rowCursor.current();
+            }
+
+            @Override
+            public void close()
+            {
+            }
+        });
     }
 
     @Override

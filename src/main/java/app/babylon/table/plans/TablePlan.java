@@ -38,10 +38,9 @@ public interface TablePlan
      * StreamSource streamSource = ...;
      * TablePlanRead plan = new TablePlanRead();
      *
+     * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(';').build();
      * try (InputStream inputStream = streamSource.openStream();
-     *         RowCursor rowCursor = RowCursorCsv.builder()
-     *                 .withSeparator(';')
-     *                 .build(inputStream))
+     *         RowCursor rowCursor = RowCursors.create(options, inputStream))
      * {
      *     TableColumnar table = plan.execute(rowCursor);
      * }
@@ -78,10 +77,8 @@ public interface TablePlan
      * StreamSource streamSource = ...;
      * TablePlanRead plan = new TablePlanRead();
      *
-     * TableColumnar table = plan.execute(RowSourceCsv.builder()
-     *         .withStreamSource(streamSource)
-     *         .withSeparator(';')
-     *         .build());
+     * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(';').build();
+     * TableColumnar table = plan.execute(RowSources.create(options, streamSource));
      * }</pre>
      *
      * JDBC example:

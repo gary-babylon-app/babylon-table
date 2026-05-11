@@ -24,10 +24,9 @@ final class LineReaderCSVFixedWidth implements LineReader
     private final int[] fixedWidths;
     private final RowFixedWidth current;
 
-    protected LineReaderCSVFixedWidth(BufferedCharReader reader, TabularRowReaderCsv options)
+    protected LineReaderCSVFixedWidth(BufferedCharReader reader, int[] fixedWidths)
     {
-        ArgumentCheck.nonNull(options, "options must not be null");
-        int[] configuredWidths = options.getFixedWidths();
+        int[] configuredWidths = fixedWidths;
         if (configuredWidths == null || configuredWidths.length == 0)
         {
             throw new IllegalArgumentException("fixedWidths must not be empty");

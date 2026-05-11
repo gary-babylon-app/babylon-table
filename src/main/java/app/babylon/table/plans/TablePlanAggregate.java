@@ -27,8 +27,14 @@ import app.babylon.table.grouping.GroupKey;
 import app.babylon.table.io.Row;
 import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowCursor;
+import app.babylon.table.io.HeaderDetection;
+import app.babylon.table.io.HeaderStrategy;
+import app.babylon.table.io.HeaderStrategyAuto;
+import app.babylon.table.io.ProjectedRowReader;
 import app.babylon.table.io.RowKey;
 import app.babylon.table.io.RowSource;
+import app.babylon.table.io.RowStreamBuffered;
+import app.babylon.table.io.RowStreamMarkable;
 
 public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
 {
@@ -286,6 +292,10 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
     {
         validate();
         RowCursor checkedRowCursor = ArgumentCheck.nonNull(rowCursor);
+        if (checkedRowCursor.columns().length == 0)
+        {
+            return executeProjected(checkedRowCursor);
+        }
         RowConsumerGroupAggregate rowConsumer = new RowConsumerGroupAggregate(this);
         rowConsumer.start(toColumnNames(checkedRowCursor.columns()));
         while (checkedRowCursor.next())
@@ -293,6 +303,34 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             rowConsumer.accept(checkedRowCursor.current());
         }
         return rowConsumer.build();
+    }
+
+    private TableColumnar executeProjected(RowCursor rowCursor)
+    {
+        try
+        {
+            RowStreamMarkable rowStream = new RowStreamBuffered(rowCursor);
+            HeaderStrategy headerStrategy = new HeaderStrategyAuto(HeaderStrategy.DEFAULT_SCAN_LIMIT);
+            HeaderDetection headerDetection = headerStrategy.detect(rowStream, Collections.emptySet());
+            rowStream.reset();
+            ProjectedRowReader projectedRows = ProjectedRowReader.builder().withRows(rowStream)
+                    .withHeaderDetection(headerDetection).build();
+            RowConsumerGroupAggregate rowConsumer = new RowConsumerGroupAggregate(this);
+            rowConsumer.start(toColumnNames(projectedRows.columns()));
+            while (projectedRows.next())
+            {
+                rowConsumer.accept(projectedRows.current());
+            }
+            return rowConsumer.build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof RuntimeException runtimeException)
+            {
+                throw runtimeException;
+            }
+            throw new TableException("Failed to aggregate projected rows.", e);
+        }
     }
 
     @Override

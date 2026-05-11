@@ -21,7 +21,7 @@ class CsvFormatProbeTest
     @Test
     void shouldReturnDefaultsWhenNoInterestingCharactersArePresent()
     {
-        CsvFormat format = CsvFormatProbe.detect("plain words only", StandardCharsets.UTF_8, ';', '\'');
+        DetectedCsvFormat format = CsvFormatProbe.detect("plain words only", StandardCharsets.UTF_8, ';', '\'');
 
         assertEquals(StandardCharsets.UTF_8, format.charset());
         assertEquals(';', format.separator());
@@ -34,7 +34,7 @@ class CsvFormatProbeTest
     {
         String sample = "A,B\tC;D|E\"F\"\n";
 
-        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
 
         assertEquals(StandardCharsets.UTF_8, format.charset());
         assertEquals('"', format.quote());
@@ -46,7 +46,7 @@ class CsvFormatProbeTest
     {
         String sample = "" + "Date,Time,Value\n" + "2026-01-01,10:15:30,1\n" + "2026-01-02,11:45:00,2\n";
 
-        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
 
         assertEquals(',', format.separator());
         assertEquals('"', format.quote());
@@ -55,7 +55,8 @@ class CsvFormatProbeTest
     @Test
     void shouldDetectSemicolonSeparator()
     {
-        CsvFormat format = CsvFormatProbe.detect("City;Note\nParis;'Price;12'\n", StandardCharsets.UTF_8, ',', '"');
+        DetectedCsvFormat format = CsvFormatProbe.detect("City;Note\nParis;'Price;12'\n", StandardCharsets.UTF_8, ',',
+                '"');
 
         assertEquals(StandardCharsets.UTF_8, format.charset());
         assertEquals(';', format.separator());
@@ -67,7 +68,7 @@ class CsvFormatProbeTest
     {
         String sample = "City\tNote\nParis\t\"Price\t12\"\n";
 
-        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
 
         assertEquals(StandardCharsets.UTF_8, format.charset());
         assertEquals('\t', format.separator());
@@ -79,7 +80,7 @@ class CsvFormatProbeTest
     {
         String sample = "City|Note\nParis|\"Price|12\"\n";
 
-        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
 
         assertEquals(StandardCharsets.UTF_8, format.charset());
         assertEquals('|', format.separator());
@@ -93,7 +94,7 @@ class CsvFormatProbeTest
                 + "Date,Description,Amount,Account,Category,Country,Reference\n"
                 + "2026-01-01,Coffee,3.50,Current,Food,UK,ABC123\n";
 
-        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
 
         assertEquals(',', format.separator());
         assertEquals('"', format.quote());
@@ -105,7 +106,7 @@ class CsvFormatProbeTest
         String sample = "" + "MetaKey;MetaValue\n" + "Date,Description,Amount\n"
                 + "2026-01-01,\"Coffee, corner shop\",3.50\n" + "2026-01-02,\"Salary, Bonus\",1000.00\n";
 
-        CsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
 
         assertEquals(',', format.separator());
         assertEquals('"', format.quote());

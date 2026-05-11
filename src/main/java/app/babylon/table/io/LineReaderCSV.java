@@ -24,11 +24,10 @@ final class LineReaderCSV implements LineReader
     private final char quote;
     private final RowBuffer current;
 
-    protected LineReaderCSV(BufferedCharReader reader, TabularRowReaderCsv options)
+    protected LineReaderCSV(BufferedCharReader reader, char separator, char quote)
     {
-        TabularRowReaderCsv checkedOptions = ArgumentCheck.nonNull(options, "options must not be null");
-        this.separator = checkedOptions.getSeparator();
-        this.quote = checkedOptions.getQuote();
+        this.separator = separator;
+        this.quote = quote;
         this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
         this.current = new RowBuffer();
     }

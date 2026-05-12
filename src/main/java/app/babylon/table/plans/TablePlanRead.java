@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import app.babylon.io.StreamSource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
@@ -35,10 +36,12 @@ import app.babylon.table.io.HeaderDetection;
 import app.babylon.table.io.HeaderStrategy;
 import app.babylon.table.io.HeaderStrategyAuto;
 import app.babylon.table.io.ProjectedRowReader;
+import app.babylon.table.io.ReadOptionsCsv;
 import app.babylon.table.io.RowConsumerCreateTable;
 import app.babylon.table.io.RowCursor;
 import app.babylon.table.io.RowFilter;
 import app.babylon.table.io.RowSource;
+import app.babylon.table.io.RowSources;
 import app.babylon.table.io.RowStreamBuffered;
 import app.babylon.table.io.RowStreamMarkable;
 import app.babylon.table.transform.DateFormat;
@@ -323,6 +326,19 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
     public TableColumnar execute(RowCursor rowCursor)
     {
         return execute(rowCursor, null);
+    }
+
+    /**
+     * Reads the supplied stream source as CSV using
+     * {@link ReadOptionsCsv#standard()} defaults.
+     *
+     * @param streamSource
+     *            the CSV stream source
+     * @return the parsed table
+     */
+    public TableColumnar execute(StreamSource streamSource)
+    {
+        return execute(RowSources.create(streamSource));
     }
 
     @Override

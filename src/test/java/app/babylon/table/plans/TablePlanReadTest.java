@@ -110,6 +110,32 @@ class TablePlanReadTest
     }
 
     @Test
+    void shouldReadFromStreamSourceUsingStandardCsvOptions()
+    {
+        final ColumnName CODE = ColumnName.of("Code");
+        final ColumnName AMOUNT = ColumnName.of("Amount");
+        final TableName BUILT_FROM_CSV = TableName.of("BuiltFromCsv");
+        String csv = """
+                        Code,Amount
+                        abc,10.5
+                        xyz,20.0
+                """;
+
+        TablePlanRead plan = new TablePlanRead().withTableName(BUILT_FROM_CSV).withColumnType(AMOUNT,
+                ColumnTypes.DOUBLE);
+
+        TableColumnar table = plan.execute(StreamSources.fromString(csv, "values.csv"));
+
+        assertEquals(BUILT_FROM_CSV, table.getName());
+        assertEquals(ColumnTypes.STRING, table.getType(CODE));
+        assertEquals(ColumnTypes.DOUBLE, table.getType(AMOUNT));
+        assertEquals("abc", table.getString(CODE).get(0));
+        assertEquals("xyz", table.getString(CODE).get(1));
+        assertEquals(10.5d, table.getDouble(AMOUNT).get(0));
+        assertEquals(20.0d, table.getDouble(AMOUNT).get(1));
+    }
+
+    @Test
     void shouldReadBigDecimalColumnsFromCsvUsingCharSliceBuilder()
     {
         final ColumnName CODE = ColumnName.of("Code");

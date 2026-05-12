@@ -43,6 +43,30 @@ class RowCursorCsvTest
     }
 
     @Test
+    void shouldCreateStandardCsvRowSource()
+    {
+        String csv = "Date,Description,Amount\n2026-01-01,Coffee,3.50\n";
+        RowSource source = RowSources.create(StreamSources.fromString(csv, "rows.csv"));
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"Date", "Description", "Amount"}, values(rowCursor.current()));
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"2026-01-01", "Coffee", "3.50"}, values(rowCursor.current()));
+
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     void shouldDetectUtf16LeWithoutBom()
     {
         byte[] bytes = "City,Temp\nLondon,12\n".getBytes(StandardCharsets.UTF_16LE);

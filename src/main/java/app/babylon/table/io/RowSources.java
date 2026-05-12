@@ -19,6 +19,11 @@ public final class RowSources
     {
     }
 
+    public static RowSource create(StreamSource streamSource)
+    {
+        return create(ReadOptionsCsv.standard(), streamSource);
+    }
+
     public static RowSource create(ReadOptionsCsv options, StreamSource streamSource)
     {
         return new RowSourceCsv(ArgumentCheck.nonNull(streamSource), ArgumentCheck.nonNull(options));

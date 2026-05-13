@@ -56,10 +56,17 @@ final class CsvFormatProbe
             return noSeparatorFormat;
         }
 
-        DetectedCsvFormat singleSeparatorFormat = detectSingleSeparatorFastPath(tally, charset, defaultQuote);
+        DetectedCsvFormat singleSeparatorFormat = detectSingleRawSeparatorFastPath(tally, charset, defaultQuote);
         if (singleSeparatorFormat != null)
         {
             return singleSeparatorFormat;
+        }
+
+        DetectedCsvFormat singleStructuralSeparatorFormat = detectSingleStructuralSeparatorFastPath(checkedSample,
+                tally, charset, defaultSeparator, defaultQuote);
+        if (singleStructuralSeparatorFormat != null)
+        {
+            return singleStructuralSeparatorFormat;
         }
 
         char[] separatorCandidates = separatorCandidates(tally);
@@ -95,7 +102,7 @@ final class CsvFormatProbe
         return new DetectedCsvFormat(charset, defaultSeparator, defaultQuote, 0.0d);
     }
 
-    private static DetectedCsvFormat detectSingleSeparatorFastPath(CharacterCount tally, Charset charset,
+    private static DetectedCsvFormat detectSingleRawSeparatorFastPath(CharacterCount tally, Charset charset,
             char defaultQuote)
     {
         if (tally.getDistinctSeparatorCount() != 1)
@@ -103,6 +110,51 @@ final class CsvFormatProbe
             return null;
         }
         return new DetectedCsvFormat(charset, firstSeparatorCandidate(tally), defaultQuote, 0.5d);
+    }
+
+    private static DetectedCsvFormat detectSingleStructuralSeparatorFastPath(String sample, CharacterCount tally,
+            Charset charset, char defaultSeparator, char defaultQuote)
+    {
+        char structuralSeparator = 0;
+        int structuralSeparatorCount = 0;
+        for (char separator : separatorCandidates(tally))
+        {
+            if (countStructuralSeparators(sample, separator, defaultQuote) > 0)
+            {
+                structuralSeparator = separator;
+                ++structuralSeparatorCount;
+            }
+        }
+        if (structuralSeparatorCount == 0)
+        {
+            return new DetectedCsvFormat(charset, defaultSeparator, defaultQuote, 0.0d);
+        }
+        if (structuralSeparatorCount != 1)
+        {
+            return null;
+        }
+        return new DetectedCsvFormat(charset, structuralSeparator, defaultQuote, 0.75d);
+    }
+
+    private static char firstSeparatorCandidate(CharacterCount tally)
+    {
+        if (tally.hasComma())
+        {
+            return ',';
+        }
+        if (tally.hasTab())
+        {
+            return '\t';
+        }
+        if (tally.hasSemiColon())
+        {
+            return ';';
+        }
+        if (tally.hasPipe())
+        {
+            return '|';
+        }
+        throw new IllegalStateException("Expected at least one separator candidate.");
     }
 
     private static char[] separatorCandidates(CharacterCount tally)
@@ -144,27 +196,6 @@ final class CsvFormatProbe
             candidates[i++] = '|';
         }
         return candidates;
-    }
-
-    private static char firstSeparatorCandidate(CharacterCount tally)
-    {
-        if (tally.hasComma())
-        {
-            return ',';
-        }
-        if (tally.hasTab())
-        {
-            return '\t';
-        }
-        if (tally.hasSemiColon())
-        {
-            return ';';
-        }
-        if (tally.hasPipe())
-        {
-            return '|';
-        }
-        throw new IllegalStateException("Expected at least one separator candidate.");
     }
 
     private static Score score(String sample, char separator, char quote, char defaultSeparator, char defaultQuote)

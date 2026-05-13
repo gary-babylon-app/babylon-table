@@ -16,7 +16,7 @@ import java.util.Arrays;
 
 import app.babylon.lang.ArgumentCheck;
 
-public record ReadOptionsCsv(char separator, char quote, int[] fixedWidths, Charset charset, boolean autoDetectEncoding)
+public record ReadOptionsCsv(char separator, char quote, int[] fixedWidths, Charset charset, boolean autoDetectOptions)
 {
     public ReadOptionsCsv
     {
@@ -44,13 +44,27 @@ public record ReadOptionsCsv(char separator, char quote, int[] fixedWidths, Char
         return this.fixedWidths != null && this.fixedWidths.length > 0;
     }
 
+    /**
+     * Returns whether CSV input options should be detected from the source sample.
+     * <p>
+     * This is a compatibility alias for callers using the earlier name, when the
+     * detection only covered encoding.
+     *
+     * @return whether automatic CSV option detection is enabled
+     */
+    @Deprecated
+    public boolean autoDetectEncoding()
+    {
+        return this.autoDetectOptions;
+    }
+
     public static final class Builder
     {
         private char separator;
         private char quote;
         private int[] fixedWidths;
         private Charset charset;
-        private boolean autoDetectEncoding;
+        private boolean autoDetectOptions;
 
         private Builder()
         {
@@ -58,7 +72,7 @@ public record ReadOptionsCsv(char separator, char quote, int[] fixedWidths, Char
             this.quote = '"';
             this.fixedWidths = null;
             this.charset = StandardCharsets.UTF_8;
-            this.autoDetectEncoding = true;
+            this.autoDetectOptions = true;
         }
 
         public Builder withSeparator(char separator)
@@ -85,16 +99,32 @@ public record ReadOptionsCsv(char separator, char quote, int[] fixedWidths, Char
             return this;
         }
 
+        public Builder withAutoDetectOptions(boolean autoDetectOptions)
+        {
+            this.autoDetectOptions = autoDetectOptions;
+            return this;
+        }
+
+        /**
+         * Configures automatic CSV option detection.
+         * <p>
+         * Kept as a compatibility alias for callers using the earlier name, when the
+         * detection only covered encoding.
+         *
+         * @param autoDetectEncoding
+         *            whether automatic CSV option detection is enabled
+         * @return this builder
+         */
+        @Deprecated
         public Builder withAutoDetectEncoding(boolean autoDetectEncoding)
         {
-            this.autoDetectEncoding = autoDetectEncoding;
-            return this;
+            return withAutoDetectOptions(autoDetectEncoding);
         }
 
         public ReadOptionsCsv build()
         {
             return new ReadOptionsCsv(this.separator, this.quote, this.fixedWidths, this.charset,
-                    this.autoDetectEncoding);
+                    this.autoDetectOptions);
         }
     }
 }

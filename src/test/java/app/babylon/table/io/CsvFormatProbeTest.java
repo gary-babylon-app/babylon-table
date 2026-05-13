@@ -64,6 +64,30 @@ class CsvFormatProbeTest
     }
 
     @Test
+    void shouldUseSingleStructuralSeparatorFastPathAfterIgnoringQuotedSeparators()
+    {
+        String sample = "City;Note\nParis;\"Price, 12\"\nLondon;\"Fee, tax\"\n";
+
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ',', '"');
+
+        assertEquals(';', format.separator());
+        assertEquals('"', format.quote());
+        assertEquals(0.75d, format.confidence());
+    }
+
+    @Test
+    void shouldUseRawSingleSeparatorFastPathBeforeQuoteAwareScan()
+    {
+        String sample = "\"plain, text\"\n\"more, text\"\n";
+
+        DetectedCsvFormat format = CsvFormatProbe.detect(sample, StandardCharsets.UTF_8, ';', '"');
+
+        assertEquals(',', format.separator());
+        assertEquals('"', format.quote());
+        assertEquals(0.5d, format.confidence());
+    }
+
+    @Test
     void shouldDetectTabSeparator()
     {
         String sample = "City\tNote\nParis\t\"Price\t12\"\n";

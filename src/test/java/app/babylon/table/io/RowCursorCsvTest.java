@@ -164,7 +164,7 @@ class RowCursorCsvTest
     {
         String text = "ABC12XYZ\nDEF34UVW\n";
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withFixedWidths(new int[]
-        {3, 2, 3}).withAutoDetectEncoding(false).build();
+        {3, 2, 3}).withAutoDetectOptions(false).build();
         RowSource source = RowSources.create(csvFormat, StreamSources.fromString(text, "rows.txt"));
 
         try (RowCursor rowCursor = source.openRows())
@@ -214,7 +214,7 @@ class RowCursorCsvTest
     {
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder()
-                .withCharset(java.nio.charset.Charset.forName("windows-1252")).withAutoDetectEncoding(false).build();
+                .withCharset(java.nio.charset.Charset.forName("windows-1252")).withAutoDetectOptions(false).build();
         RowSource source = RowSources.create(csvFormat, TestStreamSources.fromBytes(bytes, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
@@ -240,7 +240,7 @@ class RowCursorCsvTest
         int[] fixedWidths = new int[]
         {3, 2, 3};
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(';').withQuote('\'')
-                .withFixedWidths(fixedWidths).withCharset(StandardCharsets.UTF_16LE).withAutoDetectEncoding(false)
+                .withFixedWidths(fixedWidths).withCharset(StandardCharsets.UTF_16LE).withAutoDetectOptions(false)
                 .build();
         RowCursor rowCursor = RowCursors.create(csvFormat,
                 StreamSources.fromString("ABC12XYZ\n", "rows.txt").openStream());
@@ -251,6 +251,7 @@ class RowCursorCsvTest
             assertEquals('\'', csvRowCursor.getQuote());
             assertArrayEquals(fixedWidths, csvRowCursor.getFixedWidths());
             assertEquals(StandardCharsets.UTF_16LE, csvRowCursor.getCharset());
+            assertFalse(csvRowCursor.isAutoDetectOptions());
             assertFalse(csvRowCursor.isAutoDetectEncoding());
         } finally
         {

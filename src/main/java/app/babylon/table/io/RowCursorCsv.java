@@ -58,9 +58,23 @@ final class RowCursorCsv extends RowCursorLineReaderCommon
         return this.options.charset();
     }
 
+    public boolean isAutoDetectOptions()
+    {
+        return this.options.autoDetectOptions();
+    }
+
+    /**
+     * Returns whether CSV input options should be detected from the source sample.
+     * <p>
+     * Kept as a compatibility alias for callers using the earlier name, when the
+     * detection only covered encoding.
+     *
+     * @return whether automatic CSV option detection is enabled
+     */
+    @Deprecated
     public boolean isAutoDetectEncoding()
     {
-        return this.options.autoDetectEncoding();
+        return isAutoDetectOptions();
     }
 
     private static LineReader createLineReader(InputStream inputStream, ReadOptionsCsv options)
@@ -74,8 +88,8 @@ final class RowCursorCsv extends RowCursorLineReaderCommon
                 throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");
             }
 
-            int bomLength = options.autoDetectEncoding() ? probe.bomLengthBytes() : 0;
-            DetectedCsvFormat detectedFormat = options.autoDetectEncoding()
+            int bomLength = options.autoDetectOptions() ? probe.bomLengthBytes() : 0;
+            DetectedCsvFormat detectedFormat = options.autoDetectOptions()
                     ? CsvFormatProbe.detect(bufferedInputStream, "stream.csv", LEGACY_CSV_FALLBACK, options.separator(),
                             options.quote())
                     : new DetectedCsvFormat(options.charset(), options.separator(), options.quote(), 1.0d);

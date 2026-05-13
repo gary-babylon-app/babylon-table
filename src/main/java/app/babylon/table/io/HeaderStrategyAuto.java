@@ -22,6 +22,9 @@ public class HeaderStrategyAuto implements HeaderStrategy
 {
     private static final String DEFAULT_SYNTHETIC_COLUMN_PREFIX = "Column";
     private static final int DATA_CONTRAST_SCAN_LIMIT = 5;
+    private static final double MINIMUM_DATA_DOMAIN_SHARE = 0.60;
+    private static final double MINIMUM_HEADER_NAME_SHARE = 0.80;
+    private static final double MINIMUM_HEADER_NAME_CONTRAST = 0.15;
     private static final double MINIMUM_DATA_CONTRAST = 0.20;
     private static final double MINIMUM_HEADER_SCORE = 2.75;
     private static final double MINIMUM_SCORE_MARGIN = 0.35;
@@ -338,6 +341,14 @@ public class HeaderStrategyAuto implements HeaderStrategy
         {
             return true;
         }
+        if (hasHeaderNameContrast(rows, candidate.index))
+        {
+            return true;
+        }
+        if (hasColumnDomainContinuity(rows, candidate.index))
+        {
+            return false;
+        }
         if (candidate.score < MINIMUM_HEADER_SCORE)
         {
             return false;
@@ -384,6 +395,237 @@ public class HeaderStrategyAuto implements HeaderStrategy
                 || candidate.textShare() - averageFollowingTextShare >= MINIMUM_DATA_CONTRAST;
     }
 
+    private static boolean hasColumnDomainContinuity(List<RowBuffer> rows, int candidateIndex)
+    {
+        if (candidateIndex != 0)
+        {
+            return false;
+        }
+
+        RowBuffer candidate = rows.get(candidateIndex);
+        int candidateColumns = 0;
+        int continuousColumns = 0;
+        for (int columnIndex = 0; columnIndex < candidate.size(); ++columnIndex)
+        {
+            String value = cellValue(candidate, columnIndex);
+            if (value.isEmpty() || "n/a".equals(value))
+            {
+                continue;
+            }
+            ++candidateColumns;
+            if (columnContinuesDataDomain(rows, candidateIndex, columnIndex, value))
+            {
+                ++continuousColumns;
+            }
+        }
+        if (candidateColumns == 0 || continuousColumns < 2)
+        {
+            return false;
+        }
+        return continuousColumns / (double) candidateColumns >= MINIMUM_DATA_DOMAIN_SHARE;
+    }
+
+    private static boolean columnContinuesDataDomain(List<RowBuffer> rows, int candidateIndex, int columnIndex,
+            String candidateValue)
+    {
+        int comparedRows = 0;
+        int exactMatches = 0;
+        int sameTypeMatches = 0;
+        int compactCodeMatches = 0;
+        int compactLengthDelta = 0;
+        CellType candidateType = classify(candidateValue);
+        boolean candidateCompactCode = isCompactCode(candidateValue);
+
+        int limit = Math.min(rows.size(), candidateIndex + 1 + DATA_CONTRAST_SCAN_LIMIT);
+        for (int i = candidateIndex + 1; i < limit; ++i)
+        {
+            String followingValue = cellValue(rows.get(i), columnIndex);
+            if (followingValue.isEmpty() || "n/a".equals(followingValue))
+            {
+                continue;
+            }
+
+            ++comparedRows;
+            if (candidateValue.equalsIgnoreCase(followingValue))
+            {
+                ++exactMatches;
+            }
+            if (classify(followingValue) == candidateType)
+            {
+                ++sameTypeMatches;
+            }
+            if (candidateCompactCode && isCompactCode(followingValue))
+            {
+                ++compactCodeMatches;
+                compactLengthDelta += Math.abs(candidateValue.length() - followingValue.length());
+            }
+        }
+        if (comparedRows < 2)
+        {
+            return false;
+        }
+        if (exactMatches > 0)
+        {
+            return true;
+        }
+        if ((candidateType == CellType.NUM || candidateType == CellType.DATE)
+                && sameTypeMatches / (double) comparedRows >= 0.80)
+        {
+            return true;
+        }
+        if (candidateCompactCode && compactCodeMatches / (double) comparedRows >= 0.80)
+        {
+            return compactLengthDelta / (double) compactCodeMatches <= 3.0;
+        }
+        return false;
+    }
+
+    private static boolean hasHeaderNameContrast(List<RowBuffer> rows, int candidateIndex)
+    {
+        if (candidateIndex != 0)
+        {
+            return false;
+        }
+
+        double candidateShare = headerNameShare(rows.get(candidateIndex));
+        if (candidateShare < MINIMUM_HEADER_NAME_SHARE)
+        {
+            return false;
+        }
+
+        int comparedRows = 0;
+        double followingShare = 0.0;
+        int limit = Math.min(rows.size(), candidateIndex + 1 + DATA_CONTRAST_SCAN_LIMIT);
+        for (int i = candidateIndex + 1; i < limit; ++i)
+        {
+            RowFacts followingFacts = rowFacts(rows.get(i));
+            if (followingFacts.isEmpty())
+            {
+                continue;
+            }
+            ++comparedRows;
+            followingShare += headerNameShare(rows.get(i));
+        }
+        if (comparedRows == 0)
+        {
+            return true;
+        }
+
+        return candidateShare - followingShare / comparedRows >= MINIMUM_HEADER_NAME_CONTRAST;
+    }
+
+    private static double headerNameShare(RowBuffer row)
+    {
+        int nonBlank = 0;
+        int headerLike = 0;
+        for (int i = 0; row != null && i < row.size(); ++i)
+        {
+            String raw = row.getString(i);
+            String value = raw == null ? "" : raw.strip();
+            if (value.isEmpty() || "n/a".equals(value))
+            {
+                continue;
+            }
+            ++nonBlank;
+            if (looksLikeHeaderName(value))
+            {
+                ++headerLike;
+            }
+        }
+        if (nonBlank == 0)
+        {
+            return 0.0;
+        }
+        return headerLike / (double) nonBlank;
+    }
+
+    private static boolean looksLikeHeaderName(String value)
+    {
+        if (classify(value) != CellType.TEXT || value.length() > 40 || !Character.isLetter(value.charAt(0)))
+        {
+            return false;
+        }
+
+        int wordCount = 1;
+        boolean hasLetter = false;
+        boolean previousWasSeparator = false;
+        for (int i = 0; i < value.length(); ++i)
+        {
+            char ch = value.charAt(i);
+            if (Character.isLetter(ch))
+            {
+                hasLetter = true;
+                previousWasSeparator = false;
+            }
+            else if (Character.isDigit(ch))
+            {
+                previousWasSeparator = false;
+            }
+            else if (ch == ' ' || ch == '_' || ch == '-')
+            {
+                if (i == 0 || i == value.length() - 1 || previousWasSeparator)
+                {
+                    return false;
+                }
+                ++wordCount;
+                previousWasSeparator = true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return hasLetter && wordCount <= 4 && (wordCount == 1 || looksLikeTitle(value));
+    }
+
+    private static boolean isCompactCode(String value)
+    {
+        if (value.length() < 2 || value.length() > 12)
+        {
+            return false;
+        }
+
+        boolean hasLetter = false;
+        boolean hasDigit = false;
+        for (int i = 0; i < value.length(); ++i)
+        {
+            char ch = value.charAt(i);
+            if (Character.isUpperCase(ch))
+            {
+                hasLetter = true;
+            }
+            else if (Character.isDigit(ch))
+            {
+                hasDigit = true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return hasLetter || hasDigit;
+    }
+
+    private static boolean looksLikeTitle(String value)
+    {
+        boolean atWordStart = true;
+        for (int i = 0; i < value.length(); ++i)
+        {
+            char ch = value.charAt(i);
+            if (ch == ' ' || ch == '_' || ch == '-')
+            {
+                atWordStart = true;
+                continue;
+            }
+            if (atWordStart && Character.isLetter(ch) && !Character.isUpperCase(ch))
+            {
+                return false;
+            }
+            atWordStart = false;
+        }
+        return true;
+    }
+
     private static RowFacts rowFacts(RowBuffer rowValues)
     {
         if (rowValues == null)
@@ -419,6 +661,16 @@ public class HeaderStrategyAuto implements HeaderStrategy
             }
         }
         return new RowFacts(rowValues.size(), nonBlank, textCnt, numCnt, dateCnt, lenSum, distinct.size());
+    }
+
+    private static String cellValue(RowBuffer row, int columnIndex)
+    {
+        if (row == null || columnIndex >= row.size())
+        {
+            return "";
+        }
+        String raw = row.getString(columnIndex);
+        return raw == null ? "" : raw.strip();
     }
 
     private static ColumnName[] syntheticHeaders(List<RowBuffer> rows)

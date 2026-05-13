@@ -27,11 +27,13 @@ class HeaderStrategyAutoTest
     void detectFoundHeadersShouldFindBestHeaderRow() throws IOException
     {
         HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
-        HeaderDetection detection = strategy.detectFoundHeaders(
-                HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("25570", "25571", "25572"),
-                        HeaderStrategyTestSupport.row("Date", "Symbol", "Close"),
-                        HeaderStrategyTestSupport.row("2026-01-02", "AAA", "10.25")),
-                null);
+        String csv = """
+                25570,25571,25572
+                Date,Symbol,Close
+                2026-01-02,AAA,10.25
+                """;
+
+        HeaderDetection detection = strategy.detectFoundHeaders(stream(csv), null);
 
         assertArrayEquals(new ColumnName[]
         {ColumnName.of("Date"), ColumnName.of("Symbol"), ColumnName.of("Close")}, detection.getHeadersFound());
@@ -41,9 +43,12 @@ class HeaderStrategyAutoTest
     void detectFoundHeadersShouldFallbackToSyntheticHeadersWhenNoHeaderEvidence() throws IOException
     {
         HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
-        RowStreamMarkable rows = HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("AAPL", "US", "Tech"),
-                HeaderStrategyTestSupport.row("MSFT", "US", "Tech"),
-                HeaderStrategyTestSupport.row("GOOG", "US", "Media"));
+        String csv = """
+                AAPL,US,Tech
+                MSFT,US,Tech
+                GOOG,US,Media
+                """;
+        RowStreamMarkable rows = stream(csv);
 
         HeaderDetection detection = strategy.detectFoundHeaders(rows, null);
 
@@ -56,14 +61,88 @@ class HeaderStrategyAutoTest
     }
 
     @Test
+    void detectFoundHeadersShouldFallbackWhenFirstRowContinuesNumericAndDateDomains() throws IOException
+    {
+        HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
+        String csv = """
+                2026-01-01,100,USD
+                2026-01-02,125,USD
+                2026-01-03,150,USD
+                """;
+
+        HeaderDetection detection = strategy.detectFoundHeaders(stream(csv), null);
+
+        assertTrue(detection.isSyntheticHeaders());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Column1"), ColumnName.of("Column2"), ColumnName.of("Column3")}, detection.getHeadersFound());
+    }
+
+    @Test
+    void detectFoundHeadersShouldKeepTextHeavyTransactionHeaders() throws IOException
+    {
+        HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
+        String csv = """
+                TransactionId,Description
+                T1,buy 100 VEVE for 2000 gbp
+                """;
+
+        HeaderDetection detection = strategy.detectFoundHeaders(stream(csv), null);
+
+        assertFalse(detection.isSyntheticHeaders());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("TransactionId"), ColumnName.of("Description")}, detection.getHeadersFound());
+    }
+
+    @Test
+    void detectFoundHeadersShouldKeepTextHeavyTransformSetHeaders() throws IOException
+    {
+        HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
+        String csv = """
+                Type,SetName,StepOrder,Transform,Param1,Param2,Param3,Param4,Param5
+                SegmentLedger,Babylon,10,ToDate,SettleDate,SettleDate,,,
+                SegmentLedger,Babylon,15,ToDate,TradeDate,TradeDate,,,
+                """;
+
+        HeaderDetection detection = strategy.detectFoundHeaders(stream(csv), null);
+
+        assertFalse(detection.isSyntheticHeaders());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Type"), ColumnName.of("SetName"), ColumnName.of("StepOrder"), ColumnName.of("Transform"),
+                ColumnName.of("Param1"), ColumnName.of("Param2"), ColumnName.of("Param3"), ColumnName.of("Param4"),
+                ColumnName.of("Param5")}, detection.getHeadersFound());
+    }
+
+    @Test
+    void detectFoundHeadersShouldKeepTextHeavyListingsHeaders() throws IOException
+    {
+        HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
+        String csv = """
+                BourseSymbol,Bourse,Symbol,Isin,Issuer,Description,PriceCurrency,SecurityType
+                JSE:APACXJ,JSE,APACXJ,ZAE000322483,10X FUND MANAGERS,10XAActively Managed ETF,ZAC,ETF
+                JSE:GLODIV,JSE,GLODIV,ZAE000254249,10X FUND MANAGERS,10X GlobalDivTrax,ZAC,ETF
+                """;
+
+        HeaderDetection detection = strategy.detectFoundHeaders(stream(csv), null);
+
+        assertFalse(detection.isSyntheticHeaders());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("BourseSymbol"), ColumnName.of("Bourse"), ColumnName.of("Symbol"), ColumnName.of("Isin"),
+                ColumnName.of("Issuer"), ColumnName.of("Description"), ColumnName.of("PriceCurrency"),
+                ColumnName.of("SecurityType")}, detection.getHeadersFound());
+    }
+
+    @Test
     void detectShouldFilterSelectedColumns() throws IOException
     {
         final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
         final ColumnName PRICE = ColumnName.of("Price");
         HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
-        HeaderDetection detection = strategy
-                .detect(HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("Trade Date", "", "Price"),
-                        HeaderStrategyTestSupport.row("2026-01-02", "", "10.25")), Set.of(TRADE_DATE, PRICE));
+        String csv = """
+                Trade Date,,Price
+                2026-01-02,,10.25
+                """;
+
+        HeaderDetection detection = strategy.detect(stream(csv), Set.of(TRADE_DATE, PRICE));
 
         assertFalse(detection.isSyntheticHeaders());
         assertArrayEquals(new ColumnName[]
@@ -124,5 +203,16 @@ class HeaderStrategyAutoTest
                                 HeaderStrategyTestSupport.row("Currency", "GBP"),
                                 HeaderStrategyTestSupport.row("Date", "Description", "Debit", "Credit", "Balance"),
                                 HeaderStrategyTestSupport.row("2026-01-02", "Card Purchase", "10.00", "", "990.00"))));
+    }
+
+    private static RowStreamMarkable stream(String csv)
+    {
+        String[] lines = csv.strip().split("\\R");
+        RowBuffer[] rows = new RowBuffer[lines.length];
+        for (int i = 0; i < lines.length; ++i)
+        {
+            rows[i] = HeaderStrategyTestSupport.row(lines[i].split(",", -1));
+        }
+        return HeaderStrategyTestSupport.stream(rows);
     }
 }

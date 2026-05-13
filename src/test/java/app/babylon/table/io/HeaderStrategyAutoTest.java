@@ -2,6 +2,7 @@ package app.babylon.table.io;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -37,6 +38,24 @@ class HeaderStrategyAutoTest
     }
 
     @Test
+    void detectFoundHeadersShouldFallbackToSyntheticHeadersWhenNoHeaderEvidence() throws IOException
+    {
+        HeaderStrategyAuto strategy = new HeaderStrategyAuto(5);
+        RowStreamMarkable rows = HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("AAPL", "US", "Tech"),
+                HeaderStrategyTestSupport.row("MSFT", "US", "Tech"),
+                HeaderStrategyTestSupport.row("GOOG", "US", "Media"));
+
+        HeaderDetection detection = strategy.detectFoundHeaders(rows, null);
+
+        assertTrue(detection.isSyntheticHeaders());
+        assertArrayEquals(new ColumnName[]
+        {ColumnName.of("Column1"), ColumnName.of("Column2"), ColumnName.of("Column3")}, detection.getHeadersFound());
+        rows.reset();
+        assertTrue(rows.next());
+        assertEquals("AAPL", ((RowBuffer) rows.current()).getString(0));
+    }
+
+    @Test
     void detectShouldFilterSelectedColumns() throws IOException
     {
         final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
@@ -46,6 +65,7 @@ class HeaderStrategyAutoTest
                 .detect(HeaderStrategyTestSupport.stream(HeaderStrategyTestSupport.row("Trade Date", "", "Price"),
                         HeaderStrategyTestSupport.row("2026-01-02", "", "10.25")), Set.of(TRADE_DATE, PRICE));
 
+        assertFalse(detection.isSyntheticHeaders());
         assertArrayEquals(new ColumnName[]
         {ColumnName.of("Trade Date"), ColumnName.of("Price")}, detection.getHeadersFound());
         assertArrayEquals(new ColumnName[]

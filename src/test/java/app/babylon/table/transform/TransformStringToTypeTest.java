@@ -3,6 +3,7 @@ package app.babylon.table.transform;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -122,6 +123,27 @@ public class TransformStringToTypeTest
     }
 
     @Test
+    public void shouldDoNothingWhenColumnAlreadyHasTargetObjectType()
+    {
+        final ColumnName FROM = ColumnName.of("From");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM);
+        strings.add("1");
+        strings.add("");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table.apply(TransformStringToType.builder(ColumnTypes.DECIMAL, FROM).build());
+        TableColumnar transformedAgain = transformed
+                .apply(TransformStringToType.builder(ColumnTypes.DECIMAL, FROM).build());
+
+        assertSame(transformed.get(FROM), transformedAgain.get(FROM));
+        ColumnObject<BigDecimal> decimals = transformedAgain.getObject(FROM, ColumnTypes.DECIMAL);
+        assertEquals(new BigDecimal("1"), decimals.get(0));
+        assertFalse(decimals.isSet(1));
+    }
+
+    @Test
     public void shouldUseVarargsConstructorWithExplicitArrayMode()
     {
         final ColumnName FROM = ColumnName.of("From");
@@ -220,6 +242,28 @@ public class TransformStringToTypeTest
                 .withParseMode(ParseMode.FIRST_IN).withNewColumnName(TO).build());
 
         ColumnInt ints = transformed.getInt(TO);
+        assertEquals(100, ints.get(0));
+        assertFalse(ints.isSet(1));
+    }
+
+    @Test
+    public void shouldDoNothingWhenColumnAlreadyHasTargetPrimitiveType()
+    {
+        final ColumnName FROM = ColumnName.of("From");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(FROM, ColumnTypes.STRING);
+        strings.add("Buy 100 AAPL");
+        strings.add("Hold AAPL");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table
+                .apply(TransformStringToType.builder(ColumnTypes.INT, FROM).withParseMode(ParseMode.FIRST_IN).build());
+        TableColumnar transformedAgain = transformed
+                .apply(TransformStringToType.builder(ColumnTypes.INT, FROM).withParseMode(ParseMode.FIRST_IN).build());
+
+        assertSame(transformed.get(FROM), transformedAgain.get(FROM));
+        ColumnInt ints = transformedAgain.getInt(FROM);
         assertEquals(100, ints.get(0));
         assertFalse(ints.isSet(1));
     }

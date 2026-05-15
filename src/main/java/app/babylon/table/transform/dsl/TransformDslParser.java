@@ -178,7 +178,6 @@ public final class TransformDslParser
         parsers.put(CLASSIFY, TransformDslParser::parseClassify);
         parsers.put(CLEAN, TransformDslParser::parseClean);
         parsers.put(COALESCE, TransformDslParser::parseCoalesce);
-        parsers.put(CONSTANT, TransformDslParser::parseConstant);
         parsers.put(COPY, TransformDslParser::parseCopy);
         parsers.put(DIVIDE, TransformDslParser::parseDivide);
         parsers.put(EXTRACT, TransformDslParser::parseExtract);
@@ -293,6 +292,10 @@ public final class TransformDslParser
             if (CONCAT.equals(command))
             {
                 transform = parseConcat(tokens);
+            }
+            else if (CONSTANT.equals(command))
+            {
+                transform = parseConstant(tokens);
             }
             else if (CONVERT.equals(command))
             {
@@ -596,7 +599,7 @@ public final class TransformDslParser
         return TransformCopy.of(ColumnName.of(source), ColumnName.of(target));
     }
 
-    private static Transform parseConstant(TokenStream tokens)
+    private Transform parseConstant(TokenStream tokens)
     {
         Token valueToken = tokens.next();
         if (!valueToken.isValue())
@@ -617,7 +620,13 @@ public final class TransformDslParser
                 {
                     throw new TransformDslException("Duplicate as clause", tokens.peek().position());
                 }
-                type = parseColumnType(tokens.expectValue());
+                String typeName = tokens.expectValue();
+                type = this.types.get(normalise(typeName));
+                if (type == null)
+                {
+                    throw new TransformDslException("Unknown constant type '" + typeName + "'",
+                            tokens.peek().position());
+                }
             }
             else if (tokens.matchWord(INTO))
             {

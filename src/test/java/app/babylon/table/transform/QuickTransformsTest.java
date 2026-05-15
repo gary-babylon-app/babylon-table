@@ -8,6 +8,15 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.table.TableColumnar;
+import app.babylon.table.TableName;
+import app.babylon.table.Tables;
+import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnCategorical;
+import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
+import app.babylon.table.column.ColumnTypes;
+
 class QuickTransformsTest
 {
     @Test
@@ -85,5 +94,39 @@ class QuickTransformsTest
                 .parse(QuickTransformScript.of("constant METADATA.DESCRIPTION into SourceDescription")).transforms()[0];
 
         assertEquals("constant metadata.description into SourceDescription", quickTransforms.write(transform));
+    }
+
+    @Test
+    void shouldApplyConstantWithRegisteredCustomType()
+    {
+        Column.Type codeType = Column.Type.of(Code.class, Code::parse);
+        QuickTransforms quickTransforms = QuickTransforms.standard().withType("code", codeType);
+        ColumnName name = ColumnName.of("Name");
+        ColumnName code = ColumnName.of("Code");
+        ColumnObject.Builder<String> names = ColumnObject.builder(name, ColumnTypes.STRING);
+        names.add("A");
+        names.add("B");
+        TableColumnar table = Tables.newTable(TableName.of("t"), names.build());
+
+        TableColumnar transformed = quickTransforms.parse(QuickTransformScript.of("constant 'ABC' as code into Code"))
+                .apply(table);
+
+        ColumnCategorical<Code> codes = transformed.getCategorical(code, codeType);
+        assertEquals(Code.class, codes.getType().getValueClass());
+        assertEquals(Code.parse("ABC"), codes.get(0));
+        assertEquals(Code.parse("ABC"), codes.get(1));
+    }
+
+    private record Code(String value)
+    {
+        private static Code parse(CharSequence chars)
+        {
+            return new Code(chars.toString());
+        }
+
+        private static Code parse(CharSequence chars, int offset, int length)
+        {
+            return parse(chars.subSequence(offset, offset + length));
+        }
     }
 }

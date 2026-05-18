@@ -1,14 +1,23 @@
 package app.babylon.table.transform;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
+import app.babylon.table.column.ColumnByte;
+import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.Columns;
+import app.babylon.table.dsl.ConditionExpression;
+import app.babylon.table.selection.RowPredicate;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
 
@@ -26,9 +35,10 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
     private final ColumnName newColumnName;
     private final Column.Type type;
     private final ParseMode parseMode;
+    private final ConditionExpression condition;
 
     private TransformTakeToType(Operation operation, ColumnName columnName, ColumnName newColumnName, Column.Type type,
-            ParseMode parseMode)
+            ParseMode parseMode, ConditionExpression condition)
     {
         super(FUNCTION_NAME);
         this.operation = ArgumentCheck.nonNull(operation);
@@ -36,18 +46,31 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
         this.newColumnName = ArgumentCheck.nonNull(newColumnName);
         this.type = ArgumentCheck.nonNull(type);
         this.parseMode = parseMode;
+        this.condition = condition;
     }
 
     public static Indexed indexed(Operation operation, ColumnName columnName, ColumnName newColumnName,
             Column.Type type, ParseMode parseMode, int first, int last)
     {
-        return new Indexed(operation, columnName, newColumnName, type, parseMode, first, last);
+        return indexed(operation, columnName, newColumnName, type, parseMode, first, last, null);
+    }
+
+    public static Indexed indexed(Operation operation, ColumnName columnName, ColumnName newColumnName,
+            Column.Type type, ParseMode parseMode, int first, int last, ConditionExpression condition)
+    {
+        return new Indexed(operation, columnName, newColumnName, type, parseMode, first, last, condition);
     }
 
     public static Delimited delimited(Operation operation, ColumnName columnName, ColumnName newColumnName,
             Column.Type type, ParseMode parseMode, String delimiter)
     {
-        return new Delimited(operation, columnName, newColumnName, type, parseMode, delimiter);
+        return delimited(operation, columnName, newColumnName, type, parseMode, delimiter, null);
+    }
+
+    public static Delimited delimited(Operation operation, ColumnName columnName, ColumnName newColumnName,
+            Column.Type type, ParseMode parseMode, String delimiter, ConditionExpression condition)
+    {
+        return new Delimited(operation, columnName, newColumnName, type, parseMode, delimiter, condition);
     }
 
     public Operation operation()
@@ -75,6 +98,11 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
         return this.parseMode;
     }
 
+    public ConditionExpression condition()
+    {
+        return this.condition;
+    }
+
     public ParseMode effectiveParseMode()
     {
         return this.parseMode == null ? ParseMode.EXACT : this.parseMode;
@@ -89,7 +117,15 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
     @Override
     public Collection<ColumnName> sourceColumnNames()
     {
-        return List.of(this.columnName);
+        if (this.condition == null)
+        {
+            return List.of(this.columnName);
+        }
+        Set<ColumnName> names = new LinkedHashSet<>();
+        names.add(this.columnName);
+        names.add(this.newColumnName);
+        names.addAll(this.condition.columnNames());
+        return names;
     }
 
     @Override
@@ -105,6 +141,31 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
                 ? Columns.newBuilder(this.newColumnName, this.type)
                 : ColumnObject.builder(this.newColumnName, this.type, ColumnObject.Mode.CATEGORICAL);
         ParseMode resolvedParseMode = effectiveParseMode();
+        if (this.condition != null)
+        {
+            Column target = columnsByName.get(this.newColumnName);
+            if (target != null && !target.getType().equals(this.type))
+            {
+                throw new IllegalArgumentException("Conditional take target column type must match take type.");
+            }
+            RowPredicate predicate = this.condition.prepare(columnsByName);
+            for (int i = 0; i < strings.size(); ++i)
+            {
+                if (target != null && target.isSet(i))
+                {
+                    addExisting(builder, target, i);
+                }
+                else if (predicate.test(i) && strings.isSet(i))
+                {
+                    builder.add(resolvedParseMode, extract(strings.get(i)));
+                }
+                else
+                {
+                    builder.addNull();
+                }
+            }
+            return builder.build();
+        }
         for (int i = 0; i < strings.size(); ++i)
         {
             if (!strings.isSet(i))
@@ -117,6 +178,45 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
         return builder.build();
     }
 
+    private static void addExisting(Column.Builder builder, Column column, int row)
+    {
+        if (column instanceof ColumnObject<?> object)
+        {
+            addExistingObject(builder, object, row);
+        }
+        else if (builder instanceof ColumnBoolean.Builder booleanBuilder
+                && column instanceof ColumnBoolean booleanColumn)
+        {
+            booleanBuilder.add(booleanColumn.get(row));
+        }
+        else if (builder instanceof ColumnByte.Builder byteBuilder && column instanceof ColumnByte byteColumn)
+        {
+            byteBuilder.add(byteColumn.get(row));
+        }
+        else if (builder instanceof ColumnInt.Builder intBuilder && column instanceof ColumnInt intColumn)
+        {
+            intBuilder.add(intColumn.get(row));
+        }
+        else if (builder instanceof ColumnLong.Builder longBuilder && column instanceof ColumnLong longColumn)
+        {
+            longBuilder.add(longColumn.get(row));
+        }
+        else if (builder instanceof ColumnDouble.Builder doubleBuilder && column instanceof ColumnDouble doubleColumn)
+        {
+            doubleBuilder.add(doubleColumn.get(row));
+        }
+        else
+        {
+            builder.add(column.toString(row));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void addExistingObject(Column.Builder builder, ColumnObject<?> column, int row)
+    {
+        ((ColumnObject.Builder<Object>) builder).add(column.get(row));
+    }
+
     protected abstract String extract(String s);
 
     public static final class Indexed extends TransformTakeToType
@@ -125,9 +225,9 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
         private final int last;
 
         private Indexed(Operation operation, ColumnName columnName, ColumnName newColumnName, Column.Type type,
-                ParseMode parseMode, int first, int last)
+                ParseMode parseMode, int first, int last, ConditionExpression condition)
         {
-            super(operation, columnName, newColumnName, type, parseMode);
+            super(operation, columnName, newColumnName, type, parseMode, condition);
             if (operation != Operation.LEFT && operation != Operation.RIGHT && operation != Operation.SUBSTRING)
             {
                 throw new IllegalArgumentException("Indexed take does not support " + operation);
@@ -173,9 +273,9 @@ public abstract class TransformTakeToType extends TransformBase implements Trans
         private final String delimiter;
 
         private Delimited(Operation operation, ColumnName columnName, ColumnName newColumnName, Column.Type type,
-                ParseMode parseMode, String delimiter)
+                ParseMode parseMode, String delimiter, ConditionExpression condition)
         {
-            super(operation, columnName, newColumnName, type, parseMode);
+            super(operation, columnName, newColumnName, type, parseMode, condition);
             if (operation != Operation.BEFORE && operation != Operation.AFTER)
             {
                 throw new IllegalArgumentException("Delimited take does not support " + operation);

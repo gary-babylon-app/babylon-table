@@ -4,6 +4,7 @@ import app.babylon.lang.ArgumentCheck;
 
 import app.babylon.lang.Is;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.dsl.ConditionExpression;
 import app.babylon.text.Strings;
 
 public class TransformSubstring extends TransformStringToString
@@ -15,7 +16,13 @@ public class TransformSubstring extends TransformStringToString
 
     public TransformSubstring(ColumnName existingColumnName, ColumnName newColumnName, int first, int last)
     {
-        super(FUNCTION_NAME, existingColumnName, ArgumentCheck.nonNull(newColumnName));
+        this(existingColumnName, newColumnName, first, last, null);
+    }
+
+    public TransformSubstring(ColumnName existingColumnName, ColumnName newColumnName, int first, int last,
+            ConditionExpression condition)
+    {
+        super(FUNCTION_NAME, existingColumnName, ArgumentCheck.nonNull(newColumnName), condition);
         this.first = Math.max(0, first);
         this.last = Math.max(this.first + 1, last);
     }
@@ -33,6 +40,12 @@ public class TransformSubstring extends TransformStringToString
     public static TransformSubstring of(ColumnName existingColumnName, ColumnName newColumnName, int first, int last)
     {
         return new TransformSubstring(existingColumnName, newColumnName, first, last);
+    }
+
+    public static TransformSubstring of(ColumnName existingColumnName, ColumnName newColumnName, int first, int last,
+            ConditionExpression condition)
+    {
+        return new TransformSubstring(existingColumnName, newColumnName, first, last, condition);
     }
 
     public int first()

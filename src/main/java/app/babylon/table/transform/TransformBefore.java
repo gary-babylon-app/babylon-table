@@ -5,6 +5,7 @@ import app.babylon.lang.ArgumentCheck;
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.dsl.ConditionExpression;
 import app.babylon.lang.Is;
 
 public class TransformBefore extends TransformStringToString
@@ -14,7 +15,13 @@ public class TransformBefore extends TransformStringToString
 
     public TransformBefore(ColumnName existingColumnName, ColumnName newColumnName, String delimiter)
     {
-        super(FUNCTION_NAME, existingColumnName, newColumnName);
+        this(existingColumnName, newColumnName, delimiter, null);
+    }
+
+    public TransformBefore(ColumnName existingColumnName, ColumnName newColumnName, String delimiter,
+            ConditionExpression condition)
+    {
+        super(FUNCTION_NAME, existingColumnName, newColumnName, condition);
         this.delimiter = ArgumentCheck.nonEmpty(delimiter);
     }
 
@@ -30,6 +37,12 @@ public class TransformBefore extends TransformStringToString
     public static TransformBefore of(ColumnName existingColumnName, ColumnName newColumnName, String delimiter)
     {
         return new TransformBefore(existingColumnName, newColumnName, delimiter);
+    }
+
+    public static TransformBefore of(ColumnName existingColumnName, ColumnName newColumnName, String delimiter,
+            ConditionExpression condition)
+    {
+        return new TransformBefore(existingColumnName, newColumnName, delimiter, condition);
     }
 
     public String delimiter()

@@ -1,9 +1,11 @@
 package app.babylon.table.transform;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -95,6 +97,79 @@ class QuickTransformsTest
 
         assertInstanceOf(TransformCopy.class, transform);
         assertEquals(line, quickTransforms.write(transform));
+    }
+
+    @Test
+    void shouldParseWriteAndApplyConditionalTypedTake()
+    {
+        QuickTransforms quickTransforms = QuickTransforms.standard();
+        String userQuantityLine = "take before '@' from Description into Quantity as decimal by lastIn when TransactionType in Buy, Sell";
+        String userPriceLine = "take after '@' from Description into Price as decimal by firstIn when TransactionType in Buy, Sell";
+        String quantityLine = "take before '@' from Description as Decimal by lastIn into Quantity when TransactionType in Buy, Sell";
+        String priceLine = "take after '@' from Description as Decimal by firstIn into Price when TransactionType in Buy, Sell";
+
+        Transform quantityTransform = quickTransforms.parse(QuickTransformScript.of(userQuantityLine)).transforms()[0];
+        Transform priceTransform = quickTransforms.parse(QuickTransformScript.of(userPriceLine)).transforms()[0];
+
+        assertInstanceOf(TransformTakeToType.Delimited.class, quantityTransform);
+        assertInstanceOf(TransformTakeToType.Delimited.class, priceTransform);
+        assertEquals(quantityLine, quickTransforms.write(quantityTransform));
+        assertEquals(priceLine, quickTransforms.write(priceTransform));
+
+        ColumnObject.Builder<String> descriptions = ColumnObject.builder(ColumnName.of("Description"),
+                ColumnTypes.STRING);
+        descriptions.add("buy 100 AAPL @ 123");
+        descriptions.add("sell 25 MSFT @ USD 456.78");
+        descriptions.add("dividend 7 AAPL @ 9");
+        ColumnCategorical.Builder<String> transactionTypes = ColumnCategorical.builder(ColumnName.of("TransactionType"),
+                ColumnTypes.STRING);
+        transactionTypes.add("Buy");
+        transactionTypes.add("Sell");
+        transactionTypes.add("Dividend");
+        TableColumnar table = Tables.newTable(TableName.of("t"), descriptions.build(), transactionTypes.build());
+
+        TableColumnar transformed = quickTransforms
+                .parse(QuickTransformScript.of(userQuantityLine + "\n" + userPriceLine)).apply(table);
+
+        ColumnObject<BigDecimal> quantities = transformed.getDecimal(ColumnName.of("Quantity"));
+        assertEquals(0, new BigDecimal("100").compareTo(quantities.get(0)));
+        assertEquals(0, new BigDecimal("25").compareTo(quantities.get(1)));
+        assertFalse(quantities.isSet(2));
+        ColumnObject<BigDecimal> prices = transformed.getDecimal(ColumnName.of("Price"));
+        assertEquals(0, new BigDecimal("123").compareTo(prices.get(0)));
+        assertEquals(0, new BigDecimal("456.78").compareTo(prices.get(1)));
+        assertFalse(prices.isSet(2));
+    }
+
+    @Test
+    void shouldParseWriteAndApplyConditionalUntypedTake()
+    {
+        QuickTransforms quickTransforms = QuickTransforms.standard();
+        String line = "take before '@' from Description into TradeText when TransactionType in Buy, Sell";
+
+        Transform transform = quickTransforms.parse(QuickTransformScript.of(line)).transforms()[0];
+
+        assertInstanceOf(TransformBefore.class, transform);
+        assertEquals(line, quickTransforms.write(transform));
+
+        ColumnObject.Builder<String> descriptions = ColumnObject.builder(ColumnName.of("Description"),
+                ColumnTypes.STRING);
+        descriptions.add("buy 100 AAPL @ 123");
+        descriptions.add("sell 25 MSFT @ USD 456.78");
+        descriptions.add("dividend 7 AAPL @ 9");
+        ColumnCategorical.Builder<String> transactionTypes = ColumnCategorical.builder(ColumnName.of("TransactionType"),
+                ColumnTypes.STRING);
+        transactionTypes.add("Buy");
+        transactionTypes.add("Sell");
+        transactionTypes.add("Dividend");
+        TableColumnar table = Tables.newTable(TableName.of("t"), descriptions.build(), transactionTypes.build());
+
+        TableColumnar transformed = quickTransforms.parse(QuickTransformScript.of(line)).apply(table);
+
+        ColumnObject<String> trades = transformed.getString(ColumnName.of("TradeText"));
+        assertEquals("buy 100 AAPL ", trades.get(0));
+        assertEquals("sell 25 MSFT ", trades.get(1));
+        assertFalse(trades.isSet(2));
     }
 
     @Test

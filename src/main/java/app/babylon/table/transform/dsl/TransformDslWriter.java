@@ -412,36 +412,46 @@ public final class TransformDslWriter
     private static String writeLeft(Transform transform)
     {
         TransformLeft left = (TransformLeft) transform;
-        return TAKE + " " + LEFT + " " + left.length() + " " + FROM + " " + column(left.existingColumnName()) + " "
-                + INTO + " " + column(left.effectiveNewColumnName());
+        String line = TAKE + " " + LEFT + " " + left.length() + " " + FROM + " " + column(left.existingColumnName())
+                + " " + INTO + " " + column(left.effectiveNewColumnName());
+        return withCondition(line, left.condition());
     }
 
     private static String writeRight(Transform transform)
     {
         TransformRight right = (TransformRight) transform;
-        return TAKE + " " + RIGHT + " " + right.length() + " " + FROM + " " + column(right.existingColumnName()) + " "
-                + INTO + " " + column(right.effectiveNewColumnName());
+        String line = TAKE + " " + RIGHT + " " + right.length() + " " + FROM + " " + column(right.existingColumnName())
+                + " " + INTO + " " + column(right.effectiveNewColumnName());
+        return withCondition(line, right.condition());
     }
 
     private static String writeSubstring(Transform transform)
     {
         TransformSubstring substring = (TransformSubstring) transform;
-        return TAKE + " " + SUBSTRING + " " + substring.first() + ", " + substring.last() + " " + FROM + " "
+        String line = TAKE + " " + SUBSTRING + " " + substring.first() + ", " + substring.last() + " " + FROM + " "
                 + column(substring.existingColumnName()) + " " + INTO + " " + column(substring.newColumnName());
+        return withCondition(line, substring.condition());
     }
 
     private static String writeBefore(Transform transform)
     {
         TransformBefore before = (TransformBefore) transform;
-        return TAKE + " " + BEFORE + " " + value(before.delimiter()) + " " + FROM + " "
+        String line = TAKE + " " + BEFORE + " " + value(before.delimiter()) + " " + FROM + " "
                 + column(before.existingColumnName()) + " " + INTO + " " + column(before.effectiveNewColumnName());
+        return withCondition(line, before.condition());
     }
 
     private static String writeAfter(Transform transform)
     {
         TransformAfter after = (TransformAfter) transform;
-        return TAKE + " " + AFTER + " " + value(after.delimiter()) + " " + FROM + " "
+        String line = TAKE + " " + AFTER + " " + value(after.delimiter()) + " " + FROM + " "
                 + column(after.existingColumnName()) + " " + INTO + " " + column(after.effectiveNewColumnName());
+        return withCondition(line, after.condition());
+    }
+
+    private static String withCondition(String line, ConditionExpression condition)
+    {
+        return condition == null ? line : line + " " + WHEN + " " + condition(condition);
     }
 
     private static String writeTakeToType(Transform transform)
@@ -462,7 +472,12 @@ public final class TransformDslWriter
         {
             line += " " + BY + " " + parseModeName(parseMode);
         }
-        return line + " " + INTO + " " + column(take.newColumnName());
+        line += " " + INTO + " " + column(take.newColumnName());
+        if (take.condition() != null)
+        {
+            line += " " + WHEN + " " + condition(take.condition());
+        }
+        return line;
     }
 
     private static String writePrefix(Transform transform)

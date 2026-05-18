@@ -1053,7 +1053,8 @@ public final class TransformDslParser
             TakeClauses clauses = takeClauses(tokens);
             if (clauses.type == null && clauses.parseMode == null)
             {
-                return TransformLeft.of(ColumnName.of(source), ColumnName.of(clauses.target), Integer.parseInt(length));
+                return TransformLeft.of(ColumnName.of(source), ColumnName.of(clauses.target), Integer.parseInt(length),
+                        clauses.condition);
             }
             return typedIndexedTake(Operation.LEFT, source, clauses, Integer.parseInt(length), 0);
         }
@@ -1065,8 +1066,8 @@ public final class TransformDslParser
             TakeClauses clauses = takeClauses(tokens);
             if (clauses.type == null && clauses.parseMode == null)
             {
-                return TransformRight.of(ColumnName.of(source), ColumnName.of(clauses.target),
-                        Integer.parseInt(length));
+                return TransformRight.of(ColumnName.of(source), ColumnName.of(clauses.target), Integer.parseInt(length),
+                        clauses.condition);
             }
             return typedIndexedTake(Operation.RIGHT, source, clauses, Integer.parseInt(length), 0);
         }
@@ -1083,7 +1084,7 @@ public final class TransformDslParser
             if (clauses.type == null && clauses.parseMode == null)
             {
                 return TransformSubstring.of(ColumnName.of(source), ColumnName.of(clauses.target), firstIndex,
-                        lastIndex);
+                        lastIndex, clauses.condition);
             }
             return typedIndexedTake(Operation.SUBSTRING, source, clauses, firstIndex, lastIndex);
         }
@@ -1095,7 +1096,8 @@ public final class TransformDslParser
             TakeClauses clauses = takeClauses(tokens);
             if (clauses.type == null && clauses.parseMode == null)
             {
-                return TransformBefore.of(ColumnName.of(source), ColumnName.of(clauses.target), delimiter);
+                return TransformBefore.of(ColumnName.of(source), ColumnName.of(clauses.target), delimiter,
+                        clauses.condition);
             }
             return typedDelimitedTake(Operation.BEFORE, source, clauses, delimiter);
         }
@@ -1107,7 +1109,8 @@ public final class TransformDslParser
             TakeClauses clauses = takeClauses(tokens);
             if (clauses.type == null && clauses.parseMode == null)
             {
-                return TransformAfter.of(ColumnName.of(source), ColumnName.of(clauses.target), delimiter);
+                return TransformAfter.of(ColumnName.of(source), ColumnName.of(clauses.target), delimiter,
+                        clauses.condition);
             }
             return typedDelimitedTake(Operation.AFTER, source, clauses, delimiter);
         }
@@ -1119,6 +1122,7 @@ public final class TransformDslParser
         String type = null;
         ParseMode parseMode = null;
         String target = null;
+        ConditionExpression condition = null;
         while (!isAtStatementEnd(tokens))
         {
             if (tokens.matchWord(AS))
@@ -1145,28 +1149,37 @@ public final class TransformDslParser
                 }
                 target = tokens.expectValue();
             }
+            else if (tokens.matchWord(WHEN))
+            {
+                if (condition != null)
+                {
+                    throw new TransformDslException("Duplicate when clause", tokens.peek().position());
+                }
+                condition = parseConditionExpression(tokens);
+            }
             else
             {
-                throw new TransformDslException("Expected as, by, into, or end of statement", tokens.peek().position());
+                throw new TransformDslException("Expected as, by, into, when, or end of statement",
+                        tokens.peek().position());
             }
         }
         if (target == null)
         {
             throw new TransformDslException("Expected into clause", tokens.peek().position());
         }
-        return new TakeClauses(type, parseMode, target);
+        return new TakeClauses(type, parseMode, target, condition);
     }
 
     private Transform typedIndexedTake(Operation operation, String source, TakeClauses clauses, int first, int last)
     {
         return TransformTakeToType.indexed(operation, ColumnName.of(source), ColumnName.of(clauses.target),
-                takeType(clauses), clauses.parseMode, first, last);
+                takeType(clauses), clauses.parseMode, first, last, clauses.condition);
     }
 
     private Transform typedDelimitedTake(Operation operation, String source, TakeClauses clauses, String delimiter)
     {
         return TransformTakeToType.delimited(operation, ColumnName.of(source), ColumnName.of(clauses.target),
-                takeType(clauses), clauses.parseMode, delimiter);
+                takeType(clauses), clauses.parseMode, delimiter, clauses.condition);
     }
 
     private Column.Type takeType(TakeClauses clauses)
@@ -1183,7 +1196,7 @@ public final class TransformDslParser
         return type;
     }
 
-    private record TakeClauses(String type, ParseMode parseMode, String target)
+    private record TakeClauses(String type, ParseMode parseMode, String target, ConditionExpression condition)
     {
     }
 

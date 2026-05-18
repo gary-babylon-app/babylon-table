@@ -3,6 +3,7 @@ package app.babylon.table.transform;
 import app.babylon.text.Strings;
 
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.dsl.ConditionExpression;
 import app.babylon.lang.Is;
 
 public class TransformRight extends TransformStringToString
@@ -12,7 +13,13 @@ public class TransformRight extends TransformStringToString
 
     public TransformRight(ColumnName existingColumnName, ColumnName newColumnName, int length)
     {
-        super(FUNCTION_NAME, existingColumnName, newColumnName);
+        this(existingColumnName, newColumnName, length, null);
+    }
+
+    public TransformRight(ColumnName existingColumnName, ColumnName newColumnName, int length,
+            ConditionExpression condition)
+    {
+        super(FUNCTION_NAME, existingColumnName, newColumnName, condition);
         this.length = Math.max(0, length);
     }
 
@@ -28,6 +35,12 @@ public class TransformRight extends TransformStringToString
     public static TransformRight of(ColumnName existingColumnName, ColumnName newColumnName, int length)
     {
         return new TransformRight(existingColumnName, newColumnName, length);
+    }
+
+    public static TransformRight of(ColumnName existingColumnName, ColumnName newColumnName, int length,
+            ConditionExpression condition)
+    {
+        return new TransformRight(existingColumnName, newColumnName, length, condition);
     }
 
     public int length()

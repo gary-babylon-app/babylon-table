@@ -65,6 +65,61 @@ public class TransformClassifyTest
     }
 
     @Test
+    public void shouldClassifyByAnchorTokens()
+    {
+        final ColumnName DESCRIPTION = ColumnName.of("Description");
+        final ColumnName FEE_KIND = ColumnName.of("FeeKind");
+
+        ColumnObject.Builder<String> strings = ColumnObject.builder(DESCRIPTION, ColumnTypes.STRING);
+        strings.add("Broker Commission SAGB R187 10.5% 21/12/26 @ 0.25%");
+        strings.add("Settlement and administration");
+        strings.add("Value Added Tax on costs (VAT)");
+        strings.add("Value was updated in the account after withholding tax");
+        strings.add("(VAT)");
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), strings.build());
+
+        TableColumnar transformed = table
+                .apply(TransformClassify.anchor(DESCRIPTION, FEE_KIND, "commission", "Commission", null),
+                        TransformClassify.anchor(DESCRIPTION, FEE_KIND, "settlement administration", "SettlementAdmin",
+                                null),
+                        TransformClassify.anchor(DESCRIPTION, FEE_KIND, "value tax", "VAT", null),
+                        TransformClassify.anchor(DESCRIPTION, FEE_KIND, "vat", "VATOnly", null));
+
+        ColumnObject<String> classified = transformed.getString(FEE_KIND);
+        assertEquals("Commission", classified.get(0));
+        assertEquals("SettlementAdmin", classified.get(1));
+        assertEquals("VAT", classified.get(2));
+        assertFalse(classified.isSet(3));
+        assertEquals("VATOnly", classified.get(4));
+    }
+
+    @Test
+    public void shouldPreserveExistingClassifications()
+    {
+        final ColumnName DESCRIPTION = ColumnName.of("Description");
+        final ColumnName FEE_KIND = ColumnName.of("FeeKind");
+
+        ColumnObject.Builder<String> descriptions = ColumnObject.builder(DESCRIPTION, ColumnTypes.STRING);
+        descriptions.add("Broker Commission");
+        descriptions.add("Settlement and administration");
+
+        ColumnObject.Builder<String> feeKinds = ColumnObject.builder(FEE_KIND, ColumnTypes.STRING);
+        feeKinds.add("Existing");
+        feeKinds.addNull();
+
+        TableColumnar table = Tables.newTable(TableName.of("t"), descriptions.build(), feeKinds.build());
+
+        TableColumnar transformed = table.apply(
+                TransformClassify.anchor(DESCRIPTION, FEE_KIND, "commission", "Commission", null),
+                TransformClassify.anchor(DESCRIPTION, FEE_KIND, "settlement administration", "SettlementAdmin", null));
+
+        ColumnObject<String> classified = transformed.getString(FEE_KIND);
+        assertEquals("Existing", classified.get(0));
+        assertEquals("SettlementAdmin", classified.get(1));
+    }
+
+    @Test
     public void shouldBeAvailableFromBaseRegistry()
     {
         Transform transform = Transforms.registry().create("Classify", "Description", "Indicator", "\\([^)]+\\)", "Y",

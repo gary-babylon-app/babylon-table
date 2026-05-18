@@ -185,7 +185,7 @@ class TokenStreamTest
     @Test
     void shouldTokenizeClassifyAndExtractExamples()
     {
-        String line = "classify Description matching 'Dividend|Distribution' into IsIncome as 'Y' else 'N'";
+        String line = "classify Description by regex 'Dividend|Distribution' into IsIncome as 'Y' else 'N'";
         assertCanTokenize(line);
 
         line = "extract from Description matching '.*\\(([^)]+)\\)' into Symbol";
@@ -449,13 +449,14 @@ class TokenStreamTest
     @Test
     void shouldSkipCommentsOutsideStrings()
     {
-        String line = "classify Description matching '#dividend' into IsIncome # comment";
+        String line = "classify Description by regex '#dividend' into IsIncome # comment";
 
         TokenStream tokens = TokenStream.of(line);
 
         tokens.expectWord("classify");
         assertEquals("Description", tokens.expectValue());
-        tokens.expectWord("matching");
+        tokens.expectWord("by");
+        tokens.expectWord("regex");
         assertEquals("#dividend", tokens.expectValue());
         tokens.expectWord("into");
         assertEquals("IsIncome", tokens.expectValue());
@@ -566,7 +567,7 @@ class TokenStreamTest
     @Test
     void shouldRejectUnclosedSingleQuotedString()
     {
-        String line = "classify Description matching 'dividend";
+        String line = "classify Description by regex 'dividend";
 
         assertThrows(TransformDslException.class, () -> TokenStream.of(line));
     }
@@ -574,7 +575,7 @@ class TokenStreamTest
     @Test
     void shouldRejectUnclosedDoubleQuotedString()
     {
-        String line = "classify Description matching \"dividend";
+        String line = "classify Description by regex \"dividend";
 
         assertThrows(TransformDslException.class, () -> TokenStream.of(line));
     }

@@ -133,10 +133,12 @@ public class TransformDslWriterTest
     @Test
     void shouldWriteClassifyExtractAndSubstitute()
     {
-        assertFormat("classify Description matching 'Dividend|Distribution' into IsIncome as Y",
-                "classify Description matching 'Dividend|Distribution' into IsIncome as Y");
-        assertFormat("classify Description matching 'Dividend|Distribution' into IsIncome as Y else N",
-                "classify Description matching 'Dividend|Distribution' into IsIncome as Y default N");
+        assertFormat("classify Description by regex 'Dividend|Distribution' into IsIncome as Y",
+                "classify Description by regex 'Dividend|Distribution' into IsIncome as Y");
+        assertFormat("classify Description by regex 'Dividend|Distribution' into IsIncome as Y else N",
+                "classify Description by regex 'Dividend|Distribution' into IsIncome as Y default N");
+        assertFormat("classify Description by anchor 'value tax' into FeeKind as VAT",
+                "classify Description by anchor 'value tax' into FeeKind as VAT");
         assertFormat("extract from Description matching '.*\\(([^)]+)\\)' into Symbol",
                 "extract from Description matching '.*\\\\(([^)]+)\\\\)' into Symbol");
         assertFormat("extract from columnName AmountUSD using '([A-Z]{3})$' as Currency into Currency",

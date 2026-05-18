@@ -15,6 +15,7 @@ import static app.babylon.table.transform.dsl.TransformDslWords.ADD;
 import static app.babylon.table.transform.dsl.TransformDslWords.AFTER;
 import static app.babylon.table.transform.dsl.TransformDslWords.ALL;
 import static app.babylon.table.transform.dsl.TransformDslWords.AND;
+import static app.babylon.table.transform.dsl.TransformDslWords.ANCHOR;
 import static app.babylon.table.transform.dsl.TransformDslWords.AS;
 import static app.babylon.table.transform.dsl.TransformDslWords.BEFORE;
 import static app.babylon.table.transform.dsl.TransformDslWords.BY;
@@ -49,6 +50,7 @@ import static app.babylon.table.transform.dsl.TransformDslWords.PREFIX;
 import static app.babylon.table.transform.dsl.TransformDslWords.REMOVE;
 import static app.babylon.table.transform.dsl.TransformDslWords.REPLACE;
 import static app.babylon.table.transform.dsl.TransformDslWords.RETAIN;
+import static app.babylon.table.transform.dsl.TransformDslWords.REGEX;
 import static app.babylon.table.transform.dsl.TransformDslWords.RIGHT;
 import static app.babylon.table.transform.dsl.TransformDslWords.ROUND;
 import static app.babylon.table.transform.dsl.TransformDslWords.SPLIT;
@@ -249,12 +251,15 @@ public final class TransformDslWriter
     private static String writeClassify(Transform transform)
     {
         TransformClassify classify = (TransformClassify) transform;
-        Pattern pattern = classify.pattern();
         String found = classify.newColumnFoundValue();
         String notFound = classify.newColumnNotFoundValue();
-        String line = CLASSIFY + " " + column(classify.existingColumnName()) + " " + MATCHING + " "
-                + literal(pattern.pattern()) + " " + INTO + " " + column(classify.effectiveNewColumnName()) + " " + AS
-                + " " + value(found);
+        String mode = classify.mode() == TransformClassify.Mode.ANCHOR ? ANCHOR : REGEX;
+        String matcher = classify.mode() == TransformClassify.Mode.ANCHOR
+                ? classify.anchorPhrase()
+                : classify.pattern().pattern();
+        String line = CLASSIFY + " " + column(classify.existingColumnName()) + " " + BY + " " + mode + " "
+                + literal(matcher) + " " + INTO + " " + column(classify.effectiveNewColumnName()) + " " + AS + " "
+                + value(found);
         if (notFound != null)
         {
             line += " " + DEFAULT + " " + value(notFound);

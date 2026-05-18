@@ -54,7 +54,7 @@ abstract class TransformStringToString extends TransformBase implements Transfor
     }
 
     @Override
-    public final Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
+    public Column transform(Map<ColumnName, Column> columnsByName, int rowCount)
     {
         Column column = columnsByName.get(this.existingColumnName);
         if (!Columns.isStringColumn(column))

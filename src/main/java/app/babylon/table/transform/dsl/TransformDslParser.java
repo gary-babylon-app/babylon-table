@@ -15,6 +15,7 @@ import static app.babylon.table.transform.dsl.TransformDslWords.ADD;
 import static app.babylon.table.transform.dsl.TransformDslWords.AFTER;
 import static app.babylon.table.transform.dsl.TransformDslWords.ALL;
 import static app.babylon.table.transform.dsl.TransformDslWords.AND;
+import static app.babylon.table.transform.dsl.TransformDslWords.ANCHOR;
 import static app.babylon.table.transform.dsl.TransformDslWords.AS;
 import static app.babylon.table.transform.dsl.TransformDslWords.BEFORE;
 import static app.babylon.table.transform.dsl.TransformDslWords.BY;
@@ -46,6 +47,7 @@ import static app.babylon.table.transform.dsl.TransformDslWords.PREFIX;
 import static app.babylon.table.transform.dsl.TransformDslWords.REMOVE;
 import static app.babylon.table.transform.dsl.TransformDslWords.REPLACE;
 import static app.babylon.table.transform.dsl.TransformDslWords.RETAIN;
+import static app.babylon.table.transform.dsl.TransformDslWords.REGEX;
 import static app.babylon.table.transform.dsl.TransformDslWords.RIGHT;
 import static app.babylon.table.transform.dsl.TransformDslWords.ROUND;
 import static app.babylon.table.transform.dsl.TransformDslWords.SPLIT;
@@ -427,8 +429,10 @@ public final class TransformDslParser
     private static Transform parseClassify(TokenStream tokens)
     {
         String source = tokens.expectValue();
-        tokens.expectWord(MATCHING);
-        String pattern = tokens.expectLiteral();
+        tokens.expectWord(BY);
+        Token modeToken = tokens.expect(TokenType.WORD);
+        String mode = modeToken.value();
+        String matcher = tokens.expectLiteral();
         tokens.expectWord(INTO);
         String target = tokens.expectValue();
         tokens.expectWord(AS);
@@ -438,8 +442,16 @@ public final class TransformDslParser
         {
             notFound = tokens.expectValue();
         }
-        return TransformClassify.of(ColumnName.of(source), ColumnName.of(target), Pattern.compile(pattern), found,
-                notFound);
+        if (REGEX.equalsIgnoreCase(mode))
+        {
+            return TransformClassify.of(ColumnName.of(source), ColumnName.of(target), Pattern.compile(matcher), found,
+                    notFound);
+        }
+        if (ANCHOR.equalsIgnoreCase(mode))
+        {
+            return TransformClassify.anchor(ColumnName.of(source), ColumnName.of(target), matcher, found, notFound);
+        }
+        throw new TransformDslException("Expected regex or anchor", modeToken.position());
     }
 
     private static Transform parseClean(TokenStream tokens)

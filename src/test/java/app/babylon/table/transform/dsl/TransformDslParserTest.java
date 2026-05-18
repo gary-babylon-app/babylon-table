@@ -353,7 +353,10 @@ class TransformDslParserTest
     @Test
     void shouldParseClassifyAndExtractExamples()
     {
-        String line = "classify Description matching 'Dividend|Distribution' into IsIncome as 'Y' else 'N'";
+        String line = "classify Description by regex 'Dividend|Distribution' into IsIncome as 'Y' else 'N'";
+        assertParses(line);
+
+        line = "classify Description by anchor 'settlement administration' into FeeKind as 'SettlementAdmin'";
         assertParses(line);
 
         line = "extract from Description matching '.*\\(([^)]+)\\)' into Symbol";

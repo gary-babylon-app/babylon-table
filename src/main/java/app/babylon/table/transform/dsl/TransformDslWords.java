@@ -17,6 +17,7 @@ final class TransformDslWords
     static final String AFTER = "after";
     static final String ALL = "all";
     static final String AND = "and";
+    static final String ANCHOR = "anchor";
     static final String AS = "as";
     static final String BEFORE = "before";
     static final String BY = "by";
@@ -48,6 +49,7 @@ final class TransformDslWords
     static final String REMOVE = "remove";
     static final String REPLACE = "replace";
     static final String RETAIN = "retain";
+    static final String REGEX = "regex";
     static final String RIGHT = "right";
     static final String ROUND = "round";
     static final String SPLIT = "split";

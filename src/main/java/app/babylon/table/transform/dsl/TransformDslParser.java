@@ -139,6 +139,8 @@ import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
 import app.babylon.table.transform.TransformMetadataConstant;
+import app.babylon.table.transform.TransformTakeToType;
+import app.babylon.table.transform.TransformTakeToType.Operation;
 import app.babylon.table.transform.TransformToLocalDate;
 import app.babylon.table.transform.TransformToLowerCase;
 import app.babylon.table.transform.TransformAnyToString;
@@ -195,7 +197,6 @@ public final class TransformDslParser
         parsers.put(SUBSTITUTE, TransformDslParser::parseSubstitute);
         parsers.put(SUBTRACT, TransformDslParser::parseSubtract);
         parsers.put(SUFFIX, TransformDslParser::parseSuffix);
-        parsers.put(TAKE, TransformDslParser::parseTake);
         parsers.put(UPPERCASE, TransformDslParser::parseUppercase);
         return new TransformDslParser(parsers, standardTypes(), standardRoundScales());
     }
@@ -304,6 +305,10 @@ public final class TransformDslParser
             else if (ROUND.equals(command))
             {
                 transform = parseRound(tokens);
+            }
+            else if (TAKE.equals(command))
+            {
+                transform = parseTake(tokens);
             }
             else
             {
@@ -1021,25 +1026,32 @@ public final class TransformDslParser
         return TransformSuffix.of(suffix, ColumnName.of(source), columnName(target));
     }
 
-    private static Transform parseTake(TokenStream tokens)
+    private Transform parseTake(TokenStream tokens)
     {
         if (tokens.matchWord(LEFT))
         {
             String length = tokens.expectValue();
             tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord(INTO);
-            String target = tokens.expectValue();
-            return TransformLeft.of(ColumnName.of(source), ColumnName.of(target), Integer.parseInt(length));
+            TakeClauses clauses = takeClauses(tokens);
+            if (clauses.type == null && clauses.parseMode == null)
+            {
+                return TransformLeft.of(ColumnName.of(source), ColumnName.of(clauses.target), Integer.parseInt(length));
+            }
+            return typedIndexedTake(Operation.LEFT, source, clauses, Integer.parseInt(length), 0);
         }
         if (tokens.matchWord(RIGHT))
         {
             String length = tokens.expectValue();
             tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord(INTO);
-            String target = tokens.expectValue();
-            return TransformRight.of(ColumnName.of(source), ColumnName.of(target), Integer.parseInt(length));
+            TakeClauses clauses = takeClauses(tokens);
+            if (clauses.type == null && clauses.parseMode == null)
+            {
+                return TransformRight.of(ColumnName.of(source), ColumnName.of(clauses.target),
+                        Integer.parseInt(length));
+            }
+            return typedIndexedTake(Operation.RIGHT, source, clauses, Integer.parseInt(length), 0);
         }
         if (tokens.matchWord(SUBSTRING))
         {
@@ -1048,30 +1060,114 @@ public final class TransformDslParser
             String last = tokens.expectValue();
             tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord(INTO);
-            String target = tokens.expectValue();
-            return TransformSubstring.of(ColumnName.of(source), ColumnName.of(target), Integer.parseInt(first),
-                    Integer.parseInt(last));
+            TakeClauses clauses = takeClauses(tokens);
+            int firstIndex = Integer.parseInt(first);
+            int lastIndex = Integer.parseInt(last);
+            if (clauses.type == null && clauses.parseMode == null)
+            {
+                return TransformSubstring.of(ColumnName.of(source), ColumnName.of(clauses.target), firstIndex,
+                        lastIndex);
+            }
+            return typedIndexedTake(Operation.SUBSTRING, source, clauses, firstIndex, lastIndex);
         }
         if (tokens.matchWord(BEFORE))
         {
             String delimiter = tokens.expectValue();
             tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord(INTO);
-            String target = tokens.expectValue();
-            return TransformBefore.of(ColumnName.of(source), ColumnName.of(target), delimiter);
+            TakeClauses clauses = takeClauses(tokens);
+            if (clauses.type == null && clauses.parseMode == null)
+            {
+                return TransformBefore.of(ColumnName.of(source), ColumnName.of(clauses.target), delimiter);
+            }
+            return typedDelimitedTake(Operation.BEFORE, source, clauses, delimiter);
         }
         if (tokens.matchWord(AFTER))
         {
             String delimiter = tokens.expectValue();
             tokens.expectWord(FROM);
             String source = tokens.expectValue();
-            tokens.expectWord(INTO);
-            String target = tokens.expectValue();
-            return TransformAfter.of(ColumnName.of(source), ColumnName.of(target), delimiter);
+            TakeClauses clauses = takeClauses(tokens);
+            if (clauses.type == null && clauses.parseMode == null)
+            {
+                return TransformAfter.of(ColumnName.of(source), ColumnName.of(clauses.target), delimiter);
+            }
+            return typedDelimitedTake(Operation.AFTER, source, clauses, delimiter);
         }
         throw new TransformDslException("Expected take operation", tokens.peek().position());
+    }
+
+    private TakeClauses takeClauses(TokenStream tokens)
+    {
+        String type = null;
+        ParseMode parseMode = null;
+        String target = null;
+        while (!isAtStatementEnd(tokens))
+        {
+            if (tokens.matchWord(AS))
+            {
+                if (type != null)
+                {
+                    throw new TransformDslException("Duplicate as clause", tokens.peek().position());
+                }
+                type = tokens.expectValue();
+            }
+            else if (tokens.matchWord(BY))
+            {
+                if (parseMode != null)
+                {
+                    throw new TransformDslException("Duplicate by clause", tokens.peek().position());
+                }
+                parseMode = ParseMode.parse(tokens.expectValue());
+            }
+            else if (tokens.matchWord(INTO))
+            {
+                if (target != null)
+                {
+                    throw new TransformDslException("Duplicate into clause", tokens.peek().position());
+                }
+                target = tokens.expectValue();
+            }
+            else
+            {
+                throw new TransformDslException("Expected as, by, into, or end of statement", tokens.peek().position());
+            }
+        }
+        if (target == null)
+        {
+            throw new TransformDslException("Expected into clause", tokens.peek().position());
+        }
+        return new TakeClauses(type, parseMode, target);
+    }
+
+    private Transform typedIndexedTake(Operation operation, String source, TakeClauses clauses, int first, int last)
+    {
+        return TransformTakeToType.indexed(operation, ColumnName.of(source), ColumnName.of(clauses.target),
+                takeType(clauses), clauses.parseMode, first, last);
+    }
+
+    private Transform typedDelimitedTake(Operation operation, String source, TakeClauses clauses, String delimiter)
+    {
+        return TransformTakeToType.delimited(operation, ColumnName.of(source), ColumnName.of(clauses.target),
+                takeType(clauses), clauses.parseMode, delimiter);
+    }
+
+    private Column.Type takeType(TakeClauses clauses)
+    {
+        if (clauses.type == null)
+        {
+            throw new TransformDslException("Take by clause requires an as type", 0);
+        }
+        Column.Type type = this.types.get(normalise(clauses.type));
+        if (type == null)
+        {
+            throw new TransformDslException("Unknown take type '" + clauses.type + "'", 0);
+        }
+        return type;
+    }
+
+    private record TakeClauses(String type, ParseMode parseMode, String target)
+    {
     }
 
     private static Transform parseUppercase(TokenStream tokens)

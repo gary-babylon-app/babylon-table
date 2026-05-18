@@ -124,6 +124,7 @@ import app.babylon.table.transform.TransformSubstitute;
 import app.babylon.table.transform.TransformSubstring;
 import app.babylon.table.transform.TransformSubtract;
 import app.babylon.table.transform.TransformSuffix;
+import app.babylon.table.transform.TransformTakeToType;
 import app.babylon.table.transform.TransformToLocalDate;
 import app.babylon.table.transform.TransformToLowerCase;
 import app.babylon.table.transform.TransformToUpperCase;
@@ -175,6 +176,9 @@ public final class TransformDslWriter
         writers.put(TransformSubstring.class, TransformDslWriter::writeSubstring);
         writers.put(TransformSubtract.class, t -> writeDecimal(SUBTRACT, FROM, t));
         writers.put(TransformSuffix.class, TransformDslWriter::writeSuffix);
+        writers.put(TransformTakeToType.class, TransformDslWriter::writeTakeToType);
+        writers.put(TransformTakeToType.Delimited.class, TransformDslWriter::writeTakeToType);
+        writers.put(TransformTakeToType.Indexed.class, TransformDslWriter::writeTakeToType);
         writers.put(TransformMetadataConstant.class, TransformDslWriter::writeMetadataConstant);
         writers.put(TransformToLocalDate.class, TransformDslWriter::writeDate);
         writers.put(TransformToLowerCase.class, TransformDslWriter::writeLowercase);
@@ -428,6 +432,27 @@ public final class TransformDslWriter
         TransformAfter after = (TransformAfter) transform;
         return TAKE + " " + AFTER + " " + value(after.delimiter()) + " " + FROM + " "
                 + column(after.existingColumnName()) + " " + INTO + " " + column(after.effectiveNewColumnName());
+    }
+
+    private static String writeTakeToType(Transform transform)
+    {
+        TransformTakeToType take = (TransformTakeToType) transform;
+        String line = switch (take.operation())
+        {
+            case LEFT -> TAKE + " " + LEFT + " " + ((TransformTakeToType.Indexed) take).length();
+            case RIGHT -> TAKE + " " + RIGHT + " " + ((TransformTakeToType.Indexed) take).length();
+            case SUBSTRING -> TAKE + " " + SUBSTRING + " " + ((TransformTakeToType.Indexed) take).first() + ", "
+                    + ((TransformTakeToType.Indexed) take).last();
+            case BEFORE -> TAKE + " " + BEFORE + " " + value(((TransformTakeToType.Delimited) take).delimiter());
+            case AFTER -> TAKE + " " + AFTER + " " + value(((TransformTakeToType.Delimited) take).delimiter());
+        };
+        line += " " + FROM + " " + column(take.columnName()) + " " + AS + " " + typeName(take.type());
+        ParseMode parseMode = take.parseMode();
+        if (parseMode != null && parseMode != ParseMode.EXACT)
+        {
+            line += " " + BY + " " + parseModeName(parseMode);
+        }
+        return line + " " + INTO + " " + column(take.newColumnName());
     }
 
     private static String writePrefix(Transform transform)

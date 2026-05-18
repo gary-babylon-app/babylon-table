@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,5 +105,25 @@ class QuickTransformScriptTest
                 .parse(QuickTransformScript.of("clean Name into CleanName")).apply(table);
 
         assertEquals("Alice Smith", transformed.getString(CLEAN_NAME).get(0));
+    }
+
+    @Test
+    void shouldApplyTypedTakeStatements()
+    {
+        ColumnName description = ColumnName.of("Description");
+        ColumnName quantity = ColumnName.of("Quantity");
+        ColumnName price = ColumnName.of("Price");
+
+        ColumnObject.Builder<String> descriptions = ColumnObject.builder(description, ColumnTypes.STRING);
+        descriptions.add("buy 100 AAPL @ 123");
+        TableColumnar table = Tables.newTable(TableName.of("trades"), descriptions.build());
+
+        TableColumnar transformed = QuickTransforms.standard().parse(QuickTransformScript.of("""
+                take before '@' from Description as decimal by lastIn into Quantity
+                take after '@' from Description as decimal by firstIn into Price
+                """)).apply(table);
+
+        assertEquals(0, new BigDecimal("100").compareTo(transformed.getDecimal(quantity).get(0)));
+        assertEquals(0, new BigDecimal("123").compareTo(transformed.getDecimal(price).get(0)));
     }
 }

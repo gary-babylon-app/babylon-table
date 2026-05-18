@@ -35,6 +35,8 @@ import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
 import app.babylon.table.transform.TransformStringToType;
+import app.babylon.table.transform.TransformTakeToType;
+import app.babylon.table.transform.TransformTakeToType.Operation;
 import app.babylon.text.Sentence.ParseMode;
 
 class TransformDslParserTest
@@ -273,6 +275,28 @@ class TransformDslParserTest
 
         line = "take after '-' from TradeReference into TradeSuffix";
         assertParses(line);
+    }
+
+    @Test
+    void shouldParseTypedTakeExamples()
+    {
+        String line = "take before '@' from Description as decimal by lastIn into Quantity";
+
+        TransformTakeToType transform = assertInstanceOf(TransformTakeToType.class, PARSER.parse(line));
+        assertEquals(Operation.BEFORE, transform.operation());
+        assertEquals(ColumnName.of("Description"), transform.columnName());
+        assertEquals(ColumnName.of("Quantity"), transform.newColumnName());
+        assertEquals(ColumnTypes.DECIMAL, transform.type());
+        assertEquals(ParseMode.LAST_IN, transform.parseMode());
+        TransformTakeToType.Delimited delimited = assertInstanceOf(TransformTakeToType.Delimited.class, transform);
+        assertEquals("@", delimited.delimiter());
+
+        line = "take after '@' from Description as decimal by firstIn into Price";
+
+        transform = assertInstanceOf(TransformTakeToType.class, PARSER.parse(line));
+        assertEquals(Operation.AFTER, transform.operation());
+        assertEquals(ColumnName.of("Price"), transform.newColumnName());
+        assertEquals(ParseMode.FIRST_IN, transform.parseMode());
     }
 
     @Test

@@ -147,7 +147,14 @@ take right 4 from AccountNumber into AccountSuffix
 take substring 0, 3 from Isin into CountryCode
 take before '-' from TradeReference into TradePrefix
 take after '-' from TradeReference into TradeSuffix
+take before '@' from Description as Decimal by lastIn into Quantity
+take after '@' from Description as Decimal by firstIn into Price
 ```
+
+Use `as Type` with `by firstIn`, `by lastIn`, or `by onlyIn` when the taken
+text should be parsed into a typed output column. For example,
+`buy 100 AAPL @ 123` can produce `Quantity = 100` from the text before `@` and
+`Price = 123` from the text after `@`.
 
 ## Prefix, suffix, and replacement
 

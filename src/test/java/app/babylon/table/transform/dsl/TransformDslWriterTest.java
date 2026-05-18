@@ -81,6 +81,10 @@ public class TransformDslWriterTest
                 "take before '-' from TradeReference into TradePrefix");
         assertFormat("take after '-' from TradeReference into TradeSuffix",
                 "take after '-' from TradeReference into TradeSuffix");
+        assertFormat("take before '@' from Description as decimal by lastIn into Quantity",
+                "take before '@' from Description as Decimal by lastIn into Quantity");
+        assertFormat("take after '@' from Description as decimal by firstIn into Price",
+                "take after '@' from Description as Decimal by firstIn into Price");
     }
 
     @Test

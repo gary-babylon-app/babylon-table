@@ -172,6 +172,10 @@ class ColumnByteBuilderArray implements ColumnByte.Builder
         @Override
         public ColumnByte copy(ColumnName x)
         {
+            if (getName().equals(x))
+            {
+                return this;
+            }
             ColumnByte.Builder builder = ColumnByte.builder(x);
             for (int i = 0; i < this.size; ++i)
             {

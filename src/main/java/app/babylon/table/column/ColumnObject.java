@@ -144,7 +144,121 @@ public interface ColumnObject<T> extends Column
      * @return an object column containing the same values under the new name
      */
     @Override
-    public ColumnObject<T> copy(ColumnName x);
+    default ColumnObject<T> copy(ColumnName x)
+    {
+        if (getName().equals(x))
+        {
+            return this;
+        }
+        return new Renamed<>(this, x);
+    }
+
+    @Override
+    default ColumnObject<T> copy(ColumnName x, RowPredicate include)
+    {
+        RowPredicate predicate = ArgumentCheck.nonNull(include);
+        if (Column.allRowsMatch(this, predicate))
+        {
+            return copy(x);
+        }
+        ColumnObject.Builder<T> newBuilder = ColumnObject.builder(x, getType());
+        for (int i = 0; i < size(); ++i)
+        {
+            if (predicate.test(i) && isSet(i))
+            {
+                newBuilder.add(get(i));
+            }
+            else
+            {
+                newBuilder.addNull();
+            }
+        }
+        return newBuilder.build();
+    }
+
+    final class Renamed<T> implements ColumnObject<T>
+    {
+        private final ColumnObject<T> original;
+        private final ColumnName name;
+
+        Renamed(ColumnObject<T> original, ColumnName name)
+        {
+            this.original = ArgumentCheck.nonNull(original);
+            this.name = ArgumentCheck.nonNull(name);
+        }
+
+        @Override
+        public ColumnName getName()
+        {
+            return this.name;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return this.original.getType();
+        }
+
+        @Override
+        public int size()
+        {
+            return this.original.size();
+        }
+
+        @Override
+        public T get(int i)
+        {
+            return this.original.get(i);
+        }
+
+        @Override
+        public String toString(int i)
+        {
+            return this.original.toString(i);
+        }
+
+        @Override
+        public boolean isSet(int i)
+        {
+            return this.original.isSet(i);
+        }
+
+        @Override
+        public boolean isConstant()
+        {
+            return this.original.isConstant();
+        }
+
+        @Override
+        public boolean isAllSet()
+        {
+            return this.original.isAllSet();
+        }
+
+        @Override
+        public boolean isNoneSet()
+        {
+            return this.original.isNoneSet();
+        }
+
+        @Override
+        public int compare(int i, int j)
+        {
+            return this.original.compare(i, j);
+        }
+
+        @Override
+        public ColumnObject<T> view(ViewIndex rowIndex)
+        {
+            return this.original.view(rowIndex).copy(this.name);
+        }
+
+        @Override
+        public ColumnObject<T> selectRow(int i)
+        {
+            return this.original.selectRow(i).copy(this.name);
+        }
+    }
 
     /**
      * Returns a single-row object column containing the value from the supplied

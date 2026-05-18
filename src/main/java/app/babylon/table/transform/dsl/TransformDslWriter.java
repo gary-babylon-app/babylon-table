@@ -311,7 +311,12 @@ public final class TransformDslWriter
     private static String writeCopy(Transform transform)
     {
         TransformCopy copy = (TransformCopy) transform;
-        return COPY + " " + column(copy.columnToCopy()) + " " + INTO + " " + column(copy.newCopyName());
+        String line = COPY + " " + column(copy.columnToCopy()) + " " + INTO + " " + column(copy.newCopyName());
+        if (copy.condition() != null)
+        {
+            line += " " + WHEN + " " + condition(copy.condition());
+        }
+        return line;
     }
 
     private static String writeConstant(Transform transform)

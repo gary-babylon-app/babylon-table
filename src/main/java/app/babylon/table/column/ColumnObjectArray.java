@@ -188,6 +188,10 @@ class ColumnObjectArray<T> implements ColumnObject<T>
     @Override
     public ColumnObject<T> copy(ColumnName x)
     {
+        if (getName().equals(x))
+        {
+            return this;
+        }
         ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, this.type);
         for (int i = 0; i < size(); ++i)
         {
@@ -259,6 +263,10 @@ class ColumnObjectArray<T> implements ColumnObject<T>
         @Override
         public ColumnObject<T> copy(ColumnName x)
         {
+            if (getName().equals(x))
+            {
+                return this;
+            }
             ColumnObject.Builder<T> copyBuilder = new ColumnObjectBuilderArray<>(x, getType());
             for (int i = 0; i < size(); ++i)
             {

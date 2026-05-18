@@ -613,7 +613,12 @@ public final class TransformDslParser
         String source = tokens.expectValue();
         tokens.expectWord(INTO);
         String target = tokens.expectValue();
-        return TransformCopy.of(ColumnName.of(source), ColumnName.of(target));
+        ConditionExpression condition = null;
+        if (tokens.matchWord(WHEN))
+        {
+            condition = parseConditionExpression(tokens);
+        }
+        return TransformCopy.of(ColumnName.of(source), ColumnName.of(target), condition);
     }
 
     private Transform parseConstant(TokenStream tokens)

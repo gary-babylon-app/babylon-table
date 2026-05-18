@@ -434,6 +434,19 @@ public interface Column
     public Column copy(ColumnName x);
 
     /**
+     * Creates a copy of this column with the supplied column name, only retaining
+     * rows included by the supplied row predicate.
+     *
+     * @param x
+     *            the name to assign to the copy
+     * @param include
+     *            row predicate indicating which source rows to copy
+     * @return a column containing copied values for included rows and unset values
+     *         elsewhere
+     */
+    public Column copy(ColumnName x, RowPredicate include);
+
+    /**
      * Returns a single-row column containing the value from the supplied row.
      *
      * @param i
@@ -453,6 +466,20 @@ public interface Column
      * @return predicate evaluated by row index
      */
     public RowPredicate predicate(Operator operator, CharSequence... values);
+
+    static boolean allRowsMatch(Column column, RowPredicate include)
+    {
+        Column c = ArgumentCheck.nonNull(column);
+        RowPredicate predicate = ArgumentCheck.nonNull(include);
+        for (int i = 0; i < c.size(); ++i)
+        {
+            if (!predicate.test(i))
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
     default RowPredicate predicate(ComparisonCondition condition)
     {

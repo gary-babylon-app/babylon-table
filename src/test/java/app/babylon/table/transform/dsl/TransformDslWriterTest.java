@@ -36,6 +36,8 @@ public class TransformDslWriterTest
     void shouldWriteCopyAndConstants()
     {
         assertFormat("copy Symbol into DisplaySymbol", "copy Symbol into DisplaySymbol");
+        assertFormat("copy DebitCredit into Consideration when TransactionType in Buy, Sell",
+                "copy DebitCredit into Consideration when TransactionType in Buy, Sell");
         assertFormat("constant metadata.tableName into SourceFileName",
                 "constant metadata.tableName into SourceFileName");
         assertFormat("constant METADATA.DESCRIPTION into SourceDescription",

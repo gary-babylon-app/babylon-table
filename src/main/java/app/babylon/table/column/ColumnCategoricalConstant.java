@@ -37,6 +37,10 @@ class ColumnCategoricalConstant<T> implements ColumnCategorical<T>
     @Override
     public ColumnCategorical<T> copy(ColumnName newCopyName)
     {
+        if (getName().equals(newCopyName))
+        {
+            return this;
+        }
         ColumnCategorical<T> newCopy = new ColumnCategoricalConstant<T>(newCopyName, getValue(), size(), this.type);
         return newCopy;
     }

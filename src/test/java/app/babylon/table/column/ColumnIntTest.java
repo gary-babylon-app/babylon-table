@@ -14,6 +14,7 @@ import app.babylon.table.ViewIndex;
 import app.babylon.table.selection.Selection;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -42,7 +43,7 @@ public class ColumnIntTest
     }
 
     @Test
-    public void mutableCopyPreservesValuesAndNullMarkers()
+    public void copyWithSameNameReturnsOriginalColumn()
     {
         final ColumnName ORIGINAL = ColumnName.of("original");
         ColumnInt.Builder builder = (ColumnInt.Builder) ColumnInt.builder(ORIGINAL);
@@ -53,6 +54,7 @@ public class ColumnIntTest
 
         ColumnInt typedCopy = original.copy(original.getName());
 
+        assertSame(original, typedCopy);
         assertEquals(original.size(), typedCopy.size());
         assertEquals(original.getName(), typedCopy.getName());
         assertTrue(typedCopy.isSet(0));
@@ -361,6 +363,24 @@ public class ColumnIntTest
         assertFalse(selection.get(1));
         assertTrue(selection.get(2));
         assertEquals(1, selection.selected());
+    }
+
+    @Test
+    public void copyShouldUseRowPredicateAndTreatNullAsUnset()
+    {
+        final ColumnName I = ColumnName.of("I");
+        final ColumnName COPY = ColumnName.of("Copy");
+        ColumnInt.Builder builder = ColumnInt.builder(I);
+        builder.add(1);
+        builder.addNull();
+        builder.add(3);
+
+        ColumnInt copied = builder.build().copy(COPY, row -> row != 0);
+
+        assertEquals(COPY, copied.getName());
+        assertFalse(copied.isSet(0));
+        assertFalse(copied.isSet(1));
+        assertEquals(3, copied.get(2));
     }
 
     @Test

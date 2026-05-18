@@ -86,6 +86,18 @@ class QuickTransformsTest
     }
 
     @Test
+    void shouldParseAndWriteConditionalCopy()
+    {
+        QuickTransforms quickTransforms = QuickTransforms.standard();
+        String line = "copy DebitCredit into Consideration when TransactionType in Buy, Sell";
+
+        Transform transform = quickTransforms.parse(QuickTransformScript.of(line)).transforms()[0];
+
+        assertInstanceOf(TransformCopy.class, transform);
+        assertEquals(line, quickTransforms.write(transform));
+    }
+
+    @Test
     void shouldFormatWithSameParserAndWriterConfiguration()
     {
         QuickTransforms quickTransforms = QuickTransforms.standard();

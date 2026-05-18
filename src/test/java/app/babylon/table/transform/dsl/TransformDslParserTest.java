@@ -90,6 +90,9 @@ class TransformDslParserTest
         String line = "copy Symbol into DisplaySymbol";
         assertParses(line);
 
+        line = "copy DebitCredit into Consideration when TransactionType in Buy, Sell";
+        assertParses(line);
+
         line = "constant metadata.tableName into SourceFileName";
         assertParses(line);
 

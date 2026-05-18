@@ -17,6 +17,7 @@ import java.util.function.Predicate;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.ViewIndex;
+import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
 
 /**
@@ -284,10 +285,149 @@ public interface ColumnCategorical<T> extends ColumnObject<T>
     @Override
     default ColumnCategorical<T> copy(ColumnName x)
     {
+        if (getName().equals(x))
+        {
+            return this;
+        }
+        if (!isConstant())
+        {
+            return new Renamed<>(this, x);
+        }
         Builder<T> newBuilder = ColumnCategorical.builder(x, getType());
         for (int i = 0; i < size(); ++i)
         {
             if (isSet(i))
+            {
+                newBuilder.add(get(i));
+            }
+            else
+            {
+                newBuilder.addNull();
+            }
+        }
+        return newBuilder.build();
+    }
+
+    final class Renamed<T> implements ColumnCategorical<T>
+    {
+        private final ColumnCategorical<T> original;
+        private final ColumnName name;
+
+        Renamed(ColumnCategorical<T> original, ColumnName name)
+        {
+            this.original = ArgumentCheck.nonNull(original);
+            this.name = ArgumentCheck.nonNull(name);
+        }
+
+        @Override
+        public ColumnName getName()
+        {
+            return this.name;
+        }
+
+        @Override
+        public Type getType()
+        {
+            return this.original.getType();
+        }
+
+        @Override
+        public int size()
+        {
+            return this.original.size();
+        }
+
+        @Override
+        public T get(int i)
+        {
+            return this.original.get(i);
+        }
+
+        @Override
+        public boolean isSet(int i)
+        {
+            return this.original.isSet(i);
+        }
+
+        @Override
+        public int getCategoryCode(int i)
+        {
+            return this.original.getCategoryCode(i);
+        }
+
+        @Override
+        public T getCategoryValue(int categoryCode)
+        {
+            return this.original.getCategoryValue(categoryCode);
+        }
+
+        @Override
+        public int[] getCategoryCodes(int[] x)
+        {
+            return this.original.getCategoryCodes(x);
+        }
+
+        @Override
+        public Collection<T> getCategoricalValues(Collection<T> x)
+        {
+            return this.original.getCategoricalValues(x);
+        }
+
+        @Override
+        public boolean isConstant()
+        {
+            return this.original.isConstant();
+        }
+
+        @Override
+        public boolean isAllSet()
+        {
+            return this.original.isAllSet();
+        }
+
+        @Override
+        public boolean isNoneSet()
+        {
+            return this.original.isNoneSet();
+        }
+
+        @Override
+        public int compare(int i, int j)
+        {
+            return this.original.compare(i, j);
+        }
+
+        @Override
+        public ColumnCategorical<T> view(ViewIndex rowIndex)
+        {
+            return this.original.view(rowIndex).copy(this.name);
+        }
+
+        @Override
+        public ColumnCategorical<T> selectRow(int i)
+        {
+            return this.original.selectRow(i).copy(this.name);
+        }
+
+        @Override
+        public <S> ColumnCategorical<S> transform(Transformer<T, S> transformer)
+        {
+            return this.original.transform(transformer).copy(this.name);
+        }
+    }
+
+    @Override
+    default ColumnCategorical<T> copy(ColumnName x, RowPredicate include)
+    {
+        RowPredicate predicate = ArgumentCheck.nonNull(include);
+        if (Column.allRowsMatch(this, predicate))
+        {
+            return copy(x);
+        }
+        Builder<T> newBuilder = ColumnCategorical.builder(x, getType());
+        for (int i = 0; i < size(); ++i)
+        {
+            if (predicate.test(i) && isSet(i))
             {
                 newBuilder.add(get(i));
             }

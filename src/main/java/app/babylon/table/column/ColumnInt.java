@@ -255,10 +255,28 @@ public interface ColumnInt extends Column
     @Override
     default public ColumnInt copy(ColumnName x)
     {
+        if (getName().equals(x))
+        {
+            return this;
+        }
+        if (isConstant())
+        {
+            return copy(x, row -> true);
+        }
+        return new Renamed(this, x);
+    }
+
+    @Override
+    default public ColumnInt copy(ColumnName x, RowPredicate include)
+    {
+        if (Column.allRowsMatch(this, include))
+        {
+            return copy(x);
+        }
         Builder newBuilder = ColumnInt.builder(x);
         for (int i = 0; i < size(); ++i)
         {
-            if (isSet(i))
+            if (include.test(i) && isSet(i))
             {
                 newBuilder.add(get(i));
             }
@@ -268,6 +286,72 @@ public interface ColumnInt extends Column
             }
         }
         return newBuilder.build();
+    }
+
+    final class Renamed implements ColumnInt
+    {
+        private final ColumnInt original;
+        private final ColumnName name;
+
+        Renamed(ColumnInt original, ColumnName name)
+        {
+            this.original = app.babylon.lang.ArgumentCheck.nonNull(original);
+            this.name = app.babylon.lang.ArgumentCheck.nonNull(name);
+        }
+
+        @Override
+        public ColumnName getName()
+        {
+            return this.name;
+        }
+
+        @Override
+        public int size()
+        {
+            return this.original.size();
+        }
+
+        @Override
+        public int get(int i)
+        {
+            return this.original.get(i);
+        }
+
+        @Override
+        public boolean isSet(int i)
+        {
+            return this.original.isSet(i);
+        }
+
+        @Override
+        public int[] toArray(int[] x)
+        {
+            return this.original.toArray(x);
+        }
+
+        @Override
+        public boolean isConstant()
+        {
+            return this.original.isConstant();
+        }
+
+        @Override
+        public boolean isAllSet()
+        {
+            return this.original.isAllSet();
+        }
+
+        @Override
+        public boolean isNoneSet()
+        {
+            return this.original.isNoneSet();
+        }
+
+        @Override
+        public Column view(app.babylon.table.ViewIndex rowIndex)
+        {
+            return this.original.view(rowIndex).copy(this.name);
+        }
     }
 
     /**

@@ -186,6 +186,32 @@ class RowCursorCsvTest
     }
 
     @Test
+    void shouldReadFixedWidthRowsAcrossBufferBoundary()
+    {
+        String row = "ABC12XYZ\n";
+        String text = row.repeat(912);
+        ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withFixedWidths(new int[]
+        {3, 2, 3}).withAutoDetectOptions(false).build();
+        RowSource source = RowSources.create(csvFormat, StreamSources.fromString(text, "rows.txt"));
+
+        try (RowCursor rowCursor = source.openRows())
+        {
+            int rowCount = 0;
+            while (rowCursor.next())
+            {
+                assertArrayEquals(new String[]
+                {"ABC", "12", "XYZ"}, values(rowCursor.current()));
+                ++rowCount;
+            }
+            assertEquals(912, rowCount);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
     void shouldTreatNullFixedWidthsAsRegularDelimitedCsv()
     {
         String csv = "City,Note\nParis,\"Price,12\"\n";

@@ -75,6 +75,7 @@ final class LineReaderCSVFixedWidth implements LineReader
                 this.current.append(this.reader.buffer(), position, nextTerminator - position);
                 this.reader.advance(nextTerminator - position);
                 anyCharRead = true;
+                continue;
             }
 
             int c = this.reader.read();

@@ -29,12 +29,15 @@ import static app.babylon.table.transform.dsl.TransformDslWords.CONVERT;
 import static app.babylon.table.transform.dsl.TransformDslWords.COPY;
 import static app.babylon.table.transform.dsl.TransformDslWords.DEFAULT;
 import static app.babylon.table.transform.dsl.TransformDslWords.DIVIDE;
+import static app.babylon.table.transform.dsl.TransformDslWords.DROP;
 import static app.babylon.table.transform.dsl.TransformDslWords.EXTRACT;
 import static app.babylon.table.transform.dsl.TransformDslWords.FLAG;
+import static app.babylon.table.transform.dsl.TransformDslWords.FIRST;
 import static app.babylon.table.transform.dsl.TransformDslWords.FROM;
 import static app.babylon.table.transform.dsl.TransformDslWords.IN;
 import static app.babylon.table.transform.dsl.TransformDslWords.INTO;
 import static app.babylon.table.transform.dsl.TransformDslWords.LEFT;
+import static app.babylon.table.transform.dsl.TransformDslWords.LAST;
 import static app.babylon.table.transform.dsl.TransformDslWords.LOWERCASE;
 import static app.babylon.table.transform.dsl.TransformDslWords.MATCHING;
 import static app.babylon.table.transform.dsl.TransformDslWords.MODE_EXACT;
@@ -72,6 +75,7 @@ import static app.babylon.table.transform.dsl.TransformDslWords.UPPERCASE;
 import static app.babylon.table.transform.dsl.TransformDslWords.USING;
 import static app.babylon.table.transform.dsl.TransformDslWords.WHEN;
 import static app.babylon.table.transform.dsl.TransformDslWords.WITH;
+import static app.babylon.table.transform.dsl.TransformDslWords.WORD;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -104,6 +108,7 @@ import app.babylon.table.transform.TransformConstant;
 import app.babylon.table.transform.TransformCopy;
 import app.babylon.table.transform.TransformDecimalBinaryOperator.Operand;
 import app.babylon.table.transform.TransformDivide;
+import app.babylon.table.transform.TransformDropWord;
 import app.babylon.table.transform.TransformExtract;
 import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
@@ -158,6 +163,7 @@ public final class TransformDslWriter
         writers.put(TransformCopy.class, TransformDslWriter::writeCopy);
         writers.put(TransformConstant.class, TransformDslWriter::writeConstant);
         writers.put(TransformDivide.class, t -> writeDecimal(DIVIDE, BY, t));
+        writers.put(TransformDropWord.class, TransformDslWriter::writeDropWord);
         writers.put(TransformExtract.class, TransformDslWriter::writeExtract);
         writers.put(TransformExtractFromColumnName.class, TransformDslWriter::writeExtractFromColumnName);
         writers.put(TransformFlag.class, TransformDslWriter::writeFlag);
@@ -354,6 +360,14 @@ public final class TransformDslWriter
         Pattern pattern = extract.pattern();
         return EXTRACT + " " + FROM + " " + column(extract.existingColumnName()) + " " + MATCHING + " "
                 + literal(pattern.pattern()) + " " + INTO + " " + column(extract.effectiveNewColumnName());
+    }
+
+    private static String writeDropWord(Transform transform)
+    {
+        TransformDropWord drop = (TransformDropWord) transform;
+        String position = drop.position() == TransformDropWord.Position.FIRST ? FIRST : LAST;
+        return DROP + " " + position + " " + WORD + " " + FROM + " " + column(drop.existingColumnName())
+                + into(drop.existingColumnName(), drop.newColumnName());
     }
 
     private static String writeExtractFromColumnName(Transform transform)

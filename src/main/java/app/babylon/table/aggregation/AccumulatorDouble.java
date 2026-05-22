@@ -75,16 +75,16 @@ public class AccumulatorDouble implements DoubleConsumer
      *            source characters
      * @param start
      *            inclusive slice start
-     * @param length
-     *            slice length
+     * @param end
+     *            exclusive slice end
      */
-    public void accept(CharSequence chars, int start, int length)
+    public void accept(CharSequence chars, int start, int end)
     {
         if (chars == null)
         {
             throw new IllegalArgumentException("chars must not be null");
         }
-        accept(Double.parseDouble(chars.subSequence(start, start + length).toString()));
+        accept(Double.parseDouble(chars.subSequence(start, end).toString()));
     }
 
     /**

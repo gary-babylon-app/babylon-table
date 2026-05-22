@@ -24,7 +24,7 @@ class RowBufferTest
     @Test
     void fieldCharSequenceShouldExposeCharsSubSequencesAndBounds()
     {
-        RowBuffer.FieldCharSequence sequence = new RowBuffer.FieldCharSequence("xxAlphaYY".toCharArray(), 2, 5);
+        RowBuffer.FieldCharSequence sequence = new RowBuffer.FieldCharSequence("xxAlphaYY".toCharArray(), 2, 7);
 
         assertEquals(5, sequence.length());
         assertEquals('A', sequence.charAt(0));
@@ -61,7 +61,7 @@ class RowBufferTest
         assertEquals(9, row.start(2));
         assertEquals(0, row.length(2));
         assertEquals(9, row.length());
-        assertEquals("Alpha", row.subSequence(row.start(0), row.start(0) + row.length(0)).toString());
+        assertEquals("Alpha", row.subSequence(row.start(0), row.end(0)).toString());
     }
 
     @Test

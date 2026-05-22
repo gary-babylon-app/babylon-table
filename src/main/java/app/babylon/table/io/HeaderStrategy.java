@@ -123,7 +123,7 @@ public interface HeaderStrategy
         ColumnName[] columnNames = new ColumnName[row.size()];
         for (int i = 0; i < row.size(); ++i)
         {
-            columnNames[i] = ColumnName.parse(row, row.start(i), row.length(i));
+            columnNames[i] = ColumnName.parse(row, row.start(i), row.end(i));
         }
         return columnNames;
     }

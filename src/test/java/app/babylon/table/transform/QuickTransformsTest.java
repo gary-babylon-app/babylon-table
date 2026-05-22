@@ -142,6 +142,26 @@ class QuickTransformsTest
     }
 
     @Test
+    void shouldParseWriteAndApplyDropWord()
+    {
+        QuickTransforms quickTransforms = QuickTransforms.standard();
+        String script = """
+                drop first word from Description
+                drop last word from Description
+                """;
+        ColumnName description = ColumnName.of("Description");
+        ColumnObject.Builder<String> descriptions = ColumnObject.builder(description, ColumnTypes.STRING);
+        descriptions.add("Bought Satrix MSCI Emerging Markets ETF 0.9989");
+
+        TableColumnar transformed = quickTransforms.parse(QuickTransformScript.of(script))
+                .apply(Tables.newTable(TableName.of("t"), descriptions.build()));
+
+        assertEquals("Satrix MSCI Emerging Markets ETF", transformed.getString(description).get(0));
+        assertEquals("drop first word from Description", quickTransforms.write(
+                quickTransforms.parse(QuickTransformScript.of("drop first word from Description")).transforms()[0]));
+    }
+
+    @Test
     void shouldParseWriteAndApplyConditionalUntypedTake()
     {
         QuickTransforms quickTransforms = QuickTransforms.standard();
@@ -211,9 +231,9 @@ class QuickTransformsTest
             return new Code(chars.toString());
         }
 
-        private static Code parse(CharSequence chars, int offset, int length)
+        private static Code parse(CharSequence chars, int start, int end)
         {
-            return parse(chars.subSequence(offset, offset + length));
+            return parse(chars.subSequence(start, end));
         }
     }
 }

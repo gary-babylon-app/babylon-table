@@ -299,21 +299,21 @@ public interface ColumnObject<T> extends Column
         public Builder<T> add(T x);
 
         @Override
-        default Builder<T> add(CharSequence chars, int offset, int length)
+        default Builder<T> add(CharSequence chars, int start, int end)
         {
-            return add(ParseMode.EXACT, chars, offset, length);
+            return add(ParseMode.EXACT, chars, start, end);
         }
 
         @Override
-        default Builder<T> add(ParseMode parseMode, CharSequence chars, int offset, int length)
+        default Builder<T> add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
-            if (chars == null || length == 0)
+            if (chars == null || start >= end)
             {
                 return addNull();
             }
             @SuppressWarnings("unchecked")
             TypeParser<T> parser = (TypeParser<T>) getType().getParser();
-            T value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, offset, length);
+            T value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, end);
             if (value == null)
             {
                 addNull();

@@ -125,23 +125,23 @@ public final class Strings
         return c >= '0' && c <= '9';
     }
 
-    public static boolean equals(CharSequence s, int start, int length, CharSequence expected)
+    public static boolean equals(CharSequence s, int start, int end, CharSequence expected)
     {
-        return equals(s, start, length, expected, false);
+        return equals(s, start, end, expected, false);
     }
 
-    public static boolean equalsIgnoreCase(CharSequence s, int start, int length, CharSequence expected)
+    public static boolean equalsIgnoreCase(CharSequence s, int start, int end, CharSequence expected)
     {
-        return equals(s, start, length, expected, true);
+        return equals(s, start, end, expected, true);
     }
 
-    private static boolean equals(CharSequence s, int start, int length, CharSequence expected, boolean ignoreCase)
+    private static boolean equals(CharSequence s, int start, int end, CharSequence expected, boolean ignoreCase)
     {
-        if (s == null || expected == null || length != expected.length())
+        if (s == null || expected == null || end - start != expected.length())
         {
             return false;
         }
-        for (int i = 0; i < length; ++i)
+        for (int i = 0; i < expected.length(); ++i)
         {
             char left = s.charAt(start + i);
             char right = expected.charAt(i);
@@ -162,9 +162,9 @@ public final class Strings
         return s == null || s.length() == 0;
     }
 
-    public static boolean isEmpty(CharSequence s, int start, int length)
+    public static boolean isEmpty(CharSequence s, int start, int end)
     {
-        return s == null || length <= 0;
+        return s == null || start >= end;
     }
 
     /**
@@ -182,19 +182,19 @@ public final class Strings
      * remove normal Unicode whitespace and the additional ingestion artifacts
      * documented on {@code stripx}.
      */
-    public static boolean isStripxEmpty(CharSequence s, int start, int length)
+    public static boolean isStripxEmpty(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return true;
         }
         int actualStart = start;
-        int actualEnd = start + length - 1;
-        while (actualStart <= actualEnd && isStrippable(s.charAt(actualStart)))
+        int actualEnd = end;
+        while (actualStart < actualEnd && isStrippable(s.charAt(actualStart)))
         {
             actualStart++;
         }
-        return actualStart > actualEnd;
+        return actualStart >= actualEnd;
     }
 
     public static int indexOf(CharSequence s, char c)
@@ -202,14 +202,13 @@ public final class Strings
         return s == null ? -1 : indexOf(s, 0, s.length(), c);
     }
 
-    public static int indexOf(CharSequence s, int start, int length, char c)
+    public static int indexOf(CharSequence s, int start, int end, char c)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return -1;
         }
 
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             if (s.charAt(i) == c)
@@ -225,31 +224,30 @@ public final class Strings
         return s == null ? -1 : indexOfAny(s, 0, s.length(), c, additional);
     }
 
-    public static int indexOfAny(CharSequence s, int start, int length, char c, char... additional)
+    public static int indexOfAny(CharSequence s, int start, int end, char c, char... additional)
     {
         if (additional == null || additional.length == 0)
         {
-            return indexOf(s, start, length, c);
+            return indexOf(s, start, end, c);
         }
         if (additional.length == 1)
         {
-            return indexOfAny2(s, start, length, c, additional[0]);
+            return indexOfAny2(s, start, end, c, additional[0]);
         }
         if (additional.length == 2)
         {
-            return indexOfAny3(s, start, length, c, additional[0], additional[1]);
+            return indexOfAny3(s, start, end, c, additional[0], additional[1]);
         }
         if (additional.length == 3)
         {
-            return indexOfAny4(s, start, length, c, additional[0], additional[1], additional[2]);
+            return indexOfAny4(s, start, end, c, additional[0], additional[1], additional[2]);
         }
 
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return -1;
         }
 
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             char current = s.charAt(i);
@@ -266,14 +264,14 @@ public final class Strings
         return s == null ? -1 : lastIndexOf(s, 0, s.length(), c);
     }
 
-    public static int lastIndexOf(CharSequence s, int start, int length, char c)
+    public static int lastIndexOf(CharSequence s, int start, int end, char c)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return -1;
         }
 
-        for (int i = start + length - 1; i >= start; --i)
+        for (int i = end - 1; i >= start; --i)
         {
             if (s.charAt(i) == c)
             {
@@ -288,18 +286,18 @@ public final class Strings
         return s == null ? -1 : lastIndexOfAny(s, 0, s.length(), c, additional);
     }
 
-    public static int lastIndexOfAny(CharSequence s, int start, int length, char c, char... additional)
+    public static int lastIndexOfAny(CharSequence s, int start, int end, char c, char... additional)
     {
         if (additional == null || additional.length == 0)
         {
-            return lastIndexOf(s, start, length, c);
+            return lastIndexOf(s, start, end, c);
         }
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return -1;
         }
 
-        for (int i = start + length - 1; i >= start; --i)
+        for (int i = end - 1; i >= start; --i)
         {
             char current = s.charAt(i);
             if (current == c || isAny(current, additional))
@@ -332,15 +330,14 @@ public final class Strings
      * not against the supplied slice. For example, a splitter at {@code start} sets
      * bit {@code start}.
      */
-    public static BitSet trace(CharSequence s, int start, int length, char splitter)
+    public static BitSet trace(CharSequence s, int start, int end, char splitter)
     {
         BitSet indexes = new BitSet();
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return indexes;
         }
 
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             if (s.charAt(i) == splitter)
@@ -371,20 +368,19 @@ public final class Strings
      * The returned {@link BitSet} is indexed against the original source sequence,
      * not against the supplied slice.
      */
-    public static BitSet traceAny(CharSequence s, int start, int length, char splitter, char... additionalSplitters)
+    public static BitSet traceAny(CharSequence s, int start, int end, char splitter, char... additionalSplitters)
     {
         if (additionalSplitters == null || additionalSplitters.length == 0)
         {
-            return trace(s, start, length, splitter);
+            return trace(s, start, end, splitter);
         }
 
         BitSet indexes = new BitSet();
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return indexes;
         }
 
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             char c = s.charAt(i);
@@ -420,9 +416,9 @@ public final class Strings
      * This is convenient for one-off calls. For repeated use with the same
      * delimiter, prefer a reusable immutable {@link Splitter}.
      */
-    public static String[] split(CharSequence s, int start, int length, char splitter)
+    public static String[] split(CharSequence s, int start, int end, char splitter)
     {
-        return splitter().withSplitter(splitter).split(s, start, length);
+        return splitter().withSplitter(splitter).split(s, start, end);
     }
 
     /**
@@ -607,31 +603,30 @@ public final class Strings
          * possible number of fields, and only compacts the result if empty fields are
          * removed.
          */
-        public String[] split(CharSequence source, int start, int length)
+        public String[] split(CharSequence source, int start, int end)
         {
-            if (source == null || length <= 0)
+            if (source == null || start >= end)
             {
                 return new String[0];
             }
 
-            int end = start + length;
             BitSet splitters = this.additionalSplitters == null
-                    ? trace(source, start, length, this.splitter)
-                    : traceAny(source, start, length, this.splitter, this.additionalSplitters);
+                    ? trace(source, start, end, this.splitter)
+                    : traceAny(source, start, end, this.splitter, this.additionalSplitters);
             String[] result = new String[splitters.cardinality() + 1];
             int resultIndex = 0;
             int tokenStart = start;
             for (int splitterIndex = splitters.nextSetBit(start); splitterIndex >= 0
                     && splitterIndex < end; splitterIndex = splitters.nextSetBit(splitterIndex + 1))
             {
-                String token = this.stringOrNull(source, tokenStart, splitterIndex - tokenStart);
+                String token = this.stringOrNull(source, tokenStart, splitterIndex);
                 if (token != null)
                 {
                     result[resultIndex++] = token;
                 }
                 tokenStart = splitterIndex + 1;
             }
-            String token = this.stringOrNull(source, tokenStart, end - tokenStart);
+            String token = this.stringOrNull(source, tokenStart, end);
             if (token != null)
             {
                 result[resultIndex++] = token;
@@ -639,14 +634,14 @@ public final class Strings
             return resultIndex == result.length ? result : compact(result);
         }
 
-        private String stringOrNull(CharSequence source, int start, int length)
+        private String stringOrNull(CharSequence source, int start, int end)
         {
             if (!this.strip)
             {
-                return this.removeEmpty && length <= 0 ? null : source.subSequence(start, start + length).toString();
+                return this.removeEmpty && start >= end ? null : source.subSequence(start, end).toString();
             }
-            int strippedStart = stripxStart(source, start, length);
-            int strippedEnd = stripxEnd(source, start, length);
+            int strippedStart = stripxStart(source, start, end);
+            int strippedEnd = stripxEnd(source, start, end);
             if (this.removeEmpty && strippedStart >= strippedEnd)
             {
                 return null;
@@ -664,14 +659,13 @@ public final class Strings
         return isWholeNumber(s, 0, s.length());
     }
 
-    public static boolean isWholeNumber(CharSequence s, int start, int length)
+    public static boolean isWholeNumber(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return false;
         }
 
-        int end = start + length;
         int digitsStart = (s.charAt(start) == '-' || s.charAt(start) == '+') ? start + 1 : start;
 
         boolean hasDigit = false;
@@ -696,9 +690,9 @@ public final class Strings
         return s != null && isInt(s, 0, s.length());
     }
 
-    public static boolean isInt(CharSequence s, int start, int length)
+    public static boolean isInt(CharSequence s, int start, int end)
     {
-        return isBoundedWholeNumber(s, start, length, "2147483647", "2147483648");
+        return isBoundedWholeNumber(s, start, end, "2147483647", "2147483648");
     }
 
     public static boolean isLong(CharSequence s)
@@ -706,9 +700,9 @@ public final class Strings
         return s != null && isLong(s, 0, s.length());
     }
 
-    public static boolean isLong(CharSequence s, int start, int length)
+    public static boolean isLong(CharSequence s, int start, int end)
     {
-        return isBoundedWholeNumber(s, start, length, "9223372036854775807", "9223372036854775808");
+        return isBoundedWholeNumber(s, start, end, "9223372036854775807", "9223372036854775808");
     }
 
     public static boolean isDouble(CharSequence s)
@@ -716,14 +710,13 @@ public final class Strings
         return s != null && isDouble(s, 0, s.length());
     }
 
-    public static boolean isDouble(CharSequence s, int start, int length)
+    public static boolean isDouble(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return false;
         }
 
-        int end = start + length;
         int i = start;
         char first = s.charAt(i);
         if (first == '-' || first == '+')
@@ -788,18 +781,18 @@ public final class Strings
         {
             return null;
         }
-        int length = s.length();
-        if (length <= 0)
+        int end = s.length();
+        if (end <= 0)
         {
             return "";
         }
-        int strippedStart = stripStart(s, 0, length);
-        int strippedEnd = stripEnd(s, 0, length);
+        int strippedStart = stripStart(s, 0, end);
+        int strippedEnd = stripEnd(s, 0, end);
         if (strippedStart >= strippedEnd)
         {
             return "";
         }
-        if (strippedStart == 0 && strippedEnd == length)
+        if (strippedStart == 0 && strippedEnd == end)
         {
             return s;
         }
@@ -819,11 +812,11 @@ public final class Strings
      * Typical usage:
      * 
      * <pre>{@code
-     * int strippedOffset = Strings.stripStart(s, offset, length);
-     * int strippedEnd = Strings.stripEnd(s, offset, length);
-     * if (strippedOffset < strippedEnd)
+     * int strippedStart = Strings.stripStart(s, start, end);
+     * int strippedEnd = Strings.stripEnd(s, start, end);
+     * if (strippedStart < strippedEnd)
      * {
-     *     CharSequence candidate = s.subSequence(strippedOffset, strippedEnd);
+     *     CharSequence candidate = s.subSequence(strippedStart, strippedEnd);
      * }
      * }</pre>
      * <p>
@@ -831,14 +824,13 @@ public final class Strings
      * {@code strip(CharSequence, int, int)} helper for low-level parsing, because
      * it lets the caller keep control of whether a new view object is created.
      */
-    public static int stripStart(CharSequence s, int start, int length)
+    public static int stripStart(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return start;
         }
         int strippedStart = start;
-        int end = start + length;
         while (strippedStart < end && Character.isWhitespace(s.charAt(strippedStart)))
         {
             ++strippedStart;
@@ -860,13 +852,13 @@ public final class Strings
      *
      * @see #stripStart(CharSequence, int, int)
      */
-    public static int stripEnd(CharSequence s, int start, int length)
+    public static int stripEnd(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return start;
         }
-        int strippedEnd = start + length;
+        int strippedEnd = end;
         while (strippedEnd > start && Character.isWhitespace(s.charAt(strippedEnd - 1)))
         {
             --strippedEnd;
@@ -895,25 +887,25 @@ public final class Strings
         return s == null ? null : stripx(s, 0, s.length());
     }
 
-    public static CharSequence stripx(CharSequence s, int start, int length)
+    public static CharSequence stripx(CharSequence s, int start, int end)
     {
         if (s == null)
         {
             return null;
         }
-        if (length <= 0)
+        if (start >= end)
         {
             return "";
         }
 
-        int end = start + length - 1;
-        if (!isStrippable(s.charAt(start)) && !isStrippable(s.charAt(end)))
+        int last = end - 1;
+        if (!isStrippable(s.charAt(start)) && !isStrippable(s.charAt(last)))
         {
-            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+            return start == 0 && end == s.length() ? s : s.subSequence(start, end);
         }
 
         int actualStart = start;
-        int actualEnd = end;
+        int actualEnd = last;
 
         while (actualStart <= actualEnd && isStrippable(s.charAt(actualStart)))
         {
@@ -929,9 +921,9 @@ public final class Strings
         {
             return "";
         }
-        if (actualStart == start && actualEnd == end)
+        if (actualStart == start && actualEnd == last)
         {
-            return start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+            return start == 0 && end == s.length() ? s : s.subSequence(start, end);
         }
         return s.subSequence(actualStart, actualEnd + 1);
     }
@@ -1013,30 +1005,29 @@ public final class Strings
         return s == null ? null : removeDiacritics(s, 0, s.length());
     }
 
-    public static CharSequence removeDiacritics(CharSequence s, int start, int length)
+    public static CharSequence removeDiacritics(CharSequence s, int start, int end)
     {
         if (s == null)
         {
             return null;
         }
-        if (length <= 0)
+        if (start >= end)
         {
             return "";
         }
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             if (s.charAt(i) > 127)
             {
-                return removeDiacriticsSlow(s, start, length);
+                return removeDiacriticsSlow(s, start, end);
             }
         }
-        return start == 0 && length == s.length() ? s : s.subSequence(start, end);
+        return start == 0 && end == s.length() ? s : s.subSequence(start, end);
     }
 
-    private static String removeDiacriticsSlow(CharSequence s, int start, int length)
+    private static String removeDiacriticsSlow(CharSequence s, int start, int end)
     {
-        CharSequence source = start == 0 && length == s.length() ? s : s.subSequence(start, start + length);
+        CharSequence source = start == 0 && end == s.length() ? s : s.subSequence(start, end);
         String normalized = Normalizer.normalize(source, Normalizer.Form.NFKD);
         StringBuilder out = null;
         for (int i = 0; i < normalized.length(); ++i)
@@ -1066,14 +1057,13 @@ public final class Strings
                 || type == Character.ENCLOSING_MARK;
     }
 
-    private static int stripxStart(CharSequence s, int start, int length)
+    private static int stripxStart(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return start;
         }
         int strippedStart = start;
-        int end = start + length;
         while (strippedStart < end && isStrippable(s.charAt(strippedStart)))
         {
             ++strippedStart;
@@ -1081,13 +1071,13 @@ public final class Strings
         return strippedStart;
     }
 
-    private static int stripxEnd(CharSequence s, int start, int length)
+    private static int stripxEnd(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return start;
         }
-        int strippedEnd = start + length;
+        int strippedEnd = end;
         while (strippedEnd > start && isStrippable(s.charAt(strippedEnd - 1)))
         {
             --strippedEnd;
@@ -1101,14 +1091,13 @@ public final class Strings
                 || c == '\uFEFF' || c == '\uFFFD';
     }
 
-    private static int indexOfAny2(CharSequence s, int start, int length, char c1, char c2)
+    private static int indexOfAny2(CharSequence s, int start, int end, char c1, char c2)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return -1;
         }
 
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             char c = s.charAt(i);
@@ -1120,14 +1109,13 @@ public final class Strings
         return -1;
     }
 
-    private static int indexOfAny3(CharSequence s, int start, int length, char c1, char c2, char c3)
+    private static int indexOfAny3(CharSequence s, int start, int end, char c1, char c2, char c3)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return -1;
         }
 
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             char c = s.charAt(i);
@@ -1139,14 +1127,13 @@ public final class Strings
         return -1;
     }
 
-    private static int indexOfAny4(CharSequence s, int start, int length, char c1, char c2, char c3, char c4)
+    private static int indexOfAny4(CharSequence s, int start, int end, char c1, char c2, char c3, char c4)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return -1;
         }
 
-        int end = start + length;
         for (int i = start; i < end; ++i)
         {
             char c = s.charAt(i);
@@ -1170,17 +1157,17 @@ public final class Strings
         return false;
     }
 
-    private static boolean isBoundedWholeNumber(CharSequence s, int start, int length, String positiveBound,
+    private static boolean isBoundedWholeNumber(CharSequence s, int start, int end, String positiveBound,
             String negativeMagnitudeBound)
     {
-        if (!isWholeNumber(s, start, length))
+        if (!isWholeNumber(s, start, end))
         {
             return false;
         }
 
         boolean negative = s.charAt(start) == '-';
         int digitsStart = (negative || s.charAt(start) == '+') ? start + 1 : start;
-        int digits = length - (digitsStart - start);
+        int digits = end - digitsStart;
         String bound = negative ? negativeMagnitudeBound : positiveBound;
 
         if (digits < bound.length())

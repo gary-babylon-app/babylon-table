@@ -29,13 +29,16 @@ import static app.babylon.table.transform.dsl.TransformDslWords.CONVERT;
 import static app.babylon.table.transform.dsl.TransformDslWords.COPY;
 import static app.babylon.table.transform.dsl.TransformDslWords.DEFAULT;
 import static app.babylon.table.transform.dsl.TransformDslWords.DIVIDE;
+import static app.babylon.table.transform.dsl.TransformDslWords.DROP;
 import static app.babylon.table.transform.dsl.TransformDslWords.ELSE;
 import static app.babylon.table.transform.dsl.TransformDslWords.EXTRACT;
 import static app.babylon.table.transform.dsl.TransformDslWords.FLAG;
+import static app.babylon.table.transform.dsl.TransformDslWords.FIRST;
 import static app.babylon.table.transform.dsl.TransformDslWords.FROM;
 import static app.babylon.table.transform.dsl.TransformDslWords.IN;
 import static app.babylon.table.transform.dsl.TransformDslWords.INTO;
 import static app.babylon.table.transform.dsl.TransformDslWords.LEFT;
+import static app.babylon.table.transform.dsl.TransformDslWords.LAST;
 import static app.babylon.table.transform.dsl.TransformDslWords.LOWERCASE;
 import static app.babylon.table.transform.dsl.TransformDslWords.MATCHING;
 import static app.babylon.table.transform.dsl.TransformDslWords.MULTIPLY;
@@ -80,6 +83,7 @@ import static app.babylon.table.transform.dsl.TransformDslWords.UPPERCASE;
 import static app.babylon.table.transform.dsl.TransformDslWords.USING;
 import static app.babylon.table.transform.dsl.TransformDslWords.WHEN;
 import static app.babylon.table.transform.dsl.TransformDslWords.WITH;
+import static app.babylon.table.transform.dsl.TransformDslWords.WORD;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -119,6 +123,7 @@ import app.babylon.table.transform.TransformCopy;
 import app.babylon.table.transform.TransformConstant;
 import app.babylon.table.transform.TransformDecimalBinaryOperator.Operand;
 import app.babylon.table.transform.TransformDivide;
+import app.babylon.table.transform.TransformDropWord;
 import app.babylon.table.transform.TransformExtract;
 import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
@@ -184,6 +189,7 @@ public final class TransformDslParser
         parsers.put(COALESCE, TransformDslParser::parseCoalesce);
         parsers.put(COPY, TransformDslParser::parseCopy);
         parsers.put(DIVIDE, TransformDslParser::parseDivide);
+        parsers.put(DROP, TransformDslParser::parseDrop);
         parsers.put(EXTRACT, TransformDslParser::parseExtract);
         parsers.put(FLAG, TransformDslParser::parseFlag);
         parsers.put(LOWERCASE, TransformDslParser::parseLowercase);
@@ -698,6 +704,29 @@ public final class TransformDslParser
         tokens.expectWord(INTO);
         String target = tokens.expectValue();
         return TransformDivide.of(left, right, ColumnName.of(target));
+    }
+
+    private static Transform parseDrop(TokenStream tokens)
+    {
+        TransformDropWord.Position position;
+        if (tokens.matchWord(FIRST))
+        {
+            position = TransformDropWord.Position.FIRST;
+        }
+        else if (tokens.matchWord(LAST))
+        {
+            position = TransformDropWord.Position.LAST;
+        }
+        else
+        {
+            tokens.expectWord(FIRST);
+            return null;
+        }
+        tokens.expectWord(WORD);
+        tokens.expectWord(FROM);
+        String source = tokens.expectValue();
+        String target = optionalInto(tokens, source);
+        return TransformDropWord.of(ColumnName.of(source), columnName(target), position);
     }
 
     private static Transform parseExtract(TokenStream tokens)

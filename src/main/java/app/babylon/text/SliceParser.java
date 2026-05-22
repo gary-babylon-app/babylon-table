@@ -37,11 +37,11 @@ public interface SliceParser<T> extends Function<CharSequence, T>
      *            the source characters
      * @param start
      *            the first character in the slice
-     * @param length
-     *            the number of characters in the slice
+     * @param end
+     *            one past the last character in the slice
      * @return the parsed value, or {@code null} when parsing fails
      */
-    T parse(CharSequence s, int start, int length);
+    T parse(CharSequence s, int start, int end);
 
     /**
      * Parses the whole character sequence.
@@ -60,15 +60,15 @@ public interface SliceParser<T> extends Function<CharSequence, T>
     /**
      * Adapts an existing whole-sequence parser. This compatibility path may create
      * a {@link CharSequence#subSequence(int, int)} view for sliced inputs; parsers
-     * that can consume offsets directly should implement
+     * that can consume start/end bounds directly should implement
      * {@link #parse(CharSequence, int, int)} instead.
      */
     static <T> SliceParser<T> from(Function<CharSequence, T> parser)
     {
         if (parser == null)
         {
-            return (s, start, length) -> null;
+            return (s, start, end) -> null;
         }
-        return (s, start, length) -> parser.apply(s == null ? null : s.subSequence(start, start + length));
+        return (s, start, end) -> parser.apply(s == null ? null : s.subSequence(start, end));
     }
 }

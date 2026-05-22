@@ -55,7 +55,7 @@ class AccumulatorDoubleTest
         AccumulatorDouble accumulator = new AccumulatorDouble();
         String chars = "xx12.5yy";
 
-        accumulator.accept(chars, 2, 4);
+        accumulator.accept(chars, 2, 6);
 
         assertEquals(1L, accumulator.getCount());
         assertEquals(12.5d, accumulator.getMin());

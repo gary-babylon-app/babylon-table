@@ -37,10 +37,10 @@ class BooleansTest
     @Test
     void shouldRecogniseBooleanSlices()
     {
-        assertTrue(Booleans.isBooleanTrue("xxtrueyy", 2, 4));
-        assertTrue(Booleans.isBooleanTrue("xxTyy", 2, 1));
-        assertTrue(Booleans.isBooleanFalse("xxfalseyy", 2, 5));
-        assertTrue(Booleans.isBooleanFalse("xx0yy", 2, 1));
+        assertTrue(Booleans.isBooleanTrue("xxtrueyy", 2, 6));
+        assertTrue(Booleans.isBooleanTrue("xxTyy", 2, 3));
+        assertTrue(Booleans.isBooleanFalse("xxfalseyy", 2, 7));
+        assertTrue(Booleans.isBooleanFalse("xx0yy", 2, 3));
     }
 
     @Test

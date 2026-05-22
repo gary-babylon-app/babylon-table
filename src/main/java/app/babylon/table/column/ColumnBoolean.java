@@ -44,15 +44,15 @@ public interface ColumnBoolean extends Column
         Builder add(boolean x);
 
         @Override
-        default Builder add(CharSequence chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int end)
         {
-            return add(ParseMode.EXACT, chars, start, length);
+            return add(ParseMode.EXACT, chars, start, end);
         }
 
         @Override
-        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
-            if (chars == null || length == 0)
+            if (chars == null || start >= end)
             {
                 return addNull();
             }
@@ -61,14 +61,14 @@ public interface ColumnBoolean extends Column
             {
                 try
                 {
-                    return add(parser.parseBoolean(chars, start, length));
+                    return add(parser.parseBoolean(chars, start, end));
                 }
                 catch (IllegalArgumentException e)
                 {
                     return addNull();
                 }
             }
-            Boolean value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, length);
+            Boolean value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, end);
             return value == null ? addNull() : add(value.booleanValue());
         }
 

@@ -51,13 +51,13 @@ public final class ColumnName implements Comparable<ColumnName>
         return of(s, 0, s.length());
     }
 
-    public static ColumnName of(CharSequence s, int start, int length)
+    public static ColumnName of(CharSequence s, int start, int end)
     {
-        if (Strings.isStripxEmpty(s, start, length))
+        if (Strings.isStripxEmpty(s, start, end))
         {
             throw new RuntimeException("Empty string for column name.");
         }
-        return new ColumnName(s, start, length);
+        return new ColumnName(s, start, end);
     }
 
     /**
@@ -72,9 +72,9 @@ public final class ColumnName implements Comparable<ColumnName>
         return s == null ? null : parse(s, 0, s.length());
     }
 
-    public static ColumnName parse(CharSequence s, int start, int length)
+    public static ColumnName parse(CharSequence s, int start, int end)
     {
-        return Strings.isStripxEmpty(s, start, length) ? null : of(s, start, length);
+        return Strings.isStripxEmpty(s, start, end) ? null : of(s, start, end);
     }
 
     /**
@@ -134,29 +134,29 @@ public final class ColumnName implements Comparable<ColumnName>
         return c;
     }
 
-    private ColumnName(CharSequence input, int start, int length)
+    private ColumnName(CharSequence input, int start, int end)
     {
-        String tokens = normalizeForTokens(input, start, length);
+        String tokens = normalizeForTokens(input, start, end);
         this.value = ArgumentCheck.nonEmpty(Strings.toCamelUpperPreserve(tokens).toString());
-        this.canonical = ArgumentCheck.nonEmpty(buildCanonicalKey(input, start, length));
+        this.canonical = ArgumentCheck.nonEmpty(buildCanonicalKey(input, start, end));
     }
 
-    private static String normalizeForTokens(CharSequence s, int start, int length)
+    private static String normalizeForTokens(CharSequence s, int start, int end)
     {
         if (s == null)
         {
             return "";
         }
-        return Strings.removeDiacritics(Strings.stripx(s, start, length)).toString();
+        return Strings.removeDiacritics(Strings.stripx(s, start, end)).toString();
     }
 
-    private static String buildCanonicalKey(CharSequence s, int start, int length)
+    private static String buildCanonicalKey(CharSequence s, int start, int end)
     {
-        if (Strings.isStripxEmpty(s, start, length))
+        if (Strings.isStripxEmpty(s, start, end))
         {
             return "";
         }
-        CharSequence n = Strings.removeDiacritics(s, start, length);
+        CharSequence n = Strings.removeDiacritics(s, start, end);
         StringBuilder out = new StringBuilder(n.length());
         for (int i = 0; i < n.length(); i++)
         {

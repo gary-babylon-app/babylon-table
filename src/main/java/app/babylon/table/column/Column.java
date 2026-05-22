@@ -123,14 +123,14 @@ public interface Column
          * @param chars
          *            the source text
          * @param start
-         *            the start offset
-         * @param length
-         *            the slice length
+         *            the start index
+         * @param end
+         *            one past the last character in the slice
          * @return this builder
          */
-        default Builder add(CharSequence chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int end)
         {
-            return add(ParseMode.EXACT, chars, start, length);
+            return add(ParseMode.EXACT, chars, start, end);
         }
 
         /**
@@ -157,12 +157,12 @@ public interface Column
          * @param chars
          *            the source text
          * @param start
-         *            the start offset
-         * @param length
-         *            the slice length
+         *            the start index
+         * @param end
+         *            one past the last character in the slice
          * @return this builder
          */
-        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             throw new UnsupportedOperationException("Character-slice add not supported by " + getClass().getName());
         }

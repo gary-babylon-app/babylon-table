@@ -23,8 +23,7 @@ class TypeParserTest
     @Test
     void defaultPrimitiveParsersShouldWorkForCharSequence()
     {
-        TypeParser<String> parser = (s, offset,
-                length) -> s == null ? null : s.subSequence(offset, offset + length).toString().trim();
+        TypeParser<String> parser = (s, start, end) -> s == null ? null : s.subSequence(start, end).toString().trim();
 
         assertEquals("Alpha", parser.parse(" Alpha "));
         assertEquals((byte) 12, parser.parseByte("12"));
@@ -36,14 +35,14 @@ class TypeParserTest
     @Test
     void defaultPrimitiveParsersShouldWorkForCharSlice()
     {
-        TypeParser<String> parser = (s, offset, length) -> s.subSequence(offset, offset + length).toString();
+        TypeParser<String> parser = (s, start, end) -> s.subSequence(start, end).toString();
         String chars = "xx-12|345|6789012345|9.75|Beta-yy";
 
-        assertEquals((byte) -12, parser.parseByte(chars, 2, 3));
-        assertEquals(345, parser.parseInt(chars, 6, 3));
-        assertEquals(6789012345L, parser.parseLong(chars, 10, 10));
-        assertEquals(9.75d, parser.parseDouble(chars, 21, 4));
-        assertEquals("Beta", parser.parse(chars, 26, 4));
+        assertEquals((byte) -12, parser.parseByte(chars, 2, 5));
+        assertEquals(345, parser.parseInt(chars, 6, 9));
+        assertEquals(6789012345L, parser.parseLong(chars, 10, 20));
+        assertEquals(9.75d, parser.parseDouble(chars, 21, 25));
+        assertEquals("Beta", parser.parse(chars, 26, 30));
     }
 
     @Test
@@ -53,7 +52,7 @@ class TypeParserTest
         String chars = "xx1234.50yy";
 
         assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse("1234.50")));
-        assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse(chars, 2, 7)));
+        assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse(chars, 2, 9)));
         assertNull(parser.parse("not-a-decimal"));
         assertNull(parser.parse(chars, 0, 2));
     }
@@ -65,7 +64,7 @@ class TypeParserTest
         assertEquals(Integer.valueOf(345), TypeParsers.INT.parse("345"));
         assertEquals(Long.valueOf(6789012345L), TypeParsers.LONG.parse("6789012345"));
         assertEquals(Double.valueOf(9.75d), TypeParsers.DOUBLE.parse("9.75"));
-        assertEquals(Integer.valueOf(345), TypeParsers.INT.parse("xx345yy", 2, 3));
+        assertEquals(Integer.valueOf(345), TypeParsers.INT.parse("xx345yy", 2, 5));
         assertNull(TypeParsers.INT.parse(""));
         assertNull(TypeParsers.LONG.parse((CharSequence) null));
     }
@@ -77,7 +76,7 @@ class TypeParserTest
         String chars = "xx2024-03-15yy";
 
         assertEquals(LocalDate.of(2024, 3, 15), parser.parse("2024-03-15"));
-        assertEquals(LocalDate.of(2024, 3, 15), parser.parse(chars, 2, 10));
+        assertEquals(LocalDate.of(2024, 3, 15), parser.parse(chars, 2, 12));
         assertNull(parser.parse("not-a-date"));
         assertNull(parser.parse(chars, 0, 2));
     }
@@ -90,7 +89,7 @@ class TypeParserTest
         String chars = "xx2026-04-21T10:15:30Zyy";
 
         assertEquals(expected, parser.parse("2026-04-21T10:15:30Z"));
-        assertEquals(expected, parser.parse(chars, 2, 20));
+        assertEquals(expected, parser.parse(chars, 2, 22));
         assertNull(parser.parse("not-an-instant"));
     }
 
@@ -102,7 +101,7 @@ class TypeParserTest
         String chars = "xx 2026-04-21T10:15:30Z yy";
 
         assertEquals(expected, parser.parse(" 2026-04-21T10:15:30Z "));
-        assertEquals(expected, parser.parse(chars, 2, 22));
+        assertEquals(expected, parser.parse(chars, 2, 24));
     }
 
     @Test
@@ -113,7 +112,7 @@ class TypeParserTest
         String chars = "xx2026-04-21T10:15:30yy";
 
         assertEquals(expected, parser.parse("2026-04-21T10:15:30"));
-        assertEquals(expected, parser.parse(chars, 2, 19));
+        assertEquals(expected, parser.parse(chars, 2, 21));
         assertNull(parser.parse("not-a-local-date-time"));
     }
 
@@ -125,7 +124,7 @@ class TypeParserTest
         String chars = "xx 2026-04-21T10:15:30 yy";
 
         assertEquals(expected, parser.parse(" 2026-04-21T10:15:30 "));
-        assertEquals(expected, parser.parse(chars, 2, 21));
+        assertEquals(expected, parser.parse(chars, 2, 23));
     }
 
     @Test
@@ -136,7 +135,7 @@ class TypeParserTest
         String chars = "xx10:15:30yy";
 
         assertEquals(expected, parser.parse("10:15:30"));
-        assertEquals(expected, parser.parse(chars, 2, 8));
+        assertEquals(expected, parser.parse(chars, 2, 10));
         assertNull(parser.parse("not-a-local-time"));
     }
 
@@ -148,7 +147,7 @@ class TypeParserTest
         String chars = "xx 10:15:30 yy";
 
         assertEquals(expected, parser.parse(" 10:15:30 "));
-        assertEquals(expected, parser.parse(chars, 2, 10));
+        assertEquals(expected, parser.parse(chars, 2, 12));
     }
 
     @Test
@@ -159,7 +158,7 @@ class TypeParserTest
         String chars = "xx2026-04-21T10:15:30Zyy";
 
         assertEquals(expected, parser.parse("2026-04-21T10:15:30Z"));
-        assertEquals(expected, parser.parse(chars, 2, 20));
+        assertEquals(expected, parser.parse(chars, 2, 22));
         assertNull(parser.parse("not-an-offset-date-time"));
     }
 
@@ -171,7 +170,7 @@ class TypeParserTest
         String chars = "xx 2026-04-21T10:15:30Z yy";
 
         assertEquals(expected, parser.parse(" 2026-04-21T10:15:30Z "));
-        assertEquals(expected, parser.parse(chars, 2, 22));
+        assertEquals(expected, parser.parse(chars, 2, 24));
     }
 
     @Test
@@ -182,7 +181,7 @@ class TypeParserTest
         String chars = "xx2026-04yy";
 
         assertEquals(expected, parser.parse("2026-04"));
-        assertEquals(expected, parser.parse(chars, 2, 7));
+        assertEquals(expected, parser.parse(chars, 2, 9));
         assertNull(parser.parse("not-a-year-month"));
     }
 
@@ -194,7 +193,7 @@ class TypeParserTest
         String chars = "xx 2026-04 yy";
 
         assertEquals(expected, parser.parse(" 2026-04 "));
-        assertEquals(expected, parser.parse(chars, 2, 9));
+        assertEquals(expected, parser.parse(chars, 2, 11));
     }
 
     @Test
@@ -211,7 +210,7 @@ class TypeParserTest
         assertEquals(Period.ofYears(1), parser.parse("1y"));
         assertEquals(Period.ofMonths(-3), parser.parse("-P3M"));
         assertEquals(Period.ofMonths(-3), parser.parse("-3M"));
-        assertEquals(Period.ofDays(10), parser.parse("xx10Dyy", 2, 3));
+        assertEquals(Period.ofDays(10), parser.parse("xx10Dyy", 2, 5));
         assertNull(parser.parse("not-a-period"));
     }
 
@@ -224,7 +223,7 @@ class TypeParserTest
         assertEquals(Period.ofMonths(3), parser.parse(" 3M "));
         assertEquals(Period.ofMonths(3), parser.parse(" P3M "));
         assertEquals(Period.ofMonths(-3), parser.parse(" -P3M "));
-        assertEquals(Period.ofMonths(3), parser.parse(chars, 2, 4));
+        assertEquals(Period.ofMonths(3), parser.parse(chars, 2, 6));
     }
 
     @Test
@@ -236,9 +235,9 @@ class TypeParserTest
         String ukChars = "xx15/03/2024yy";
 
         assertEquals(LocalDate.of(2024, 3, 15), usParser.parse("03/15/2024"));
-        assertEquals(LocalDate.of(2024, 3, 15), usParser.parse(usChars, 2, 10));
+        assertEquals(LocalDate.of(2024, 3, 15), usParser.parse(usChars, 2, 12));
         assertEquals(LocalDate.of(2024, 3, 15), ukParser.parse("15/03/2024"));
-        assertEquals(LocalDate.of(2024, 3, 15), ukParser.parse(ukChars, 2, 10));
+        assertEquals(LocalDate.of(2024, 3, 15), ukParser.parse(ukChars, 2, 12));
         assertNull(usParser.parse("15/03/2024"));
         assertNull(ukParser.parse("03/15/2024"));
     }
@@ -251,7 +250,7 @@ class TypeParserTest
 
         assertSame(Currency.getInstance("USD"), parser.parse("USD"));
         assertSame(Currency.getInstance("EUR"), parser.parse(" eur "));
-        assertSame(Currency.getInstance("USD"), parser.parse(chars, 2, 5));
+        assertSame(Currency.getInstance("USD"), parser.parse(chars, 2, 7));
         assertSame(Currency.getInstance("ZAR"), parser.parse("zar"));
         assertSame(Currency.getInstance("SEK"), parser.parse("SEK"));
         assertSame(Currency.getInstance("NOK"), parser.parse("nok"));

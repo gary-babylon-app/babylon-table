@@ -44,23 +44,23 @@ public interface ColumnInt extends Column
         Builder add(int x);
 
         @Override
-        default Builder add(CharSequence chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int end)
         {
-            return add(ParseMode.EXACT, chars, start, length);
+            return add(ParseMode.EXACT, chars, start, end);
         }
 
         @Override
-        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                if (!Strings.isInt(chars, start, length))
+                if (!Strings.isInt(chars, start, end))
                 {
                     return addNull();
                 }
                 try
                 {
-                    return add(Integer.parseInt(chars, start, start + length, 10));
+                    return add(Integer.parseInt(chars, start, end, 10));
                 }
                 catch (NumberFormatException e)
                 {
@@ -70,7 +70,7 @@ public interface ColumnInt extends Column
             else
             {
                 TypeParser<Integer> parser = parser();
-                Integer value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, length);
+                Integer value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, end);
                 return value == null ? addNull() : add(value.intValue());
             }
         }

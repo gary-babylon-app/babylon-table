@@ -16,14 +16,14 @@ final class RowProjectedStripped implements RowProjected
 {
     private final int[] projectedIndexes;
     private final int[] starts;
-    private final int[] lengths;
+    private final int[] ends;
     private Row source;
 
     public RowProjectedStripped(int[] projectedIndexes)
     {
         this.projectedIndexes = ArgumentCheck.nonNull(projectedIndexes, "projectedIndexes must not be null");
         this.starts = new int[projectedIndexes.length];
-        this.lengths = new int[projectedIndexes.length];
+        this.ends = new int[projectedIndexes.length];
     }
 
     @Override
@@ -38,11 +38,11 @@ final class RowProjectedStripped implements RowProjected
             if (sourceIndex >= sourceFieldCount)
             {
                 this.starts[i] = sourceEnd;
-                this.lengths[i] = 0;
+                this.ends[i] = sourceEnd;
                 continue;
             }
             int start = source.start(sourceIndex);
-            int end = start + source.length(sourceIndex);
+            int end = source.end(sourceIndex);
             while (start < end && Character.isWhitespace(source.charAt(start)))
             {
                 ++start;
@@ -52,7 +52,7 @@ final class RowProjectedStripped implements RowProjected
                 --end;
             }
             this.starts[i] = start;
-            this.lengths[i] = end - start;
+            this.ends[i] = end;
         }
         return this;
     }
@@ -79,7 +79,7 @@ final class RowProjectedStripped implements RowProjected
     @Override
     public boolean isSet(int fieldIndex)
     {
-        return this.lengths[fieldIndex] > 0;
+        return end(fieldIndex) > start(fieldIndex);
     }
 
     @Override
@@ -101,9 +101,9 @@ final class RowProjectedStripped implements RowProjected
     }
 
     @Override
-    public int length(int fieldIndex)
+    public int end(int fieldIndex)
     {
-        return this.lengths[fieldIndex];
+        return this.ends[fieldIndex];
     }
 
     @Override
@@ -119,10 +119,10 @@ final class RowProjectedStripped implements RowProjected
         for (int i = 0; i < size(); ++i)
         {
             int start = this.starts[i];
-            int length = this.lengths[i];
-            for (int j = 0; j < length; ++j)
+            int end = this.ends[i];
+            for (int j = start; j < end; ++j)
             {
-                copy.append(charAt(start + j));
+                copy.append(charAt(j));
             }
             copy.finishField();
         }

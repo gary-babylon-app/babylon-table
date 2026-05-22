@@ -25,9 +25,9 @@ public final class Booleans
         return s != null && isBooleanTrue(s, 0, s.length());
     }
 
-    public static boolean isBooleanTrue(CharSequence s, int offset, int length)
+    public static boolean isBooleanTrue(CharSequence s, int start, int end)
     {
-        return parseBooleanValue(s, offset, length) == TRUE;
+        return parseBooleanValue(s, start, end) == TRUE;
     }
 
     public static boolean isBooleanFalse(CharSequence s)
@@ -35,31 +35,32 @@ public final class Booleans
         return s != null && isBooleanFalse(s, 0, s.length());
     }
 
-    public static boolean isBooleanFalse(CharSequence s, int offset, int length)
+    public static boolean isBooleanFalse(CharSequence s, int start, int end)
     {
-        return parseBooleanValue(s, offset, length) == FALSE;
+        return parseBooleanValue(s, start, end) == FALSE;
     }
 
-    public static byte parseBooleanValue(CharSequence s, int offset, int length)
+    public static byte parseBooleanValue(CharSequence s, int start, int end)
     {
-        if (s == null || length <= 0)
+        if (s == null || start >= end)
         {
             return UNPARSED;
         }
+        int length = end - start;
         if (length == 1)
         {
-            return switch (s.charAt(offset))
+            return switch (s.charAt(start))
             {
                 case 'T', 't', '1' -> TRUE;
                 case 'F', 'f', '0' -> FALSE;
                 default -> UNPARSED;
             };
         }
-        if (Strings.equalsIgnoreCase(s, offset, length, "true"))
+        if (Strings.equalsIgnoreCase(s, start, end, "true"))
         {
             return TRUE;
         }
-        if (Strings.equalsIgnoreCase(s, offset, length, "false"))
+        if (Strings.equalsIgnoreCase(s, start, end, "false"))
         {
             return FALSE;
         }

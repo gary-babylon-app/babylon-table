@@ -87,6 +87,9 @@ public class TransformDslWriterTest
                 "take before '@' from Description as Decimal by lastIn into Quantity");
         assertFormat("take after '@' from Description as decimal by firstIn into Price",
                 "take after '@' from Description as Decimal by firstIn into Price");
+        assertFormat("drop first word from Description", "drop first word from Description");
+        assertFormat("drop last word from Description into CleanDescription",
+                "drop last word from Description into CleanDescription");
     }
 
     @Test

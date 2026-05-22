@@ -72,11 +72,11 @@ public class StringsTest
     @Test
     public void equalsShouldCompareWholeAndSlicedCharacterSequences()
     {
-        assertTrue(Strings.equals("xxtrueyy", 2, 4, "true"));
-        assertFalse(Strings.equals("xxTrueyy", 2, 4, "true"));
-        assertTrue(Strings.equalsIgnoreCase("xxTrueyy", 2, 4, "true"));
-        assertTrue(Strings.equalsIgnoreCase("xxFALSEyy", 2, 5, "false"));
-        assertFalse(Strings.equalsIgnoreCase("xxfalseyy", 2, 4, "false"));
+        assertTrue(Strings.equals("xxtrueyy", 2, 6, "true"));
+        assertFalse(Strings.equals("xxTrueyy", 2, 6, "true"));
+        assertTrue(Strings.equalsIgnoreCase("xxTrueyy", 2, 6, "true"));
+        assertTrue(Strings.equalsIgnoreCase("xxFALSEyy", 2, 7, "false"));
+        assertFalse(Strings.equalsIgnoreCase("xxfalseyy", 2, 6, "false"));
         assertFalse(Strings.equalsIgnoreCase(null, 0, 4, "true"));
         assertFalse(Strings.equalsIgnoreCase("true", 0, 4, null));
     }
@@ -92,7 +92,7 @@ public class StringsTest
         assertTrue(Strings.isEmpty(null, 0, 3));
         assertTrue(Strings.isEmpty("abc", 1, 0));
         assertTrue(Strings.isEmpty("abc", 1, -1));
-        assertFalse(Strings.isEmpty("abc", 1, 1));
+        assertFalse(Strings.isEmpty("abc", 1, 2));
         assertFalse(Strings.isEmpty("   ", 0, 3));
     }
 
@@ -113,10 +113,10 @@ public class StringsTest
     {
         assertTrue(Strings.isStripxEmpty(null, 0, 1));
         assertTrue(Strings.isStripxEmpty("abc", 1, 0));
-        assertTrue(Strings.isStripxEmpty("xx  yy", 2, 2));
-        assertTrue(Strings.isStripxEmpty("xx\uFEFF\u00A0\u200Byy", 2, 3));
-        assertFalse(Strings.isStripxEmpty("xx ab yy", 2, 3));
-        assertFalse(Strings.isStripxEmpty("xxabc yy", 2, 3));
+        assertTrue(Strings.isStripxEmpty("xx  yy", 2, 4));
+        assertTrue(Strings.isStripxEmpty("xx\uFEFF\u00A0\u200Byy", 2, 5));
+        assertFalse(Strings.isStripxEmpty("xx ab yy", 2, 5));
+        assertFalse(Strings.isStripxEmpty("xxabc yy", 2, 5));
     }
 
     @Test
@@ -134,7 +134,7 @@ public class StringsTest
     {
         assertEquals(5, Strings.indexOf("trade-date", '-'));
         assertEquals(-1, Strings.indexOf("tradedate", '-'));
-        assertEquals(7, Strings.indexOf("xxtrade-dateyy", 2, 10, '-'));
+        assertEquals(7, Strings.indexOf("xxtrade-dateyy", 2, 12, '-'));
         assertEquals(-1, Strings.indexOf("xxtrade-dateyy", 0, 2, '-'));
         assertEquals(-1, Strings.indexOf(null, '-'));
     }
@@ -148,11 +148,11 @@ public class StringsTest
         assertEquals(5, Strings.indexOfAny("trade\ndate", ',', ';', '|', '\n'));
         assertEquals(5, Strings.indexOfAny("trade:date", ',', ';', '|', '\n', ':'));
 
-        assertEquals(7, Strings.indexOfAny("xxtrade,dateyy", 2, 10, ',', ';'));
-        assertEquals(7, Strings.indexOfAny("xxtrade;dateyy", 2, 10, ',', ';'));
-        assertEquals(7, Strings.indexOfAny("xxtrade|dateyy", 2, 10, ',', ';', '|'));
-        assertEquals(7, Strings.indexOfAny("xxtrade\ndateyy", 2, 10, ',', ';', '|', '\n'));
-        assertEquals(7, Strings.indexOfAny("xxtrade-dateyy", 2, 10, ',', ';', '|', '\n', '-'));
+        assertEquals(7, Strings.indexOfAny("xxtrade,dateyy", 2, 12, ',', ';'));
+        assertEquals(7, Strings.indexOfAny("xxtrade;dateyy", 2, 12, ',', ';'));
+        assertEquals(7, Strings.indexOfAny("xxtrade|dateyy", 2, 12, ',', ';', '|'));
+        assertEquals(7, Strings.indexOfAny("xxtrade\ndateyy", 2, 12, ',', ';', '|', '\n'));
+        assertEquals(7, Strings.indexOfAny("xxtrade-dateyy", 2, 12, ',', ';', '|', '\n', '-'));
 
         assertEquals(5, Strings.indexOfAny("trade,date", ','));
         assertEquals(-1, Strings.indexOfAny("tradedate", ',', ';'));
@@ -168,8 +168,8 @@ public class StringsTest
     {
         assertEquals(10, Strings.lastIndexOf("trade-date-end", '-'));
         assertEquals(-1, Strings.lastIndexOf("tradedate", '-'));
-        assertEquals(12, Strings.lastIndexOf("xxtrade-date-endyy", 2, 14, '-'));
-        assertEquals(7, Strings.lastIndexOf("xxtrade-date-endyy", 2, 10, '-'));
+        assertEquals(12, Strings.lastIndexOf("xxtrade-date-endyy", 2, 16, '-'));
+        assertEquals(7, Strings.lastIndexOf("xxtrade-date-endyy", 2, 12, '-'));
         assertEquals(-1, Strings.lastIndexOf(null, '-'));
     }
 
@@ -178,8 +178,8 @@ public class StringsTest
     {
         assertEquals(10, Strings.lastIndexOfAny("trade,date:end", ',', ';', ':'));
         assertEquals(5, Strings.lastIndexOfAny("trade,date", ','));
-        assertEquals(12, Strings.lastIndexOfAny("xxtrade,date:endyy", 2, 14, ',', ';', ':'));
-        assertEquals(7, Strings.lastIndexOfAny("xxtrade,date:endyy", 2, 10, ',', ';', ':'));
+        assertEquals(12, Strings.lastIndexOfAny("xxtrade,date:endyy", 2, 16, ',', ';', ':'));
+        assertEquals(7, Strings.lastIndexOfAny("xxtrade,date:endyy", 2, 12, ',', ';', ':'));
 
         assertEquals(-1, Strings.lastIndexOfAny("tradedate", ',', ';', ':'));
         assertEquals(-1, Strings.lastIndexOfAny("xxtrade,dateyy", 0, 2, ',', ';', ':'));
@@ -191,7 +191,7 @@ public class StringsTest
     {
         CharSequence s = "xx alpha, beta ,gamma yy";
 
-        assertEquals(bitSet(8, 15), Strings.trace(s, 3, 18, ','));
+        assertEquals(bitSet(8, 15), Strings.trace(s, 3, 21, ','));
     }
 
     @Test
@@ -215,7 +215,7 @@ public class StringsTest
     {
         CharSequence s = "xx2026-04/30yy";
 
-        assertEquals(bitSet(6, 9), Strings.traceAny(s, 2, 10, '-', '/'));
+        assertEquals(bitSet(6, 9), Strings.traceAny(s, 2, 12, '-', '/'));
     }
 
     @Test
@@ -257,7 +257,7 @@ public class StringsTest
     {
         assertTrue(Strings.trace(null, ',').isEmpty());
         assertTrue(Strings.trace("", ',').isEmpty());
-        assertTrue(Strings.trace("abc", 1, 0, ',').isEmpty());
+        assertTrue(Strings.trace("abc", 1, 1, ',').isEmpty());
     }
 
     @Test
@@ -327,9 +327,9 @@ public class StringsTest
     {
         CharSequence s = "xx a | b | c yy";
 
-        assertEquals(bitSet(5, 9), Strings.trace(s, 3, 9, '|'));
+        assertEquals(bitSet(5, 9), Strings.trace(s, 3, 12, '|'));
         assertArrayEquals(new String[]
-        {"a", "b", "c"}, Strings.splitter().withSplitter('|').split(s, 3, 9));
+        {"a", "b", "c"}, Strings.splitter().withSplitter('|').split(s, 3, 12));
     }
 
     @Test
@@ -378,16 +378,16 @@ public class StringsTest
     @Test
     public void isWholeNumberShouldRecogniseSignedDigitSlices()
     {
-        assertTrue(Strings.isWholeNumber("x123y", 1, 3));
-        assertTrue(Strings.isWholeNumber("x-123y", 1, 4));
-        assertTrue(Strings.isWholeNumber("x+123y", 1, 4));
+        assertTrue(Strings.isWholeNumber("x123y", 1, 4));
+        assertTrue(Strings.isWholeNumber("x-123y", 1, 5));
+        assertTrue(Strings.isWholeNumber("x+123y", 1, 5));
         assertTrue(Strings.isWholeNumber("123%", 0, 3));
         assertFalse(Strings.isWholeNumber(null, 0, 1));
         assertFalse(Strings.isWholeNumber("123", 0, 0));
-        assertFalse(Strings.isWholeNumber("x+y", 1, 1));
+        assertFalse(Strings.isWholeNumber("x+y", 1, 2));
         assertFalse(Strings.isWholeNumber("12.3%", 0, 4));
-        assertFalse(Strings.isWholeNumber("x12.3y", 1, 4));
-        assertFalse(Strings.isWholeNumber("x12 3y", 1, 4));
+        assertFalse(Strings.isWholeNumber("x12.3y", 1, 5));
+        assertFalse(Strings.isWholeNumber("x12 3y", 1, 5));
     }
 
     @Test
@@ -412,7 +412,7 @@ public class StringsTest
     public void isIntShouldRecogniseIntSlices()
     {
         assertTrue(Strings.isInt("2147483647%", 0, 10));
-        assertTrue(Strings.isInt("x-2147483648y", 1, 11));
+        assertTrue(Strings.isInt("x-2147483648y", 1, 12));
         assertFalse(Strings.isInt("2147483648%", 0, 10));
         assertFalse(Strings.isInt("12.3%", 0, 4));
     }
@@ -438,7 +438,7 @@ public class StringsTest
     public void isLongShouldRecogniseLongSlices()
     {
         assertTrue(Strings.isLong("9223372036854775807%", 0, 19));
-        assertTrue(Strings.isLong("x-9223372036854775808y", 1, 20));
+        assertTrue(Strings.isLong("x-9223372036854775808y", 1, 21));
         assertFalse(Strings.isLong("9223372036854775808%", 0, 19));
         assertFalse(Strings.isLong("12.3%", 0, 4));
     }
@@ -465,10 +465,10 @@ public class StringsTest
     @Test
     public void isDoubleShouldRecogniseStrictDoubleSlices()
     {
-        assertTrue(Strings.isDouble("xx-12.5e+2yy", 2, 8));
-        assertTrue(Strings.isDouble("xx.5yy", 2, 2));
-        assertFalse(Strings.isDouble("xx1,234yy", 2, 5));
-        assertFalse(Strings.isDouble("xx1eyy", 2, 2));
+        assertTrue(Strings.isDouble("xx-12.5e+2yy", 2, 10));
+        assertTrue(Strings.isDouble("xx.5yy", 2, 4));
+        assertFalse(Strings.isDouble("xx1,234yy", 2, 7));
+        assertFalse(Strings.isDouble("xx1eyy", 2, 4));
     }
 
     @Test
@@ -492,12 +492,12 @@ public class StringsTest
 
         assertEquals(0, Strings.stripStart(s, 0, 0));
         assertEquals(0, Strings.stripEnd(s, 0, 0));
-        assertEquals(4, Strings.stripStart(s, 2, 7));
-        assertEquals(7, Strings.stripEnd(s, 2, 7));
-        assertEquals(3, Strings.stripStart("xx\nabc\ryy", 2, 5));
-        assertEquals(6, Strings.stripEnd("xx\nabc\ryy", 2, 5));
-        assertEquals(2, Strings.stripStart("xx\uFEFFabc yy", 2, 5));
-        assertEquals(6, Strings.stripEnd("xx\uFEFFabc yy", 2, 5));
+        assertEquals(4, Strings.stripStart(s, 2, 9));
+        assertEquals(7, Strings.stripEnd(s, 2, 9));
+        assertEquals(3, Strings.stripStart("xx\nabc\ryy", 2, 7));
+        assertEquals(6, Strings.stripEnd("xx\nabc\ryy", 2, 7));
+        assertEquals(2, Strings.stripStart("xx\uFEFFabc yy", 2, 7));
+        assertEquals(6, Strings.stripEnd("xx\uFEFFabc yy", 2, 7));
     }
 
     @Test
@@ -520,7 +520,7 @@ public class StringsTest
 
         assertNull(Strings.removeDiacritics(null));
         assertSame(plain, Strings.removeDiacritics(plain));
-        assertEquals("Trade", Strings.removeDiacritics("xxTradeyy", 2, 5));
+        assertEquals("Trade", Strings.removeDiacritics("xxTradeyy", 2, 7));
         assertEquals("Cafe", Strings.removeDiacritics("Caf\u00E9"));
         assertEquals("Angstrom", Strings.removeDiacritics("\u00C5ngstr\u00F6m"));
         assertEquals("Sao Paulo", Strings.removeDiacritics("S\u00E3o Paulo"));

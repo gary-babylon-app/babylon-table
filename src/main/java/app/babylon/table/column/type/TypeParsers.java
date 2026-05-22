@@ -67,35 +67,35 @@ public final class TypeParsers
     private static final Period PERIOD_6M = Period.ofMonths(6);
     private static final Period PERIOD_12M = Period.ofMonths(12);
     private static final Period PERIOD_1Y = Period.ofYears(1);
-    public static final TypeParser<Object> NULL = (s, offset, length) -> null;
+    public static final TypeParser<Object> NULL = (s, start, end) -> null;
     public static final TypeParser<Boolean> BOOLEAN = new TypeParser<>()
     {
         @Override
-        public Boolean parse(CharSequence s, int offset, int length)
+        public Boolean parse(CharSequence s, int start, int end)
         {
-            if (Booleans.isBooleanTrue(s, offset, length))
+            if (Booleans.isBooleanTrue(s, start, end))
             {
                 return Boolean.TRUE;
             }
-            return Booleans.isBooleanFalse(s, offset, length) ? Boolean.FALSE : null;
+            return Booleans.isBooleanFalse(s, start, end) ? Boolean.FALSE : null;
         }
 
         @Override
-        public boolean parseBoolean(CharSequence s, int offset, int length)
+        public boolean parseBoolean(CharSequence s, int start, int end)
         {
-            if (Booleans.isBooleanTrue(s, offset, length))
+            if (Booleans.isBooleanTrue(s, start, end))
             {
                 return true;
             }
-            if (Booleans.isBooleanFalse(s, offset, length))
+            if (Booleans.isBooleanFalse(s, start, end))
             {
                 return false;
             }
-            throw new IllegalArgumentException("Could not parse boolean: " + s.subSequence(offset, offset + length));
+            throw new IllegalArgumentException("Could not parse boolean: " + s.subSequence(start, end));
         }
     };
-    public static final TypeParser<String> STRING = (s, offset,
-            length) -> s == null ? null : s.subSequence(offset, offset + length).toString();
+    public static final TypeParser<String> STRING = (s, start,
+            end) -> s == null ? null : s.subSequence(start, end).toString();
     public static final TypeParser<Byte> BYTE = new TypeParser<>()
     {
         @Override
@@ -116,15 +116,15 @@ public final class TypeParsers
         }
 
         @Override
-        public Byte parse(CharSequence s, int offset, int length)
+        public Byte parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0 || !Strings.isInt(s, offset, length))
+            if (s == null || start >= end || !Strings.isInt(s, start, end))
             {
                 return null;
             }
             try
             {
-                return Byte.valueOf(parseByte(s, offset, length));
+                return Byte.valueOf(parseByte(s, start, end));
             }
             catch (RuntimeException e)
             {
@@ -152,15 +152,15 @@ public final class TypeParsers
         }
 
         @Override
-        public Integer parse(CharSequence s, int offset, int length)
+        public Integer parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0 || !Strings.isInt(s, offset, length))
+            if (s == null || start >= end || !Strings.isInt(s, start, end))
             {
                 return null;
             }
             try
             {
-                return Integer.valueOf(parseInt(s, offset, length));
+                return Integer.valueOf(parseInt(s, start, end));
             }
             catch (RuntimeException e)
             {
@@ -188,15 +188,15 @@ public final class TypeParsers
         }
 
         @Override
-        public Long parse(CharSequence s, int offset, int length)
+        public Long parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0 || !Strings.isLong(s, offset, length))
+            if (s == null || start >= end || !Strings.isLong(s, start, end))
             {
                 return null;
             }
             try
             {
-                return Long.valueOf(parseLong(s, offset, length));
+                return Long.valueOf(parseLong(s, start, end));
             }
             catch (RuntimeException e)
             {
@@ -213,13 +213,13 @@ public final class TypeParsers
         }
 
         @Override
-        public Double parse(CharSequence s, int offset, int length)
+        public Double parse(CharSequence s, int start, int end)
         {
-            return s == null || length <= 0 ? null : BigDecimals.parseDouble(s.subSequence(offset, offset + length));
+            return s == null || start >= end ? null : BigDecimals.parseDouble(s.subSequence(start, end));
         }
     };
-    public static final TypeParser<BigDecimal> BIG_DECIMAL = (s, offset, length) -> BigDecimals
-            .parse(s == null ? null : s.subSequence(offset, offset + length));
+    public static final TypeParser<BigDecimal> BIG_DECIMAL = (s, start, end) -> BigDecimals
+            .parse(s == null ? null : s.subSequence(start, end));
     public static final TypeParser<Instant> INSTANT = new TypeParser<>()
     {
         @Override
@@ -229,19 +229,19 @@ public final class TypeParsers
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, 0, s.length());
+            int strippedStart = Strings.stripStart(s, 0, s.length());
             int strippedEnd = Strings.stripEnd(s, 0, s.length());
-            if (strippedOffset >= strippedEnd)
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < INSTANT_MIN_LENGTH)
+            if (strippedEnd - strippedStart < INSTANT_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return Instant.parse(candidate);
@@ -253,25 +253,25 @@ public final class TypeParsers
         }
 
         @Override
-        public Instant parse(CharSequence s, int offset, int length)
+        public Instant parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0)
+            if (s == null || start >= end)
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, offset, length);
-            int strippedEnd = Strings.stripEnd(s, offset, length);
-            if (strippedOffset >= strippedEnd)
+            int strippedStart = Strings.stripStart(s, start, end);
+            int strippedEnd = Strings.stripEnd(s, start, end);
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < INSTANT_MIN_LENGTH)
+            if (strippedEnd - strippedStart < INSTANT_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return Instant.parse(candidate);
@@ -291,19 +291,19 @@ public final class TypeParsers
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, 0, s.length());
+            int strippedStart = Strings.stripStart(s, 0, s.length());
             int strippedEnd = Strings.stripEnd(s, 0, s.length());
-            if (strippedOffset >= strippedEnd)
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < LOCAL_DATE_TIME_MIN_LENGTH)
+            if (strippedEnd - strippedStart < LOCAL_DATE_TIME_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return LocalDateTime.parse(candidate);
@@ -315,25 +315,25 @@ public final class TypeParsers
         }
 
         @Override
-        public LocalDateTime parse(CharSequence s, int offset, int length)
+        public LocalDateTime parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0)
+            if (s == null || start >= end)
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, offset, length);
-            int strippedEnd = Strings.stripEnd(s, offset, length);
-            if (strippedOffset >= strippedEnd)
+            int strippedStart = Strings.stripStart(s, start, end);
+            int strippedEnd = Strings.stripEnd(s, start, end);
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < LOCAL_DATE_TIME_MIN_LENGTH)
+            if (strippedEnd - strippedStart < LOCAL_DATE_TIME_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return LocalDateTime.parse(candidate);
@@ -353,19 +353,19 @@ public final class TypeParsers
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, 0, s.length());
+            int strippedStart = Strings.stripStart(s, 0, s.length());
             int strippedEnd = Strings.stripEnd(s, 0, s.length());
-            if (strippedOffset >= strippedEnd)
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < LOCAL_TIME_MIN_LENGTH)
+            if (strippedEnd - strippedStart < LOCAL_TIME_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return LocalTime.parse(candidate);
@@ -377,25 +377,25 @@ public final class TypeParsers
         }
 
         @Override
-        public LocalTime parse(CharSequence s, int offset, int length)
+        public LocalTime parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0)
+            if (s == null || start >= end)
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, offset, length);
-            int strippedEnd = Strings.stripEnd(s, offset, length);
-            if (strippedOffset >= strippedEnd)
+            int strippedStart = Strings.stripStart(s, start, end);
+            int strippedEnd = Strings.stripEnd(s, start, end);
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < LOCAL_TIME_MIN_LENGTH)
+            if (strippedEnd - strippedStart < LOCAL_TIME_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return LocalTime.parse(candidate);
@@ -415,19 +415,19 @@ public final class TypeParsers
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, 0, s.length());
+            int strippedStart = Strings.stripStart(s, 0, s.length());
             int strippedEnd = Strings.stripEnd(s, 0, s.length());
-            if (strippedOffset >= strippedEnd)
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < OFFSET_DATE_TIME_MIN_LENGTH)
+            if (strippedEnd - strippedStart < OFFSET_DATE_TIME_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return OffsetDateTime.parse(candidate);
@@ -439,25 +439,25 @@ public final class TypeParsers
         }
 
         @Override
-        public OffsetDateTime parse(CharSequence s, int offset, int length)
+        public OffsetDateTime parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0)
+            if (s == null || start >= end)
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, offset, length);
-            int strippedEnd = Strings.stripEnd(s, offset, length);
-            if (strippedOffset >= strippedEnd)
+            int strippedStart = Strings.stripStart(s, start, end);
+            int strippedEnd = Strings.stripEnd(s, start, end);
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < OFFSET_DATE_TIME_MIN_LENGTH)
+            if (strippedEnd - strippedStart < OFFSET_DATE_TIME_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return OffsetDateTime.parse(candidate);
@@ -477,19 +477,19 @@ public final class TypeParsers
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, 0, s.length());
+            int strippedStart = Strings.stripStart(s, 0, s.length());
             int strippedEnd = Strings.stripEnd(s, 0, s.length());
-            if (strippedOffset >= strippedEnd)
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < YEAR_MONTH_MIN_LENGTH)
+            if (strippedEnd - strippedStart < YEAR_MONTH_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return YearMonth.parse(candidate);
@@ -501,25 +501,25 @@ public final class TypeParsers
         }
 
         @Override
-        public YearMonth parse(CharSequence s, int offset, int length)
+        public YearMonth parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0)
+            if (s == null || start >= end)
             {
                 return null;
             }
-            int strippedOffset = Strings.stripStart(s, offset, length);
-            int strippedEnd = Strings.stripEnd(s, offset, length);
-            if (strippedOffset >= strippedEnd)
+            int strippedStart = Strings.stripStart(s, start, end);
+            int strippedEnd = Strings.stripEnd(s, start, end);
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < YEAR_MONTH_MIN_LENGTH)
+            if (strippedEnd - strippedStart < YEAR_MONTH_MIN_LENGTH)
             {
                 return null;
             }
-            CharSequence candidate = strippedOffset == 0 && strippedEnd == s.length()
+            CharSequence candidate = strippedStart == 0 && strippedEnd == s.length()
                     ? s
-                    : s.subSequence(strippedOffset, strippedEnd);
+                    : s.subSequence(strippedStart, strippedEnd);
             try
             {
                 return YearMonth.parse(candidate);
@@ -544,19 +544,19 @@ public final class TypeParsers
             {
                 return common;
             }
-            int strippedOffset = Strings.stripStart(s, 0, s.length());
+            int strippedStart = Strings.stripStart(s, 0, s.length());
             int strippedEnd = Strings.stripEnd(s, 0, s.length());
-            if (strippedOffset >= strippedEnd)
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < PERIOD_MIN_LENGTH)
+            if (strippedEnd - strippedStart < PERIOD_MIN_LENGTH)
             {
                 return null;
             }
             try
             {
-                return Period.parse(normalisePeriodText(s, strippedOffset, strippedEnd));
+                return Period.parse(normalisePeriodText(s, strippedStart, strippedEnd));
             }
             catch (RuntimeException e)
             {
@@ -565,30 +565,30 @@ public final class TypeParsers
         }
 
         @Override
-        public Period parse(CharSequence s, int offset, int length)
+        public Period parse(CharSequence s, int start, int end)
         {
-            if (s == null || length <= 0)
+            if (s == null || start >= end)
             {
                 return null;
             }
-            Period common = parseCommonPeriod(s, offset, offset + length);
+            Period common = parseCommonPeriod(s, start, end);
             if (common != null)
             {
                 return common;
             }
-            int strippedOffset = Strings.stripStart(s, offset, length);
-            int strippedEnd = Strings.stripEnd(s, offset, length);
-            if (strippedOffset >= strippedEnd)
+            int strippedStart = Strings.stripStart(s, start, end);
+            int strippedEnd = Strings.stripEnd(s, start, end);
+            if (strippedStart >= strippedEnd)
             {
                 return null;
             }
-            if (strippedEnd - strippedOffset < PERIOD_MIN_LENGTH)
+            if (strippedEnd - strippedStart < PERIOD_MIN_LENGTH)
             {
                 return null;
             }
             try
             {
-                return Period.parse(normalisePeriodText(s, strippedOffset, strippedEnd));
+                return Period.parse(normalisePeriodText(s, strippedStart, strippedEnd));
             }
             catch (RuntimeException e)
             {
@@ -606,9 +606,9 @@ public final class TypeParsers
         }
 
         @Override
-        public Currency parse(CharSequence s, int offset, int length)
+        public Currency parse(CharSequence s, int start, int end)
         {
-            return Currencys.parse(s, offset, length);
+            return Currencys.parse(s, start, end);
         }
     };
 
@@ -619,8 +619,7 @@ public final class TypeParsers
     public static TypeParser<LocalDate> localDate(DateFormat format)
     {
         DateFormat x = ArgumentCheck.nonNull(format);
-        return (s, offset, length) -> ColumnLocalDates
-                .stringToDate(s == null ? null : s.subSequence(offset, offset + length), x);
+        return (s, start, end) -> ColumnLocalDates.stringToDate(s == null ? null : s.subSequence(start, end), x);
     }
 
     private static CharSequence normalisePeriodText(CharSequence s, int start, int endExclusive)

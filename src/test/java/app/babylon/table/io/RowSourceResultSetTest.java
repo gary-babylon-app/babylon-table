@@ -47,7 +47,7 @@ class RowSourceResultSetTest
             assertEquals(ColumnTypes.DECIMAL, columns[1].type());
             assertTrue(supplier.next());
             Row row = supplier.current();
-            assertEquals("London", row.subSequence(row.start(0), row.start(0) + row.length(0)).toString());
+            assertEquals("London", row.subSequence(row.start(0), row.end(0)).toString());
             assertFalse(supplier.next());
         }
         assertTrue(closed.get());

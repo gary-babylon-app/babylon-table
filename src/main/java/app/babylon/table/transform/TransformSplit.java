@@ -204,12 +204,12 @@ public class TransformSplit extends TransformBase
             return;
         }
         addPart(newColumns[0], s, 0, splitIndex);
-        addPart(newColumns[1], s, splitIndex + 1, s.length() - splitIndex - 1);
+        addPart(newColumns[1], s, splitIndex + 1, s.length());
     }
 
-    private static void addPart(ColumnObject.Builder<String> column, String source, int start, int length)
+    private static void addPart(ColumnObject.Builder<String> column, String source, int start, int end)
     {
-        CharSequence stripped = Strings.stripx(source, start, length);
+        CharSequence stripped = Strings.stripx(source, start, end);
         column.add(stripped == null ? "" : stripped.toString());
     }
 

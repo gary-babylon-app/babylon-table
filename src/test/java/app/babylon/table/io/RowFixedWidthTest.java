@@ -117,7 +117,7 @@ class RowFixedWidthTest
         for (int i = 0; i < row.size(); ++i)
         {
             int start = row.start(i);
-            values[i] = row.subSequence(start, start + row.length(i)).toString();
+            values[i] = row.subSequence(start, row.end(i)).toString();
         }
         return values;
     }

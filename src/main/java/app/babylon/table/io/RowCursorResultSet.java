@@ -259,7 +259,7 @@ public class RowCursorResultSet implements RowCursor
         @Override
         public boolean isSet(int fieldIndex)
         {
-            return length(fieldIndex) > 0;
+            return end(fieldIndex) > start(fieldIndex);
         }
 
         @Override
@@ -281,9 +281,9 @@ public class RowCursorResultSet implements RowCursor
         }
 
         @Override
-        public int length(int fieldIndex)
+        public int end(int fieldIndex)
         {
-            return ensureRowBuffer().length(fieldIndex);
+            return ensureRowBuffer().end(fieldIndex);
         }
 
         @Override

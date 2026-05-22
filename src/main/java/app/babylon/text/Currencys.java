@@ -48,14 +48,15 @@ public final class Currencys
      *
      * @param s
      *            the source text
-     * @param offset
-     *            the start offset
-     * @param length
-     *            the slice length
+     * @param start
+     *            the start index
+     * @param end
+     *            the exclusive end index
      * @return the parsed currency, or {@code null} when parsing fails
      */
-    public static Currency parse(CharSequence s, int offset, int length)
+    public static Currency parse(CharSequence s, int start, int end)
     {
+        int length = end - start;
         if (s == null || length < 3)
         {
             return null;
@@ -63,7 +64,7 @@ public final class Currencys
 
         if (length == 3)
         {
-            final int exactKey = packedKey(s.charAt(offset), s.charAt(offset + 1), s.charAt(offset + 2));
+            final int exactKey = packedKey(s.charAt(start), s.charAt(start + 1), s.charAt(start + 2));
             Currency fast = switch (exactKey)
             {
                 case PackedCurrencyKeys.EUR -> PackedCurrencies.EUR;
@@ -88,9 +89,9 @@ public final class Currencys
                 return fast;
             }
 
-            char c0 = s.charAt(offset);
-            char c1 = s.charAt(offset + 1);
-            char c2 = s.charAt(offset + 2);
+            char c0 = s.charAt(start);
+            char c1 = s.charAt(start + 1);
+            char c2 = s.charAt(start + 2);
             if (!Character.isWhitespace(c0) && !Character.isWhitespace(c2))
             {
                 c0 = asciiUpper(c0);
@@ -119,17 +120,17 @@ public final class Currencys
             }
         }
 
-        int trimmedOffset = offset;
-        int trimmedLength = length;
-        while (trimmedLength > 0 && Character.isWhitespace(s.charAt(trimmedOffset)))
+        int trimmedStart = start;
+        int trimmedEnd = end;
+        while (trimmedStart < trimmedEnd && Character.isWhitespace(s.charAt(trimmedStart)))
         {
-            ++trimmedOffset;
-            --trimmedLength;
+            ++trimmedStart;
         }
-        while (trimmedLength > 0 && Character.isWhitespace(s.charAt(trimmedOffset + trimmedLength - 1)))
+        while (trimmedEnd > trimmedStart && Character.isWhitespace(s.charAt(trimmedEnd - 1)))
         {
-            --trimmedLength;
+            --trimmedEnd;
         }
+        int trimmedLength = trimmedEnd - trimmedStart;
         if (trimmedLength == 0)
         {
             return null;
@@ -137,9 +138,9 @@ public final class Currencys
 
         if (trimmedLength == 3)
         {
-            char c0 = asciiUpper(s.charAt(trimmedOffset));
-            char c1 = asciiUpper(s.charAt(trimmedOffset + 1));
-            char c2 = asciiUpper(s.charAt(trimmedOffset + 2));
+            char c0 = asciiUpper(s.charAt(trimmedStart));
+            char c1 = asciiUpper(s.charAt(trimmedStart + 1));
+            char c2 = asciiUpper(s.charAt(trimmedStart + 2));
             final int normalisedKey = packedKey(c0, c1, c2);
             Currency normalised = switch (normalisedKey)
             {

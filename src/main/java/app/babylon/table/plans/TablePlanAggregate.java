@@ -130,12 +130,13 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             for (int i = 0; i < this.aggregatePositions.length; ++i)
             {
                 int aggregatePosition = this.aggregatePositions[i];
-                int length = row.length(aggregatePosition);
-                if (length <= 0)
+                int start = row.start(aggregatePosition);
+                int end = row.end(aggregatePosition);
+                if (start >= end)
                 {
                     continue;
                 }
-                accumulators.accumulators[i].accept(row, row.start(aggregatePosition), length);
+                accumulators.accumulators[i].accept(row, start, end);
             }
         }
 

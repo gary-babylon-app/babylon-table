@@ -63,7 +63,7 @@ public final class RowFilters
             return row -> {
                 for (int position : positions)
                 {
-                    if (row.length(position) <= 0)
+                    if (!row.isSet(position))
                     {
                         return false;
                     }
@@ -136,7 +136,7 @@ public final class RowFilters
 
     private static CharSequence fieldValue(Row row, int fieldIndex)
     {
-        return row.subSequence(row.start(fieldIndex), row.start(fieldIndex) + row.length(fieldIndex));
+        return row.subSequence(row.start(fieldIndex), row.end(fieldIndex));
     }
 
     private static int positionOf(ColumnName[] availableColumns, ColumnName requiredColumn)

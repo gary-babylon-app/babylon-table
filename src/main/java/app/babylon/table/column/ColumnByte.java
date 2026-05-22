@@ -42,23 +42,23 @@ public interface ColumnByte extends Column
         public Builder add(byte x);
 
         @Override
-        default Builder add(CharSequence chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int end)
         {
-            return add(ParseMode.EXACT, chars, start, length);
+            return add(ParseMode.EXACT, chars, start, end);
         }
 
         @Override
-        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                if (!Strings.isInt(chars, start, length))
+                if (!Strings.isInt(chars, start, end))
                 {
                     return addNull();
                 }
                 try
                 {
-                    int value = Integer.parseInt(chars, start, start + length, 10);
+                    int value = Integer.parseInt(chars, start, end, 10);
                     return value < Byte.MIN_VALUE || value > Byte.MAX_VALUE ? addNull() : add((byte) value);
                 }
                 catch (NumberFormatException e)
@@ -67,7 +67,7 @@ public interface ColumnByte extends Column
                 }
             }
             TypeParser<Byte> parser = parser();
-            Byte value = parseMode.apply(parser, chars, start, length);
+            Byte value = parseMode.apply(parser, chars, start, end);
             return value == null ? addNull() : add(value.byteValue());
         }
 

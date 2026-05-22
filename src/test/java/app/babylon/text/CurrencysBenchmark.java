@@ -27,19 +27,19 @@ public final class CurrencysBenchmark
 
     public static void main(String[] args)
     {
-        benchmark("Fast exact USD", "xxUSDyy", 2, 3);
-        benchmark("Fast lowercase zar", "xxzaryy", 2, 3);
-        benchmark("Trimmed usd", "xx usd yy", 2, 5);
-        benchmark("Fallback SEK", "xxSEKyy", 2, 3);
-        benchmark("Fallback ISK", "xxISKyy", 2, 3);
+        benchmark("Fast exact USD", "xxUSDyy", 2, 5);
+        benchmark("Fast lowercase zar", "xxzaryy", 2, 5);
+        benchmark("Trimmed usd", "xx usd yy", 2, 7);
+        benchmark("Fallback SEK", "xxSEKyy", 2, 5);
+        benchmark("Fallback ISK", "xxISKyy", 2, 5);
     }
 
-    private static void benchmark(String label, String source, int offset, int length)
+    private static void benchmark(String label, String source, int sliceStart, int sliceEnd)
     {
-        long fastWarmup = runFast(source, offset, length, WARMUP);
-        long naiveWarmup = runNaive(source, offset, length, WARMUP);
-        long fast = runFast(source, offset, length, ITERATIONS);
-        long naive = runNaive(source, offset, length, ITERATIONS);
+        long fastWarmup = runFast(source, sliceStart, sliceEnd, WARMUP);
+        long naiveWarmup = runNaive(source, sliceStart, sliceEnd, WARMUP);
+        long fast = runFast(source, sliceStart, sliceEnd, ITERATIONS);
+        long naive = runNaive(source, sliceStart, sliceEnd, ITERATIONS);
 
         double fastNanos = (double) fast / ITERATIONS;
         double naiveNanos = (double) naive / ITERATIONS;
@@ -50,38 +50,38 @@ public final class CurrencysBenchmark
         System.out.printf("  ratio : %.2fx%n%n", naiveNanos / fastNanos);
     }
 
-    private static long runFast(String source, int offset, int length, int iterations)
+    private static long runFast(String source, int sliceStart, int sliceEnd, int iterations)
     {
         long sink = 0L;
         long start = System.nanoTime();
         for (int i = 0; i < iterations; ++i)
         {
-            Currency currency = Currencys.parse(source, offset, length);
+            Currency currency = Currencys.parse(source, sliceStart, sliceEnd);
             sink += currency == null ? 0 : currency.getCurrencyCode().charAt(0);
         }
         return elapsed(start, sink);
     }
 
-    private static long runNaive(String source, int offset, int length, int iterations)
+    private static long runNaive(String source, int sliceStart, int sliceEnd, int iterations)
     {
         long sink = 0L;
         long start = System.nanoTime();
         for (int i = 0; i < iterations; ++i)
         {
-            Currency currency = parseNaive(source, offset, length);
+            Currency currency = parseNaive(source, sliceStart, sliceEnd);
             sink += currency == null ? 0 : currency.getCurrencyCode().charAt(0);
         }
         return elapsed(start, sink);
     }
 
-    private static Currency parseNaive(String source, int offset, int length)
+    private static Currency parseNaive(String source, int start, int end)
     {
-        if (source == null || length < 3)
+        if (source == null || end - start < 3)
         {
             return null;
         }
 
-        String text = source.substring(offset, offset + length).strip().toUpperCase();
+        String text = source.substring(start, end).strip().toUpperCase();
         if (text.length() != 3)
         {
             return null;

@@ -40,6 +40,7 @@ public final class Transforms
                             .register(/* backward compat */TransformConstant.LEGACY_FUNCTION_NAME,
                                     TransformConstant::of)
                             .register(/* backward compat */"NewConstant", TransformConstant::of)
+                            .register(TransformDropWord.FUNCTION_NAME, TransformDropWord::of)
                             .register(TransformExtract.FUNCTION_NAME, TransformExtract::of)
                             .register(TransformLeft.FUNCTION_NAME, TransformLeft::of)
                             .register(TransformNormalise.FUNCTION_NAME, TransformNormalise::of)

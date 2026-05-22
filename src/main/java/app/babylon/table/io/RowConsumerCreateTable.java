@@ -91,7 +91,7 @@ public final class RowConsumerCreateTable implements RowConsumer
         }
         for (int i = 0; i < columnCount; ++i)
         {
-            addValue(this.columnBuilders[i], rowValues, rowValues.start(i), rowValues.length(i));
+            addValue(this.columnBuilders[i], rowValues, rowValues.start(i), rowValues.end(i));
         }
     }
 
@@ -186,13 +186,13 @@ public final class RowConsumerCreateTable implements RowConsumer
         return effectiveColumnType(columnName, sourceColumnTypes);
     }
 
-    private static void addValue(Column.Builder builder, CharSequence chars, int start, int length)
+    private static void addValue(Column.Builder builder, CharSequence chars, int start, int end)
     {
-        if (length <= 0)
+        if (start >= end)
         {
             builder.add((CharSequence) null, 0, 0);
             return;
         }
-        builder.add(chars, start, length);
+        builder.add(chars, start, end);
     }
 }

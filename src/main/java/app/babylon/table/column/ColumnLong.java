@@ -44,23 +44,23 @@ public interface ColumnLong extends Column
         Builder add(long x);
 
         @Override
-        default Builder add(CharSequence chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int end)
         {
-            return add(ParseMode.EXACT, chars, start, length);
+            return add(ParseMode.EXACT, chars, start, end);
         }
 
         @Override
-        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                if (!Strings.isLong(chars, start, length))
+                if (!Strings.isLong(chars, start, end))
                 {
                     return addNull();
                 }
                 try
                 {
-                    return add(Long.parseLong(chars, start, start + length, 10));
+                    return add(Long.parseLong(chars, start, end, 10));
                 }
                 catch (NumberFormatException e)
                 {
@@ -68,7 +68,7 @@ public interface ColumnLong extends Column
                 }
             }
             TypeParser<Long> parser = parser();
-            Long value = parseMode.apply(parser, chars, start, length);
+            Long value = parseMode.apply(parser, chars, start, end);
             return value == null ? addNull() : add(value.longValue());
         }
 

@@ -81,26 +81,48 @@ public class SentenceTest
     {
         AtomicInteger calls = new AtomicInteger();
 
-        Integer actual = Sentence.firstIn((s, start, length) -> {
+        Integer actual = Sentence.firstIn((s, start, end) -> {
             calls.incrementAndGet();
             assertEquals("abc 123 xyz", s.toString());
-            return parseInteger(s, start, length);
+            return parseInteger(s, start, end);
         }, "abc 123 xyz");
 
         assertEquals(123, actual);
         assertEquals(2, calls.get());
     }
 
-    private Integer parseIntegerSlice(CharSequence s, int start, int length)
+    @Test
+    public void dropFirstWordShouldReturnRemainingSentence()
     {
-        return parseInteger(s, start, length);
+        assertEquals("Satrix MSCI Emerging Markets ETF 0.9989",
+                Sentence.dropFirstWord("Bought Satrix MSCI Emerging Markets ETF 0.9989"));
+        assertEquals("Satrix", Sentence.dropFirstWord("  Bought   Satrix  "));
+        assertNull(Sentence.dropFirstWord("Bought"));
+        assertNull(Sentence.dropFirstWord(" "));
+        assertNull(Sentence.dropFirstWord(null));
     }
 
-    private Integer parseInteger(CharSequence s, int start, int length)
+    @Test
+    public void dropLastWordShouldReturnRemainingSentence()
+    {
+        assertEquals("Bought Satrix MSCI Emerging Markets ETF",
+                Sentence.dropLastWord("Bought Satrix MSCI Emerging Markets ETF 0.9989"));
+        assertEquals("Bought", Sentence.dropLastWord("  Bought   Satrix  "));
+        assertNull(Sentence.dropLastWord("Bought"));
+        assertNull(Sentence.dropLastWord(" "));
+        assertNull(Sentence.dropLastWord(null));
+    }
+
+    private Integer parseIntegerSlice(CharSequence s, int start, int end)
+    {
+        return parseInteger(s, start, end);
+    }
+
+    private Integer parseInteger(CharSequence s, int start, int end)
     {
         try
         {
-            return Integer.valueOf(s.subSequence(start, start + length).toString());
+            return Integer.valueOf(s.subSequence(start, end).toString());
         }
         catch (NumberFormatException e)
         {

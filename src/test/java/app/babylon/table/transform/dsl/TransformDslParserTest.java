@@ -31,6 +31,7 @@ import app.babylon.table.dsl.TokenStream;
 import app.babylon.table.dsl.TransformDslException;
 import app.babylon.table.transform.Transform;
 import app.babylon.table.transform.TransformConcat;
+import app.babylon.table.transform.TransformDropWord;
 import app.babylon.table.transform.TransformExtractFromColumnName;
 import app.babylon.table.transform.TransformFlag;
 import app.babylon.table.transform.TransformRound;
@@ -197,7 +198,7 @@ class TransformDslParserTest
     void shouldAllowCustomConversionTypes()
     {
         Column.Type isin = Column.Type.of(Isin.class,
-                (s, offset, length) -> new Isin(s.subSequence(offset, offset + length).toString()));
+                (s, start, end) -> new Isin(s.subSequence(start, end).toString()));
         TransformDslParser parser = PARSER.withType("Isin", isin);
         String line = "convert IsinText to Isin into Isin";
 
@@ -221,7 +222,7 @@ class TransformDslParserTest
     void shouldAllowStandardConversionTypesToBeOverwritten()
     {
         Column.Type currency = Column.Type.of(AppCurrency.class,
-                (s, offset, length) -> new AppCurrency(s.subSequence(offset, offset + length).toString()));
+                (s, start, end) -> new AppCurrency(s.subSequence(start, end).toString()));
         TransformDslParser parser = PARSER.withType("Currency", currency);
         String line = "convert CurrencyText to Currency into Currency";
 
@@ -278,6 +279,21 @@ class TransformDslParserTest
 
         line = "take after '-' from TradeReference into TradeSuffix";
         assertParses(line);
+    }
+
+    @Test
+    void shouldParseDropWordExamples()
+    {
+        TransformDropWord transform = assertInstanceOf(TransformDropWord.class,
+                PARSER.parse("drop first word from Description"));
+        assertEquals(TransformDropWord.Position.FIRST, transform.position());
+        assertEquals(ColumnName.of("Description"), transform.existingColumnName());
+        assertEquals(ColumnName.of("Description"), transform.effectiveNewColumnName());
+
+        transform = assertInstanceOf(TransformDropWord.class,
+                PARSER.parse("drop last word from Description into CleanDescription"));
+        assertEquals(TransformDropWord.Position.LAST, transform.position());
+        assertEquals(ColumnName.of("CleanDescription"), transform.effectiveNewColumnName());
     }
 
     @Test

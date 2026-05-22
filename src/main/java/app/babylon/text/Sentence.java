@@ -47,7 +47,7 @@ public final class Sentence
             return value == null ? null : apply(parser, value, 0, value.length());
         }
 
-        public <T> T apply(SliceParser<T> parser, CharSequence value, int start, int length)
+        public <T> T apply(SliceParser<T> parser, CharSequence value, int start, int end)
         {
             if (value == null)
             {
@@ -55,10 +55,10 @@ public final class Sentence
             }
             return switch (this)
             {
-                case EXACT -> parser.parse(value, start, length);
-                case FIRST_IN -> Sentence.firstIn(parser, value, start, length);
-                case LAST_IN -> Sentence.lastIn(parser, value, start, length);
-                case ONLY_IN -> Sentence.onlyIn(parser, value, start, length);
+                case EXACT -> parser.parse(value, start, end);
+                case FIRST_IN -> Sentence.firstIn(parser, value, start, end);
+                case LAST_IN -> Sentence.lastIn(parser, value, start, end);
+                case ONLY_IN -> Sentence.onlyIn(parser, value, start, end);
             };
         }
     }
@@ -83,26 +83,25 @@ public final class Sentence
         return sentence == null ? null : firstIn(parser, sentence, 0, sentence.length());
     }
 
-    public static <T> T firstIn(SliceParser<T> parser, CharSequence sentence, int offset, int length)
+    public static <T> T firstIn(SliceParser<T> parser, CharSequence sentence, int start, int end)
     {
         if (sentence == null)
         {
             return null;
         }
-        BitSet separators = Strings.trace(sentence, offset, length, ' ');
-        int start = offset;
-        int end = offset + length;
-        for (int separator = separators.nextSetBit(offset); separator >= 0
+        BitSet separators = Strings.trace(sentence, start, end, ' ');
+        int wordStart = start;
+        for (int separator = separators.nextSetBit(start); separator >= 0
                 && separator < end; separator = separators.nextSetBit(separator + 1))
         {
-            T value = parse(parser, sentence, start, separator);
+            T value = parse(parser, sentence, wordStart, separator);
             if (value != null)
             {
                 return value;
             }
-            start = separator + 1;
+            wordStart = separator + 1;
         }
-        return parse(parser, sentence, start, end);
+        return parse(parser, sentence, wordStart, end);
     }
 
     /**
@@ -115,7 +114,7 @@ public final class Sentence
      * Currency typed = Sentence.lastIn(TypeParsers.CURRENCY, "pay USD or EUR tomorrow");
      * </pre>
      * <p>
-     * The parser receives the original sentence plus each word's start and length,
+     * The parser receives the original sentence plus each word's start and end,
      * avoiding intermediate strings.
      */
     public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence)
@@ -127,7 +126,7 @@ public final class Sentence
      * Finds the <em>last</em> parsed value <em>in</em> a sentence separated by
      * {@code separator}.
      * <p>
-     * The parser receives the original sentence plus each field's start and length,
+     * The parser receives the original sentence plus each field's start and end,
      * avoiding intermediate strings.
      */
     public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, char separator)
@@ -135,29 +134,29 @@ public final class Sentence
         return sentence == null ? null : lastIn(parser, sentence, 0, sentence.length(), separator);
     }
 
-    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, int offset, int length)
+    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, int start, int end)
     {
-        return lastIn(parser, sentence, offset, length, ' ');
+        return lastIn(parser, sentence, start, end, ' ');
     }
 
-    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, int offset, int length, char separator)
+    public static <T> T lastIn(SliceParser<T> parser, CharSequence sentence, int start, int end, char separator)
     {
         if (sentence == null)
         {
             return null;
         }
-        BitSet separators = Strings.trace(sentence, offset, length, separator);
-        int end = offset + length;
-        for (int i = separators.previousSetBit(end - 1); i >= offset; i = separators.previousSetBit(i - 1))
+        BitSet separators = Strings.trace(sentence, start, end, separator);
+        int wordEnd = end;
+        for (int i = separators.previousSetBit(end - 1); i >= start; i = separators.previousSetBit(i - 1))
         {
-            T value = parse(parser, sentence, i + 1, end);
+            T value = parse(parser, sentence, i + 1, wordEnd);
             if (value != null)
             {
                 return value;
             }
-            end = i;
+            wordEnd = i;
         }
-        return parse(parser, sentence, offset, end);
+        return parse(parser, sentence, start, wordEnd);
     }
 
     /**
@@ -171,7 +170,7 @@ public final class Sentence
      * Currency typed = Sentence.onlyIn(TypeParsers.CURRENCY, "pay USD tomorrow");
      * </pre>
      * <p>
-     * The parser receives the original sentence plus each word's start and length,
+     * The parser receives the original sentence plus each word's start and end,
      * avoiding intermediate strings.
      */
     public static <T> T onlyIn(SliceParser<T> parser, CharSequence sentence)
@@ -179,20 +178,19 @@ public final class Sentence
         return sentence == null ? null : onlyIn(parser, sentence, 0, sentence.length());
     }
 
-    public static <T> T onlyIn(SliceParser<T> parser, CharSequence sentence, int offset, int length)
+    public static <T> T onlyIn(SliceParser<T> parser, CharSequence sentence, int start, int end)
     {
         if (sentence == null)
         {
             return null;
         }
-        BitSet separators = Strings.trace(sentence, offset, length, ' ');
+        BitSet separators = Strings.trace(sentence, start, end, ' ');
         T only = null;
-        int start = offset;
-        int end = offset + length;
-        for (int separator = separators.nextSetBit(offset); separator >= 0
+        int wordStart = start;
+        for (int separator = separators.nextSetBit(start); separator >= 0
                 && separator < end; separator = separators.nextSetBit(separator + 1))
         {
-            T value = parse(parser, sentence, start, separator);
+            T value = parse(parser, sentence, wordStart, separator);
             if (value != null)
             {
                 if (only != null)
@@ -201,9 +199,9 @@ public final class Sentence
                 }
                 only = value;
             }
-            start = separator + 1;
+            wordStart = separator + 1;
         }
-        T value = parse(parser, sentence, start, end);
+        T value = parse(parser, sentence, wordStart, end);
         if (value != null)
         {
             if (only != null)
@@ -215,12 +213,58 @@ public final class Sentence
         return only;
     }
 
+    public static String dropFirstWord(CharSequence sentence)
+    {
+        if (sentence == null)
+        {
+            return null;
+        }
+        int start = Strings.stripStart(sentence, 0, sentence.length());
+        int end = Strings.stripEnd(sentence, 0, sentence.length());
+        int index = Strings.indexOf(sentence, start, end, ' ');
+        if (index < 0)
+        {
+            return null;
+        }
+        int remainingStart = Strings.stripStart(sentence, index + 1, end);
+        return remainingStart >= end ? null : sentence.subSequence(remainingStart, end).toString();
+    }
+
+    public static String dropLastWord(CharSequence sentence)
+    {
+        if (sentence == null)
+        {
+            return null;
+        }
+        int start = Strings.stripStart(sentence, 0, sentence.length());
+        int end = Strings.stripEnd(sentence, 0, sentence.length());
+        int index = lastIndexOf(sentence, start, end, ' ');
+        if (index < 0)
+        {
+            return null;
+        }
+        int remainingEnd = Strings.stripEnd(sentence, start, index);
+        return start >= remainingEnd ? null : sentence.subSequence(start, remainingEnd).toString();
+    }
+
     private static <T> T parse(SliceParser<T> parser, CharSequence sentence, int start, int end)
     {
         if (start >= end)
         {
             return null;
         }
-        return parser.parse(sentence, start, end - start);
+        return parser.parse(sentence, start, end);
+    }
+
+    private static int lastIndexOf(CharSequence sentence, int start, int end, char c)
+    {
+        for (int i = end - 1; i >= start; --i)
+        {
+            if (sentence.charAt(i) == c)
+            {
+                return i;
+            }
+        }
+        return -1;
     }
 }

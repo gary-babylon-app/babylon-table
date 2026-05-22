@@ -23,12 +23,17 @@ public interface Row extends CharSequence
 
     int start(int fieldIndex);
 
-    int length(int fieldIndex);
+    int end(int fieldIndex);
+
+    default int length(int fieldIndex)
+    {
+        return end(fieldIndex) - start(fieldIndex);
+    }
 
     @Override
     default CharSequence subSequence(int start, int end)
     {
-        return new RowBuffer.FieldCharSequence(this, start, end - start);
+        return new RowBuffer.FieldCharSequence(this, start, end);
     }
 
     RowKey keyOf(int[] fieldPositions);

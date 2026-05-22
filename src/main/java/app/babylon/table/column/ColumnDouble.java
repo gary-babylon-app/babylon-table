@@ -58,9 +58,9 @@ public interface ColumnDouble extends Column
         }
 
         @Override
-        default Builder add(CharSequence chars, int start, int length)
+        default Builder add(CharSequence chars, int start, int end)
         {
-            return add(ParseMode.EXACT, chars, start, length);
+            return add(ParseMode.EXACT, chars, start, end);
         }
 
         /**
@@ -70,23 +70,23 @@ public interface ColumnDouble extends Column
          * @param chars
          *            the source characters
          * @param start
-         *            the start offset
-         * @param length
-         *            the number of characters to parse
+         *            the start index
+         * @param end
+         *            the exclusive end index
          * @return this builder
          */
         @Override
-        default Builder add(ParseMode parseMode, CharSequence chars, int start, int length)
+        default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             if (parseMode == null || parseMode == ParseMode.EXACT)
             {
-                if (!Strings.isDouble(chars, start, length))
+                if (!Strings.isDouble(chars, start, end))
                 {
                     return addNull();
                 }
                 try
                 {
-                    return add(Double.parseDouble(chars.subSequence(start, start + length).toString()));
+                    return add(Double.parseDouble(chars.subSequence(start, end).toString()));
                 }
                 catch (NumberFormatException e)
                 {
@@ -94,7 +94,7 @@ public interface ColumnDouble extends Column
                 }
             }
             TypeParser<Double> parser = parser();
-            Double value = parseMode.apply(parser, chars, start, length);
+            Double value = parseMode.apply(parser, chars, start, end);
             return value == null ? addNull() : add(value.doubleValue());
         }
 

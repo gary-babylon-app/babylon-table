@@ -20,30 +20,30 @@ public final class RowBuffer implements Row
     {
         private final CharSequence chars;
         private final int start;
-        private final int length;
+        private final int end;
 
-        FieldCharSequence(CharSequence chars, int start, int length)
+        FieldCharSequence(CharSequence chars, int start, int end)
         {
             this.chars = chars;
             this.start = start;
-            this.length = length;
+            this.end = end;
         }
 
-        FieldCharSequence(char[] chars, int start, int length)
+        FieldCharSequence(char[] chars, int start, int end)
         {
-            this(CharBuffer.wrap(chars), start, length);
+            this(CharBuffer.wrap(chars), start, end);
         }
 
         @Override
         public int length()
         {
-            return this.length;
+            return this.end - this.start;
         }
 
         @Override
         public char charAt(int index)
         {
-            if (index < 0 || index >= this.length)
+            if (index < 0 || this.start + index >= this.end)
             {
                 throw new IndexOutOfBoundsException();
             }
@@ -53,18 +53,20 @@ public final class RowBuffer implements Row
         @Override
         public CharSequence subSequence(int start, int end)
         {
-            if (start < 0 || end < start || end > this.length)
+            int length = length();
+            if (start < 0 || end < start || end > length)
             {
                 throw new IndexOutOfBoundsException();
             }
-            return new FieldCharSequence(this.chars, this.start + start, end - start);
+            return new FieldCharSequence(this.chars, this.start + start, this.start + end);
         }
 
         @Override
         public String toString()
         {
-            char[] text = new char[this.length];
-            for (int i = 0; i < this.length; ++i)
+            int length = length();
+            char[] text = new char[length];
+            for (int i = 0; i < length; ++i)
             {
                 text[i] = this.chars.charAt(this.start + i);
             }
@@ -77,7 +79,7 @@ public final class RowBuffer implements Row
 
     private char[] chars;
     private int[] starts;
-    private int[] lengths;
+    private int[] ends;
     private int fieldCount;
     private int charCount;
     private int currentFieldStart;
@@ -91,7 +93,7 @@ public final class RowBuffer implements Row
     {
         this.chars = new char[Math.max(1, charCapacity)];
         this.starts = new int[Math.max(1, fieldCapacity)];
-        this.lengths = new int[Math.max(1, fieldCapacity)];
+        this.ends = new int[Math.max(1, fieldCapacity)];
         this.fieldCount = 0;
         this.charCount = 0;
         this.currentFieldStart = 0;
@@ -102,7 +104,7 @@ public final class RowBuffer implements Row
         this(source.charCount, source.fieldCount);
         System.arraycopy(source.chars, 0, this.chars, 0, source.charCount);
         System.arraycopy(source.starts, 0, this.starts, 0, source.fieldCount);
-        System.arraycopy(source.lengths, 0, this.lengths, 0, source.fieldCount);
+        System.arraycopy(source.ends, 0, this.ends, 0, source.fieldCount);
         this.fieldCount = source.fieldCount;
         this.charCount = source.charCount;
         this.currentFieldStart = source.currentFieldStart;
@@ -181,7 +183,7 @@ public final class RowBuffer implements Row
     {
         ensureFieldCapacity(this.fieldCount + 1);
         this.starts[this.fieldCount] = this.currentFieldStart;
-        this.lengths[this.fieldCount] = this.charCount - this.currentFieldStart;
+        this.ends[this.fieldCount] = this.charCount;
         ++this.fieldCount;
         this.currentFieldStart = this.charCount;
     }
@@ -208,7 +210,7 @@ public final class RowBuffer implements Row
     @Override
     public boolean isSet(int fieldIndex)
     {
-        return length(fieldIndex) > 0;
+        return end(fieldIndex) > start(fieldIndex);
     }
 
     @Override
@@ -229,12 +231,13 @@ public final class RowBuffer implements Row
 
     public String getString(int fieldIndex)
     {
-        int length = length(fieldIndex);
-        if (length == 0)
+        int start = start(fieldIndex);
+        int end = end(fieldIndex);
+        if (start >= end)
         {
             return null;
         }
-        return new String(this.chars, start(fieldIndex), length);
+        return new String(this.chars, start, end - start);
     }
 
     @Override
@@ -256,9 +259,9 @@ public final class RowBuffer implements Row
     }
 
     @Override
-    public int length(int fieldIndex)
+    public int end(int fieldIndex)
     {
-        return this.lengths[fieldIndex];
+        return this.ends[fieldIndex];
     }
 
     private void ensureCharCapacity(int minCapacity)
@@ -281,10 +284,10 @@ public final class RowBuffer implements Row
         }
         int newCapacity = Math.max(minCapacity, this.starts.length * 2);
         int[] expandedStarts = new int[newCapacity];
-        int[] expandedLengths = new int[newCapacity];
+        int[] expandedEnds = new int[newCapacity];
         System.arraycopy(this.starts, 0, expandedStarts, 0, this.fieldCount);
-        System.arraycopy(this.lengths, 0, expandedLengths, 0, this.fieldCount);
+        System.arraycopy(this.ends, 0, expandedEnds, 0, this.fieldCount);
         this.starts = expandedStarts;
-        this.lengths = expandedLengths;
+        this.ends = expandedEnds;
     }
 }

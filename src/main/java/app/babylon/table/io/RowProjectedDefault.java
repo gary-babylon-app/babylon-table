@@ -79,14 +79,14 @@ final class RowProjectedDefault implements RowProjected
     }
 
     @Override
-    public int length(int fieldIndex)
+    public int end(int fieldIndex)
     {
         int sourceIndex = sourceIndex(fieldIndex);
         if (sourceIndex >= source().size())
         {
-            return 0;
+            return source().length();
         }
-        return source().length(sourceIndex);
+        return source().end(sourceIndex);
     }
 
     @Override
@@ -102,10 +102,10 @@ final class RowProjectedDefault implements RowProjected
         for (int i = 0; i < size(); ++i)
         {
             int start = start(i);
-            int length = length(i);
-            for (int j = 0; j < length; ++j)
+            int end = end(i);
+            for (int j = start; j < end; ++j)
             {
-                copy.append(charAt(start + j));
+                copy.append(charAt(j));
             }
             copy.finishField();
         }

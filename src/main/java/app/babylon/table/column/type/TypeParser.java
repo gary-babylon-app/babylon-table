@@ -31,14 +31,14 @@ public interface TypeParser<T> extends SliceParser<T>
      *
      * @param s
      *            the source text
-     * @param offset
+     * @param start
      *            the start index
-     * @param length
-     *            the slice length
+     * @param end
+     *            one past the last character in the slice
      * @return the parsed value, or {@code null} when parsing fails
      */
     @Override
-    T parse(CharSequence s, int offset, int length);
+    T parse(CharSequence s, int start, int end);
 
     /**
      * Parses a whole character sequence into an object value.
@@ -75,18 +75,18 @@ public interface TypeParser<T> extends SliceParser<T>
      *
      * @param s
      *            the source characters
-     * @param offset
+     * @param start
      *            the start index
-     * @param length
-     *            the slice length
+     * @param end
+     *            one past the last character in the slice
      * @return the parsed byte
      */
-    default byte parseByte(CharSequence s, int offset, int length)
+    default byte parseByte(CharSequence s, int start, int end)
     {
-        int parsed = parseInt(s, offset, length);
+        int parsed = parseInt(s, start, end);
         if (parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE)
         {
-            throw new NumberFormatException("Value out of range for byte: " + s.subSequence(offset, offset + length));
+            throw new NumberFormatException("Value out of range for byte: " + s.subSequence(start, end));
         }
         return (byte) parsed;
     }
@@ -108,20 +108,20 @@ public interface TypeParser<T> extends SliceParser<T>
      *
      * @param s
      *            the source text
-     * @param offset
+     * @param start
      *            the start index
-     * @param length
-     *            the slice length
+     * @param end
+     *            one past the last character in the slice
      * @return the parsed boolean
      */
-    default boolean parseBoolean(CharSequence s, int offset, int length)
+    default boolean parseBoolean(CharSequence s, int start, int end)
     {
-        T parsed = parse(s, offset, length);
+        T parsed = parse(s, start, end);
         if (parsed instanceof Boolean value)
         {
             return value.booleanValue();
         }
-        throw new IllegalArgumentException("Could not parse boolean: " + s.subSequence(offset, offset + length));
+        throw new IllegalArgumentException("Could not parse boolean: " + s.subSequence(start, end));
     }
 
     /**
@@ -141,15 +141,15 @@ public interface TypeParser<T> extends SliceParser<T>
      *
      * @param s
      *            the source text
-     * @param offset
+     * @param start
      *            the start index
-     * @param length
-     *            the slice length
+     * @param end
+     *            one past the last character in the slice
      * @return the parsed int
      */
-    default int parseInt(CharSequence s, int offset, int length)
+    default int parseInt(CharSequence s, int start, int end)
     {
-        return Integer.parseInt(s, offset, offset + length, 10);
+        return Integer.parseInt(s, start, end, 10);
     }
 
     /**
@@ -169,15 +169,15 @@ public interface TypeParser<T> extends SliceParser<T>
      *
      * @param s
      *            the source text
-     * @param offset
+     * @param start
      *            the start index
-     * @param length
-     *            the slice length
+     * @param end
+     *            one past the last character in the slice
      * @return the parsed long
      */
-    default long parseLong(CharSequence s, int offset, int length)
+    default long parseLong(CharSequence s, int start, int end)
     {
-        return Long.parseLong(s, offset, offset + length, 10);
+        return Long.parseLong(s, start, end, 10);
     }
 
     /**
@@ -197,14 +197,14 @@ public interface TypeParser<T> extends SliceParser<T>
      *
      * @param s
      *            the source text
-     * @param offset
+     * @param start
      *            the start index
-     * @param length
-     *            the slice length
+     * @param end
+     *            one past the last character in the slice
      * @return the parsed double
      */
-    default double parseDouble(CharSequence s, int offset, int length)
+    default double parseDouble(CharSequence s, int start, int end)
     {
-        return Double.parseDouble(s.subSequence(offset, offset + length).toString());
+        return Double.parseDouble(s.subSequence(start, end).toString());
     }
 }

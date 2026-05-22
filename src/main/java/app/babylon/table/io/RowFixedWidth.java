@@ -17,14 +17,14 @@ final class RowFixedWidth implements Row
     private char[] chars;
     private final int[] widths;
     private final int[] starts;
-    private final int[] lengths;
+    private final int[] ends;
     private int end;
 
     RowFixedWidth(int[] widths)
     {
         this.widths = Arrays.copyOf(widths, widths.length);
         this.starts = new int[widths.length];
-        this.lengths = new int[widths.length];
+        this.ends = new int[widths.length];
         this.chars = new char[256];
         this.end = 0;
     }
@@ -54,7 +54,7 @@ final class RowFixedWidth implements Row
         {
             this.starts[i] = start;
             int actualLength = Math.max(0, Math.min(this.widths[i], this.end - start));
-            this.lengths[i] = actualLength;
+            this.ends[i] = start + actualLength;
             start += this.widths[i];
         }
         return this;
@@ -82,7 +82,7 @@ final class RowFixedWidth implements Row
     @Override
     public boolean isSet(int fieldIndex)
     {
-        return length(fieldIndex) > 0;
+        return end(fieldIndex) > start(fieldIndex);
     }
 
     @Override
@@ -108,9 +108,9 @@ final class RowFixedWidth implements Row
     }
 
     @Override
-    public int length(int fieldIndex)
+    public int end(int fieldIndex)
     {
-        return this.lengths[fieldIndex];
+        return this.ends[fieldIndex];
     }
 
     @Override
@@ -125,7 +125,7 @@ final class RowFixedWidth implements Row
         RowBuffer copy = new RowBuffer(this.end, this.widths.length);
         for (int i = 0; i < this.widths.length; ++i)
         {
-            copy.append(this.chars, this.starts[i], this.lengths[i]);
+            copy.append(this.chars, this.starts[i], this.ends[i] - this.starts[i]);
             copy.finishField();
         }
         return copy;

@@ -154,9 +154,9 @@ public class ColumnNameTest
 
         ColumnName parsed = ColumnName.parse("trade date");
         assertEquals("TradeDate", parsed.getValue());
-        assertNull(ColumnName.parse("xx   yy", 2, 3));
-        assertEquals("SettleDate", ColumnName.parse("xx settle date yy", 2, 13).getValue());
-        assertEquals("Cafe", ColumnName.of("xx Caf\u00E9 yy", 2, 5).getValue());
+        assertNull(ColumnName.parse("xx   yy", 2, 5));
+        assertEquals("SettleDate", ColumnName.parse("xx settle date yy", 2, 15).getValue());
+        assertEquals("Cafe", ColumnName.of("xx Caf\u00E9 yy", 2, 7).getValue());
 
         ColumnName[] fromCollection = ColumnName.of(List.of("Trade Date", "Settle Date"));
         assertEquals(2, fromCollection.length);

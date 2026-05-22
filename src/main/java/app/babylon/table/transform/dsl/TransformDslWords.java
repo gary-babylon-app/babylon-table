@@ -31,13 +31,16 @@ final class TransformDslWords
     static final String COPY = "copy";
     static final String DEFAULT = "default";
     static final String DIVIDE = "divide";
+    static final String DROP = "drop";
     static final String ELSE = "else";
     static final String EXTRACT = "extract";
     static final String FLAG = "flag";
+    static final String FIRST = "first";
     static final String FROM = "from";
     static final String IN = "in";
     static final String INTO = "into";
     static final String LEFT = "left";
+    static final String LAST = "last";
     static final String LOWERCASE = "lowercase";
     static final String MATCHING = "matching";
     static final String MULTIPLY = "multiply";
@@ -64,6 +67,7 @@ final class TransformDslWords
     static final String USING = "using";
     static final String WHEN = "when";
     static final String WITH = "with";
+    static final String WORD = "word";
 
     static final String TYPE_BIG_DECIMAL = "bigdecimal";
     static final String TYPE_BOOLEAN = "boolean";

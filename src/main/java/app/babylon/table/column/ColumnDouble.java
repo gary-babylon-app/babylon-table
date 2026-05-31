@@ -16,6 +16,7 @@ import java.util.function.DoublePredicate;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
+import app.babylon.text.ByteSequence;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
 
@@ -63,6 +64,12 @@ public interface ColumnDouble extends Column
             return add(ParseMode.EXACT, chars, start, end);
         }
 
+        @Override
+        default Builder add(ByteSequence bytes, int start, int end)
+        {
+            return add(ParseMode.EXACT, bytes, start, end);
+        }
+
         /**
          * Parses and appends a double value from a character buffer, falling back to
          * null when parsing fails.
@@ -95,6 +102,24 @@ public interface ColumnDouble extends Column
             }
             TypeParser<Double> parser = parser();
             Double value = parseMode.apply(parser, chars, start, end);
+            return value == null ? addNull() : add(value.doubleValue());
+        }
+
+        @Override
+        default Builder add(ParseMode parseMode, ByteSequence bytes, int start, int end)
+        {
+            if (bytes == null || start >= end)
+            {
+                return addNull();
+            }
+            TypeParser<Double> parser = parser();
+            if (parseMode == null || parseMode == ParseMode.EXACT)
+            {
+                Double value = parser.parse(bytes, start, end);
+                return value == null ? addNull() : add(value.doubleValue());
+            }
+            String decoded = bytes.decode(start, end);
+            Double value = parseMode.apply(parser, decoded, 0, decoded.length());
             return value == null ? addNull() : add(value.doubleValue());
         }
 

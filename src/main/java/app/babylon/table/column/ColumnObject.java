@@ -26,6 +26,7 @@ import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.column.type.TypeWriter;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
+import app.babylon.text.ByteSequence;
 import app.babylon.text.Sentence.ParseMode;
 
 /**
@@ -305,6 +306,12 @@ public interface ColumnObject<T> extends Column
         }
 
         @Override
+        default Builder<T> add(ByteSequence bytes, int start, int end)
+        {
+            return add(ParseMode.EXACT, bytes, start, end);
+        }
+
+        @Override
         default Builder<T> add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             if (chars == null || start >= end)
@@ -314,6 +321,36 @@ public interface ColumnObject<T> extends Column
             @SuppressWarnings("unchecked")
             TypeParser<T> parser = (TypeParser<T>) getType().getParser();
             T value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, end);
+            if (value == null)
+            {
+                addNull();
+            }
+            else
+            {
+                add(value);
+            }
+            return this;
+        }
+
+        @Override
+        default Builder<T> add(ParseMode parseMode, ByteSequence bytes, int start, int end)
+        {
+            if (bytes == null || start >= end)
+            {
+                return addNull();
+            }
+            @SuppressWarnings("unchecked")
+            TypeParser<T> parser = (TypeParser<T>) getType().getParser();
+            T value;
+            if (parseMode == null || parseMode == ParseMode.EXACT)
+            {
+                value = parser.parse(bytes, start, end);
+            }
+            else
+            {
+                String decoded = bytes.decode(start, end);
+                value = parseMode.apply(parser, decoded, 0, decoded.length());
+            }
             if (value == null)
             {
                 addNull();

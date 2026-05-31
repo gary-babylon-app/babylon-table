@@ -23,7 +23,7 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
     private static final int DEFAULT_BYTE_CAPACITY = 256;
     private static final int DEFAULT_FIELD_CAPACITY = 16;
 
-    private final ByteString bytes;
+    private final ByteString byteString;
     private final int[] starts;
     private final int[] ends;
 
@@ -35,7 +35,7 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
         System.arraycopy(builder.starts, 0, this.starts, 0, builder.fieldCount);
         System.arraycopy(builder.ends, 0, this.ends, 0, builder.fieldCount);
         int nextCapacity = Math.max(1, builder.bytes.length());
-        this.bytes = builder.bytes.build();
+        this.byteString = builder.bytes.build();
         builder.bytes = new ByteString.Builder(nextCapacity, builder.charset);
     }
 
@@ -43,7 +43,7 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
     {
         Objects.requireNonNull(source, "source");
         Objects.requireNonNull(selectedIndexes, "selectedIndexes");
-        this.bytes = source.bytes;
+        this.byteString = source.byteString;
         this.starts = new int[selectedIndexes.length];
         this.ends = new int[selectedIndexes.length];
         for (int i = 0; i < selectedIndexes.length; ++i)
@@ -53,8 +53,8 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
             int end = source.end(fieldIndex);
             if (strip)
             {
-                start = Bytes.stripxStart(this.bytes, start, end);
-                end = Bytes.stripxEnd(this.bytes, start, end);
+                start = Bytes.stripxStart(this.byteString, start, end);
+                end = Bytes.stripxEnd(this.byteString, start, end);
             }
             this.starts[i] = start;
             this.ends[i] = end;
@@ -63,7 +63,7 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
 
     public ByteString getByteString()
     {
-        return this.bytes;
+        return this.byteString;
     }
 
     public ByteStringSlices select(int[] selectedIndexes)
@@ -118,19 +118,25 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
     @Override
     public int length()
     {
-        return this.bytes.length();
+        return this.byteString.length();
     }
 
     @Override
     public byte byteAt(int index)
     {
-        return this.bytes.byteAt(index);
+        return this.byteString.byteAt(index);
     }
 
     @Override
     public Charset charset()
     {
-        return this.bytes.charset();
+        return this.byteString.charset();
+    }
+
+    @Override
+    public String decode(int start, int end)
+    {
+        return this.byteString.decode(start, end);
     }
 
     public String decode(int fieldIndex)

@@ -13,6 +13,7 @@ package app.babylon.table.column;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.Selection;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.text.ByteSequence;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
 
@@ -48,6 +49,12 @@ public interface ColumnByte extends Column
         }
 
         @Override
+        default Builder add(ByteSequence bytes, int start, int end)
+        {
+            return add(ParseMode.EXACT, bytes, start, end);
+        }
+
+        @Override
         default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             if (parseMode == null || parseMode == ParseMode.EXACT)
@@ -68,6 +75,30 @@ public interface ColumnByte extends Column
             }
             TypeParser<Byte> parser = parser();
             Byte value = parseMode.apply(parser, chars, start, end);
+            return value == null ? addNull() : add(value.byteValue());
+        }
+
+        @Override
+        default Builder add(ParseMode parseMode, ByteSequence bytes, int start, int end)
+        {
+            if (bytes == null || start >= end)
+            {
+                return addNull();
+            }
+            TypeParser<Byte> parser = parser();
+            if (parseMode == null || parseMode == ParseMode.EXACT)
+            {
+                try
+                {
+                    return add(parser.parseByte(bytes, start, end));
+                }
+                catch (NumberFormatException e)
+                {
+                    return addNull();
+                }
+            }
+            String decoded = bytes.decode(start, end);
+            Byte value = parseMode.apply(parser, decoded, 0, decoded.length());
             return value == null ? addNull() : add(value.byteValue());
         }
 

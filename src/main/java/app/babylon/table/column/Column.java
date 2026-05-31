@@ -20,6 +20,7 @@ import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.column.type.TypeWriter;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.dsl.ComparisonCondition;
+import app.babylon.text.ByteSequence;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
 
@@ -133,6 +134,16 @@ public interface Column
             return add(ParseMode.EXACT, chars, start, end);
         }
 
+        default Builder add(ByteSequence bytes)
+        {
+            return bytes == null ? addNull() : add(bytes, 0, bytes.length());
+        }
+
+        default Builder add(ByteSequence bytes, int start, int end)
+        {
+            return add(ParseMode.EXACT, bytes, start, end);
+        }
+
         /**
          * Appends a value directly from a whole character sequence using the supplied
          * parse mode.
@@ -165,6 +176,11 @@ public interface Column
         default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             throw new UnsupportedOperationException("Character-slice add not supported by " + getClass().getName());
+        }
+
+        default Builder add(ParseMode parseMode, ByteSequence bytes, int start, int end)
+        {
+            throw new UnsupportedOperationException("Byte-slice add not supported by " + getClass().getName());
         }
 
         /**

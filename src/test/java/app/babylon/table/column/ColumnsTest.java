@@ -26,6 +26,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.text.ByteString;
+
 class ColumnsTest
 {
     @Test
@@ -212,7 +214,7 @@ class ColumnsTest
         final ColumnName VALUES = ColumnName.of("values");
         Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.INT);
         builder.add("12", 0, 2);
-        builder.add(null, 0, 0);
+        builder.add((CharSequence) null, 0, 0);
 
         ColumnInt column = (ColumnInt) builder.build();
         assertEquals(12, column.get(0));
@@ -246,7 +248,7 @@ class ColumnsTest
         final ColumnName VALUES = ColumnName.of("values");
         Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.BYTE);
         builder.add("7", 0, 1);
-        builder.add(null, 0, 0);
+        builder.add((CharSequence) null, 0, 0);
 
         ColumnByte column = (ColumnByte) builder.build();
         assertEquals((byte) 7, column.get(0));
@@ -259,7 +261,7 @@ class ColumnsTest
         final ColumnName VALUES = ColumnName.of("values");
         Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.BOOLEAN);
         builder.add("true", 0, 4);
-        builder.add(null, 0, 0);
+        builder.add((CharSequence) null, 0, 0);
 
         ColumnBoolean column = (ColumnBoolean) builder.build();
         assertTrue(column.get(0));
@@ -272,7 +274,7 @@ class ColumnsTest
         final ColumnName VALUES = ColumnName.of("values");
         Column.Builder builder = Columns.newBuilder(VALUES, ColumnTypes.LONG);
         builder.add("123456789", 0, 9);
-        builder.add(null, 0, 0);
+        builder.add((CharSequence) null, 0, 0);
 
         ColumnLong column = (ColumnLong) builder.build();
         assertEquals(123456789L, column.get(0));
@@ -285,11 +287,45 @@ class ColumnsTest
         final ColumnName VALUES = ColumnName.of("values");
         ColumnObject.Builder<String> builder = ColumnObject.builder(VALUES);
         builder.add("Alpha", 0, 5);
-        builder.add(null, 0, 0);
+        builder.add((CharSequence) null, 0, 0);
 
         ColumnObject<String> column = builder.build();
         assertEquals("Alpha", column.get(0));
         assertFalse(column.isSet(1));
+    }
+
+    @Test
+    void newByteSliceBuilderSupportsPrimitiveAndObjectTypes()
+    {
+        final ColumnName VALUES = ColumnName.of("values");
+        ByteString bytes = new ByteString("xx12|7|true|123456789|Alpha|1234.50|bad");
+
+        Column.Builder intBuilder = Columns.newBuilder(VALUES, ColumnTypes.INT);
+        intBuilder.add(bytes, 2, 4);
+        assertEquals(12, ((ColumnInt) intBuilder.build()).get(0));
+
+        Column.Builder byteBuilder = Columns.newBuilder(VALUES, ColumnTypes.BYTE);
+        byteBuilder.add(bytes, 5, 6);
+        assertEquals((byte) 7, ((ColumnByte) byteBuilder.build()).get(0));
+
+        Column.Builder booleanBuilder = Columns.newBuilder(VALUES, ColumnTypes.BOOLEAN);
+        booleanBuilder.add(bytes, 7, 11);
+        assertTrue(((ColumnBoolean) booleanBuilder.build()).get(0));
+
+        Column.Builder longBuilder = Columns.newBuilder(VALUES, ColumnTypes.LONG);
+        longBuilder.add(bytes, 12, 21);
+        assertEquals(123456789L, ((ColumnLong) longBuilder.build()).get(0));
+
+        ColumnObject.Builder<String> stringBuilder = ColumnObject.builder(VALUES);
+        stringBuilder.add(bytes, 22, 27);
+        assertEquals("Alpha", stringBuilder.build().get(0));
+
+        ColumnObject.Builder<BigDecimal> decimalBuilder = ColumnObject.builder(VALUES, ColumnTypes.DECIMAL);
+        decimalBuilder.add(bytes, 28, 35);
+        decimalBuilder.add(bytes, 36, 39);
+        ColumnObject<BigDecimal> decimals = decimalBuilder.build();
+        assertEquals(0, new BigDecimal("1234.50").compareTo(decimals.get(0)));
+        assertFalse(decimals.isSet(1));
     }
 
     @Test

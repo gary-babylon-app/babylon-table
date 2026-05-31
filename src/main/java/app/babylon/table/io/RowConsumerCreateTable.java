@@ -198,12 +198,11 @@ public final class RowConsumerCreateTable implements RowConsumer
 
     private static void addValue(Column.Builder builder, ByteStringSlices row, int fieldIndex)
     {
-        String value = row.getString(fieldIndex);
-        if (value == null || value.isEmpty())
+        if (!row.isSet(fieldIndex))
         {
             builder.addNull();
             return;
         }
-        builder.add(value, 0, value.length());
+        builder.add(row.getByteString(), row.start(fieldIndex), row.end(fieldIndex));
     }
 }

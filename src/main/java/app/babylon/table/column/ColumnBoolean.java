@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
+import app.babylon.text.ByteSequence;
 import app.babylon.text.Sentence.ParseMode;
 
 /**
@@ -50,6 +51,12 @@ public interface ColumnBoolean extends Column
         }
 
         @Override
+        default Builder add(ByteSequence bytes, int start, int end)
+        {
+            return add(ParseMode.EXACT, bytes, start, end);
+        }
+
+        @Override
         default Builder add(ParseMode parseMode, CharSequence chars, int start, int end)
         {
             if (chars == null || start >= end)
@@ -69,6 +76,24 @@ public interface ColumnBoolean extends Column
                 }
             }
             Boolean value = (parseMode == null ? ParseMode.EXACT : parseMode).apply(parser, chars, start, end);
+            return value == null ? addNull() : add(value.booleanValue());
+        }
+
+        @Override
+        default Builder add(ParseMode parseMode, ByteSequence bytes, int start, int end)
+        {
+            if (bytes == null || start >= end)
+            {
+                return addNull();
+            }
+            TypeParser<Boolean> parser = parser();
+            if (parseMode == null || parseMode == ParseMode.EXACT)
+            {
+                Boolean value = parser.parse(bytes, start, end);
+                return value == null ? addNull() : add(value.booleanValue());
+            }
+            String decoded = bytes.decode(start, end);
+            Boolean value = parseMode.apply(parser, decoded, 0, decoded.length());
             return value == null ? addNull() : add(value.booleanValue());
         }
 

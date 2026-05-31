@@ -22,6 +22,7 @@ public final class RowCursors
 
     public static RowCursor create(ReadOptionsCsv options, InputStream inputStream)
     {
-        return new RowCursorCsv(ArgumentCheck.nonNull(inputStream), ArgumentCheck.nonNull(options));
+        return new RowCursorByteString(ArgumentCheck.nonNull(inputStream), ArgumentCheck.nonNull(options));
     }
+
 }

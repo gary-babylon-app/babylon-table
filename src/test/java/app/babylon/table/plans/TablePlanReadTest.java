@@ -946,4 +946,5 @@ class TablePlanReadTest
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(',').build();
         return RowSources.create(csvFormat, StreamSources.fromString(csv, "values.csv"));
     }
+
 }

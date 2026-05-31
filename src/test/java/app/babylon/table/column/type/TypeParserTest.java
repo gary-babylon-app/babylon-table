@@ -3,8 +3,11 @@ package app.babylon.table.column.type;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -16,6 +19,8 @@ import java.util.Currency;
 
 import org.junit.jupiter.api.Test;
 
+import app.babylon.text.ByteSequence;
+import app.babylon.text.ByteString;
 import app.babylon.text.Sentence;
 
 class TypeParserTest
@@ -50,11 +55,21 @@ class TypeParserTest
     {
         TypeParser<BigDecimal> parser = TypeParsers.BIG_DECIMAL;
         String chars = "xx1234.50yy";
+        ByteString bytes = new ByteString("xx1,234.50yy");
 
         assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse("1234.50")));
         assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse(chars, 2, 9)));
+        assertEquals(0, new BigDecimal("1234.50").compareTo(parser.parse(bytes, 2, 10)));
         assertNull(parser.parse("not-a-decimal"));
         assertNull(parser.parse(chars, 0, 2));
+    }
+
+    @Test
+    void stringParserShouldDecodeByteStringSlices()
+    {
+        ByteString bytes = new ByteString("xxR\u00A0100yy", StandardCharsets.UTF_8);
+
+        assertEquals("R\u00A0100", TypeParsers.STRING.parse(bytes, 2, bytes.length() - 2));
     }
 
     @Test
@@ -70,6 +85,67 @@ class TypeParserTest
     }
 
     @Test
+    void defaultPrimitiveParsersShouldWorkForEncodedByteSequence()
+    {
+        TypeParser<String> parser = (s, start, end) -> s == null ? null : s.subSequence(start, end).toString().trim();
+        ByteSequence bytes = bytes("xx-12|345|6789012345|yy");
+
+        assertEquals((byte) -12, parser.parseByte(bytes, 2, 5));
+        assertEquals(345, parser.parseInt(bytes, 6, 9));
+        assertEquals(6789012345L, parser.parseLong(bytes, 10, 20));
+    }
+
+    @Test
+    void encodedByteSequenceIntegerParserShouldMatchJdkOverflowBehaviour()
+    {
+        TypeParser<String> parser = (s, start, end) -> s == null ? null : s.subSequence(start, end).toString();
+
+        assertEquals(Integer.MAX_VALUE, parser.parseInt(bytes(String.valueOf(Integer.MAX_VALUE)), 0, 10));
+        assertEquals(Integer.MIN_VALUE, parser.parseInt(bytes(String.valueOf(Integer.MIN_VALUE)), 0, 11));
+        assertThrows(NumberFormatException.class, () -> parser.parseInt(bytes("2147483648"), 0, 10));
+        assertThrows(NumberFormatException.class, () -> parser.parseInt(bytes("-2147483649"), 0, 11));
+        assertThrows(NumberFormatException.class, () -> parser.parseInt(bytes("+"), 0, 1));
+        assertThrows(NumberFormatException.class, () -> parser.parseInt(bytes("12x"), 0, 3));
+    }
+
+    @Test
+    void encodedByteSequenceLongParserShouldMatchJdkOverflowBehaviour()
+    {
+        TypeParser<String> parser = (s, start, end) -> s == null ? null : s.subSequence(start, end).toString();
+
+        assertEquals(Long.MAX_VALUE, parser.parseLong(bytes(String.valueOf(Long.MAX_VALUE)), 0, 19));
+        assertEquals(Long.MIN_VALUE, parser.parseLong(bytes(String.valueOf(Long.MIN_VALUE)), 0, 20));
+        assertThrows(NumberFormatException.class, () -> parser.parseLong(bytes("9223372036854775808"), 0, 19));
+        assertThrows(NumberFormatException.class, () -> parser.parseLong(bytes("-9223372036854775809"), 0, 20));
+        assertThrows(NumberFormatException.class, () -> parser.parseLong(bytes("-"), 0, 1));
+        assertThrows(NumberFormatException.class, () -> parser.parseLong(bytes("12\u00A0"), 0, 4));
+    }
+
+    @Test
+    void boxedPrimitiveParsersShouldParseEncodedByteSequencesWithoutDecoding()
+    {
+        assertEquals(Byte.valueOf((byte) 12), TypeParsers.BYTE.parse(bytes("12"), 0, 2));
+        assertEquals(Integer.valueOf(345), TypeParsers.INT.parse(bytes("xx345yy"), 2, 5));
+        assertEquals(Long.valueOf(6789012345L), TypeParsers.LONG.parse(bytes("6789012345"), 0, 10));
+        assertNull(TypeParsers.BYTE.parse(bytes("128"), 0, 3));
+        assertNull(TypeParsers.INT.parse(bytes("12x"), 0, 3));
+        assertNull(TypeParsers.LONG.parse((ByteSequence) null, 0, 0));
+    }
+
+    @Test
+    void boxedPrimitiveParsersShouldParseByteStringSlicesDirectly()
+    {
+        ByteString bytes = new ByteString("xx12|345|6789012345|yy");
+
+        assertEquals(Byte.valueOf((byte) 12), TypeParsers.BYTE.parse(bytes, 2, 4));
+        assertEquals(Integer.valueOf(345), TypeParsers.INT.parse(bytes, 5, 8));
+        assertEquals(Long.valueOf(6789012345L), TypeParsers.LONG.parse(bytes, 9, 19));
+        assertNull(TypeParsers.BYTE.parse(bytes, 5, 8));
+        assertNull(TypeParsers.INT.parse(bytes, 0, 2));
+        assertNull(TypeParsers.LONG.parse((ByteString) null, 0, 0));
+    }
+
+    @Test
     void objectParserShouldWorkWithLocalDateYmdFallback()
     {
         TypeParser<LocalDate> parser = TypeParsers.LOCAL_DATE_YMD;
@@ -79,6 +155,27 @@ class TypeParserTest
         assertEquals(LocalDate.of(2024, 3, 15), parser.parse(chars, 2, 12));
         assertNull(parser.parse("not-a-date"));
         assertNull(parser.parse(chars, 0, 2));
+    }
+
+    private static ByteSequence bytes(String value)
+    {
+        byte[] bytes = value.getBytes(StandardCharsets.UTF_8);
+        return new TestByteSequence(bytes, StandardCharsets.UTF_8);
+    }
+
+    private record TestByteSequence(byte[] bytes, Charset charset) implements ByteSequence
+    {
+        @Override
+        public int length()
+        {
+            return this.bytes.length;
+        }
+
+        @Override
+        public byte byteAt(int index)
+        {
+            return this.bytes[index];
+        }
     }
 
     @Test

@@ -20,5 +20,5 @@ public interface RowConsumer
 {
     void start(ColumnName[] columnNames);
 
-    void accept(Row row);
+    void accept(ByteStringSlices row);
 }

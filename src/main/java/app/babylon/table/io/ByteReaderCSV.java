@@ -10,30 +10,30 @@
 
 package app.babylon.table.io;
 
-import app.babylon.lang.ArgumentCheck;
-
 import java.io.Closeable;
 import java.io.IOException;
-import java.io.Reader;
+import java.io.InputStream;
 
-final class BufferedCharReader implements Closeable
+import app.babylon.lang.ArgumentCheck;
+
+final class ByteReaderCSV implements Closeable
 {
     private static final int DEFAULT_BUFFER_SIZE = 8192;
 
-    private final Reader reader;
-    private final char[] buffer;
+    private final InputStream inputStream;
+    private final byte[] buffer;
     private int position;
     private int limit;
 
-    BufferedCharReader(Reader reader)
+    ByteReaderCSV(InputStream inputStream)
     {
-        this(reader, DEFAULT_BUFFER_SIZE);
+        this(inputStream, DEFAULT_BUFFER_SIZE);
     }
 
-    BufferedCharReader(Reader reader, int bufferSize)
+    ByteReaderCSV(InputStream inputStream, int bufferSize)
     {
-        this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
-        this.buffer = new char[Math.max(1, bufferSize)];
+        this.inputStream = ArgumentCheck.nonNull(inputStream, "inputStream must not be null");
+        this.buffer = new byte[Math.max(1, bufferSize)];
         this.position = 0;
         this.limit = 0;
     }
@@ -44,7 +44,7 @@ final class BufferedCharReader implements Closeable
         {
             return -1;
         }
-        return this.buffer[this.position++];
+        return Byte.toUnsignedInt(this.buffer[this.position++]);
     }
 
     int peek() throws IOException
@@ -53,10 +53,10 @@ final class BufferedCharReader implements Closeable
         {
             return -1;
         }
-        return this.buffer[this.position];
+        return Byte.toUnsignedInt(this.buffer[this.position]);
     }
 
-    char[] buffer()
+    byte[] buffer()
     {
         return this.buffer;
     }
@@ -71,7 +71,7 @@ final class BufferedCharReader implements Closeable
         this.position += count;
     }
 
-    int nextSpecial(char separator, char quote) throws IOException
+    int nextSpecial(int separator, int quote) throws IOException
     {
         if (!ensureAvailable())
         {
@@ -79,8 +79,8 @@ final class BufferedCharReader implements Closeable
         }
         for (int i = this.position; i < this.limit; ++i)
         {
-            char ch = this.buffer[i];
-            if (ch == separator || ch == quote || ch == '\r' || ch == '\n')
+            int value = Byte.toUnsignedInt(this.buffer[i]);
+            if (value == separator || value == quote || value == '\r' || value == '\n')
             {
                 return i;
             }
@@ -88,7 +88,7 @@ final class BufferedCharReader implements Closeable
         return this.limit;
     }
 
-    int next(char value) throws IOException
+    int next(int value) throws IOException
     {
         if (!ensureAvailable())
         {
@@ -96,7 +96,7 @@ final class BufferedCharReader implements Closeable
         }
         for (int i = this.position; i < this.limit; ++i)
         {
-            if (this.buffer[i] == value)
+            if (Byte.toUnsignedInt(this.buffer[i]) == value)
             {
                 return i;
             }
@@ -110,7 +110,7 @@ final class BufferedCharReader implements Closeable
         {
             return true;
         }
-        this.limit = this.reader.read(this.buffer, 0, this.buffer.length);
+        this.limit = this.inputStream.read(this.buffer, 0, this.buffer.length);
         this.position = 0;
         return this.limit > 0;
     }
@@ -118,6 +118,6 @@ final class BufferedCharReader implements Closeable
     @Override
     public void close() throws IOException
     {
-        this.reader.close();
+        this.inputStream.close();
     }
 }

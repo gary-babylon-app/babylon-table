@@ -21,5 +21,5 @@ public interface LineReader extends Closeable
 {
     boolean next() throws IOException;
 
-    Row current();
+    ByteStringSlices current();
 }

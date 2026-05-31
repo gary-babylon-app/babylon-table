@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -16,7 +18,7 @@ import app.babylon.io.StreamSources;
 import app.babylon.io.TestStreamSources;
 import app.babylon.table.TableException;
 
-class RowCursorCsvTest
+class RowCursorByteStringTest
 {
     @Test
     void shouldIterateRawCsvRows()
@@ -27,6 +29,7 @@ class RowCursorCsvTest
         try (RowCursor rowCursor = source.openRows())
         {
             assertTrue(rowCursor.next());
+            assertInstanceOf(ByteStringSlices.class, rowCursor.current());
             assertArrayEquals(new String[]
             {"Date", "Description", "Amount"}, values(rowCursor.current()));
 
@@ -67,26 +70,12 @@ class RowCursorCsvTest
     }
 
     @Test
-    void shouldDetectUtf16LeWithoutBom()
+    void shouldRejectUtf16LeDelimitedCsv()
     {
         byte[] bytes = "City,Temp\nLondon,12\n".getBytes(StandardCharsets.UTF_16LE);
         RowSource source = RowSources.create(ReadOptionsCsv.standard(), TestStreamSources.fromBytes(bytes, "rows.csv"));
 
-        try (RowCursor rowCursor = source.openRows())
-        {
-            assertTrue(rowCursor.next());
-            assertArrayEquals(new String[]
-            {"City", "Temp"}, values(rowCursor.current()));
-
-            assertTrue(rowCursor.next());
-            assertArrayEquals(new String[]
-            {"London", "12"}, values(rowCursor.current()));
-            assertFalse(rowCursor.next());
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+        assertThrows(IllegalArgumentException.class, source::openRows);
     }
 
     @Test
@@ -170,6 +159,7 @@ class RowCursorCsvTest
         try (RowCursor rowCursor = source.openRows())
         {
             assertTrue(rowCursor.next());
+            assertInstanceOf(ByteStringSlices.class, rowCursor.current());
             assertArrayEquals(new String[]
             {"ABC", "12", "XYZ"}, values(rowCursor.current()));
 
@@ -272,13 +262,13 @@ class RowCursorCsvTest
                 StreamSources.fromString("ABC12XYZ\n", "rows.txt").openStream());
         try
         {
-            RowCursorCsv csvRowCursor = (RowCursorCsv) rowCursor;
-            assertEquals(';', csvRowCursor.getSeparator());
-            assertEquals('\'', csvRowCursor.getQuote());
-            assertArrayEquals(fixedWidths, csvRowCursor.getFixedWidths());
-            assertEquals(StandardCharsets.UTF_16LE, csvRowCursor.getCharset());
-            assertFalse(csvRowCursor.isAutoDetectOptions());
-            assertFalse(csvRowCursor.isAutoDetectEncoding());
+            RowCursorByteString byteStringRowCursor = (RowCursorByteString) rowCursor;
+            assertEquals(';', byteStringRowCursor.getSeparator());
+            assertEquals('\'', byteStringRowCursor.getQuote());
+            assertArrayEquals(fixedWidths, byteStringRowCursor.getFixedWidths());
+            assertEquals(StandardCharsets.UTF_16LE, byteStringRowCursor.getCharset());
+            assertFalse(byteStringRowCursor.isAutoDetectOptions());
+            assertFalse(byteStringRowCursor.isAutoDetectEncoding());
         } finally
         {
             try
@@ -313,13 +303,12 @@ class RowCursorCsvTest
         }
     }
 
-    private static String[] values(Row row)
+    private static String[] values(ByteStringSlices row)
     {
         String[] values = new String[row.size()];
         for (int i = 0; i < row.size(); ++i)
         {
-            int start = row.start(i);
-            values[i] = row.subSequence(start, row.end(i)).toString();
+            values[i] = row.getString(i);
         }
         return values;
     }

@@ -15,10 +15,11 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 import java.nio.charset.StandardCharsets;
 
 public class StreamSourceProbe
@@ -231,15 +232,16 @@ public class StreamSourceProbe
         CharsetDecoder decoder = StandardCharsets.UTF_8.newDecoder();
         decoder.onMalformedInput(CodingErrorAction.REPORT);
         decoder.onUnmappableCharacter(CodingErrorAction.REPORT);
-        try
-        {
-            decoder.decode(ByteBuffer.wrap(this.bytes, bomLengthBytes(), this.bytes.length - bomLengthBytes()));
-            return true;
-        }
-        catch (CharacterCodingException e)
+        int start = bomLengthBytes();
+        ByteBuffer input = ByteBuffer.wrap(this.bytes, start, this.bytes.length - start);
+        CharBuffer output = CharBuffer.allocate(this.bytes.length - start);
+        CoderResult result = decoder.decode(input, output, true);
+        if (result.isError())
         {
             return false;
         }
+        result = decoder.flush(output);
+        return !result.isError();
     }
 
     private boolean containsWindows1252OnlyBytes()

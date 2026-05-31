@@ -134,9 +134,9 @@ public final class RowFilters
     {
     }
 
-    private static CharSequence fieldValue(Row row, int fieldIndex)
+    private static CharSequence fieldValue(ByteStringSlices row, int fieldIndex)
     {
-        return row.subSequence(row.start(fieldIndex), row.end(fieldIndex));
+        return row.getString(fieldIndex);
     }
 
     private static int positionOf(ColumnName[] availableColumns, ColumnName requiredColumn)

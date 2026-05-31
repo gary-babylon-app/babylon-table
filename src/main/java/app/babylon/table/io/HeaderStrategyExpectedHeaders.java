@@ -72,11 +72,11 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
         while (rowsScanned < this.scanLimit && rowStream.next())
         {
             ++rowsScanned;
-            RowBuffer rowBuffer = (RowBuffer) rowStream.current();
+            ByteStringSlices row = rowStream.current();
             int matchedHeaderCount = 0;
-            for (int i = 0; i < rowBuffer.size(); ++i)
+            for (int i = 0; i < row.size(); ++i)
             {
-                String item = rowBuffer.getString(i);
+                String item = row.getString(i);
                 if (item == null || item.strip().isEmpty())
                 {
                     continue;
@@ -90,7 +90,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
             if (matchedHeaderCount >= enoughForMatch)
             {
                 rowStream.mark(rowsScanned - 1);
-                return new HeaderDetection(HeaderStrategy.toColumnNames(rowBuffer));
+                return new HeaderDetection(HeaderStrategy.toColumnNames(row));
             }
         }
         throw new RuntimeException("Can not find headers from expected names within " + this.scanLimit + " rows.");

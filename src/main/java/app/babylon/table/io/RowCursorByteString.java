@@ -11,6 +11,7 @@
 package app.babylon.table.io;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,18 +22,19 @@ import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 
 /**
- * Supplies rows from an open CSV input stream.
+ * Supplies ByteString-backed rows from an open text input stream.
  * <p>
- * Instances are created by a configured {@link RowSourceCsv} and own the CSV
- * reader resources for the lifetime of iteration.
+ * Instances are created by a configured {@link RowSourceCsv}. Delimited input
+ * is parsed by {@link ByteCSVStateMachine}; fixed-width input is adapted
+ * through {@link FixedWidthLineReader}.
  */
-final class RowCursorCsv extends RowCursorLineReaderCommon
+final class RowCursorByteString extends RowCursorLineReaderCommon
 {
     private static final Charset LEGACY_CSV_FALLBACK = Charset.forName("windows-1252");
 
     private final ReadOptionsCsv options;
 
-    RowCursorCsv(InputStream inputStream, ReadOptionsCsv options)
+    RowCursorByteString(InputStream inputStream, ReadOptionsCsv options)
     {
         super(createLineReader(ArgumentCheck.nonNull(inputStream), ArgumentCheck.nonNull(options)));
         this.options = options;
@@ -93,11 +95,14 @@ final class RowCursorCsv extends RowCursorLineReaderCommon
                     ? CsvFormatProbe.detect(bufferedInputStream, "stream.csv", LEGACY_CSV_FALLBACK, options.separator(),
                             options.quote())
                     : new DetectedCsvFormat(options.charset(), options.separator(), options.quote(), 1.0d);
-            BufferedCharReader reader = createBufferedCharReader(bufferedInputStream, detectedFormat.charset(),
-                    bomLength);
-            return options.isFixedWidths()
-                    ? new LineReaderCSVFixedWidth(reader, options.fixedWidths())
-                    : new LineReaderCSV(reader, detectedFormat.separator(), detectedFormat.quote());
+            if (options.isFixedWidths())
+            {
+                BufferedReader reader = createBufferedReader(bufferedInputStream, detectedFormat.charset(), bomLength);
+                return new FixedWidthLineReader(reader, options.fixedWidths(), detectedFormat.charset());
+            }
+            skipBytes(bufferedInputStream, bomLength);
+            return new ByteCSVStateMachine(new ByteReaderCSV(bufferedInputStream), detectedFormat.separator(),
+                    detectedFormat.quote(), detectedFormat.charset());
         }
         catch (IOException | RuntimeException e)
         {
@@ -123,7 +128,7 @@ final class RowCursorCsv extends RowCursorLineReaderCommon
         throw new TableException("Failed to prepare CSV row supplier.", e);
     }
 
-    private static BufferedCharReader createBufferedCharReader(InputStream inputStream, Charset charset, int bomLength)
+    private static BufferedReader createBufferedReader(InputStream inputStream, Charset charset, int bomLength)
     {
         try
         {
@@ -133,7 +138,7 @@ final class RowCursorCsv extends RowCursorLineReaderCommon
         {
             throw new TableException("Failed to skip CSV BOM bytes.", e);
         }
-        return new BufferedCharReader(new InputStreamReader(inputStream, charset));
+        return new BufferedReader(new InputStreamReader(inputStream, charset));
     }
 
     private static BufferedInputStream toBufferedStream(InputStream inputStream)

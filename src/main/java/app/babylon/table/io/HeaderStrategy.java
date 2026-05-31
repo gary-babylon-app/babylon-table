@@ -114,7 +114,7 @@ public interface HeaderStrategy
         return new HeaderDetection(headers, false, headers, toIntArray(normalizedPositions));
     }
 
-    static ColumnName[] toColumnNames(Row row)
+    static ColumnName[] toColumnNames(ByteStringSlices row)
     {
         if (row == null)
         {
@@ -123,7 +123,7 @@ public interface HeaderStrategy
         ColumnName[] columnNames = new ColumnName[row.size()];
         for (int i = 0; i < row.size(); ++i)
         {
-            columnNames[i] = ColumnName.parse(row, row.start(i), row.end(i));
+            columnNames[i] = ColumnName.parse(row.getString(i));
         }
         return columnNames;
     }

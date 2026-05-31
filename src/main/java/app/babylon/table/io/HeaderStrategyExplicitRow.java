@@ -40,11 +40,11 @@ public class HeaderStrategyExplicitRow implements HeaderStrategy
         int rowIndex = 0;
         while (rowStream.next())
         {
-            RowBuffer rowBuffer = (RowBuffer) rowStream.current();
+            ByteStringSlices row = rowStream.current();
             if (rowIndex == this.headerRowIndex)
             {
                 rowStream.mark(rowIndex);
-                return new HeaderDetection(HeaderStrategy.toColumnNames(rowBuffer));
+                return new HeaderDetection(HeaderStrategy.toColumnNames(row));
             }
             ++rowIndex;
         }

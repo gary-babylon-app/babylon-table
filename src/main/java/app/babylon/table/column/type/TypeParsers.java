@@ -25,6 +25,8 @@ import app.babylon.table.transform.ColumnLocalDates;
 import app.babylon.table.transform.DateFormat;
 import app.babylon.text.BigDecimals;
 import app.babylon.text.Booleans;
+import app.babylon.text.ByteSequence;
+import app.babylon.text.ByteString;
 import app.babylon.text.Currencys;
 import app.babylon.text.Strings;
 
@@ -94,8 +96,20 @@ public final class TypeParsers
             throw new IllegalArgumentException("Could not parse boolean: " + s.subSequence(start, end));
         }
     };
-    public static final TypeParser<String> STRING = (s, start,
-            end) -> s == null ? null : s.subSequence(start, end).toString();
+    public static final TypeParser<String> STRING = new TypeParser<>()
+    {
+        @Override
+        public String parse(CharSequence s, int start, int end)
+        {
+            return s == null ? null : s.subSequence(start, end).toString();
+        }
+
+        @Override
+        public String parse(ByteString s, int start, int end)
+        {
+            return s == null ? null : s.decode(start, end);
+        }
+    };
     public static final TypeParser<Byte> BYTE = new TypeParser<>()
     {
         @Override
@@ -125,6 +139,41 @@ public final class TypeParsers
             try
             {
                 return Byte.valueOf(parseByte(s, start, end));
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
+        }
+
+        @Override
+        public Byte parse(ByteSequence s, int start, int end)
+        {
+            if (s == null || start >= end)
+            {
+                return null;
+            }
+            try
+            {
+                return Byte.valueOf(parseByte(s, start, end));
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
+        }
+
+        @Override
+        public Byte parse(ByteString s, int start, int end)
+        {
+            if (s == null || start >= end)
+            {
+                return null;
+            }
+            try
+            {
+                int parsed = s.parseInt(start, end);
+                return parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE ? null : Byte.valueOf((byte) parsed);
             }
             catch (RuntimeException e)
             {
@@ -167,6 +216,40 @@ public final class TypeParsers
                 return null;
             }
         }
+
+        @Override
+        public Integer parse(ByteSequence s, int start, int end)
+        {
+            if (s == null || start >= end)
+            {
+                return null;
+            }
+            try
+            {
+                return Integer.valueOf(parseInt(s, start, end));
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
+        }
+
+        @Override
+        public Integer parse(ByteString s, int start, int end)
+        {
+            if (s == null || start >= end)
+            {
+                return null;
+            }
+            try
+            {
+                return Integer.valueOf(s.parseInt(start, end));
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
+        }
     };
     public static final TypeParser<Long> LONG = new TypeParser<>()
     {
@@ -203,6 +286,40 @@ public final class TypeParsers
                 return null;
             }
         }
+
+        @Override
+        public Long parse(ByteSequence s, int start, int end)
+        {
+            if (s == null || start >= end)
+            {
+                return null;
+            }
+            try
+            {
+                return Long.valueOf(parseLong(s, start, end));
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
+        }
+
+        @Override
+        public Long parse(ByteString s, int start, int end)
+        {
+            if (s == null || start >= end)
+            {
+                return null;
+            }
+            try
+            {
+                return Long.valueOf(s.parseLong(start, end));
+            }
+            catch (RuntimeException e)
+            {
+                return null;
+            }
+        }
     };
     public static final TypeParser<Double> DOUBLE = new TypeParser<>()
     {
@@ -218,8 +335,20 @@ public final class TypeParsers
             return s == null || start >= end ? null : BigDecimals.parseDouble(s.subSequence(start, end));
         }
     };
-    public static final TypeParser<BigDecimal> BIG_DECIMAL = (s, start, end) -> BigDecimals
-            .parse(s == null ? null : s.subSequence(start, end));
+    public static final TypeParser<BigDecimal> BIG_DECIMAL = new TypeParser<>()
+    {
+        @Override
+        public BigDecimal parse(CharSequence s, int start, int end)
+        {
+            return BigDecimals.parse(s, start, end);
+        }
+
+        @Override
+        public BigDecimal parse(ByteString s, int start, int end)
+        {
+            return s == null ? null : s.parseDecimal(start, end);
+        }
+    };
     public static final TypeParser<Instant> INSTANT = new TypeParser<>()
     {
         @Override

@@ -30,10 +30,11 @@ public final class ProjectedRowReader
     private static final int EMPTY_ROW_LIMIT = 1;
 
     private final RowStreamMarkable rows;
-    private final RowProjected projectedRow;
-    private final Predicate<Row> rowFilter;
+    private final boolean stripping;
+    private final int[] selectedPositions;
+    private final Predicate<ByteStringSlices> rowFilter;
     private final ColumnDefinition[] columns;
-    private Row current;
+    private ByteStringSlices current;
     private int emptyRowCount;
 
     private ProjectedRowReader(Builder builder)
@@ -43,9 +44,8 @@ public final class ProjectedRowReader
         ColumnName[] projectedColumnNames = projectedColumnNames(headerDetection, builder.columnRenames);
         this.columns = columnDefinitions(headerDetection, projectedColumnNames, builder.nativeColumnTypes,
                 builder.columnTypes);
-        this.projectedRow = builder.stripping
-                ? new RowProjectedStripped(headerDetection.getSelectedPositions())
-                : new RowProjectedDefault(headerDetection.getSelectedPositions());
+        this.selectedPositions = headerDetection.getSelectedPositions();
+        this.stripping = builder.stripping;
         this.rowFilter = builder.rowFilter == null ? null : builder.rowFilter.bind(projectedColumnNames);
         this.current = null;
         this.emptyRowCount = 0;
@@ -67,7 +67,7 @@ public final class ProjectedRowReader
         {
             while (this.rows.next())
             {
-                Row row = this.projectedRow.with(this.rows.current());
+                ByteStringSlices row = this.rows.current().select(this.selectedPositions, this.stripping);
                 if (isEndOfTable(row))
                 {
                     this.current = null;
@@ -84,7 +84,7 @@ public final class ProjectedRowReader
         }
         while (this.rows.next())
         {
-            Row row = this.projectedRow.with(this.rows.current());
+            ByteStringSlices row = this.rows.current().select(this.selectedPositions, this.stripping);
             if (isEndOfTable(row))
             {
                 this.current = null;
@@ -104,7 +104,7 @@ public final class ProjectedRowReader
         return false;
     }
 
-    private boolean isEndOfTable(Row row)
+    private boolean isEndOfTable(ByteStringSlices row)
     {
         if (!row.isEmpty())
         {
@@ -115,7 +115,7 @@ public final class ProjectedRowReader
         return this.emptyRowCount >= EMPTY_ROW_LIMIT;
     }
 
-    public Row current()
+    public ByteStringSlices current()
     {
         return ArgumentCheck.nonNull(this.current, "current row is not available until next() succeeds");
     }

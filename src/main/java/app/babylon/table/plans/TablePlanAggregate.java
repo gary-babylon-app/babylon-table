@@ -24,14 +24,13 @@ import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
-import app.babylon.table.io.Row;
+import app.babylon.table.io.ByteStringSlices;
 import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowCursor;
 import app.babylon.table.io.HeaderDetection;
 import app.babylon.table.io.HeaderStrategy;
 import app.babylon.table.io.HeaderStrategyAuto;
 import app.babylon.table.io.ProjectedRowReader;
-import app.babylon.table.io.RowKey;
 import app.babylon.table.io.RowSource;
 import app.babylon.table.io.RowStreamBuffered;
 import app.babylon.table.io.RowStreamMarkable;
@@ -59,7 +58,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         private int maxGroupByPosition;
         private int[] aggregatePositions;
         private int maxAggregatePosition;
-        private final Map<RowKey, GroupAccumulators> accumulatorsByGroup;
+        private final Map<ByteStringSlices, GroupAccumulators> accumulatorsByGroup;
 
         private RowConsumerGroupAggregate(TablePlanAggregate plan)
         {
@@ -117,26 +116,27 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         }
 
         @Override
-        public void accept(Row row)
+        public void accept(ByteStringSlices rowValues)
         {
-            if (row.size() <= Math.max(this.maxGroupByPosition, this.maxAggregatePosition))
+            if (rowValues.size() <= Math.max(this.maxGroupByPosition, this.maxAggregatePosition))
             {
                 return;
             }
 
-            RowKey groupKey = row.keyOf(this.groupByPositions);
+            ByteStringSlices groupKey = rowValues.select(this.groupByPositions);
             GroupAccumulators accumulators = this.accumulatorsByGroup.computeIfAbsent(groupKey,
                     k -> new GroupAccumulators(this.aggregatePositions.length));
             for (int i = 0; i < this.aggregatePositions.length; ++i)
             {
                 int aggregatePosition = this.aggregatePositions[i];
-                int start = row.start(aggregatePosition);
-                int end = row.end(aggregatePosition);
+                int start = rowValues.start(aggregatePosition);
+                int end = rowValues.end(aggregatePosition);
                 if (start >= end)
                 {
                     continue;
                 }
-                accumulators.accumulators[i].accept(row, start, end);
+                String value = rowValues.decode(start, end);
+                accumulators.accumulators[i].accept(value, 0, value.length());
             }
         }
 
@@ -149,9 +149,9 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
                 groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i), ColumnTypes.STRING);
             }
             Column.Builder[] aggregateBuilders = newAggregateBuilders(this.plan);
-            for (Map.Entry<RowKey, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())
+            for (Map.Entry<ByteStringSlices, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())
             {
-                RowKey groupKey = entry.getKey();
+                ByteStringSlices groupKey = entry.getKey();
                 for (int i = 0; i < groupByBuilders.length; ++i)
                 {
                     groupByBuilders[i].add(groupKey.getString(i));

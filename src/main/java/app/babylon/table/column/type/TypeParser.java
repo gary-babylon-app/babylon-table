@@ -10,6 +10,10 @@
 
 package app.babylon.table.column.type;
 
+import java.util.Objects;
+
+import app.babylon.text.ByteSequence;
+import app.babylon.text.ByteString;
 import app.babylon.text.SliceParser;
 
 /**
@@ -39,6 +43,18 @@ public interface TypeParser<T> extends SliceParser<T>
      */
     @Override
     T parse(CharSequence s, int start, int end);
+
+    default T parse(ByteString s, int start, int end)
+    {
+        return s == null ? null : parse(s.decode(start, end));
+    }
+
+    default T parse(ByteSequence s, int start, int end)
+    {
+        return s instanceof ByteString byteString
+                ? parse(byteString, start, end)
+                : s == null ? null : parse(s.decode(start, end));
+    }
 
     /**
      * Parses a whole character sequence into an object value.
@@ -87,6 +103,16 @@ public interface TypeParser<T> extends SliceParser<T>
         if (parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE)
         {
             throw new NumberFormatException("Value out of range for byte: " + s.subSequence(start, end));
+        }
+        return (byte) parsed;
+    }
+
+    default byte parseByte(ByteSequence s, int start, int end)
+    {
+        int parsed = parseInt(s, start, end);
+        if (parsed < Byte.MIN_VALUE || parsed > Byte.MAX_VALUE)
+        {
+            throw new NumberFormatException("Value out of range for byte.");
         }
         return (byte) parsed;
     }
@@ -152,6 +178,58 @@ public interface TypeParser<T> extends SliceParser<T>
         return Integer.parseInt(s, start, end, 10);
     }
 
+    default int parseInt(ByteSequence s, int start, int end)
+    {
+        Objects.requireNonNull(s);
+        Objects.checkFromToIndex(start, end, s.length());
+
+        boolean negative = false;
+        int i = start;
+        int limit = -Integer.MAX_VALUE;
+
+        if (i < end)
+        {
+            byte firstByte = s.byteAt(i);
+            if (firstByte < '0')
+            {
+                if (firstByte == '-')
+                {
+                    negative = true;
+                    limit = Integer.MIN_VALUE;
+                }
+                else if (firstByte != '+')
+                {
+                    throw new NumberFormatException();
+                }
+                ++i;
+                if (i == end)
+                {
+                    throw new NumberFormatException();
+                }
+            }
+
+            int multmin = limit / 10;
+            int result = 0;
+            while (i < end)
+            {
+                int digit = s.byteAt(i) - '0';
+                if (digit < 0 || digit > 9 || result < multmin)
+                {
+                    throw new NumberFormatException();
+                }
+                result *= 10;
+                if (result < limit + digit)
+                {
+                    throw new NumberFormatException();
+                }
+                ++i;
+                result -= digit;
+            }
+            return negative ? result : -result;
+        }
+        throw new NumberFormatException();
+    }
+
     /**
      * Parses a whole character sequence into a long value.
      *
@@ -178,6 +256,58 @@ public interface TypeParser<T> extends SliceParser<T>
     default long parseLong(CharSequence s, int start, int end)
     {
         return Long.parseLong(s, start, end, 10);
+    }
+
+    default long parseLong(ByteSequence s, int start, int end)
+    {
+        Objects.requireNonNull(s);
+        Objects.checkFromToIndex(start, end, s.length());
+
+        boolean negative = false;
+        int i = start;
+        long limit = -Long.MAX_VALUE;
+
+        if (i < end)
+        {
+            byte firstByte = s.byteAt(i);
+            if (firstByte < '0')
+            {
+                if (firstByte == '-')
+                {
+                    negative = true;
+                    limit = Long.MIN_VALUE;
+                }
+                else if (firstByte != '+')
+                {
+                    throw new NumberFormatException();
+                }
+                ++i;
+            }
+            if (i >= end)
+            {
+                throw new NumberFormatException();
+            }
+
+            long multmin = limit / 10;
+            long result = 0;
+            while (i < end)
+            {
+                int digit = s.byteAt(i) - '0';
+                if (digit < 0 || digit > 9 || result < multmin)
+                {
+                    throw new NumberFormatException();
+                }
+                result *= 10;
+                if (result < limit + digit)
+                {
+                    throw new NumberFormatException();
+                }
+                ++i;
+                result -= digit;
+            }
+            return negative ? result : -result;
+        }
+        throw new NumberFormatException();
     }
 
     /**

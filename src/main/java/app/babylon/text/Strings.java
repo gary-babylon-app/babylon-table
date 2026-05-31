@@ -1057,7 +1057,7 @@ public final class Strings
                 || type == Character.ENCLOSING_MARK;
     }
 
-    private static int stripxStart(CharSequence s, int start, int end)
+    public static int stripxStart(CharSequence s, int start, int end)
     {
         if (s == null || start >= end)
         {
@@ -1071,7 +1071,7 @@ public final class Strings
         return strippedStart;
     }
 
-    private static int stripxEnd(CharSequence s, int start, int end)
+    public static int stripxEnd(CharSequence s, int start, int end)
     {
         if (s == null || start >= end)
         {
@@ -1088,7 +1088,7 @@ public final class Strings
     private static boolean isStrippable(char c)
     {
         return Character.isWhitespace(c) || c == '\u00A0' || c == '\u200B' || c == '\u200C' || c == '\u200D'
-                || c == '\uFEFF' || c == '\uFFFD';
+                || c == '\u202F' || c == '\uFEFF' || c == '\uFFFD';
     }
 
     private static int indexOfAny2(CharSequence s, int start, int end, char c1, char c2)

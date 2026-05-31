@@ -9,41 +9,39 @@ final class HeaderStrategyTestSupport
     {
     }
 
-    static RowBuffer row(String... values)
+    static ByteStringSlices row(String... values)
     {
-        RowBuffer row = new RowBuffer();
+        ByteStringSlices.Builder row = new ByteStringSlices.Builder();
         for (String value : values)
         {
             if (value != null)
             {
-                for (int i = 0; i < value.length(); ++i)
-                {
-                    row.append(value.charAt(i));
-                }
+                byte[] bytes = value.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+                row.append(bytes, 0, bytes.length);
             }
             row.finishField();
         }
-        return row;
+        return row.build();
     }
 
-    static List<RowBuffer> rows(RowBuffer... rows)
+    static List<ByteStringSlices> rows(ByteStringSlices... rows)
     {
         return List.of(rows);
     }
 
-    static RowStreamMarkable stream(RowBuffer... rows)
+    static RowStreamMarkable stream(ByteStringSlices... rows)
     {
         return new TestRowStream(List.of(rows));
     }
 
     private static final class TestRowStream implements RowStreamMarkable
     {
-        private final List<RowBuffer> rows;
+        private final List<ByteStringSlices> rows;
         private int currentIndex;
         private int replayIndex;
         private int markIndex;
 
-        private TestRowStream(List<RowBuffer> rows)
+        private TestRowStream(List<ByteStringSlices> rows)
         {
             this.rows = rows;
             this.currentIndex = -1;
@@ -72,7 +70,7 @@ final class HeaderStrategyTestSupport
         }
 
         @Override
-        public Row current()
+        public ByteStringSlices current()
         {
             return this.rows.get(this.currentIndex);
         }

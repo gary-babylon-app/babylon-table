@@ -38,7 +38,7 @@ abstract class RowCursorLineReaderCommon implements RowCursor
     }
 
     @Override
-    public Row current()
+    public ByteStringSlices current()
     {
         return this.lineReader.current();
     }

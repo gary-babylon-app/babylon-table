@@ -19,8 +19,8 @@ import java.util.List;
 public final class RowStreamBuffered implements RowStreamMarkable
 {
     private final LineReader lineReader;
-    private final List<Row> cachedRows;
-    private Row current;
+    private final List<ByteStringSlices> cachedRows;
+    private ByteStringSlices current;
     private boolean recording;
     private int dataStartIndex;
     private int replayIndex;
@@ -46,7 +46,7 @@ public final class RowStreamBuffered implements RowStreamMarkable
             }
 
             @Override
-            public Row current()
+            public ByteStringSlices current()
             {
                 return rowCursor.current();
             }
@@ -87,15 +87,16 @@ public final class RowStreamBuffered implements RowStreamMarkable
         boolean hasRow = this.lineReader.next();
         if (hasRow && this.recording)
         {
-            this.cachedRows.add(this.lineReader.current().copy());
+            this.cachedRows.add(this.lineReader.current());
         }
         this.current = hasRow ? this.lineReader.current() : null;
         return hasRow;
     }
 
     @Override
-    public Row current()
+    public ByteStringSlices current()
     {
         return ArgumentCheck.nonNull(this.current, "current row is not available until next() succeeds");
     }
+
 }

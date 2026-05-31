@@ -23,23 +23,22 @@ import app.babylon.table.column.ColumnDefinition;
  * source-side schema seen by the row consumer. In particular, any
  * source-specified {@link app.babylon.table.column.Column.Type column types}
  * can influence which low-level builders are created before rows are read. That
- * matters when the caller wants to avoid an intermediate in-memory
- * {@code String} column and parse slices directly into the final builder, for
- * example:
+ * matters when the caller wants to parse {@link ByteStringSlices} fields
+ * directly into the final builder, for example:
  * <p>
  * - primitive numeric columns such as {@code int}, {@code long}, and
  * {@code double}
  * <p>
- * - fast enum-like object types with a direct {@code CharSequence} parser, when
- * that is materially better than first building a string dictionary
+ * - fast enum-like object types with a direct byte-slice parser, when that is
+ * materially better than first building a string dictionary
  * <p>
- * - high-cardinality columns where building a full string column and then
- * parsing it later would be unnecessary work
+ * - high-cardinality columns where materialising field strings before parsing
+ * would be unnecessary work
  * <p>
  * For ordinary categorical text, source-side typing is usually not necessary.
  * In that common case it is often better to let the row consumer build the
- * natural string dictionary first and only request a direct source type when
- * that parser has a real advantage over storing dictionary strings.
+ * natural dictionary first and only request a direct source type when that
+ * parser has a real advantage over storing dictionary values.
  */
 public interface RowCursor extends AutoCloseable
 {
@@ -58,7 +57,7 @@ public interface RowCursor extends AutoCloseable
 
     boolean next();
 
-    Row current();
+    ByteStringSlices current();
 
     @Override
     void close() throws Exception;

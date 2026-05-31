@@ -50,7 +50,7 @@ import app.babylon.text.Strings;
  *         ColumnDefinition[] columns = supplier.columns();
  *         while (supplier.next())
  *         {
- *             Row row = supplier.current();
+ *             ByteStringSlices row = supplier.current();
  *         }
  *     }
  * }
@@ -115,13 +115,13 @@ public class RowCursorResultSet implements RowCursor
     }
 
     @Override
-    public Row current()
+    public ByteStringSlices current()
     {
         if (!this.currentAvailable)
         {
             throw new IllegalStateException("current row is not available until next() succeeds");
         }
-        return this.row;
+        return this.row.current();
     }
 
     @Override
@@ -133,7 +133,7 @@ public class RowCursorResultSet implements RowCursor
         }
     }
 
-    private void appendColumnValue(RowBuffer rowBuffer, int columnIndex) throws SQLException, IOException
+    private void appendColumnValue(StringSlices.Builder rowBuilder, int columnIndex) throws SQLException, IOException
     {
         Reader columnValueReader = null;
         try
@@ -142,28 +142,28 @@ public class RowCursorResultSet implements RowCursor
         }
         catch (SQLFeatureNotSupportedException e)
         {
-            appendStringValue(rowBuffer, columnIndex);
+            appendStringValue(rowBuilder, columnIndex);
             return;
         }
 
         if (columnValueReader == null)
         {
-            appendStringValue(rowBuffer, columnIndex);
+            appendStringValue(rowBuilder, columnIndex);
             return;
         }
 
         try (Reader ignored = columnValueReader)
         {
-            rowBuffer.append(columnValueReader);
+            rowBuilder.append(columnValueReader);
         }
     }
 
-    private void appendStringValue(RowBuffer rowBuffer, int columnIndex) throws SQLException
+    private void appendStringValue(StringSlices.Builder rowBuilder, int columnIndex) throws SQLException
     {
         String value = this.resultSet.getString(columnIndex);
         if (value != null)
         {
-            rowBuffer.append(value);
+            rowBuilder.append(value);
         }
     }
 
@@ -220,126 +220,36 @@ public class RowCursorResultSet implements RowCursor
         };
     }
 
-    private final class RowResultSet implements Row
+    private final class RowResultSet
     {
-        private final String[] stringValues;
-        private final boolean[] stringLoaded;
-        private RowBuffer rowBuffer;
+        private ByteStringSlices row;
 
         private RowResultSet()
         {
-            int size = RowCursorResultSet.this.columns.length;
-            this.stringValues = new String[size];
-            this.stringLoaded = new boolean[size];
-            this.rowBuffer = null;
+            this.row = null;
         }
 
         private void reset()
         {
-            Arrays.fill(this.stringValues, null);
-            Arrays.fill(this.stringLoaded, false);
-            if (this.rowBuffer != null)
+            this.row = null;
+        }
+
+        private ByteStringSlices current()
+        {
+            if (this.row != null)
             {
-                this.rowBuffer.clear();
-            }
-        }
-
-        @Override
-        public int size()
-        {
-            return RowCursorResultSet.this.columns.length;
-        }
-
-        @Override
-        public boolean isEmpty()
-        {
-            return ensureRowBuffer().isEmpty();
-        }
-
-        @Override
-        public boolean isSet(int fieldIndex)
-        {
-            return end(fieldIndex) > start(fieldIndex);
-        }
-
-        @Override
-        public int length()
-        {
-            return ensureRowBuffer().length();
-        }
-
-        @Override
-        public char charAt(int index)
-        {
-            return ensureRowBuffer().charAt(index);
-        }
-
-        @Override
-        public int start(int fieldIndex)
-        {
-            return ensureRowBuffer().start(fieldIndex);
-        }
-
-        @Override
-        public int end(int fieldIndex)
-        {
-            return ensureRowBuffer().end(fieldIndex);
-        }
-
-        @Override
-        public RowKey keyOf(int[] positions)
-        {
-            for (int position : positions)
-            {
-                readStringValue(position);
-            }
-            return RowKey.of(this.stringValues, positions);
-        }
-
-        @Override
-        public Row copy()
-        {
-            return ensureRowBuffer().copy();
-        }
-
-        private String readStringValue(int fieldIndex)
-        {
-            if (this.stringLoaded[fieldIndex])
-            {
-                return this.stringValues[fieldIndex];
+                return this.row;
             }
             try
             {
-                String value = RowCursorResultSet.this.resultSet.getString(fieldIndex + 1);
-                this.stringValues[fieldIndex] = value;
-                this.stringLoaded[fieldIndex] = true;
-                return value;
-            }
-            catch (SQLException e)
-            {
-                throw new TableException("Failed to read ResultSet value for column " + (fieldIndex + 1) + ".", e);
-            }
-        }
-
-        private RowBuffer ensureRowBuffer()
-        {
-            if (this.rowBuffer == null)
-            {
-                this.rowBuffer = new RowBuffer();
-            }
-            if (this.rowBuffer.size() == size())
-            {
-                return this.rowBuffer;
-            }
-            try
-            {
-                this.rowBuffer.clear();
-                for (int i = 1; i <= size(); ++i)
+                StringSlices.Builder builder = new StringSlices.Builder();
+                for (int i = 1; i <= RowCursorResultSet.this.columns.length; ++i)
                 {
-                    RowCursorResultSet.this.appendColumnValue(this.rowBuffer, i);
-                    this.rowBuffer.finishField();
+                    RowCursorResultSet.this.appendColumnValue(builder, i);
+                    builder.finishField();
                 }
-                return this.rowBuffer;
+                this.row = builder.build().toByteStringSlices();
+                return this.row;
             }
             catch (SQLException e)
             {

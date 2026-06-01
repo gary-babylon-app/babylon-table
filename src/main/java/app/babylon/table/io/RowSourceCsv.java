@@ -15,7 +15,7 @@ import app.babylon.lang.ArgumentCheck;
 
 /**
  * Configured text row source for {@link ReadOptionsCsv} that opens a
- * {@link RowCursorByteString} from a {@link StreamSource}.
+ * {@link RowCursor} from a {@link StreamSource}.
  */
 final class RowSourceCsv implements RowSource
 {

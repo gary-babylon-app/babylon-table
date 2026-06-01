@@ -14,11 +14,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
+import app.babylon.table.column.Column;
 import app.babylon.text.ByteSequence;
 import app.babylon.text.ByteString;
 import app.babylon.text.Bytes;
 
-public final class ByteStringSlices implements ByteSequence, Comparable<ByteStringSlices>
+public final class ByteStringSlices implements RowValues, ByteSequence, Comparable<ByteStringSlices>
 {
     private static final int DEFAULT_BYTE_CAPACITY = 256;
     private static final int DEFAULT_FIELD_CAPACITY = 16;
@@ -71,6 +72,7 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
         return select(selectedIndexes, false);
     }
 
+    @Override
     public ByteStringSlices select(int[] selectedIndexes, boolean strip)
     {
         return new ByteStringSlices(this, selectedIndexes, strip);
@@ -152,6 +154,17 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
     }
 
     @Override
+    public void addTo(Column.Builder builder, int fieldIndex)
+    {
+        if (!isSet(fieldIndex))
+        {
+            builder.addNull();
+            return;
+        }
+        builder.add(this.byteString, start(fieldIndex), end(fieldIndex));
+    }
+
+    @Override
     public int hashCode()
     {
         int hash = size();
@@ -175,23 +188,34 @@ public final class ByteStringSlices implements ByteSequence, Comparable<ByteStri
         {
             return true;
         }
-        if (!(obj instanceof ByteStringSlices other) || size() != other.size())
+        if (!(obj instanceof RowValues other) || size() != other.size())
         {
             return false;
+        }
+        if (!(other instanceof ByteStringSlices otherBytes))
+        {
+            for (int fieldIndex = 0; fieldIndex < size(); ++fieldIndex)
+            {
+                if (!Objects.equals(getString(fieldIndex), other.getString(fieldIndex)))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         for (int fieldIndex = 0; fieldIndex < size(); ++fieldIndex)
         {
             int start = start(fieldIndex);
             int end = end(fieldIndex);
-            int otherStart = other.start(fieldIndex);
+            int otherStart = otherBytes.start(fieldIndex);
             int length = end - start;
-            if (length != other.end(fieldIndex) - otherStart)
+            if (length != otherBytes.end(fieldIndex) - otherStart)
             {
                 return false;
             }
             for (int i = 0; i < length; ++i)
             {
-                if (byteAt(start + i) != other.byteAt(otherStart + i))
+                if (byteAt(start + i) != otherBytes.byteAt(otherStart + i))
                 {
                     return false;
                 }

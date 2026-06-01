@@ -79,8 +79,7 @@ class RowCursorResultSetTest
                 {null, null, ""}}));
 
         assertTrue(supplier.next());
-        ByteStringSlices row = supplier.current();
-        assertTrue(row instanceof ByteStringSlices);
+        RowValues row = supplier.current();
         assertTrue(row.isSet(0));
         assertTrue(row.isSet(1));
         assertTrue(row.isSet(2));
@@ -110,8 +109,7 @@ class RowCursorResultSetTest
                 {null, null, null}}));
 
         assertTrue(supplier.next());
-        ByteStringSlices row = supplier.current();
-        assertTrue(row instanceof ByteStringSlices);
+        RowValues row = supplier.current();
         assertTrue(row.isEmpty());
         assertFalse(row.isSet(0));
         assertFalse(row.isSet(1));
@@ -121,7 +119,7 @@ class RowCursorResultSetTest
         assertFalse(supplier.next());
     }
 
-    private static String[] values(ByteStringSlices row)
+    private static String[] values(RowValues row)
     {
         String[] values = new String[row.size()];
         for (int i = 0; i < row.size(); ++i)

@@ -58,7 +58,7 @@ public class HeaderStrategyNoHeaders implements HeaderStrategy
         while (rowsScanned < this.scanLimit && rowStream.next())
         {
             ++rowsScanned;
-            ByteStringSlices row = rowStream.current();
+            RowValues row = rowStream.current();
             if (row.size() > maxWidth)
             {
                 maxWidth = row.size();

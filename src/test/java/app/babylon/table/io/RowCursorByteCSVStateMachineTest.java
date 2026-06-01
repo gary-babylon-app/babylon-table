@@ -24,12 +24,14 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-class ByteCSVStateMachineTest
+import app.babylon.table.TableException;
+
+class RowCursorByteCSVStateMachineTest
 {
     @Test
     void shouldReadPlainCsvRows() throws IOException
     {
-        try (LineReader reader = reader("Date,Description,Amount\n2026-01-01,Coffee,3.50\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("Date,Description,Amount\n2026-01-01,Coffee,3.50\n", 8192))
         {
             assertTrue(reader.next());
             assertInstanceOf(ByteStringSlices.class, reader.current());
@@ -47,7 +49,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadStandardCsvRowSourceExample() throws IOException
     {
-        try (LineReader reader = reader("Date,Description,Amount\n2026-01-01,Coffee,3.50\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("Date,Description,Amount\n2026-01-01,Coffee,3.50\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -64,7 +66,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadCommaAndDoubleQuoteExample() throws IOException
     {
-        try (LineReader reader = reader("City,Note\nParis,\"Price,12\"\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("City,Note\nParis,\"Price,12\"\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -81,7 +83,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadSemicolonAndSingleQuoteExample() throws IOException
     {
-        try (LineReader reader = reader("City;Note\nParis;'Price;12'\n", ';', '\'', 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("City;Note\nParis;'Price;12'\n", ';', '\'', 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -101,7 +103,7 @@ class ByteCSVStateMachineTest
         Charset charset = Charset.forName("windows-1252");
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(charset);
 
-        try (LineReader reader = reader(bytes, ',', '"', 8192, charset))
+        try (RowCursorByteCSVStateMachine reader = reader(bytes, ',', '"', 8192, charset))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -126,7 +128,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadQuotedFieldsAndEscapedQuotes() throws IOException
     {
-        try (LineReader reader = reader("City,Note\nParis,\"Price,12 and \"\"quoted\"\"\"\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("City,Note\nParis,\"Price,12 and \"\"quoted\"\"\"\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -143,7 +145,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadCrLfRows() throws IOException
     {
-        try (LineReader reader = reader("A,B\r\n1,2\r\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("A,B\r\n1,2\r\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -160,7 +162,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadAcrossBufferBoundaries() throws IOException
     {
-        try (LineReader reader = reader("Alpha,Beta\n1234567890,quoted\n", 4))
+        try (RowCursorByteCSVStateMachine reader = reader("Alpha,Beta\n1234567890,quoted\n", 4))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -177,7 +179,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadEmptyAndTrailingFields() throws IOException
     {
-        try (LineReader reader = reader("A,,C\nA,B,\n,,\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("A,,C\nA,B,\n,,\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -198,7 +200,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadLastRowWithoutFinalNewline() throws IOException
     {
-        try (LineReader reader = reader("A,B\n1,2", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("A,B\n1,2", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -215,7 +217,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadQuotedLineFeedInsideField() throws IOException
     {
-        try (LineReader reader = reader("Note,Value\n\"A\nB\",C\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("Note,Value\n\"A\nB\",C\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -232,7 +234,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadQuotedCrLfInsideField() throws IOException
     {
-        try (LineReader reader = reader("Note,Value\n\"A\r\nB\",C\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("Note,Value\n\"A\r\nB\",C\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -249,7 +251,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadEmptyQuotedField() throws IOException
     {
-        try (LineReader reader = reader("\"\",B\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("\"\",B\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -262,7 +264,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadEscapedQuoteAcrossBufferBoundary() throws IOException
     {
-        try (LineReader reader = reader("\"A\"\"B\",C\n", 3))
+        try (RowCursorByteCSVStateMachine reader = reader("\"A\"\"B\",C\n", 3))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -275,7 +277,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldTreatQuoteAfterUnquotedContentAsLiteral() throws IOException
     {
-        try (LineReader reader = reader("A\"B,C\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("A\"B,C\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -288,7 +290,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldAllowCharactersAfterClosingQuote() throws IOException
     {
-        try (LineReader reader = reader("\"A\"x,B\n", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("\"A\"x,B\n", 8192))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -304,10 +306,10 @@ class ByteCSVStateMachineTest
         byte[] bytes = new byte[]
         {'A', ',', (byte) 0x80, (byte) 0xA0, ',', (byte) 0xE2, (byte) 0x80, (byte) 0xAF, '\n'};
 
-        try (LineReader reader = reader(bytes, ',', '"', 8192))
+        try (RowCursorByteCSVStateMachine reader = reader(bytes, ',', '"', 8192))
         {
             assertTrue(reader.next());
-            ByteStringSlices row = reader.current();
+            ByteStringSlices row = assertInstanceOf(ByteStringSlices.class, reader.current());
 
             assertEquals(3, row.size());
             assertEquals((byte) 0x80, row.byteAt(row.start(1)));
@@ -323,7 +325,7 @@ class ByteCSVStateMachineTest
     @Test
     void shouldReadSeparatorAndRowTerminatorsAcrossBufferBoundaries() throws IOException
     {
-        try (LineReader reader = reader("A,B\r\nC,D\n", 1))
+        try (RowCursorByteCSVStateMachine reader = reader("A,B\r\nC,D\n", 1))
         {
             assertTrue(reader.next());
             assertArrayEquals(new String[]
@@ -340,10 +342,10 @@ class ByteCSVStateMachineTest
     @Test
     void shouldRejectUnterminatedQuotedField()
     {
-        try (LineReader reader = reader("A,B\n1,\"unterminated", 8192))
+        try (RowCursorByteCSVStateMachine reader = reader("A,B\n1,\"unterminated", 8192))
         {
             assertTrue(reader.next());
-            assertThrows(IOException.class, reader::next);
+            assertThrows(TableException.class, reader::next);
         }
         catch (IOException e)
         {
@@ -351,34 +353,35 @@ class ByteCSVStateMachineTest
         }
     }
 
-    private static LineReader reader(String csv, int bufferSize)
+    private static RowCursorByteCSVStateMachine reader(String csv, int bufferSize)
     {
         return reader(csv, ',', '"', bufferSize);
     }
 
-    private static LineReader reader(String csv, char separator, char quote, int bufferSize)
+    private static RowCursorByteCSVStateMachine reader(String csv, char separator, char quote, int bufferSize)
     {
         byte[] bytes = csv.getBytes(StandardCharsets.ISO_8859_1);
         return reader(bytes, separator, quote, bufferSize);
     }
 
-    private static LineReader reader(byte[] bytes, char separator, char quote, int bufferSize)
+    private static RowCursorByteCSVStateMachine reader(byte[] bytes, char separator, char quote, int bufferSize)
     {
         return reader(bytes, separator, quote, bufferSize, StandardCharsets.ISO_8859_1);
     }
 
-    private static LineReader reader(byte[] bytes, char separator, char quote, int bufferSize, Charset charset)
+    private static RowCursorByteCSVStateMachine reader(byte[] bytes, char separator, char quote, int bufferSize,
+            Charset charset)
     {
-        return new ByteCSVStateMachine(new ByteReaderCSV(new ByteArrayInputStream(bytes), bufferSize), separator, quote,
-                charset);
+        return new RowCursorByteCSVStateMachine(new ByteReaderCSV(new ByteArrayInputStream(bytes), bufferSize),
+                separator, quote, charset);
     }
 
-    private static String[] values(ByteStringSlices row)
+    private static String[] values(RowValues row)
     {
         String[] values = new String[row.size()];
         for (int i = 0; i < row.size(); ++i)
         {
-            values[i] = row.decode(i);
+            values[i] = row.getString(i);
         }
         return values;
     }

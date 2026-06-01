@@ -134,7 +134,7 @@ public final class RowFilters
     {
     }
 
-    private static CharSequence fieldValue(ByteStringSlices row, int fieldIndex)
+    private static CharSequence fieldValue(RowValues row, int fieldIndex)
     {
         return row.getString(fieldIndex);
     }

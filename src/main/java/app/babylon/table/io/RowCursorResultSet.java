@@ -10,21 +10,23 @@
 
 package app.babylon.table.io;
 
-import java.io.IOException;
-import java.io.Reader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Types;
+import java.time.LocalDate;
 import java.util.Arrays;
 
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 import app.babylon.table.column.Column;
 import app.babylon.table.column.ColumnDefinition;
+import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnInt;
+import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.text.Strings;
 
@@ -50,7 +52,7 @@ import app.babylon.text.Strings;
  *         ColumnDefinition[] columns = supplier.columns();
  *         while (supplier.next())
  *         {
- *             ByteStringSlices row = supplier.current();
+ *             RowValues row = supplier.current();
  *         }
  *     }
  * }
@@ -115,7 +117,7 @@ public class RowCursorResultSet implements RowCursor
     }
 
     @Override
-    public ByteStringSlices current()
+    public RowValues current()
     {
         if (!this.currentAvailable)
         {
@@ -130,40 +132,6 @@ public class RowCursorResultSet implements RowCursor
         if (this.closeOnClose)
         {
             this.resultSet.close();
-        }
-    }
-
-    private void appendColumnValue(StringSlices.Builder rowBuilder, int columnIndex) throws SQLException, IOException
-    {
-        Reader columnValueReader = null;
-        try
-        {
-            columnValueReader = this.resultSet.getCharacterStream(columnIndex);
-        }
-        catch (SQLFeatureNotSupportedException e)
-        {
-            appendStringValue(rowBuilder, columnIndex);
-            return;
-        }
-
-        if (columnValueReader == null)
-        {
-            appendStringValue(rowBuilder, columnIndex);
-            return;
-        }
-
-        try (Reader ignored = columnValueReader)
-        {
-            rowBuilder.append(columnValueReader);
-        }
-    }
-
-    private void appendStringValue(StringSlices.Builder rowBuilder, int columnIndex) throws SQLException
-    {
-        String value = this.resultSet.getString(columnIndex);
-        if (value != null)
-        {
-            rowBuilder.append(value);
         }
     }
 
@@ -222,43 +190,202 @@ public class RowCursorResultSet implements RowCursor
 
     private final class RowResultSet
     {
-        private ByteStringSlices row;
+        private final ResultSetRow row;
 
         private RowResultSet()
         {
-            this.row = null;
+            this.row = new ResultSetRow();
         }
 
         private void reset()
         {
-            this.row = null;
         }
 
-        private ByteStringSlices current()
+        private RowValues current()
         {
-            if (this.row != null)
+            return this.row;
+        }
+    }
+
+    private final class ResultSetRow implements RowValues
+    {
+        @Override
+        public int size()
+        {
+            return RowCursorResultSet.this.columns.length;
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            for (int i = 0; i < size(); ++i)
             {
-                return this.row;
+                if (!Strings.isEmpty(getString(i)))
+                {
+                    return false;
+                }
             }
+            return true;
+        }
+
+        @Override
+        public boolean isSet(int fieldIndex)
+        {
+            return !Strings.isEmpty(getString(fieldIndex));
+        }
+
+        @Override
+        public String getString(int fieldIndex)
+        {
             try
             {
-                StringSlices.Builder builder = new StringSlices.Builder();
-                for (int i = 1; i <= RowCursorResultSet.this.columns.length; ++i)
-                {
-                    RowCursorResultSet.this.appendColumnValue(builder, i);
-                    builder.finishField();
-                }
-                this.row = builder.build().toByteStringSlices();
-                return this.row;
+                return RowCursorResultSet.this.resultSet.getString(fieldIndex + 1);
             }
             catch (SQLException e)
             {
                 throw new TableException("Failed to read ResultSet row text.", e);
             }
-            catch (IOException e)
+        }
+
+        @Override
+        public RowValues select(int[] selectedIndexes, boolean strip)
+        {
+            String[] values = new String[selectedIndexes.length];
+            for (int i = 0; i < selectedIndexes.length; ++i)
             {
-                throw new TableException("Failed to stream ResultSet character data.", e);
+                String value = getString(selectedIndexes[i]);
+                if (strip && !Strings.isEmpty(value))
+                {
+                    CharSequence stripped = Strings.stripx(value);
+                    value = Strings.isEmpty(stripped) ? null : stripped.toString();
+                }
+                values[i] = value;
             }
+            return new StringArrayRow(values);
+        }
+
+        @Override
+        public void addTo(Column.Builder builder, int fieldIndex)
+        {
+            try
+            {
+                if (builder instanceof ColumnObject.Builder<?> objectBuilder)
+                {
+                    addObject(objectBuilder, fieldIndex);
+                }
+                else if (builder instanceof ColumnDouble.Builder doubleBuilder)
+                {
+                    addDouble(doubleBuilder, fieldIndex);
+                }
+                else if (builder instanceof ColumnLong.Builder longBuilder)
+                {
+                    addLong(longBuilder, fieldIndex);
+                }
+                else if (builder instanceof ColumnInt.Builder intBuilder)
+                {
+                    addInt(intBuilder, fieldIndex);
+                }
+                else
+                {
+                    addText(builder, fieldIndex);
+                }
+            }
+            catch (SQLException e)
+            {
+                throw new TableException("Failed to read ResultSet row value.", e);
+            }
+        }
+
+        private void addObject(ColumnObject.Builder<?> builder, int fieldIndex) throws SQLException
+        {
+            Object value = objectValue(builder, fieldIndex);
+            if (value == null)
+            {
+                builder.addNull();
+            }
+            else if (builder.getType().getValueClass().isInstance(value))
+            {
+                addObjectValue(builder, value);
+            }
+            else
+            {
+                String text = value.toString();
+                builder.add(text, 0, text.length());
+            }
+        }
+
+        private void addDouble(ColumnDouble.Builder builder, int fieldIndex) throws SQLException
+        {
+            double value = RowCursorResultSet.this.resultSet.getDouble(fieldIndex + 1);
+            if (RowCursorResultSet.this.resultSet.wasNull())
+            {
+                builder.addNull();
+            }
+            else
+            {
+                builder.add(value);
+            }
+        }
+
+        private void addLong(ColumnLong.Builder builder, int fieldIndex) throws SQLException
+        {
+            long value = RowCursorResultSet.this.resultSet.getLong(fieldIndex + 1);
+            if (RowCursorResultSet.this.resultSet.wasNull())
+            {
+                builder.addNull();
+            }
+            else
+            {
+                builder.add(value);
+            }
+        }
+
+        private void addInt(ColumnInt.Builder builder, int fieldIndex) throws SQLException
+        {
+            int value = RowCursorResultSet.this.resultSet.getInt(fieldIndex + 1);
+            if (RowCursorResultSet.this.resultSet.wasNull())
+            {
+                builder.addNull();
+            }
+            else
+            {
+                builder.add(value);
+            }
+        }
+
+        private void addText(Column.Builder builder, int fieldIndex) throws SQLException
+        {
+            String value = RowCursorResultSet.this.resultSet.getString(fieldIndex + 1);
+            if (Strings.isEmpty(value))
+            {
+                builder.addNull();
+            }
+            else
+            {
+                builder.add(value, 0, value.length());
+            }
+        }
+
+        private Object objectValue(ColumnObject.Builder<?> builder, int fieldIndex) throws SQLException
+        {
+            Class<?> valueClass = builder.getType().getValueClass();
+            if (LocalDate.class.equals(valueClass))
+            {
+                return RowCursorResultSet.this.resultSet.getObject(fieldIndex + 1, LocalDate.class);
+            }
+            if (String.class.equals(valueClass))
+            {
+                return RowCursorResultSet.this.resultSet.getString(fieldIndex + 1);
+            }
+            return RowCursorResultSet.this.resultSet.getObject(fieldIndex + 1);
+        }
+
+        @SuppressWarnings(
+        {"rawtypes", "unchecked"})
+        private void addObjectValue(ColumnObject.Builder<?> builder, Object value)
+        {
+            ColumnObject.Builder raw = builder;
+            raw.add(value);
         }
     }
 }

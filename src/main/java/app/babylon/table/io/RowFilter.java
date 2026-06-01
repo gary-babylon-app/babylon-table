@@ -17,5 +17,5 @@ import app.babylon.table.column.ColumnName;
 @FunctionalInterface
 public interface RowFilter
 {
-    Predicate<ByteStringSlices> bind(ColumnName[] columnNames);
+    Predicate<RowValues> bind(ColumnName[] columnNames);
 }

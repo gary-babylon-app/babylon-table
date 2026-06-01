@@ -114,7 +114,7 @@ public interface HeaderStrategy
         return new HeaderDetection(headers, false, headers, toIntArray(normalizedPositions));
     }
 
-    static ColumnName[] toColumnNames(ByteStringSlices row)
+    static ColumnName[] toColumnNames(RowValues row)
     {
         if (row == null)
         {

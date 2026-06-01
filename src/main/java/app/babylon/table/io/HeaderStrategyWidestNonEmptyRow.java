@@ -46,12 +46,12 @@ public class HeaderStrategyWidestNonEmptyRow implements HeaderStrategy
     public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns)
             throws IOException
     {
-        List<ByteStringSlices> scannedRows = new ArrayList<>();
+        List<RowValues> scannedRows = new ArrayList<>();
         int headerRowIndex = -1;
         int maxNonEmptyCount = 0;
         while (scannedRows.size() < this.scanLimit && rowStream.next())
         {
-            ByteStringSlices row = rowStream.current();
+            RowValues row = rowStream.current();
             scannedRows.add(row);
 
             int nonEmptyCount = countNonEmptyValues(row);
@@ -70,7 +70,7 @@ public class HeaderStrategyWidestNonEmptyRow implements HeaderStrategy
         return new HeaderDetection(HeaderStrategy.toColumnNames(scannedRows.get(headerRowIndex)));
     }
 
-    private static int countNonEmptyValues(ByteStringSlices row)
+    private static int countNonEmptyValues(RowValues row)
     {
         int count = 0;
         for (int i = 0; i < row.size(); ++i)

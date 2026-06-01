@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -18,7 +17,7 @@ import app.babylon.io.StreamSources;
 import app.babylon.io.TestStreamSources;
 import app.babylon.table.TableException;
 
-class RowCursorByteStringTest
+class RowCursorsTest
 {
     @Test
     void shouldIterateRawCsvRows()
@@ -70,12 +69,30 @@ class RowCursorByteStringTest
     }
 
     @Test
-    void shouldRejectUtf16LeDelimitedCsv()
+    void shouldReadUtf16LeDelimitedCsvWithCharacterStateMachine()
     {
         byte[] bytes = "City,Temp\nLondon,12\n".getBytes(StandardCharsets.UTF_16LE);
-        RowSource source = RowSources.create(ReadOptionsCsv.standard(), TestStreamSources.fromBytes(bytes, "rows.csv"));
+        ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withCharset(StandardCharsets.UTF_16LE)
+                .withAutoDetectOptions(false).build();
+        RowSource source = RowSources.create(csvFormat, TestStreamSources.fromBytes(bytes, "rows.csv"));
 
-        assertThrows(IllegalArgumentException.class, source::openRows);
+        try (RowCursor rowCursor = source.openRows())
+        {
+            assertTrue(rowCursor.next());
+            assertInstanceOf(StringSlices.class, rowCursor.current());
+            assertArrayEquals(new String[]
+            {"City", "Temp"}, values(rowCursor.current()));
+
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"London", "12"}, values(rowCursor.current()));
+
+            assertFalse(rowCursor.next());
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test
@@ -159,7 +176,7 @@ class RowCursorByteStringTest
         try (RowCursor rowCursor = source.openRows())
         {
             assertTrue(rowCursor.next());
-            assertInstanceOf(ByteStringSlices.class, rowCursor.current());
+            assertInstanceOf(StringSlices.class, rowCursor.current());
             assertArrayEquals(new String[]
             {"ABC", "12", "XYZ"}, values(rowCursor.current()));
 
@@ -258,17 +275,15 @@ class RowCursorByteStringTest
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(';').withQuote('\'')
                 .withFixedWidths(fixedWidths).withCharset(StandardCharsets.UTF_16LE).withAutoDetectOptions(false)
                 .build();
-        RowCursor rowCursor = RowCursors.create(csvFormat,
-                StreamSources.fromString("ABC12XYZ\n", "rows.txt").openStream());
+        byte[] bytes = "ABC12XYZ\n".getBytes(StandardCharsets.UTF_16LE);
+        RowCursor rowCursor = RowCursors.create(csvFormat, TestStreamSources.fromBytes(bytes, "rows.txt").openStream());
         try
         {
-            RowCursorByteString byteStringRowCursor = (RowCursorByteString) rowCursor;
-            assertEquals(';', byteStringRowCursor.getSeparator());
-            assertEquals('\'', byteStringRowCursor.getQuote());
-            assertArrayEquals(fixedWidths, byteStringRowCursor.getFixedWidths());
-            assertEquals(StandardCharsets.UTF_16LE, byteStringRowCursor.getCharset());
-            assertFalse(byteStringRowCursor.isAutoDetectOptions());
-            assertFalse(byteStringRowCursor.isAutoDetectEncoding());
+            assertInstanceOf(RowCursorCharFixedWidth.class, rowCursor);
+            assertTrue(rowCursor.next());
+            assertArrayEquals(new String[]
+            {"ABC", "12", "XYZ"}, values(rowCursor.current()));
+            assertFalse(rowCursor.next());
         } finally
         {
             try
@@ -303,7 +318,7 @@ class RowCursorByteStringTest
         }
     }
 
-    private static String[] values(ByteStringSlices row)
+    private static String[] values(RowValues row)
     {
         String[] values = new String[row.size()];
         for (int i = 0; i < row.size(); ++i)

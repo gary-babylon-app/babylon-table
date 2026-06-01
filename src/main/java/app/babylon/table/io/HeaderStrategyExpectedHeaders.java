@@ -72,7 +72,7 @@ public class HeaderStrategyExpectedHeaders implements HeaderStrategy
         while (rowsScanned < this.scanLimit && rowStream.next())
         {
             ++rowsScanned;
-            ByteStringSlices row = rowStream.current();
+            RowValues row = rowStream.current();
             int matchedHeaderCount = 0;
             for (int i = 0; i < row.size(); ++i)
             {

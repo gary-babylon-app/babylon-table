@@ -19,7 +19,7 @@ public interface RowStreamMarkable
 {
     boolean next() throws IOException;
 
-    ByteStringSlices current();
+    RowValues current();
 
     void mark(int rowIndex);
 

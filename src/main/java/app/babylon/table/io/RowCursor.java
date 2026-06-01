@@ -57,7 +57,7 @@ public interface RowCursor extends AutoCloseable
 
     boolean next();
 
-    ByteStringSlices current();
+    RowValues current();
 
     @Override
     void close() throws Exception;

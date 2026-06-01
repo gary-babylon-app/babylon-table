@@ -17,8 +17,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.math.BigDecimal;
-
 import org.junit.jupiter.api.Test;
 
 class StringSlicesTest
@@ -71,30 +69,6 @@ class StringSlicesTest
         assertEquals(source.end(0) - 1, selected.end(1));
         assertEquals('B', selected.charAt(selected.start(0)));
         assertEquals('a', selected.charAt(selected.end(1) - 1));
-    }
-
-    @Test
-    void copyShouldMaterialiseSelectedFieldsOnly()
-    {
-        StringSlices source = slices(" Alpha ", " Beta ");
-        StringSlices selected = source.select(new int[]
-        {1, 0}, true);
-
-        StringSlices copy = selected.copy();
-
-        assertArrayEquals(new String[]
-        {"Beta", "Alpha"}, values(copy));
-        assertEquals(9, copy.length());
-    }
-
-    @Test
-    void shouldParseDecimalFromBackingString()
-    {
-        StringSlices source = slices("  123.4500  ");
-        StringSlices selected = source.select(new int[]
-        {0}, true);
-
-        assertEquals(new BigDecimal("123.45"), selected.parseDecimal(selected.start(0), selected.end(0)));
     }
 
     private static StringSlices slices(String... values)

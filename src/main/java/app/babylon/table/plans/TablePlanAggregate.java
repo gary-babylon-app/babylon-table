@@ -24,9 +24,9 @@ import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.column.Columns;
 import app.babylon.table.grouping.GroupBy;
 import app.babylon.table.grouping.GroupKey;
-import app.babylon.table.io.ByteStringSlices;
 import app.babylon.table.io.RowConsumer;
 import app.babylon.table.io.RowCursor;
+import app.babylon.table.io.RowValues;
 import app.babylon.table.io.HeaderDetection;
 import app.babylon.table.io.HeaderStrategy;
 import app.babylon.table.io.HeaderStrategyAuto;
@@ -58,7 +58,7 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         private int maxGroupByPosition;
         private int[] aggregatePositions;
         private int maxAggregatePosition;
-        private final Map<ByteStringSlices, GroupAccumulators> accumulatorsByGroup;
+        private final Map<RowValues, GroupAccumulators> accumulatorsByGroup;
 
         private RowConsumerGroupAggregate(TablePlanAggregate plan)
         {
@@ -116,26 +116,24 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         }
 
         @Override
-        public void accept(ByteStringSlices rowValues)
+        public void accept(RowValues rowValues)
         {
             if (rowValues.size() <= Math.max(this.maxGroupByPosition, this.maxAggregatePosition))
             {
                 return;
             }
 
-            ByteStringSlices groupKey = rowValues.select(this.groupByPositions);
+            RowValues groupKey = rowValues.select(this.groupByPositions);
             GroupAccumulators accumulators = this.accumulatorsByGroup.computeIfAbsent(groupKey,
                     k -> new GroupAccumulators(this.aggregatePositions.length));
             for (int i = 0; i < this.aggregatePositions.length; ++i)
             {
                 int aggregatePosition = this.aggregatePositions[i];
-                int start = rowValues.start(aggregatePosition);
-                int end = rowValues.end(aggregatePosition);
-                if (start >= end)
+                String value = rowValues.getString(aggregatePosition);
+                if (value == null || value.isEmpty())
                 {
                     continue;
                 }
-                String value = rowValues.decode(start, end);
                 accumulators.accumulators[i].accept(value, 0, value.length());
             }
         }
@@ -149,9 +147,9 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
                 groupByBuilders[i] = ColumnObject.builder(this.plan.groupByColumns.get(i), ColumnTypes.STRING);
             }
             Column.Builder[] aggregateBuilders = newAggregateBuilders(this.plan);
-            for (Map.Entry<ByteStringSlices, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())
+            for (Map.Entry<RowValues, GroupAccumulators> entry : this.accumulatorsByGroup.entrySet())
             {
-                ByteStringSlices groupKey = entry.getKey();
+                RowValues groupKey = entry.getKey();
                 for (int i = 0; i < groupByBuilders.length; ++i)
                 {
                     groupByBuilders[i].add(groupKey.getString(i));

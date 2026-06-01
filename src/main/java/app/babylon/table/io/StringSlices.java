@@ -10,16 +10,12 @@
 
 package app.babylon.table.io;
 
-import java.io.Reader;
-import java.math.BigDecimal;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import app.babylon.text.BigDecimals;
+import app.babylon.table.column.Column;
 import app.babylon.text.Strings;
 
-final class StringSlices implements CharSequence
+final class StringSlices implements RowValues, CharSequence
 {
     private static final int DEFAULT_CHAR_CAPACITY = 256;
     private static final int DEFAULT_FIELD_CAPACITY = 16;
@@ -69,32 +65,10 @@ final class StringSlices implements CharSequence
         return this.chars;
     }
 
-    StringSlices select(int[] selectedIndexes, boolean strip)
+    @Override
+    public StringSlices select(int[] selectedIndexes, boolean strip)
     {
         return new StringSlices(this, selectedIndexes, strip);
-    }
-
-    ByteStringSlices toByteStringSlices()
-    {
-        return toByteStringSlices(StandardCharsets.UTF_8);
-    }
-
-    ByteStringSlices toByteStringSlices(Charset charset)
-    {
-        Charset resolvedCharset = Objects.requireNonNull(charset, "charset");
-        ByteStringSlices.Builder builder = new ByteStringSlices.Builder(this.chars.length(), this.starts.length,
-                resolvedCharset);
-        for (int i = 0; i < this.starts.length; ++i)
-        {
-            String value = getString(i);
-            if (value != null)
-            {
-                byte[] bytes = value.getBytes(resolvedCharset);
-                builder.append(bytes, 0, bytes.length);
-            }
-            builder.finishField();
-        }
-        return builder.build();
     }
 
     public int size()
@@ -156,20 +130,50 @@ final class StringSlices implements CharSequence
         return start >= end ? null : this.chars.substring(start, end);
     }
 
-    BigDecimal parseDecimal(int start, int end)
+    @Override
+    public void addTo(Column.Builder builder, int fieldIndex)
     {
-        return BigDecimals.parse(this.chars, start, end);
+        int start = start(fieldIndex);
+        int end = end(fieldIndex);
+        if (start >= end)
+        {
+            builder.addNull();
+            return;
+        }
+        builder.add(this.chars, start, end);
     }
 
-    public StringSlices copy()
+    @Override
+    public int hashCode()
     {
-        Builder builder = new Builder(this.chars.length(), this.starts.length);
-        for (int i = 0; i < this.starts.length; ++i)
+        int hash = size();
+        for (int i = 0; i < size(); ++i)
         {
-            builder.append(this.chars, this.starts[i], this.ends[i]);
-            builder.finishField();
+            String value = getString(i);
+            hash = 31 * hash + (value == null ? 0 : value.hashCode());
         }
-        return builder.build();
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (!(obj instanceof RowValues other) || size() != other.size())
+        {
+            return false;
+        }
+        for (int i = 0; i < size(); ++i)
+        {
+            if (!Objects.equals(getString(i), other.getString(i)))
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void checkFieldIndex(int fieldIndex)
@@ -236,24 +240,6 @@ final class StringSlices implements CharSequence
             if (source != null && start < end)
             {
                 this.chars.append(source, start, end);
-            }
-        }
-
-        void append(Reader reader) throws java.io.IOException
-        {
-            if (reader == null)
-            {
-                return;
-            }
-            char[] buffer = new char[1024];
-            while (true)
-            {
-                int read = reader.read(buffer);
-                if (read < 0)
-                {
-                    return;
-                }
-                append(buffer, 0, read);
             }
         }
 

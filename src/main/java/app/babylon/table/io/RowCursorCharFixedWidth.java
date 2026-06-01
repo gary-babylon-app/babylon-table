@@ -12,25 +12,18 @@ package app.babylon.table.io;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.TableException;
 
-final class FixedWidthLineReader implements LineReader
+final class RowCursorCharFixedWidth implements RowCursor
 {
     private final BufferedReader reader;
     private final int[] fixedWidths;
-    private final Charset charset;
-    private ByteStringSlices current;
+    private StringSlices current;
 
-    FixedWidthLineReader(BufferedReader reader, int[] fixedWidths)
-    {
-        this(reader, fixedWidths, StandardCharsets.UTF_8);
-    }
-
-    FixedWidthLineReader(BufferedReader reader, int[] fixedWidths, Charset charset)
+    RowCursorCharFixedWidth(BufferedReader reader, int[] fixedWidths)
     {
         if (fixedWidths == null || fixedWidths.length == 0)
         {
@@ -38,25 +31,31 @@ final class FixedWidthLineReader implements LineReader
         }
         this.reader = ArgumentCheck.nonNull(reader, "reader must not be null");
         this.fixedWidths = Arrays.copyOf(fixedWidths, fixedWidths.length);
-        this.charset = ArgumentCheck.nonNull(charset, "charset must not be null");
         this.current = null;
     }
 
     @Override
-    public boolean next() throws IOException
+    public boolean next()
     {
-        String line = this.reader.readLine();
-        if (line == null)
+        try
         {
-            this.current = null;
-            return false;
+            String line = this.reader.readLine();
+            if (line == null)
+            {
+                this.current = null;
+                return false;
+            }
+            this.current = parse(line);
+            return true;
         }
-        this.current = parse(line);
-        return true;
+        catch (IOException e)
+        {
+            throw new TableException("Failed to read fixed-width row.", e);
+        }
     }
 
     @Override
-    public ByteStringSlices current()
+    public RowValues current()
     {
         return ArgumentCheck.nonNull(this.current, "current row is not available until next() succeeds");
     }
@@ -67,7 +66,7 @@ final class FixedWidthLineReader implements LineReader
         this.reader.close();
     }
 
-    private ByteStringSlices parse(String line)
+    private StringSlices parse(String line)
     {
         StringSlices.Builder builder = new StringSlices.Builder(line.length(), this.fixedWidths.length);
         int start = 0;
@@ -81,6 +80,6 @@ final class FixedWidthLineReader implements LineReader
             builder.finishField();
             start += width;
         }
-        return builder.build().toByteStringSlices(this.charset);
+        return builder.build();
     }
 }

@@ -18,44 +18,21 @@ import java.util.List;
 
 public final class RowStreamBuffered implements RowStreamMarkable
 {
-    private final LineReader lineReader;
-    private final List<ByteStringSlices> cachedRows;
-    private ByteStringSlices current;
+    private final RowCursor rowCursor;
+    private final List<RowValues> cachedRows;
+    private RowValues current;
     private boolean recording;
     private int dataStartIndex;
     private int replayIndex;
 
-    public RowStreamBuffered(LineReader lineReader)
+    public RowStreamBuffered(RowCursor rowCursor)
     {
-        this.lineReader = ArgumentCheck.nonNull(lineReader, "lineReader must not be null");
+        this.rowCursor = ArgumentCheck.nonNull(rowCursor, "rowCursor must not be null");
         this.cachedRows = new ArrayList<>();
         this.current = null;
         this.recording = true;
         this.dataStartIndex = 0;
         this.replayIndex = -1;
-    }
-
-    public RowStreamBuffered(RowCursor rowCursor)
-    {
-        this(new LineReader()
-        {
-            @Override
-            public boolean next()
-            {
-                return rowCursor.next();
-            }
-
-            @Override
-            public ByteStringSlices current()
-            {
-                return rowCursor.current();
-            }
-
-            @Override
-            public void close()
-            {
-            }
-        });
     }
 
     @Override
@@ -84,17 +61,17 @@ public final class RowStreamBuffered implements RowStreamMarkable
             return true;
         }
         this.replayIndex = -1;
-        boolean hasRow = this.lineReader.next();
+        boolean hasRow = this.rowCursor.next();
         if (hasRow && this.recording)
         {
-            this.cachedRows.add(this.lineReader.current());
+            this.cachedRows.add(this.rowCursor.current());
         }
-        this.current = hasRow ? this.lineReader.current() : null;
+        this.current = hasRow ? this.rowCursor.current() : null;
         return hasRow;
     }
 
     @Override
-    public ByteStringSlices current()
+    public RowValues current()
     {
         return ArgumentCheck.nonNull(this.current, "current row is not available until next() succeeds");
     }

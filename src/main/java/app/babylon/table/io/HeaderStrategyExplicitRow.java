@@ -40,7 +40,7 @@ public class HeaderStrategyExplicitRow implements HeaderStrategy
         int rowIndex = 0;
         while (rowStream.next())
         {
-            ByteStringSlices row = rowStream.current();
+            RowValues row = rowStream.current();
             if (rowIndex == this.headerRowIndex)
             {
                 rowStream.mark(rowIndex);

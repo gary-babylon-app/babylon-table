@@ -32,9 +32,9 @@ public final class ProjectedRowReader
     private final RowStreamMarkable rows;
     private final boolean stripping;
     private final int[] selectedPositions;
-    private final Predicate<ByteStringSlices> rowFilter;
+    private final Predicate<RowValues> rowFilter;
     private final ColumnDefinition[] columns;
-    private ByteStringSlices current;
+    private RowValues current;
     private int emptyRowCount;
 
     private ProjectedRowReader(Builder builder)
@@ -67,7 +67,7 @@ public final class ProjectedRowReader
         {
             while (this.rows.next())
             {
-                ByteStringSlices row = this.rows.current().select(this.selectedPositions, this.stripping);
+                RowValues row = this.rows.current().select(this.selectedPositions, this.stripping);
                 if (isEndOfTable(row))
                 {
                     this.current = null;
@@ -84,7 +84,7 @@ public final class ProjectedRowReader
         }
         while (this.rows.next())
         {
-            ByteStringSlices row = this.rows.current().select(this.selectedPositions, this.stripping);
+            RowValues row = this.rows.current().select(this.selectedPositions, this.stripping);
             if (isEndOfTable(row))
             {
                 this.current = null;
@@ -104,7 +104,7 @@ public final class ProjectedRowReader
         return false;
     }
 
-    private boolean isEndOfTable(ByteStringSlices row)
+    private boolean isEndOfTable(RowValues row)
     {
         if (!row.isEmpty())
         {
@@ -115,7 +115,7 @@ public final class ProjectedRowReader
         return this.emptyRowCount >= EMPTY_ROW_LIMIT;
     }
 
-    public ByteStringSlices current()
+    public RowValues current()
     {
         return ArgumentCheck.nonNull(this.current, "current row is not available until next() succeeds");
     }

@@ -49,7 +49,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
     public HeaderDetection detectFoundHeaders(RowStreamMarkable rowStream, Set<ColumnName> selectedColumns)
             throws IOException
     {
-        List<ByteStringSlices> scannedRows = new ArrayList<>();
+        List<RowValues> scannedRows = new ArrayList<>();
         while (scannedRows.size() < this.scanLimit && rowStream.next())
         {
             scannedRows.add(rowStream.current());
@@ -63,7 +63,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return new HeaderDetection(HeaderStrategy.toColumnNames(scannedRows.get(headerRowIndex)));
     }
 
-    static double headerScore(ByteStringSlices rowValues)
+    static double headerScore(RowValues rowValues)
     {
         if (rowValues == null || rowValues.size() == 0)
         {
@@ -121,12 +121,12 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return score;
     }
 
-    static int detectHeaderRowIndex(List<ByteStringSlices> rows)
+    static int detectHeaderRowIndex(List<RowValues> rows)
     {
         return detectHeaderRowIndex(rows, null);
     }
 
-    static int detectHeaderRowIndex(List<ByteStringSlices> rows, Set<ColumnName> selectedColumns)
+    static int detectHeaderRowIndex(List<RowValues> rows, Set<ColumnName> selectedColumns)
     {
         if (rows == null || rows.isEmpty())
         {
@@ -137,7 +137,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         double bestScore = Double.NEGATIVE_INFINITY;
         for (int i = 0; i < rows.size(); ++i)
         {
-            ByteStringSlices row = rows.get(i);
+            RowValues row = rows.get(i);
             if (row == null || row.isEmpty())
             {
                 continue;
@@ -181,9 +181,9 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return DateFormatInference.isLikelyDate(s);
     }
 
-    private static double uniquenessContrastBonus(List<ByteStringSlices> rows, int rowIndex)
+    private static double uniquenessContrastBonus(List<RowValues> rows, int rowIndex)
     {
-        ByteStringSlices current = rows.get(rowIndex);
+        RowValues current = rows.get(rowIndex);
         if (current == null || current.isEmpty())
         {
             return 0.0;
@@ -194,7 +194,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         int nextIndex = rowIndex + 1;
         if (nextIndex < rows.size())
         {
-            ByteStringSlices next = rows.get(nextIndex);
+            RowValues next = rows.get(nextIndex);
             if (next != null && !next.isEmpty())
             {
                 double nextUniqueRatio = uniqueNonBlankRatio(next);
@@ -208,7 +208,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return bonus;
     }
 
-    private static double uniqueNonBlankRatio(ByteStringSlices row)
+    private static double uniqueNonBlankRatio(RowValues row)
     {
         Set<String> distinct = new HashSet<>();
         int nonBlank = 0;
@@ -230,7 +230,7 @@ public class HeaderStrategyAuto implements HeaderStrategy
         return distinct.size() / (double) nonBlank;
     }
 
-    private static double selectedColumnBonus(ByteStringSlices row, Set<ColumnName> selectedColumns)
+    private static double selectedColumnBonus(RowValues row, Set<ColumnName> selectedColumns)
     {
         if (row == null || row.isEmpty() || selectedColumns == null || selectedColumns.isEmpty())
         {

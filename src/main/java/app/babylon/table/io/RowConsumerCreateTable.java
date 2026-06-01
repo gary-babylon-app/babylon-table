@@ -78,7 +78,7 @@ public final class RowConsumerCreateTable implements RowConsumer
     }
 
     @Override
-    public void accept(ByteStringSlices rowValues)
+    public void accept(RowValues rowValues)
     {
         int columnCount = this.columnBuilders.length;
         if (rowValues.size() != columnCount)
@@ -186,23 +186,8 @@ public final class RowConsumerCreateTable implements RowConsumer
         return effectiveColumnType(columnName, sourceColumnTypes);
     }
 
-    private static void addValue(Column.Builder builder, CharSequence chars, int start, int end)
+    private static void addValue(Column.Builder builder, RowValues row, int fieldIndex)
     {
-        if (start >= end)
-        {
-            builder.add((CharSequence) null, 0, 0);
-            return;
-        }
-        builder.add(chars, start, end);
-    }
-
-    private static void addValue(Column.Builder builder, ByteStringSlices row, int fieldIndex)
-    {
-        if (!row.isSet(fieldIndex))
-        {
-            builder.addNull();
-            return;
-        }
-        builder.add(row.getByteString(), row.start(fieldIndex), row.end(fieldIndex));
+        row.addTo(builder, fieldIndex);
     }
 }

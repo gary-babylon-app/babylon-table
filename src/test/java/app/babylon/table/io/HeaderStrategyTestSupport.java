@@ -24,24 +24,24 @@ final class HeaderStrategyTestSupport
         return row.build();
     }
 
-    static List<ByteStringSlices> rows(ByteStringSlices... rows)
+    static List<RowValues> rows(RowValues... rows)
     {
         return List.of(rows);
     }
 
-    static RowStreamMarkable stream(ByteStringSlices... rows)
+    static RowStreamMarkable stream(RowValues... rows)
     {
         return new TestRowStream(List.of(rows));
     }
 
     private static final class TestRowStream implements RowStreamMarkable
     {
-        private final List<ByteStringSlices> rows;
+        private final List<RowValues> rows;
         private int currentIndex;
         private int replayIndex;
         private int markIndex;
 
-        private TestRowStream(List<ByteStringSlices> rows)
+        private TestRowStream(List<RowValues> rows)
         {
             this.rows = rows;
             this.currentIndex = -1;
@@ -70,7 +70,7 @@ final class HeaderStrategyTestSupport
         }
 
         @Override
-        public ByteStringSlices current()
+        public RowValues current()
         {
             return this.rows.get(this.currentIndex);
         }

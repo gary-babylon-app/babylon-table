@@ -16,8 +16,9 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import app.babylon.lang.ArgumentCheck;
+import app.babylon.table.TableException;
 
-final class ByteCSVStateMachine implements LineReader
+final class RowCursorByteCSVStateMachine implements RowCursor
 {
     private static final int CR = '\r';
     private static final int LF = '\n';
@@ -28,12 +29,12 @@ final class ByteCSVStateMachine implements LineReader
     private final ByteStringSlices.Builder builder;
     private ByteStringSlices current;
 
-    ByteCSVStateMachine(ByteReaderCSV reader, char separator, char quote)
+    RowCursorByteCSVStateMachine(ByteReaderCSV reader, char separator, char quote)
     {
         this(reader, separator, quote, StandardCharsets.UTF_8);
     }
 
-    ByteCSVStateMachine(ByteReaderCSV reader, char separator, char quote, Charset charset)
+    RowCursorByteCSVStateMachine(ByteReaderCSV reader, char separator, char quote, Charset charset)
     {
         Charset resolvedCharset = ArgumentCheck.nonNull(charset, "charset must not be null");
         requireAsciiCompatible(resolvedCharset, separator, quote);
@@ -45,11 +46,18 @@ final class ByteCSVStateMachine implements LineReader
     }
 
     @Override
-    public boolean next() throws IOException
+    public boolean next()
     {
-        boolean hasRow = readRowParsed(this.builder);
-        this.current = hasRow ? this.builder.build() : null;
-        return hasRow;
+        try
+        {
+            boolean hasRow = readRowParsed(this.builder);
+            this.current = hasRow ? this.builder.build() : null;
+            return hasRow;
+        }
+        catch (IOException e)
+        {
+            throw new TableException("Failed to read CSV row.", e);
+        }
     }
 
     @Override
@@ -230,24 +238,27 @@ final class ByteCSVStateMachine implements LineReader
 
     static void requireAsciiCompatible(Charset charset, char separator, char quote)
     {
-        requireAsciiByte(charset, separator, "separator");
-        requireAsciiByte(charset, quote, "quote");
-        requireAsciiByte(charset, '\r', "carriage return");
-        requireAsciiByte(charset, '\n', "line feed");
+        if (!isAsciiCompatible(charset, separator, quote))
+        {
+            throw new IllegalArgumentException(
+                    "Byte CSV reader requires an ASCII-compatible charset for structural characters: " + charset);
+        }
     }
 
-    private static void requireAsciiByte(Charset charset, char value, String name)
+    static boolean isAsciiCompatible(Charset charset, char separator, char quote)
+    {
+        return isAsciiByte(charset, separator) && isAsciiByte(charset, quote) && isAsciiByte(charset, '\r')
+                && isAsciiByte(charset, '\n');
+    }
+
+    private static boolean isAsciiByte(Charset charset, char value)
     {
         if (value > 0x7F)
         {
-            throw new IllegalArgumentException(name + " must be ASCII for byte CSV parsing.");
+            return false;
         }
         ByteBuffer encoded = charset.encode(String.valueOf(value));
-        if (encoded.remaining() != 1 || Byte.toUnsignedInt(encoded.get(encoded.position())) != value)
-        {
-            throw new IllegalArgumentException(
-                    "Byte CSV reader requires an ASCII-compatible charset for " + name + ": " + charset);
-        }
+        return encoded.remaining() == 1 && Byte.toUnsignedInt(encoded.get(encoded.position())) == value;
     }
 
     @Override

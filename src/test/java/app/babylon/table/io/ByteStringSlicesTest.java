@@ -88,6 +88,47 @@ class ByteStringSlicesTest
     }
 
     @Test
+    void shouldTreatSelectedFieldsBeyondRowWidthAsUnset()
+    {
+        ByteStringSlices source = slices("A", "B");
+
+        ByteStringSlices selected = source.select(new int[]
+        {0, 2, 1, 4}, true);
+
+        assertSame(source.getByteString(), selected.getByteString());
+        assertArrayEquals(new String[]
+        {"A", null, "B", null}, values(selected));
+        assertTrue(selected.isSet(0));
+        assertFalse(selected.isSet(1));
+        assertTrue(selected.isSet(2));
+        assertFalse(selected.isSet(3));
+        assertEquals(source.length(), selected.start(1));
+        assertEquals(source.length(), selected.end(1));
+        assertEquals(source.length(), selected.start(3));
+        assertEquals(source.length(), selected.end(3));
+    }
+
+    @Test
+    void shouldProjectBlankRowsAsUnsetFields()
+    {
+        ByteStringSlices source = slices();
+
+        ByteStringSlices selected = source.select(new int[]
+        {0, 2}, true);
+
+        assertEquals(2, selected.size());
+        assertTrue(selected.isEmpty());
+        assertFalse(selected.isSet(0));
+        assertFalse(selected.isSet(1));
+        assertNull(selected.decode(0));
+        assertNull(selected.decode(1));
+        assertEquals(source.length(), selected.start(0));
+        assertEquals(source.length(), selected.end(0));
+        assertEquals(source.length(), selected.start(1));
+        assertEquals(source.length(), selected.end(1));
+    }
+
+    @Test
     void shouldCompareAndHashBySelectedFieldBytes()
     {
         ByteStringSlices key1 = slices("A", "BC", "tail").select(new int[]

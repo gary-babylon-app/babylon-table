@@ -562,6 +562,35 @@ class TablePlanReadTest
     }
 
     @Test
+    void shouldReadSelectedColumnsFromRaggedCsvRowsAsNulls()
+    {
+        final ColumnName TYPE = ColumnName.of("Type");
+        final ColumnName PARAM3 = ColumnName.of("Param3");
+        final ColumnName PARAM5 = ColumnName.of("Param5");
+        final TableName TRANSFORMS = TableName.of("Transforms");
+        String csv = """
+                Type,SetName,StepOrder,Transform,Param1,Param2,Param3,Param4,Param5
+                SegmentLedger,Babylon,10,ToDate,SettleDate,SettleDate
+                SegmentLedger,Babylon,20,ToDecimal,Quantity,Quantity,true
+                """;
+
+        RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(),
+                StreamSources.fromString(csv, "transforms.csv"));
+        TablePlanRead plan = new TablePlanRead().withTableName(TRANSFORMS).withSelectedColumns(TYPE, PARAM3, PARAM5);
+
+        TableColumnar table = plan.execute(rowSource);
+
+        assertEquals(3, table.getColumnCount());
+        assertEquals(2, table.getRowCount());
+        assertEquals("SegmentLedger", table.getString(TYPE).get(0));
+        assertEquals("SegmentLedger", table.getString(TYPE).get(1));
+        assertFalse(table.getString(PARAM3).isSet(0));
+        assertEquals("true", table.getString(PARAM3).get(1));
+        assertFalse(table.getString(PARAM5).isSet(0));
+        assertFalse(table.getString(PARAM5).isSet(1));
+    }
+
+    @Test
     void shouldApplyRowFilterBeforeReadingTable()
     {
         final ColumnName CODE = ColumnName.of("Code");

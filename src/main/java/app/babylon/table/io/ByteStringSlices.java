@@ -50,8 +50,13 @@ public final class ByteStringSlices implements RowValues, ByteSequence, Comparab
         for (int i = 0; i < selectedIndexes.length; ++i)
         {
             int fieldIndex = selectedIndexes[i];
-            int start = source.start(fieldIndex);
-            int end = source.end(fieldIndex);
+            int start = source.length();
+            int end = source.length();
+            if (fieldIndex < source.size())
+            {
+                start = source.start(fieldIndex);
+                end = source.end(fieldIndex);
+            }
             if (strip)
             {
                 start = Bytes.stripxStart(this.byteString, start, end);

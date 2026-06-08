@@ -3,9 +3,10 @@ package app.babylon.table.plans;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,8 +28,8 @@ class TablePlanWriteTest
     void shouldWriteCsvUsingSelectedColumnsAndHeaders()
     {
         TableColumnar table = sampleTable();
-        StringWriter writer = new StringWriter();
-        TableSinkCsv sink = TableSinkCsv.toWriter("cashflows.csv", writer).build();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("cashflows.csv", outputStream).build();
 
         new TablePlanWrite().withSink(sink).withSelectedColumns(CATEGORY, AMOUNT).execute(table);
 
@@ -36,14 +37,14 @@ class TablePlanWriteTest
                 Category,Amount\r
                 Pay,1000000\r
                 Receive,1250000.5\r
-                """, writer.toString());
+                """, outputStream.toString(StandardCharsets.UTF_8));
     }
 
     @Test
     void shouldExposeConfiguredSink()
     {
-        StringWriter writer = new StringWriter();
-        TableSinkCsv sink = TableSinkCsv.toWriter("cashflows.csv", writer).build();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("cashflows.csv", outputStream).build();
 
         TablePlanWrite plan = new TablePlanWrite().withSink(sink);
 

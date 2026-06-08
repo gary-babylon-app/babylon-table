@@ -11,10 +11,10 @@
 package app.babylon.table.io;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 
@@ -35,22 +35,24 @@ class TableSinkCsvTest
     @Test
     void shouldWriteCsvWithoutHeaders() throws IOException
     {
-        StringWriter writer = new StringWriter();
-        TableSinkCsv sink = TableSinkCsv.toWriter("cashflows.csv", writer).withIncludeHeaders(false).build();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("cashflows.csv", outputStream)
+                .withIncludeHeaders(false).build();
 
         sink.write(sampleTable());
 
         assertEquals("""
                 Pay,1000000\r
                 Receive,1250000.5\r
-                """, writer.toString());
+                """, outputStream.toString(StandardCharsets.UTF_8));
     }
 
     @Test
     void shouldWriteCsvToOutputStreamUsingCharset() throws IOException
     {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        TableSinkCsv sink = TableSinkCsv.toOutputStream("cashflows.csv", outputStream, StandardCharsets.UTF_8).build();
+        TableSinkCsv sink = TableSinkCsv.builder()
+                .withOutputStream("cashflows.csv", outputStream, StandardCharsets.UTF_8).build();
 
         sink.write(sampleTable());
 
@@ -65,7 +67,7 @@ class TableSinkCsvTest
     void shouldWriteCsvToOutputStreamUsingUtf8ByDefault() throws IOException
     {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        TableSinkCsv sink = TableSinkCsv.toOutputStream("cashflows.csv", outputStream).build();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("cashflows.csv", outputStream).build();
 
         sink.write(sampleTable());
 
@@ -77,6 +79,17 @@ class TableSinkCsvTest
     }
 
     @Test
+    void directOutputStreamIsNotClosed() throws IOException
+    {
+        CloseTrackingOutputStream outputStream = new CloseTrackingOutputStream();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("cashflows.csv", outputStream).build();
+
+        sink.write(sampleTable());
+
+        assertFalse(outputStream.closed);
+    }
+
+    @Test
     void shouldDistinguishUnsetFromSetEmptyString() throws IOException
     {
         final ColumnName NOTE = ColumnName.of("Note");
@@ -85,12 +98,12 @@ class TableSinkCsvTest
         notes.add("");
 
         TableColumnar table = Tables.newTable(TableName.of("Notes"), notes.build());
-        StringWriter writer = new StringWriter();
-        TableSinkCsv sink = TableSinkCsv.toWriter("notes.csv", writer).build();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("notes.csv", outputStream).build();
 
         sink.write(table);
 
-        assertEquals("Note\r\n\r\n\"\"\r\n", writer.toString());
+        assertEquals("Note\r\n\r\n\"\"\r\n", outputStream.toString(StandardCharsets.UTF_8));
     }
 
     @Test
@@ -103,12 +116,30 @@ class TableSinkCsvTest
         values.add("line1\nline2");
 
         TableColumnar table = Tables.newTable(TableName.of("Values"), values.build());
-        StringWriter writer = new StringWriter();
-        TableSinkCsv sink = TableSinkCsv.toWriter("values.csv", writer).build();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("values.csv", outputStream).build();
 
         sink.write(table);
 
-        assertEquals("ValueName\r\n\"alpha,beta\"\r\n\"say \"\"hello\"\"\"\r\n\"line1\nline2\"\r\n", writer.toString());
+        assertEquals("ValueName\r\n\"alpha,beta\"\r\n\"say \"\"hello\"\"\"\r\n\"line1\nline2\"\r\n",
+                outputStream.toString(StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void shouldWriteCsvUsingOptions() throws IOException
+    {
+        WriteOptionsCsv options = WriteOptionsCsv.builder().withIncludeHeaders(false).withSeparator(';')
+                .withLineSeparator("\n").build();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        TableSinkCsv sink = TableSinkCsv.builder().withOutputStream("cashflows.csv", outputStream, options).build();
+
+        sink.write(sampleTable());
+
+        assertEquals(options, sink.getOptions());
+        assertEquals("""
+                Pay;1000000
+                Receive;1250000.5
+                """, outputStream.toString(StandardCharsets.UTF_8));
     }
 
     private static TableColumnar sampleTable()
@@ -123,5 +154,16 @@ class TableSinkCsvTest
 
         return Tables.newTable(TableName.of("Cashflows"), new TableDescription("Cashflow rows"), categories.build(),
                 amounts.build());
+    }
+
+    private static final class CloseTrackingOutputStream extends ByteArrayOutputStream
+    {
+        private boolean closed;
+
+        @Override
+        public void close()
+        {
+            this.closed = true;
+        }
     }
 }

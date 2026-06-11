@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import app.babylon.io.StreamSource;
+import app.babylon.io.DataResource;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableDescription;
@@ -54,7 +54,7 @@ import app.babylon.text.Strings;
  * Example:
  *
  * <pre>{@code
- * StreamSource streamSource = StreamSources.fromString("Code,Amount\nabc,10.5\n", "values.csv");
+ * DataResource streamSource = DataResources.fromString("Code,Amount\nabc,10.5\n", "values.csv");
  * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(',').build();
  * RowSource rowSource = RowSources.create(options, streamSource);
  *
@@ -336,7 +336,7 @@ public class TablePlanRead extends TablePlanCommon<TablePlanRead>
      *            the CSV stream source
      * @return the parsed table
      */
-    public TableColumnar execute(StreamSource streamSource)
+    public TableColumnar execute(DataResource streamSource)
     {
         return execute(RowSources.create(streamSource));
     }

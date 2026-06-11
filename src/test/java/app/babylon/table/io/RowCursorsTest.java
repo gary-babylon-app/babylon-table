@@ -13,8 +13,8 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.StreamSources;
-import app.babylon.io.TestStreamSources;
+import app.babylon.io.DataResources;
+import app.babylon.io.TestDataResources;
 import app.babylon.table.TableException;
 
 class RowCursorsTest
@@ -23,7 +23,7 @@ class RowCursorsTest
     void shouldIterateRawCsvRows()
     {
         String csv = "Date,Description,Amount\n2026-01-01,Coffee,3.50\n";
-        RowSource source = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "rows.csv"));
+        RowSource source = RowSources.create(ReadOptionsCsv.standard(), DataResources.fromString(csv, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -48,7 +48,7 @@ class RowCursorsTest
     void shouldCreateStandardCsvRowSource()
     {
         String csv = "Date,Description,Amount\n2026-01-01,Coffee,3.50\n";
-        RowSource source = RowSources.create(StreamSources.fromString(csv, "rows.csv"));
+        RowSource source = RowSources.create(DataResources.fromString(csv, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -74,7 +74,7 @@ class RowCursorsTest
         byte[] bytes = "City,Temp\nLondon,12\n".getBytes(StandardCharsets.UTF_16LE);
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withCharset(StandardCharsets.UTF_16LE)
                 .withAutoDetectOptions(false).build();
-        RowSource source = RowSources.create(csvFormat, TestStreamSources.fromBytes(bytes, "rows.csv"));
+        RowSource source = RowSources.create(csvFormat, TestDataResources.fromBytes(bytes, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -99,7 +99,7 @@ class RowCursorsTest
     void shouldAutoDetectCommaAndDoubleQuote()
     {
         String csv = "City,Note\nParis,\"Price,12\"\n";
-        RowSource source = RowSources.create(ReadOptionsCsv.standard(), StreamSources.fromString(csv, "rows.csv"));
+        RowSource source = RowSources.create(ReadOptionsCsv.standard(), DataResources.fromString(csv, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -123,7 +123,7 @@ class RowCursorsTest
     {
         String csv = "City;Note\nParis;'Price;12'\n";
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(';').withQuote('\'').build();
-        RowSource source = RowSources.create(csvFormat, StreamSources.fromString(csv, "rows.csv"));
+        RowSource source = RowSources.create(csvFormat, DataResources.fromString(csv, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -146,7 +146,7 @@ class RowCursorsTest
     void shouldFallbackToWindows1252WhenUtf8IsInvalid()
     {
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));
-        RowSource source = RowSources.create(ReadOptionsCsv.standard(), TestStreamSources.fromBytes(bytes, "rows.csv"));
+        RowSource source = RowSources.create(ReadOptionsCsv.standard(), TestDataResources.fromBytes(bytes, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -171,7 +171,7 @@ class RowCursorsTest
         String text = "ABC12XYZ\nDEF34UVW\n";
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withFixedWidths(new int[]
         {3, 2, 3}).withAutoDetectOptions(false).build();
-        RowSource source = RowSources.create(csvFormat, StreamSources.fromString(text, "rows.txt"));
+        RowSource source = RowSources.create(csvFormat, DataResources.fromString(text, "rows.txt"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -199,7 +199,7 @@ class RowCursorsTest
         String text = row.repeat(912);
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withFixedWidths(new int[]
         {3, 2, 3}).withAutoDetectOptions(false).build();
-        RowSource source = RowSources.create(csvFormat, StreamSources.fromString(text, "rows.txt"));
+        RowSource source = RowSources.create(csvFormat, DataResources.fromString(text, "rows.txt"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -223,7 +223,7 @@ class RowCursorsTest
     {
         String csv = "City,Note\nParis,\"Price,12\"\n";
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withFixedWidths(null).build();
-        RowSource source = RowSources.create(csvFormat, StreamSources.fromString(csv, "rows.csv"));
+        RowSource source = RowSources.create(csvFormat, DataResources.fromString(csv, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -248,7 +248,7 @@ class RowCursorsTest
         byte[] bytes = "City,Note\nParis,Price €12\n".getBytes(java.nio.charset.Charset.forName("windows-1252"));
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder()
                 .withCharset(java.nio.charset.Charset.forName("windows-1252")).withAutoDetectOptions(false).build();
-        RowSource source = RowSources.create(csvFormat, TestStreamSources.fromBytes(bytes, "rows.csv"));
+        RowSource source = RowSources.create(csvFormat, TestDataResources.fromBytes(bytes, "rows.csv"));
 
         try (RowCursor rowCursor = source.openRows())
         {
@@ -276,7 +276,7 @@ class RowCursorsTest
                 .withFixedWidths(fixedWidths).withCharset(StandardCharsets.UTF_16LE).withAutoDetectOptions(false)
                 .build();
         byte[] bytes = "ABC12XYZ\n".getBytes(StandardCharsets.UTF_16LE);
-        RowCursor rowCursor = RowCursors.create(csvFormat, TestStreamSources.fromBytes(bytes, "rows.txt").openStream());
+        RowCursor rowCursor = RowCursors.create(csvFormat, TestDataResources.fromBytes(bytes, "rows.txt").openStream());
         try
         {
             assertInstanceOf(RowCursorCharFixedWidth.class, rowCursor);

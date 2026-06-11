@@ -14,21 +14,21 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-public final class TestStreamSources
+public final class TestDataResources
 {
-    private TestStreamSources()
+    private TestDataResources()
     {
     }
 
-    public static StreamSource fromString(String text, String name)
+    public static DataResource fromString(String text, String name)
     {
         return fromBytes(text.getBytes(StandardCharsets.UTF_8), name);
     }
 
-    public static StreamSource fromBytes(byte[] bytes, String name)
+    public static DataResource fromBytes(byte[] bytes, String name)
     {
         final byte[] payload = Arrays.copyOf(bytes, bytes.length);
-        return new StreamSource()
+        return new DataResource()
         {
             @Override
             public String getName()

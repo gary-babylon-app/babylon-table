@@ -23,7 +23,7 @@ import java.util.Base64;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-public class StreamSourcesTest
+public class DataResourcesTest
 {
     @TempDir
     Path tempDir;
@@ -31,26 +31,26 @@ public class StreamSourcesTest
     @Test
     public void fromStringShouldExposeNameAndUtf8Content()
     {
-        StreamSource source = StreamSources.fromString("alpha\nbeta\n", "values.csv");
+        DataResource source = DataResources.fromString("alpha\nbeta\n", "values.csv");
 
         assertEquals("values.csv", source.getName());
-        assertEquals("alpha\nbeta\n", StreamSources.getAsString(source));
-        assertEquals("alpha\nbeta\n", StreamSources.getSnippet(source));
+        assertEquals("alpha\nbeta\n", DataResources.getAsString(source));
+        assertEquals("alpha\nbeta\n", DataResources.getSnippet(source));
     }
 
     @Test
     public void fromBase64ShouldDecodeContentAndExposeMetadata()
     {
         String encoded = Base64.getEncoder().encodeToString("hello".getBytes(StandardCharsets.UTF_8));
-        StreamSource source = StreamSources.fromBase64(encoded, "hello.txt", MimeType.TEXT_PLAIN);
+        DataResource source = DataResources.fromBase64(encoded, "hello.txt", MimeType.TEXT_PLAIN);
 
-        assertTrue(source instanceof SourceStreamBase64);
+        assertTrue(source instanceof DataResourceBase64);
         assertEquals("hello.txt", source.getName());
-        assertEquals("hello", StreamSources.getAsString(source));
-        assertEquals("hello", StreamSources.getSnippet(source));
-        assertEquals(MimeType.TEXT_PLAIN, ((SourceStreamBase64) source).getMimeType());
-        assertEquals("hello.txt", ((SourceStreamBase64) source).getResourceName());
-        assertEquals(encoded, ((SourceStreamBase64) source).getData());
+        assertEquals("hello", DataResources.getAsString(source));
+        assertEquals("hello", DataResources.getSnippet(source));
+        assertEquals(MimeType.TEXT_PLAIN, ((DataResourceBase64) source).getMimeType());
+        assertEquals("hello.txt", ((DataResourceBase64) source).getResourceName());
+        assertEquals(encoded, ((DataResourceBase64) source).getData());
     }
 
     @Test
@@ -58,31 +58,31 @@ public class StreamSourcesTest
     {
         Path file = Files.writeString(this.tempDir.resolve("sample.csv"), "x,y\n1,2\n", StandardCharsets.UTF_8);
 
-        StreamSource byFile = StreamSources.fromFile(file.toFile());
-        StreamSource byDirectoryAndName = StreamSources.fromFile(this.tempDir.toString(), "sample.csv");
+        DataResource byFile = DataResources.fromFile(file.toFile());
+        DataResource byDirectoryAndName = DataResources.fromFile(this.tempDir.toString(), "sample.csv");
 
         assertEquals("sample.csv", byFile.getName());
         assertEquals("sample.csv", byDirectoryAndName.getName());
-        assertEquals("x,y\n1,2\n", StreamSources.getAsString(byFile));
-        assertEquals("x,y\n1,2\n", StreamSources.getAsString(byDirectoryAndName));
+        assertEquals("x,y\n1,2\n", DataResources.getAsString(byFile));
+        assertEquals("x,y\n1,2\n", DataResources.getAsString(byDirectoryAndName));
     }
 
     @Test
     public void getSnippetShouldReturnEmptyStringForAnEmptyFile() throws Exception
     {
         Path empty = Files.write(this.tempDir.resolve("empty.txt"), new byte[0]);
-        StreamSource source = StreamSources.fromFile(empty.toFile());
+        DataResource source = DataResources.fromFile(empty.toFile());
 
-        assertEquals("", StreamSources.getSnippet(source));
+        assertEquals("", DataResources.getSnippet(source));
     }
 
     @Test
     public void fromClassShouldOpenExistingResource()
     {
-        StreamSource source = StreamSources.fromClass(StreamSourceProbe.class, "ExcelTestCase.xlsx");
+        DataResource source = DataResources.fromClass(DataResourceProbe.class, "ExcelTestCase.xlsx");
 
         assertEquals("ExcelTestCase.xlsx", source.getName());
         assertNotNull(source.openStream());
-        assertFalse(StreamSources.getSnippet(source).isEmpty());
+        assertFalse(DataResources.getSnippet(source).isEmpty());
     }
 }

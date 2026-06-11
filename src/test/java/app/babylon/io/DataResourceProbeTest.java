@@ -21,16 +21,16 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-public class StreamSourceProbeTest
+public class DataResourceProbeTest
 {
     private static final Charset WINDOWS_1252 = Charset.forName("windows-1252");
 
     @Test
     public void testExcelFile() throws IOException
     {
-        StreamSource ds = StreamSources.fromClass(StreamSourceProbe.class, "ExcelTestCase.xlsx");
+        DataResource ds = DataResources.fromClass(DataResourceProbe.class, "ExcelTestCase.xlsx");
 
-        StreamSourceProbe snippet = StreamSourceProbe.of(ds);
+        DataResourceProbe snippet = DataResourceProbe.of(ds);
         assertTrue(snippet.isXlsx());
         assertFalse(snippet.isXls());
     }
@@ -40,7 +40,7 @@ public class StreamSourceProbeTest
     {
         byte[] bytes = new byte[]
         {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF, 'a', ',', 'b'};
-        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+        DataResourceProbe snippet = DataResourceProbe.of(bytes, "x.csv");
         assertTrue(snippet.hasBom());
         assertTrue(snippet.hasUtf8Bom());
         assertFalse(snippet.hasUtf16LeBom());
@@ -54,7 +54,7 @@ public class StreamSourceProbeTest
     {
         byte[] bytes = new byte[]
         {(byte) 0xFF, (byte) 0xFE, 'a', 0x00};
-        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+        DataResourceProbe snippet = DataResourceProbe.of(bytes, "x.csv");
         assertTrue(snippet.hasBom());
         assertFalse(snippet.hasUtf8Bom());
         assertTrue(snippet.hasUtf16LeBom());
@@ -68,7 +68,7 @@ public class StreamSourceProbeTest
     {
         byte[] bytes = new byte[]
         {'a', ',', 'b'};
-        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+        DataResourceProbe snippet = DataResourceProbe.of(bytes, "x.csv");
         assertFalse(snippet.hasBom());
         assertFalse(snippet.hasUtf8Bom());
         assertFalse(snippet.hasUtf16LeBom());
@@ -83,7 +83,7 @@ public class StreamSourceProbeTest
     public void testUtf16LeDetectionWithoutBom()
     {
         byte[] bytes = "a,b\nc,d\n".getBytes(StandardCharsets.UTF_16LE);
-        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+        DataResourceProbe snippet = DataResourceProbe.of(bytes, "x.csv");
 
         assertFalse(snippet.hasBom());
         assertEquals(StandardCharsets.UTF_16LE, snippet.detectedCharset());
@@ -93,7 +93,7 @@ public class StreamSourceProbeTest
     public void testUtf16BeDetectionWithoutBom()
     {
         byte[] bytes = "a,b\nc,d\n".getBytes(StandardCharsets.UTF_16BE);
-        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+        DataResourceProbe snippet = DataResourceProbe.of(bytes, "x.csv");
 
         assertFalse(snippet.hasBom());
         assertEquals(StandardCharsets.UTF_16BE, snippet.detectedCharset());
@@ -103,7 +103,7 @@ public class StreamSourceProbeTest
     public void testInvalidUtf8FallsBackToProvidedCharset()
     {
         byte[] bytes = "Price €12\n".getBytes(WINDOWS_1252);
-        StreamSourceProbe snippet = StreamSourceProbe.of(bytes, "x.csv");
+        DataResourceProbe snippet = DataResourceProbe.of(bytes, "x.csv");
 
         assertFalse(snippet.hasBom());
         assertEquals(WINDOWS_1252, snippet.detectedCharset());

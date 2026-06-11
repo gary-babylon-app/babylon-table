@@ -22,7 +22,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.StandardCharsets;
 
-public class StreamSourceProbe
+public class DataResourceProbe
 {
     private static final int BYTES_TO_SNIP = 8192;
     private static final Charset WINDOWS_1252 = Charset.forName("windows-1252");
@@ -30,7 +30,7 @@ public class StreamSourceProbe
     private final byte[] bytes;
     private final String resourceName;
 
-    private StreamSourceProbe(byte[] bytes, String resourceName)
+    private DataResourceProbe(byte[] bytes, String resourceName)
     {
         this.bytes = ArgumentCheck.nonNull(bytes, "bytes must not be null");
         this.resourceName = ArgumentCheck.nonNull(resourceName, "resourceName must not be null");
@@ -40,18 +40,18 @@ public class StreamSourceProbe
         }
     }
 
-    public static StreamSourceProbe of(byte[] bytes, String resourceName)
+    public static DataResourceProbe of(byte[] bytes, String resourceName)
     {
-        return new StreamSourceProbe(bytes, resourceName);
+        return new DataResourceProbe(bytes, resourceName);
     }
 
-    public static StreamSourceProbe of(BufferedInputStream bstream, String resourceName) throws IOException
+    public static DataResourceProbe of(BufferedInputStream bstream, String resourceName) throws IOException
     {
         ArgumentCheck.nonNull(bstream, "bstream must not be null");
         bstream.mark(BYTES_TO_SNIP);
         byte[] bytes = bstream.readNBytes(BYTES_TO_SNIP);
         bstream.reset();
-        return new StreamSourceProbe(bytes, resourceName);
+        return new DataResourceProbe(bytes, resourceName);
     }
 
     private static InputStream toMarkableStream(InputStream instream)
@@ -63,7 +63,7 @@ public class StreamSourceProbe
         return instream;
     }
 
-    public static StreamSourceProbe of(StreamSource ds) throws IOException
+    public static DataResourceProbe of(DataResource ds) throws IOException
     {
         try (InputStream instream = ds.openStream())
         {
@@ -71,7 +71,7 @@ public class StreamSourceProbe
             markableStream.mark(BYTES_TO_SNIP);
             byte[] bytes = markableStream.readNBytes(BYTES_TO_SNIP);
             markableStream.reset();
-            return new StreamSourceProbe(bytes, ds.getName());
+            return new DataResourceProbe(bytes, ds.getName());
         }
     }
 

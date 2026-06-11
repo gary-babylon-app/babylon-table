@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
-import app.babylon.io.StreamSourceProbe;
+import app.babylon.io.DataResourceProbe;
 import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.TableException;
 
@@ -39,7 +39,7 @@ public final class RowCursors
         BufferedInputStream bufferedInputStream = toBufferedStream(inputStream);
         try
         {
-            StreamSourceProbe probe = StreamSourceProbe.of(bufferedInputStream, "stream.csv");
+            DataResourceProbe probe = DataResourceProbe.of(bufferedInputStream, "stream.csv");
             if (probe.isXls() || probe.isXlsx() || probe.isPdf() || probe.isZip())
             {
                 throw new IllegalArgumentException("Input stream does not appear to contain CSV text.");

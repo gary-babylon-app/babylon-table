@@ -16,11 +16,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-class SourceStreamFile implements StreamSource
+class DataResourceFile implements DataResource
 {
     private final File file;
 
-    SourceStreamFile(File file)
+    DataResourceFile(File file)
     {
         this.file = ArgumentCheck.nonNull(file, "file must not be null");
     }

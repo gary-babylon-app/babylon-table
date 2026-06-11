@@ -14,7 +14,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import app.babylon.io.StreamSourceProbe;
+import app.babylon.io.DataResourceProbe;
 import app.babylon.lang.ArgumentCheck;
 
 final class CsvFormatProbe
@@ -28,7 +28,7 @@ final class CsvFormatProbe
             char defaultSeparator, char defaultQuote) throws IOException
     {
         BufferedInputStream checkedStream = ArgumentCheck.nonNull(stream);
-        StreamSourceProbe sourceProbe = StreamSourceProbe.of(checkedStream, ArgumentCheck.nonNull(resourceName));
+        DataResourceProbe sourceProbe = DataResourceProbe.of(checkedStream, ArgumentCheck.nonNull(resourceName));
         Charset charset = sourceProbe.getCharset(ArgumentCheck.nonNull(fallbackCharset));
 
         checkedStream.mark(BYTES_TO_SNIP);

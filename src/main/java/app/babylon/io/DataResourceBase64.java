@@ -12,14 +12,17 @@ package app.babylon.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
-class SourceStreamString implements StreamSource
+class DataResourceBase64 implements DataResource
 {
     private final String data;
     private final String resourceName;
+    private final MimeType mimeType;
 
-    public SourceStreamString(CharSequence data, String resourceName)
+    private volatile byte[] byteArray;
+
+    public DataResourceBase64(CharSequence data, String resourceName, MimeType mimeType)
     {
         if (data == null || data.isEmpty())
         {
@@ -31,6 +34,22 @@ class SourceStreamString implements StreamSource
         }
         this.data = data.toString();
         this.resourceName = resourceName;
+        this.mimeType = mimeType;
+    }
+
+    public MimeType getMimeType()
+    {
+        return mimeType;
+    }
+
+    public String getResourceName()
+    {
+        return resourceName;
+    }
+
+    public String getData()
+    {
+        return data;
     }
 
     @Override
@@ -42,6 +61,13 @@ class SourceStreamString implements StreamSource
     @Override
     public InputStream openStream()
     {
-        return new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+        byte[] local = this.byteArray;
+
+        if (local == null && !data.isEmpty())
+        {
+            local = Base64.getDecoder().decode(data);
+            this.byteArray = local;
+        }
+        return new ByteArrayInputStream(local);
     }
 }

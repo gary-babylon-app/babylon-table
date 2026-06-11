@@ -11,7 +11,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.StreamSources;
+import app.babylon.io.DataResources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.Tables;
@@ -34,10 +34,10 @@ class QuickTransformScriptTest
     }
 
     @Test
-    void shouldReadScriptFromStreamSource()
+    void shouldReadScriptFromDataResource()
     {
         QuickTransformScript script = QuickTransformScript
-                .read(StreamSources.fromString("clean Name into CleanName\nuppercase CleanName\n", "cleanup.qt"));
+                .read(DataResources.fromString("clean Name into CleanName\nuppercase CleanName\n", "cleanup.qt"));
 
         assertEquals("clean Name into CleanName\nuppercase CleanName\n", script.text());
     }

@@ -35,7 +35,7 @@ public interface TablePlan
      * CSV example:
      *
      * <pre>{@code
-     * StreamSource streamSource = ...;
+     * DataResource streamSource = ...;
      * TablePlanRead plan = new TablePlanRead();
      *
      * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(';').build();
@@ -74,7 +74,7 @@ public interface TablePlan
      * CSV example:
      *
      * <pre>{@code
-     * StreamSource streamSource = ...;
+     * DataResource streamSource = ...;
      * TablePlanRead plan = new TablePlanRead();
      *
      * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(';').build();

@@ -1,7 +1,7 @@
 package app.babylon.table.transform;
 
-import app.babylon.io.StreamSource;
-import app.babylon.io.StreamSources;
+import app.babylon.io.DataResource;
+import app.babylon.io.DataResources;
 import app.babylon.lang.ArgumentCheck;
 
 public final class QuickTransformScript
@@ -18,9 +18,9 @@ public final class QuickTransformScript
         return new QuickTransformScript(ArgumentCheck.nonNull(script).toString());
     }
 
-    public static QuickTransformScript read(StreamSource source)
+    public static QuickTransformScript read(DataResource source)
     {
-        return of(StreamSources.getAsString(ArgumentCheck.nonNull(source)));
+        return of(DataResources.getAsString(ArgumentCheck.nonNull(source)));
     }
 
     public String text()

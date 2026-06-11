@@ -10,7 +10,7 @@
 
 package app.babylon.table.io;
 
-import app.babylon.io.StreamSource;
+import app.babylon.io.DataResource;
 import app.babylon.lang.ArgumentCheck;
 
 public final class RowSources
@@ -19,12 +19,12 @@ public final class RowSources
     {
     }
 
-    public static RowSource create(StreamSource streamSource)
+    public static RowSource create(DataResource streamSource)
     {
         return create(ReadOptionsCsv.standard(), streamSource);
     }
 
-    public static RowSource create(ReadOptionsCsv options, StreamSource streamSource)
+    public static RowSource create(ReadOptionsCsv options, DataResource streamSource)
     {
         return new RowSourceCsv(ArgumentCheck.nonNull(streamSource), ArgumentCheck.nonNull(options));
     }

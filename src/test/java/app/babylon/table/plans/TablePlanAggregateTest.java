@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import app.babylon.io.StreamSources;
+import app.babylon.io.DataResources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
 import app.babylon.table.aggregation.Aggregate;
@@ -196,11 +196,11 @@ class TablePlanAggregateTest
 
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(',').build();
         TableColumnar streamingResult = plan
-                .execute(RowSources.create(csvFormat, StreamSources.fromString(csv, "summary.csv")));
+                .execute(RowSources.create(csvFormat, DataResources.fromString(csv, "summary.csv")));
         TableColumnar parsedTable = new TablePlanRead().withTableName(TableName.of("ParsedSummary"))
                 .withColumnType(STATION, ColumnTypes.STRING).withColumnType(COUNTRY, ColumnTypes.STRING)
                 .withColumnType(TEMPERATURE, ColumnTypes.DOUBLE).withColumnType(HUMIDITY, ColumnTypes.DOUBLE)
-                .execute(RowSources.create(csvFormat, StreamSources.fromString(csv, "summary.csv")));
+                .execute(RowSources.create(csvFormat, DataResources.fromString(csv, "summary.csv")));
         TableColumnar inMemoryResult = plan.execute(parsedTable);
 
         assertEquals(streamingResult.getName(), inMemoryResult.getName());
@@ -228,7 +228,7 @@ class TablePlanAggregateTest
     private static RowSource semiColonRowSource(String csv)
     {
         ReadOptionsCsv csvFormat = ReadOptionsCsv.builder().withSeparator(';').build();
-        return RowSources.create(csvFormat, StreamSources.fromString(csv.stripIndent(), "1brc.csv"));
+        return RowSources.create(csvFormat, DataResources.fromString(csv.stripIndent(), "1brc.csv"));
     }
 
     private static Map<String, SummaryRow> toSummaryRows(TableColumnar table, ColumnName station, ColumnName country,
@@ -261,7 +261,7 @@ class TablePlanAggregateTest
                 """;
 
         RowSource rowSource = RowSources.create(ReadOptionsCsv.standard(),
-                StreamSources.fromString(csv, "summary.csv"));
+                DataResources.fromString(csv, "summary.csv"));
         TablePlanAggregate plan = new TablePlanAggregate().withTableName(TableName.of("StationSummary"))
                 .withGroupBy(STATION).withAggregate(TEMPERATURE, COUNT, Aggregate.COUNT)
                 .withAggregate(TEMPERATURE, MEAN, Aggregate.MEAN);

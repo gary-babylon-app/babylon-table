@@ -16,35 +16,35 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-public class StreamSources
+public class DataResources
 {
-    public static StreamSource fromFile(String directory, String fileName)
+    public static DataResource fromFile(String directory, String fileName)
     {
         File file = new File(directory, fileName);
-        return new SourceStreamFile(file);
+        return new DataResourceFile(file);
     }
 
-    public static StreamSource fromFile(File file)
+    public static DataResource fromFile(File file)
     {
-        return new SourceStreamFile(file);
+        return new DataResourceFile(file);
     }
 
-    public static StreamSource fromClass(Class<?> clazz, String name)
+    public static DataResource fromClass(Class<?> clazz, String name)
     {
-        return new SourceStreamClassResource(clazz, name);
+        return new DataResourceClassResource(clazz, name);
     }
 
-    public static StreamSource fromString(CharSequence data, String resourceName)
+    public static DataResource fromString(CharSequence data, String resourceName)
     {
-        return new SourceStreamString(data, resourceName);
+        return new DataResourceString(data, resourceName);
     }
 
-    public static StreamSource fromBase64(String fileBase64, String resourceName, MimeType mimeType)
+    public static DataResource fromBase64(String fileBase64, String resourceName, MimeType mimeType)
     {
-        return new SourceStreamBase64(fileBase64, resourceName, mimeType);
+        return new DataResourceBase64(fileBase64, resourceName, mimeType);
     }
 
-    public static String getAsString(StreamSource stream)
+    public static String getAsString(DataResource stream)
     {
         try (InputStream inputStream = stream.openStream())
         {
@@ -62,7 +62,7 @@ public class StreamSources
         }
     }
 
-    public static String getSnippet(StreamSource stream)
+    public static String getSnippet(DataResource stream)
     {
         try (InputStream inputStream = stream.openStream())
         {

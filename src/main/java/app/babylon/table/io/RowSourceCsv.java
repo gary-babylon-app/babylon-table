@@ -10,19 +10,19 @@
 
 package app.babylon.table.io;
 
-import app.babylon.io.StreamSource;
+import app.babylon.io.DataResource;
 import app.babylon.lang.ArgumentCheck;
 
 /**
  * Configured text row source for {@link ReadOptionsCsv} that opens a
- * {@link RowCursor} from a {@link StreamSource}.
+ * {@link RowCursor} from a {@link DataResource}.
  */
 final class RowSourceCsv implements RowSource
 {
-    private final StreamSource streamSource;
+    private final DataResource streamSource;
     private final ReadOptionsCsv options;
 
-    RowSourceCsv(StreamSource streamSource, ReadOptionsCsv options)
+    RowSourceCsv(DataResource streamSource, ReadOptionsCsv options)
     {
         this.streamSource = ArgumentCheck.nonNull(streamSource);
         this.options = ArgumentCheck.nonNull(options);

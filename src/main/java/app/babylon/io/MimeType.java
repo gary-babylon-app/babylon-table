@@ -11,11 +11,17 @@
 package app.babylon.io;
 import java.util.function.Function;
 
+import app.babylon.text.Strings;
+
 public enum MimeType
 {
-    APPLICATION_PDF("application/pdf"), EXCEL_XLSX(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"), TEXT_CSV(
-                    "text/csv"), TEXT_PLAIN("text/plain");
+    // @formatter:off
+    APPLICATION_PDF("application/pdf"),
+    EXCEL_XLSX("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"),
+    MESSAGE_RFC822("message/rfc822"),
+    TEXT_CSV("text/csv"),
+    TEXT_PLAIN("text/plain");
+    // @formatter:on
 
     public static final Function<CharSequence, MimeType> PARSER = MimeType::parse;
 
@@ -41,10 +47,25 @@ public enum MimeType
         {
             return null;
         }
-        String candidate = s.toString();
+        return parse(s, 0, s.length());
+    }
+
+    public static MimeType parse(CharSequence s, int start, int end)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        int candidateStart = Strings.stripStart(s, start, end);
+        int candidateEnd = Strings.stripEnd(s, candidateStart, end);
+        if (candidateStart >= candidateEnd)
+        {
+            return null;
+        }
         for (MimeType mimeType : values())
         {
-            if (mimeType.name().equalsIgnoreCase(candidate) || mimeType.getName().equalsIgnoreCase(candidate))
+            if (Strings.equalsIgnoreCase(s, candidateStart, candidateEnd, mimeType.name())
+                    || Strings.equalsIgnoreCase(s, candidateStart, candidateEnd, mimeType.getName()))
             {
                 return mimeType;
             }

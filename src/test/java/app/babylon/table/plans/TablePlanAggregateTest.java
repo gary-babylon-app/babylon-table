@@ -1,7 +1,10 @@
 package app.babylon.table.plans;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -10,8 +13,12 @@ import org.junit.jupiter.api.Test;
 import app.babylon.io.DataResources;
 import app.babylon.table.TableColumnar;
 import app.babylon.table.TableName;
+import app.babylon.table.Tables;
 import app.babylon.table.aggregation.Aggregate;
+import app.babylon.table.column.ColumnBoolean;
+import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnName;
+import app.babylon.table.column.ColumnObject;
 import app.babylon.table.column.ColumnTypes;
 import app.babylon.table.io.ReadOptionsCsv;
 import app.babylon.table.io.RowSource;
@@ -247,6 +254,51 @@ class TablePlanAggregateTest
     }
 
     @Test
+    void executeTableColumnarShouldAggregateMinAndMaxFromPrimitiveAndObjectColumns()
+    {
+        final ColumnName STATION = ColumnName.of("Station");
+        final ColumnName TRADE_DATE = ColumnName.of("TradeDate");
+        final ColumnName SCORE = ColumnName.of("Score");
+        final ColumnName ACTIVE = ColumnName.of("Active");
+        final ColumnName COUNT = ColumnName.of("Count");
+        final ColumnName FIRST_TRADE_DATE = ColumnName.of("FirstTradeDate");
+        final ColumnName LAST_TRADE_DATE = ColumnName.of("LastTradeDate");
+        final ColumnName MIN_SCORE = ColumnName.of("MinScore");
+        final ColumnName MAX_SCORE = ColumnName.of("MaxScore");
+        final ColumnName MIN_ACTIVE = ColumnName.of("MinActive");
+        final ColumnName MAX_ACTIVE = ColumnName.of("MaxActive");
+
+        TableColumnar source = typedMinMaxSource(STATION, TRADE_DATE, SCORE, ACTIVE);
+        TablePlanAggregate plan = new TablePlanAggregate().withTableName(TableName.of("Summary")).withGroupBy(STATION)
+                .withAggregate(STATION, COUNT, Aggregate.COUNT)
+                .withAggregate(TRADE_DATE, FIRST_TRADE_DATE, Aggregate.MIN)
+                .withAggregate(TRADE_DATE, LAST_TRADE_DATE, Aggregate.MAX)
+                .withAggregate(SCORE, MIN_SCORE, Aggregate.MIN).withAggregate(SCORE, MAX_SCORE, Aggregate.MAX)
+                .withAggregate(ACTIVE, MIN_ACTIVE, Aggregate.MIN).withAggregate(ACTIVE, MAX_ACTIVE, Aggregate.MAX);
+
+        TableColumnar summary = plan.execute(source);
+
+        assertEquals(2, summary.getRowCount());
+        assertEquals("Amsterdam", summary.getString(STATION).get(0));
+        assertEquals(2L, summary.getLong(COUNT).get(0));
+        assertEquals(LocalDate.of(2026, 1, 2), summary.getObject(FIRST_TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(LocalDate.of(2026, 1, 5), summary.getObject(LAST_TRADE_DATE, ColumnTypes.LOCALDATE).get(0));
+        assertEquals(4, summary.getInt(MIN_SCORE).get(0));
+        assertEquals(7, summary.getInt(MAX_SCORE).get(0));
+        assertFalse(summary.getBoolean(MIN_ACTIVE).get(0));
+        assertTrue(summary.getBoolean(MAX_ACTIVE).get(0));
+
+        assertEquals("London", summary.getString(STATION).get(1));
+        assertEquals(1L, summary.getLong(COUNT).get(1));
+        assertEquals(LocalDate.of(2026, 2, 3), summary.getObject(FIRST_TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+        assertEquals(LocalDate.of(2026, 2, 3), summary.getObject(LAST_TRADE_DATE, ColumnTypes.LOCALDATE).get(1));
+        assertEquals(9, summary.getInt(MIN_SCORE).get(1));
+        assertEquals(9, summary.getInt(MAX_SCORE).get(1));
+        assertTrue(summary.getBoolean(MIN_ACTIVE).get(1));
+        assertTrue(summary.getBoolean(MAX_ACTIVE).get(1));
+    }
+
+    @Test
     void executeShouldAggregateFromRowSource()
     {
         final ColumnName STATION = ColumnName.of("Station");
@@ -280,6 +332,33 @@ class TablePlanAggregateTest
 
     private static record SummaryRow(long count, double sum, double min, double mean, double max, double humidityMax)
     {
+    }
+
+    private static TableColumnar typedMinMaxSource(ColumnName stationName, ColumnName tradeDateName,
+            ColumnName scoreName, ColumnName activeName)
+    {
+        ColumnObject.Builder<String> stations = ColumnObject.builder(stationName);
+        stations.add("Amsterdam");
+        stations.add("Amsterdam");
+        stations.add("London");
+
+        ColumnObject.Builder<LocalDate> tradeDates = ColumnObject.builder(tradeDateName, ColumnTypes.LOCALDATE);
+        tradeDates.add(LocalDate.of(2026, 1, 5));
+        tradeDates.add(LocalDate.of(2026, 1, 2));
+        tradeDates.add(LocalDate.of(2026, 2, 3));
+
+        ColumnInt.Builder scores = ColumnInt.builder(scoreName);
+        scores.add(7);
+        scores.add(4);
+        scores.add(9);
+
+        ColumnBoolean.Builder active = ColumnBoolean.builder(activeName);
+        active.add(true);
+        active.add(false);
+        active.add(true);
+
+        return Tables.newTable(TableName.of("TypedMinMaxSource"), stations.build(), tradeDates.build(), scores.build(),
+                active.build());
     }
 
 }

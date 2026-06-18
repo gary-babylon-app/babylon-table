@@ -16,7 +16,10 @@ import app.babylon.table.Tables;
 import app.babylon.table.aggregation.AccumulatorDouble;
 import app.babylon.table.aggregation.Aggregate;
 import app.babylon.table.column.Column;
+import app.babylon.table.column.ColumnBoolean;
+import app.babylon.table.column.ColumnByte;
 import app.babylon.table.column.ColumnDouble;
+import app.babylon.table.column.ColumnInt;
 import app.babylon.table.column.ColumnLong;
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -422,7 +425,12 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
             }
 
             Column sourceColumn = table.get(aggregateSpec.sourceColumnName());
-            if (sourceColumn instanceof ColumnDouble)
+            if (isMinOrMax(aggregateSpec.aggregate()))
+            {
+                aggregateBuilders[i] = newMinMaxBuilder(sourceColumn, aggregateSpec.sourceColumnName(),
+                        aggregateSpec.outputColumnName());
+            }
+            else if (sourceColumn instanceof ColumnDouble)
             {
                 aggregateBuilders[i] = ColumnDouble.builder(aggregateSpec.outputColumnName());
             }
@@ -470,7 +478,12 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
 
             if (aggregate == Aggregate.COUNT)
             {
-                ((ColumnLong.Builder) builder).add(countSetValues(sourceColumn));
+                ((ColumnLong.Builder) builder).add(sourceColumn.count());
+                continue;
+            }
+            if (isMinOrMax(aggregate))
+            {
+                addMinMaxValue(builder, sourceColumn, aggregate);
                 continue;
             }
             if (builder instanceof ColumnDouble.Builder doubleBuilder
@@ -495,17 +508,84 @@ public class TablePlanAggregate extends TablePlanCommon<TablePlanAggregate>
         }
     }
 
-    private static long countSetValues(Column column)
+    private static boolean isMinOrMax(Aggregate aggregate)
     {
-        long count = 0L;
-        for (int i = 0; i < column.size(); ++i)
+        return aggregate == Aggregate.MIN || aggregate == Aggregate.MAX;
+    }
+
+    private static Column.Builder newMinMaxBuilder(Column sourceColumn, ColumnName sourceColumnName,
+            ColumnName outputColumnName)
+    {
+        if (sourceColumn instanceof ColumnDouble)
         {
-            if (column.isSet(i))
-            {
-                ++count;
-            }
+            return ColumnDouble.builder(outputColumnName);
         }
-        return count;
+        if (sourceColumn instanceof ColumnLong)
+        {
+            return ColumnLong.builder(outputColumnName);
+        }
+        if (sourceColumn instanceof ColumnInt)
+        {
+            return ColumnInt.builder(outputColumnName);
+        }
+        if (sourceColumn instanceof ColumnByte)
+        {
+            return ColumnByte.builder(outputColumnName);
+        }
+        if (sourceColumn instanceof ColumnBoolean)
+        {
+            return ColumnBoolean.builder(outputColumnName);
+        }
+        if (sourceColumn instanceof ColumnObject<?>)
+        {
+            return ColumnObject.builder(outputColumnName, sourceColumn.getType());
+        }
+        throw unsupportedAggregateSourceColumnType(sourceColumnName, sourceColumn);
+    }
+
+    @SuppressWarnings(
+    {"unchecked", "rawtypes"})
+    private static void addMinMaxValue(Column.Builder builder, Column sourceColumn, Aggregate aggregate)
+    {
+        if (builder instanceof ColumnDouble.Builder doubleBuilder && sourceColumn instanceof ColumnDouble sourceDouble)
+        {
+            doubleBuilder.add(aggregate == Aggregate.MIN ? sourceDouble.min() : sourceDouble.max());
+            return;
+        }
+        if (builder instanceof ColumnLong.Builder longBuilder && sourceColumn instanceof ColumnLong sourceLong)
+        {
+            longBuilder.add(aggregate == Aggregate.MIN ? sourceLong.min() : sourceLong.max());
+            return;
+        }
+        if (builder instanceof ColumnInt.Builder intBuilder && sourceColumn instanceof ColumnInt sourceInt)
+        {
+            intBuilder.add(aggregate == Aggregate.MIN ? sourceInt.min() : sourceInt.max());
+            return;
+        }
+        if (builder instanceof ColumnByte.Builder byteBuilder && sourceColumn instanceof ColumnByte sourceByte)
+        {
+            byteBuilder.add(aggregate == Aggregate.MIN ? sourceByte.min() : sourceByte.max());
+            return;
+        }
+        if (builder instanceof ColumnBoolean.Builder booleanBuilder
+                && sourceColumn instanceof ColumnBoolean sourceBoolean)
+        {
+            booleanBuilder.add(aggregate == Aggregate.MIN ? sourceBoolean.min() : sourceBoolean.max());
+            return;
+        }
+        if (builder instanceof ColumnObject.Builder objectBuilder && sourceColumn instanceof ColumnObject sourceObject)
+        {
+            objectBuilder.add(aggregate == Aggregate.MIN ? sourceObject.min() : sourceObject.max());
+            return;
+        }
+        throw unsupportedAggregateSourceColumnType(sourceColumn == null ? null : sourceColumn.getName(), sourceColumn);
+    }
+
+    private static IllegalArgumentException unsupportedAggregateSourceColumnType(ColumnName sourceColumnName,
+            Column sourceColumn)
+    {
+        return new IllegalArgumentException("Unsupported aggregate source column type for " + sourceColumnName + ": "
+                + (sourceColumn == null ? "null" : sourceColumn.getClass().getSimpleName()));
     }
 
     private static int max(int[] values)

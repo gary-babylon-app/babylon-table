@@ -103,6 +103,36 @@ class ColumnBooleanTest
     }
 
     @Test
+    void minAndMaxUseNaturalBooleanOrdering()
+    {
+        ColumnName values = ColumnName.of("values");
+        ColumnBoolean column = ColumnBoolean.builder(values).add(true).addNull().add(false).build();
+
+        assertFalse(column.min());
+        assertTrue(column.max());
+    }
+
+    @Test
+    void minAndMaxIgnoreUnsetRows()
+    {
+        ColumnName values = ColumnName.of("values");
+        ColumnBoolean column = ColumnBoolean.builder(values).addNull().add(true).addNull().build();
+
+        assertTrue(column.min());
+        assertTrue(column.max());
+    }
+
+    @Test
+    void minAndMaxThrowWhenNoRowsAreSet()
+    {
+        ColumnName values = ColumnName.of("values");
+        ColumnBoolean column = ColumnBoolean.builder(values).addNull().build();
+
+        assertThrows(RuntimeException.class, column::min);
+        assertThrows(RuntimeException.class, column::max);
+    }
+
+    @Test
     void predicateUsesTypedBooleanComparisons()
     {
         ColumnName values = ColumnName.of("values");

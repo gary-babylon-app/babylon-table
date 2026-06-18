@@ -360,6 +360,33 @@ public interface Column
     public boolean isNoneSet();
 
     /**
+     * Returns the number of rows that contain a value.
+     *
+     * @return count of set rows
+     */
+    default public long count()
+    {
+        if (isAllSet())
+        {
+            return size();
+        }
+        if (isNoneSet())
+        {
+            return 0L;
+        }
+
+        long count = 0L;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                ++count;
+            }
+        }
+        return count;
+    }
+
+    /**
      * Indicates whether the column has no set values, either because it has no rows
      * or because every row is unset.
      *

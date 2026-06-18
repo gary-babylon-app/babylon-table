@@ -151,6 +151,82 @@ public interface ColumnBoolean extends Column
      */
     public boolean[] toArray(boolean[] x);
 
+    /**
+     * Returns the maximum set value in the column, using the natural boolean
+     * ordering {@code false < true}.
+     *
+     * @return maximum set value
+     */
+    default boolean max()
+    {
+        if (isEmpty())
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        boolean found = false;
+        boolean max = false;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                boolean value = get(i);
+                if (!found || Boolean.compare(value, max) > 0)
+                {
+                    max = value;
+                    found = true;
+                }
+            }
+        }
+        if (!found)
+        {
+            throw new RuntimeException("Can not compute max on column with no values. " + getName());
+        }
+        return max;
+    }
+
+    /**
+     * Returns the minimum set value in the column, using the natural boolean
+     * ordering {@code false < true}.
+     *
+     * @return minimum set value
+     */
+    default boolean min()
+    {
+        if (isEmpty())
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        if (isConstant())
+        {
+            return get(0);
+        }
+
+        boolean found = false;
+        boolean min = false;
+        for (int i = 0; i < size(); ++i)
+        {
+            if (isSet(i))
+            {
+                boolean value = get(i);
+                if (!found || Boolean.compare(value, min) < 0)
+                {
+                    min = value;
+                    found = true;
+                }
+            }
+        }
+        if (!found)
+        {
+            throw new RuntimeException("Can not compute min on column with no values. " + getName());
+        }
+        return min;
+    }
+
     @Override
     default int compare(int i, int j)
     {

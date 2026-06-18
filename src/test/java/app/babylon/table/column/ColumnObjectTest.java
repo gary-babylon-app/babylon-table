@@ -64,6 +64,18 @@ class ColumnObjectTest
     private static final Column.Type CUSTOM_STRINGABLE_TYPE = Column.Type.of(CustomStringable.class, TypeParsers.NULL,
             (TypeWriter<CustomStringable>) (value, out) -> out.append("type:").append(value.value));
 
+    @Test
+    void countShouldReturnNumberOfSetRows()
+    {
+        final ColumnName TEST = ColumnName.of("Test");
+        ColumnObject.Builder<String> strings = ColumnObject.builder(TEST, ColumnTypes.STRING);
+        strings.add("a");
+        strings.addNull();
+        strings.add("b");
+
+        assertEquals(2L, strings.build().count());
+    }
+
     private static final class CustomStringable
     {
         private final String value;

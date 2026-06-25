@@ -10,10 +10,7 @@
 
 package app.babylon.table.transform;
 
-import java.lang.reflect.Method;
-import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.Map;
 
 import app.babylon.table.column.ColumnName;
 import app.babylon.table.column.ColumnObject;
@@ -411,6 +408,43 @@ class DateFormatInferenceTest
     }
 
     @Test
+    void validFormatsShouldReturnFormatsForAjBellTradeAndSettlementDates()
+    {
+        String tradeDateText = "20/09/21";
+        String settlementDateText = "22/09/21";
+        EnumSet<DateFormat> tradeDateFormats = EnumSet.copyOf(DateFormatInference.validFormats(tradeDateText, null));
+        EnumSet<DateFormat> settlementDateFormats = EnumSet
+                .copyOf(DateFormatInference.validFormats(settlementDateText, null));
+        EnumSet<DateFormat> sharedFormats = EnumSet.copyOf(tradeDateFormats);
+
+        sharedFormats.retainAll(settlementDateFormats);
+
+        assertEquals(EnumSet.of(DateFormat.DMY, DateFormat.YMD), tradeDateFormats);
+        assertEquals(EnumSet.of(DateFormat.DMY, DateFormat.YMD), settlementDateFormats);
+        assertEquals(EnumSet.of(DateFormat.DMY, DateFormat.YMD), sharedFormats);
+        for (DateFormat format : sharedFormats)
+        {
+            assertNotNull(ColumnLocalDates.stringToDate(tradeDateText, format));
+            assertNotNull(ColumnLocalDates.stringToDate(settlementDateText, format));
+        }
+    }
+
+    @Test
+    void validFormatsShouldAppendToSuppliedCollection()
+    {
+        EnumSet<DateFormat> formats = EnumSet.of(DateFormat.YMD);
+
+        assertEquals(formats, DateFormatInference.validFormats("20/09/21", formats));
+        assertEquals(EnumSet.of(DateFormat.YMD, DateFormat.DMY), formats);
+    }
+
+    @Test
+    void validFormatsShouldReturnEmptyCollectionForNullValue()
+    {
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats(null, null));
+    }
+
+    @Test
     void isStrictIntegerShouldRejectWhitespaceOnlyString()
     {
         assertEquals(true, DateFormatInference.isStrictInteger("+123"));
@@ -436,69 +470,46 @@ class DateFormatInferenceTest
     }
 
     @Test
-    void privateHelpersShouldCoverMonthParsingLeapYearsAndExcelBounds() throws Exception
+    void validFormatsShouldCoverMonthParsingLeapYearsAndExcelBounds()
     {
-        assertEquals(4, invokeInt("parseMonthText", "Apr"));
-        assertEquals(5, invokeInt("parseMonthText", "May"));
-        assertEquals(6, invokeInt("parseMonthText", "Jun"));
-        assertEquals(7, invokeInt("parseMonthText", "Jul"));
-        assertEquals(8, invokeInt("parseMonthText", "Aug"));
-        assertEquals(9, invokeInt("parseMonthText", "Sep"));
-        assertEquals(10, invokeInt("parseMonthText", "Oct"));
-        assertEquals(11, invokeInt("parseMonthText", "Nov"));
-        assertEquals(12, invokeInt("parseMonthText", "Dec"));
-        assertEquals(-1, invokeInt("parseMonthText", "Foo"));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Apr-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-May-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Jun-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Jul-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Aug-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Sep-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Oct-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Nov-2026", null));
+        assertEquals(EnumSet.of(DateFormat.DMY), DateFormatInference.validFormats("01-Dec-2026", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("01-Foo-2026", null));
 
-        assertEquals(true, invokeBoolean("isValidYyyyMmDd8", DateValueFacts.from("20000229")));
-        assertEquals(false, invokeBoolean("isValidYyyyMmDd8", DateValueFacts.from("19000229")));
-        assertEquals(false, invokeBoolean("isValidYyyyMmDd8", DateValueFacts.from("20261301")));
-        assertEquals(false, invokeBoolean("isExcelLocalDate", DateValueFacts.from("25568")));
-        assertEquals(true, invokeBoolean("isExcelLocalDate", DateValueFacts.from("25569")));
-        assertEquals(false, invokeBoolean("isExcelLocalDate", DateValueFacts.from("25A69")));
-        assertEquals(0, invokeInt("maxDayInMonth", Integer.valueOf(2026), Integer.valueOf(13)));
+        assertEquals(EnumSet.of(DateFormat.YMD), DateFormatInference.validFormats("20000229", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("19000229", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("20261301", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("25568", null));
+        assertEquals(EnumSet.of(DateFormat.ExcelLocalDate), DateFormatInference.validFormats("25569", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("25A69", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("2026/13/01", null));
     }
 
     @Test
-    void privateHelpersShouldCoverMalformedSplitDates() throws Exception
+    void validFormatsShouldCoverMalformedSplitDates()
     {
-        assertEquals(EnumSet.noneOf(DateFormat.class),
-                invokeDateFormatSet("numericCandidatesForSplitDate", DateValueFacts.from("----")));
-        assertEquals(EnumSet.noneOf(DateFormat.class),
-                invokeDateFormatSet("numericCandidatesForSplitDate", DateValueFacts.from("2026----")));
-        assertEquals(EnumSet.noneOf(DateFormat.class),
-                invokeDateFormatSet("alphaMonthCandidatesForSplitDate", DateValueFacts.from("----")));
-        assertEquals(EnumSet.noneOf(DateFormat.class),
-                invokeDateFormatSet("alphaMonthCandidatesForSplitDate", DateValueFacts.from("AA-Jan-2026")));
-        assertEquals(EnumSet.noneOf(DateFormat.class),
-                invokeDateFormatSet("alphaMonthCandidatesForSplitDate", DateValueFacts.from("01-March-2026")));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("----", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("2026----", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("AA-Jan-2026", null));
+        assertEquals(EnumSet.noneOf(DateFormat.class), DateFormatInference.validFormats("01-March-2026", null));
     }
 
     @Test
-    void privateHelpersShouldCoverRankingAndMatchingEdges() throws Exception
+    void inferFormatShouldReturnUnknownForEmptyDateColumn()
     {
-        Map<DateFormat, Integer> votes = new EnumMap<>(DateFormat.class);
-        Object emptyRanking = invokeObject("rank", votes, Integer.valueOf(2));
-        assertEquals(null, invokeObject(emptyRanking, "best"));
-        assertEquals(0.0d, (double) invokeObject(emptyRanking, "bestConfidence"));
-
-        assertFalse(invokeBoolean(new Class<?>[]
-        {DateValueFacts.class, DateFormat.class}, "matchesFormat", null, DateFormat.DMY));
-        assertFalse(invokeBoolean(new Class<?>[]
-        {DateValueFacts.class, DateFormat.class}, "matchesFormat", DateValueFacts.from("2026-03-01"), null));
-        assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("20260228"), DateFormat.DMY));
-        assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("2026Mar03"), DateFormat.DMY));
-        assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("--Jan-2026"), DateFormat.DMY));
-        assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("01-Ab-2026"), DateFormat.DMY));
-        assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("2026-Mar-03"), DateFormat.MDY));
-        assertFalse(invokeBoolean("matchesFormat", DateValueFacts.from("2026////01"), DateFormat.DMY));
-
         final ColumnName TRADE_DATE = ColumnName.of("trade_date");
         ColumnObject.Builder<String> empty = ColumnObject.builder(TRADE_DATE, ColumnTypes.STRING);
         empty.addNull();
         empty.add("   ");
 
-        Object verification = invokeObject("verifyColumn", empty.build(), DateFormat.DMY);
-        assertEquals(1.0d, (double) invokeObject(verification, "failureRate"));
+        assertEquals(DateFormat.Unknown, DateFormatInference.inferFormat(empty.build()));
     }
 
     @Test
@@ -517,66 +528,4 @@ class DateFormatInferenceTest
         throw new AssertionError("Expected inferFormats(null) to throw");
     }
 
-    private static boolean invokeBoolean(String methodName, Object... args) throws Exception
-    {
-        return (boolean) invokeStatic(methodName, args);
-    }
-
-    private static boolean invokeBoolean(Class<?>[] parameterTypes, String methodName, Object... args) throws Exception
-    {
-        return (boolean) invokeStatic(parameterTypes, methodName, args);
-    }
-
-    private static int invokeInt(String methodName, Object... args) throws Exception
-    {
-        return (int) invokeStatic(methodName, args);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static EnumSet<DateFormat> invokeDateFormatSet(String methodName, Object... args) throws Exception
-    {
-        return (EnumSet<DateFormat>) invokeStatic(methodName, args);
-    }
-
-    private static Object invokeStatic(String methodName, Object... args) throws Exception
-    {
-        return invokeStatic(parameterTypes(args), methodName, args);
-    }
-
-    private static Object invokeStatic(Class<?>[] parameterTypes, String methodName, Object... args) throws Exception
-    {
-        Method method = DateFormatInference.class.getDeclaredMethod(methodName, parameterTypes);
-        method.setAccessible(true);
-        return method.invoke(null, args);
-    }
-
-    private static Object invokeObject(String methodName, Object... args) throws Exception
-    {
-        return invokeStatic(methodName, args);
-    }
-
-    private static Object invokeObject(Object target, String methodName) throws Exception
-    {
-        Method method = target.getClass().getDeclaredMethod(methodName);
-        method.setAccessible(true);
-        return method.invoke(target);
-    }
-
-    private static Class<?>[] parameterTypes(Object[] args)
-    {
-        Class<?>[] parameterTypes = new Class<?>[args.length];
-        for (int i = 0; i < args.length; ++i)
-        {
-            parameterTypes[i] = switch (args[i])
-            {
-                case DateValueFacts facts -> DateValueFacts.class;
-                case ColumnObject<?> column -> ColumnObject.class;
-                case DateFormat format -> DateFormat.class;
-                case Integer value -> int.class;
-                case Map<?, ?> map -> Map.class;
-                default -> args[i].getClass();
-            };
-        }
-        return parameterTypes;
-    }
 }

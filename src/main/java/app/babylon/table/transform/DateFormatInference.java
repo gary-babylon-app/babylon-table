@@ -13,6 +13,7 @@ package app.babylon.table.transform;
 import app.babylon.lang.ArgumentCheck;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
@@ -208,6 +209,50 @@ public final class DateFormatInference
             return false;
         }
         return !candidatesForValue(valueFacts, isDateName).isEmpty();
+    }
+
+    /**
+     * Adds all date formats that can parse the supplied value to the result
+     * collection.
+     *
+     * @param value
+     *            text to inspect
+     * @param result
+     *            collection to append to, or {@code null} to create an
+     *            {@link EnumSet}
+     * @return the supplied result collection, or a new {@link EnumSet} when result
+     *         was {@code null}
+     */
+    public static Collection<DateFormat> validFormats(CharSequence value, Collection<DateFormat> result)
+    {
+        return validFormats(value, false, result);
+    }
+
+    /**
+     * Adds all date formats that can parse the supplied value to the result
+     * collection.
+     *
+     * @param value
+     *            text to inspect
+     * @param isDateName
+     *            whether the surrounding column name suggests date content
+     * @param result
+     *            collection to append to, or {@code null} to create an
+     *            {@link EnumSet}
+     * @return the supplied result collection, or a new {@link EnumSet} when result
+     *         was {@code null}
+     */
+    public static Collection<DateFormat> validFormats(CharSequence value, boolean isDateName,
+            Collection<DateFormat> result)
+    {
+        Collection<DateFormat> formats = result == null ? EnumSet.noneOf(DateFormat.class) : result;
+        DateValueFacts valueFacts = DateValueFacts.from(value);
+        if (valueFacts == null)
+        {
+            return formats;
+        }
+        formats.addAll(candidatesForValue(valueFacts, isDateName));
+        return formats;
     }
 
     /**

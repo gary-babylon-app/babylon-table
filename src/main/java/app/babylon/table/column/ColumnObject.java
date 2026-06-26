@@ -815,7 +815,7 @@ public interface ColumnObject<T> extends Column
                     {
                         T x = a.get(i);
                         Object y = cd.get(i);
-                        if (!x.equals(y))
+                        if (!valuesEqual(x, y))
                         {
                             return false;
                         }
@@ -823,6 +823,19 @@ public interface ColumnObject<T> extends Column
                 }
                 return true;
             }
+        }
+        return false;
+    }
+
+    private static boolean valuesEqual(Object x, Object y)
+    {
+        if (x.equals(y))
+        {
+            return true;
+        }
+        if (x instanceof BigDecimal left && y instanceof BigDecimal right)
+        {
+            return left.compareTo(right) == 0;
         }
         return false;
     }

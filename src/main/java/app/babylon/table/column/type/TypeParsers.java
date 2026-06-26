@@ -340,13 +340,13 @@ public final class TypeParsers
         @Override
         public BigDecimal parse(CharSequence s, int start, int end)
         {
-            return BigDecimals.parse(s, start, end);
+            return BigDecimals.parse(s, start, end, true);
         }
 
         @Override
         public BigDecimal parse(ByteString s, int start, int end)
         {
-            return s == null ? null : s.parseDecimal(start, end);
+            return s == null ? null : s.parseDecimal(start, end, true);
         }
     };
     public static final TypeParser<Instant> INSTANT = new TypeParser<>()

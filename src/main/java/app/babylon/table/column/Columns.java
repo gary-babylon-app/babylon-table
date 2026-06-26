@@ -141,7 +141,7 @@ public class Columns
      */
     public static ColumnObject<BigDecimal> stringToDecimal(Column column)
     {
-        return stringToType(column, BigDecimals::parse, ColumnTypes.DECIMAL);
+        return stringToType(column, s -> BigDecimals.parse(s, true), ColumnTypes.DECIMAL);
     }
 
     /**

@@ -274,7 +274,10 @@ public final class BigDecimals
     }
 
     /**
-     * Parses a decimal value from the supplied text.
+     * Parses a decimal value from the supplied text, preserving the parsed decimal
+     * scale.
+     * <p>
+     * Use {@link #parse(CharSequence, boolean)} to strip trailing zeros.
      *
      * @param s
      *            text to parse
@@ -282,15 +285,33 @@ public final class BigDecimals
      */
     public static BigDecimal parse(CharSequence s)
     {
+        return parse(s, false);
+    }
+
+    /**
+     * Parses a decimal value from the supplied text.
+     *
+     * @param s
+     *            text to parse
+     * @param stripTrailingZeros
+     *            whether to normalise the parsed decimal by stripping trailing
+     *            zeros
+     * @return parsed decimal or {@code null}
+     */
+    public static BigDecimal parse(CharSequence s, boolean stripTrailingZeros)
+    {
         if (s == null)
         {
             return null;
         }
-        return parsePrepared(prepare(s.toString()));
+        return parsePrepared(prepare(s.toString()), stripTrailingZeros);
     }
 
     /**
-     * Parses a decimal value from a character slice.
+     * Parses a decimal value from a character slice, preserving the parsed decimal
+     * scale.
+     * <p>
+     * Use {@link #parse(CharSequence, int, int, boolean)} to strip trailing zeros.
      *
      * @param s
      *            text to parse
@@ -302,6 +323,25 @@ public final class BigDecimals
      */
     public static BigDecimal parse(CharSequence s, int start, int end)
     {
+        return parse(s, start, end, false);
+    }
+
+    /**
+     * Parses a decimal value from a character slice.
+     *
+     * @param s
+     *            text to parse
+     * @param start
+     *            inclusive start index
+     * @param end
+     *            exclusive end index
+     * @param stripTrailingZeros
+     *            whether to normalise the parsed decimal by stripping trailing
+     *            zeros
+     * @return parsed decimal or {@code null}
+     */
+    public static BigDecimal parse(CharSequence s, int start, int end, boolean stripTrailingZeros)
+    {
         if (s == null || start < 0 || end > s.length() || start >= end)
         {
             return null;
@@ -310,7 +350,7 @@ public final class BigDecimals
         char last = s.charAt(end - 1);
         if ((isDigit(first) || first == '-') && isDigit(last))
         {
-            return parsePlainDecimalFast(s, start, end, false, 0);
+            return parsePlainDecimalFast(s, start, end, false, 0, stripTrailingZeros);
         }
         boolean negative = false;
         boolean percent = false;
@@ -378,12 +418,31 @@ public final class BigDecimals
         char coreLast = s.charAt(end - 1);
         if ((isDigit(first) || first == '-' || first == '.') && (isDigit(coreLast) || coreLast == '.'))
         {
-            return parsePlainDecimalFast(s, start, end, negative, percent ? 2 : 0);
+            return parsePlainDecimalFast(s, start, end, negative, percent ? 2 : 0, stripTrailingZeros);
         }
         return null;
     }
 
+    /**
+     * Parses a decimal value from a character array slice, preserving the parsed
+     * decimal scale.
+     * <p>
+     * Use {@link #parse(char[], int, int, boolean)} to strip trailing zeros.
+     *
+     * @param chars
+     *            characters containing the decimal text
+     * @param start
+     *            inclusive start index
+     * @param end
+     *            exclusive end index
+     * @return parsed decimal or {@code null}
+     */
     public static BigDecimal parse(char[] chars, int start, int end)
+    {
+        return parse(chars, start, end, false);
+    }
+
+    public static BigDecimal parse(char[] chars, int start, int end, boolean stripTrailingZeros)
     {
         if (chars == null || start < 0 || end > chars.length || start >= end)
         {
@@ -393,7 +452,7 @@ public final class BigDecimals
         char last = chars[end - 1];
         if ((isDigit(first) || first == '-') && isDigit(last))
         {
-            return parsePlainDecimalFast(chars, start, end, false, 0);
+            return parsePlainDecimalFast(chars, start, end, false, 0, stripTrailingZeros);
         }
         boolean negative = false;
         boolean percent = false;
@@ -461,13 +520,14 @@ public final class BigDecimals
         char coreLast = chars[end - 1];
         if ((isDigit(first) || first == '-' || first == '.') && (isDigit(coreLast) || coreLast == '.'))
         {
-            return parsePlainDecimalFast(chars, start, end, negative, percent ? 2 : 0);
+            return parsePlainDecimalFast(chars, start, end, negative, percent ? 2 : 0, stripTrailingZeros);
         }
         return null;
     }
 
     /**
-     * Parses a decimal value directly from a byte sequence slice.
+     * Parses a decimal value directly from a byte sequence slice, preserving the
+     * parsed decimal scale.
      * <p>
      * This method is intended for high-throughput tabular input, especially CSV
      * parsing, where a numeric field may already be available as bytes and should
@@ -515,16 +575,36 @@ public final class BigDecimals
      * @param end
      *            exclusive end index
      * @return parsed decimal or {@code null}
+     * @see #parse(ByteSequence, int, int, boolean)
      */
     public static BigDecimal parse(ByteSequence bytes, int start, int end)
+    {
+        return parse(bytes, start, end, false);
+    }
+
+    /**
+     * Parses a decimal value directly from a byte sequence slice.
+     *
+     * @param bytes
+     *            byte sequence containing the decimal text
+     * @param start
+     *            inclusive start index
+     * @param end
+     *            exclusive end index
+     * @param stripTrailingZeros
+     *            whether to normalise the parsed decimal by stripping trailing
+     *            zeros
+     * @return parsed decimal or {@code null}
+     */
+    public static BigDecimal parse(ByteSequence bytes, int start, int end, boolean stripTrailingZeros)
     {
         if (bytes == null || start < 0 || end > bytes.length() || start >= end)
         {
             return null;
         }
         return bytes instanceof ByteString byteString
-                ? byteString.parseDecimal(start, end)
-                : ByteString.of(bytes).parseDecimal(start, end);
+                ? byteString.parseDecimal(start, end, stripTrailingZeros)
+                : ByteString.of(bytes).parseDecimal(start, end, stripTrailingZeros);
     }
 
     /**
@@ -925,7 +1005,7 @@ public final class BigDecimals
     }
 
     private static BigDecimal parsePlainDecimalFast(CharSequence chars, int start, int end, boolean negative,
-            int scaleAdjustment)
+            int scaleAdjustment, boolean stripTrailingZeros)
     {
         int i = start;
         if (chars.charAt(i) == '-')
@@ -958,6 +1038,12 @@ public final class BigDecimals
                 {
                     if (seenDot)
                     {
+                        if (!stripTrailingZeros)
+                        {
+                            unscaled *= 10L;
+                            ++scale;
+                            continue;
+                        }
                         int fractionalStart = i;
                         int fractionalEnd = end;
                         while (fractionalEnd > fractionalStart && chars.charAt(fractionalEnd - 1) == '0')
@@ -1017,7 +1103,7 @@ public final class BigDecimals
     }
 
     private static BigDecimal parsePlainDecimalFast(char[] chars, int start, int end, boolean negative,
-            int scaleAdjustment)
+            int scaleAdjustment, boolean stripTrailingZeros)
     {
         int i = start;
         if (chars[i] == '-')
@@ -1050,6 +1136,12 @@ public final class BigDecimals
                 {
                     if (seenDot)
                     {
+                        if (!stripTrailingZeros)
+                        {
+                            unscaled *= 10L;
+                            ++scale;
+                            continue;
+                        }
                         int fractionalStart = i;
                         int fractionalEnd = end;
                         while (fractionalEnd > fractionalStart && chars[fractionalEnd - 1] == '0')
@@ -1472,7 +1564,7 @@ public final class BigDecimals
         }
     }
 
-    private static BigDecimal parsePrepared(PreparedDecimal prepared)
+    private static BigDecimal parsePrepared(PreparedDecimal prepared, boolean stripTrailingZeros)
     {
         if (prepared == null)
         {
@@ -1490,12 +1582,17 @@ public final class BigDecimals
             {
                 bd = new BigDecimal(s).negate(MathContext.DECIMAL64);
             }
-            return bd.stripTrailingZeros();
+            return maybeStripTrailingZeros(bd, stripTrailingZeros);
         }
         catch (Throwable t)
         {
             return null;
         }
+    }
+
+    private static BigDecimal maybeStripTrailingZeros(BigDecimal value, boolean stripTrailingZeros)
+    {
+        return value == null || !stripTrailingZeros ? value : value.stripTrailingZeros();
     }
 
     private static Double parseDoublePrepared(PreparedDecimal prepared)

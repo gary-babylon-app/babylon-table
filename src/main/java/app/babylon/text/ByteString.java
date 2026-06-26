@@ -178,7 +178,36 @@ public final class ByteString implements ByteSequence, Comparable<ByteString>
         return parseLong(this.bytes, start, end);
     }
 
+    /**
+     * Parses a decimal value from this byte string, preserving the parsed decimal
+     * scale.
+     * <p>
+     * Use {@link #parseDecimal(int, int, boolean)} to strip trailing zeros.
+     *
+     * @param start
+     *            inclusive start index
+     * @param end
+     *            exclusive end index
+     * @return parsed decimal or {@code null}
+     */
     public BigDecimal parseDecimal(int start, int end)
+    {
+        return parseDecimal(start, end, false);
+    }
+
+    /**
+     * Parses a decimal value from this byte string.
+     *
+     * @param start
+     *            inclusive start index
+     * @param end
+     *            exclusive end index
+     * @param stripTrailingZeros
+     *            whether to normalise the parsed decimal by stripping trailing
+     *            zeros
+     * @return parsed decimal or {@code null}
+     */
+    public BigDecimal parseDecimal(int start, int end, boolean stripTrailingZeros)
     {
         if (start < 0 || end > this.length || start >= end)
         {
@@ -188,7 +217,7 @@ public final class ByteString implements ByteSequence, Comparable<ByteString>
         byte last = this.bytes[end - 1];
         if ((isDigit(first) || first == '-') && isDigit(last))
         {
-            return parsePlainDecimalFast(start, end, false, 0);
+            return maybeStripTrailingZeros(parsePlainDecimalFast(start, end, false, 0), stripTrailingZeros);
         }
         boolean negative = false;
         boolean percent = false;
@@ -256,7 +285,8 @@ public final class ByteString implements ByteSequence, Comparable<ByteString>
         byte coreLast = this.bytes[end - 1];
         if ((isDigit(first) || first == '-' || first == '.') && (isDigit(coreLast) || coreLast == '.'))
         {
-            return parsePlainDecimalFast(start, end, negative, percent ? 2 : 0);
+            return maybeStripTrailingZeros(parsePlainDecimalFast(start, end, negative, percent ? 2 : 0),
+                    stripTrailingZeros);
         }
         return null;
     }
@@ -491,6 +521,11 @@ public final class ByteString implements ByteSequence, Comparable<ByteString>
             unscaled = -unscaled;
         }
         return BigDecimal.valueOf(unscaled, scale + scaleAdjustment);
+    }
+
+    private static BigDecimal maybeStripTrailingZeros(BigDecimal value, boolean stripTrailingZeros)
+    {
+        return value == null || !stripTrailingZeros ? value : value.stripTrailingZeros();
     }
 
     private static boolean isDigit(byte c)

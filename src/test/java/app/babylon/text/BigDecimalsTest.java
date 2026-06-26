@@ -19,6 +19,14 @@ class BigDecimalsTest
         assertEquals(0, new BigDecimal(expected).compareTo(actual));
     }
 
+    private static void assertDecimalSameScale(String expected, BigDecimal actual)
+    {
+        assertNotNull(actual);
+        BigDecimal expectedDecimal = new BigDecimal(expected);
+        assertEquals(expectedDecimal, actual);
+        assertEquals(expectedDecimal.scale(), actual.scale());
+    }
+
     @Test
     void prepareShouldNormalizePercentAndBracketNegativeValues()
     {
@@ -62,6 +70,28 @@ class BigDecimalsTest
         assertEquals(0, new BigDecimal("12.345").compareTo(BigDecimals.parse("12.345")));
         assertEquals(12.5d, BigDecimals.extractDouble("USD 12.50").doubleValue(), 1e-12);
         assertNull(BigDecimals.extractDouble("12.5 and 7.5"));
+    }
+
+    @Test
+    void parseShouldPreserveScaleByDefault()
+    {
+        assertDecimalSameScale("12.3400", BigDecimals.parse("12.3400"));
+        assertDecimalSameScale("1234.5000", BigDecimals.parse("$1,234.5000"));
+        assertDecimalSameScale("12.3400", BigDecimals.parse("xx12.3400yy", 2, 9));
+        assertDecimalSameScale("12.3400", BigDecimals.parse("12.3400".toCharArray(), 0, 7));
+        assertDecimalSameScale("12.3400", BigDecimals.parse(byteSequence("12.3400"), 0, 7));
+        assertDecimalSameScale("12.3400", ByteString.of("12.3400").parseDecimal(0, 7));
+    }
+
+    @Test
+    void parseShouldStripTrailingZerosWhenRequested()
+    {
+        assertDecimalSameScale("12.34", BigDecimals.parse("12.3400", true));
+        assertDecimalSameScale("1234.5", BigDecimals.parse("$1,234.5000", true));
+        assertDecimalSameScale("12.34", BigDecimals.parse("xx12.3400yy", 2, 9, true));
+        assertDecimalSameScale("12.34", BigDecimals.parse("12.3400".toCharArray(), 0, 7, true));
+        assertDecimalSameScale("12.34", BigDecimals.parse(byteSequence("12.3400"), 0, 7, true));
+        assertDecimalSameScale("12.34", ByteString.of("12.3400").parseDecimal(0, 7, true));
     }
 
     @Test

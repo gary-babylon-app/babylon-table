@@ -78,6 +78,30 @@ public class ColumnNameTest
     }
 
     @Test
+    public void testAcronymsAreSingleWords()
+    {
+        final ColumnName VAT = ColumnName.of("VAT");
+        final ColumnName ISIN = ColumnName.of("ISIN");
+
+        assertEquals(List.of("VAT"), new ArrayList<>(VAT.toWords(null)));
+        assertEquals("vat", VAT.toCamelCase());
+        assertEquals(List.of("ISIN"), new ArrayList<>(ISIN.toWords(null)));
+        assertEquals("isin", ISIN.toCamelCase());
+    }
+
+    @Test
+    public void testTitleCaseIdentifiersAreNotTreatedAsAcronyms()
+    {
+        final ColumnName ISIN = ColumnName.of("Isin");
+        final ColumnName SEDOL = ColumnName.of("Sedol");
+
+        assertEquals(List.of("Isin"), new ArrayList<>(ISIN.toWords(null)));
+        assertEquals("isin", ISIN.toCamelCase());
+        assertEquals(List.of("Sedol"), new ArrayList<>(SEDOL.toWords(null)));
+        assertEquals("sedol", SEDOL.toCamelCase());
+    }
+
+    @Test
     public void testCleanupForSeparatorAndCaseVariants()
     {
         final ColumnName TRADE_DATE = ColumnName.of("trade-date");

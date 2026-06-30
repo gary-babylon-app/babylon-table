@@ -269,6 +269,11 @@ public final class ColumnName implements Comparable<ColumnName>
         {
             words = new ArrayList<>();
         }
+        if (isUpperCaseAcronym(value))
+        {
+            words.add(value);
+            return words;
+        }
 
         StringBuilder result = new StringBuilder();
         boolean first = true;
@@ -343,7 +348,29 @@ public final class ColumnName implements Comparable<ColumnName>
      */
     public String toCamelCase()
     {
+        if (isUpperCaseAcronym(value))
+        {
+            return value.toLowerCase(Locale.ROOT);
+        }
         return value.substring(0, 1).toLowerCase(Locale.ROOT) + value.substring(1, value.length());
+    }
+
+    private static boolean isUpperCaseAcronym(String value)
+    {
+        boolean hasLetter = false;
+        for (int i = 0; i < value.length(); ++i)
+        {
+            char c = value.charAt(i);
+            if (Character.isLetter(c))
+            {
+                hasLetter = true;
+                if (!Character.isUpperCase(c))
+                {
+                    return false;
+                }
+            }
+        }
+        return hasLetter;
     }
 
     /**

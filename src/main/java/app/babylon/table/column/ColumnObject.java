@@ -38,6 +38,20 @@ import app.babylon.text.Sentence.ParseMode;
  */
 public interface ColumnObject<T> extends Column
 {
+    public static record KeyedObject<T>(ColumnName key, T value) implements Column.KeyedValue
+    {
+        public KeyedObject
+        {
+            key = ArgumentCheck.nonNull(key);
+        }
+
+        @Override
+        public boolean isSet()
+        {
+            return value != null;
+        }
+    }
+
     /**
      * Controls which physical representation should back an object column.
      */
@@ -271,6 +285,24 @@ public interface ColumnObject<T> extends Column
      */
     @Override
     public ColumnObject<T> selectRow(int i);
+
+    @Override
+    default public KeyedObject<T> getKeyedValue(int i)
+    {
+        return new KeyedObject<>(getName(), get(i));
+    }
+
+    @Override
+    default public KeyedObject<T> firstKeyed()
+    {
+        return getKeyedValue(0);
+    }
+
+    @Override
+    default public KeyedObject<T> lastKeyed()
+    {
+        return getKeyedValue(size() - 1);
+    }
 
     /**
      * Builder for nullable object columns.

@@ -13,6 +13,7 @@ package app.babylon.table.column;
 import java.util.Arrays;
 import java.util.function.DoublePredicate;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
@@ -26,6 +27,14 @@ import app.babylon.text.Strings;
  */
 public interface ColumnDouble extends Column
 {
+    public static record KeyedDouble(ColumnName key, double value, boolean isSet) implements Column.KeyedValue
+    {
+        public KeyedDouble
+        {
+            key = ArgumentCheck.nonNull(key);
+        }
+    }
+
     /**
      * Column type descriptor for primitive double columns.
      */
@@ -169,6 +178,24 @@ public interface ColumnDouble extends Column
 
     @Override
     public boolean isSet(int i);
+
+    @Override
+    default public KeyedDouble getKeyedValue(int i)
+    {
+        return new KeyedDouble(getName(), isSet(i) ? get(i) : 0.0d, isSet(i));
+    }
+
+    @Override
+    default public KeyedDouble firstKeyed()
+    {
+        return getKeyedValue(0);
+    }
+
+    @Override
+    default public KeyedDouble lastKeyed()
+    {
+        return getKeyedValue(size() - 1);
+    }
 
     /**
      * Copies the values into the provided array, allocating a new array when

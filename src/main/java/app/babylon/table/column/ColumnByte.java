@@ -10,9 +10,10 @@
 
 package app.babylon.table.column;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.type.TypeParser;
-import app.babylon.table.selection.Selection;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.table.selection.Selection;
 import app.babylon.text.ByteSequence;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
@@ -23,6 +24,14 @@ import app.babylon.text.Strings;
  */
 public interface ColumnByte extends Column
 {
+    public static record KeyedByte(ColumnName key, byte value, boolean isSet) implements Column.KeyedValue
+    {
+        public KeyedByte
+        {
+            key = ArgumentCheck.nonNull(key);
+        }
+    }
+
     /**
      * Column type descriptor for primitive byte columns.
      */
@@ -145,6 +154,24 @@ public interface ColumnByte extends Column
      * @return the byte value
      */
     public byte get(int i);
+
+    @Override
+    default public KeyedByte getKeyedValue(int i)
+    {
+        return new KeyedByte(getName(), isSet(i) ? get(i) : 0, isSet(i));
+    }
+
+    @Override
+    default public KeyedByte firstKeyed()
+    {
+        return getKeyedValue(0);
+    }
+
+    @Override
+    default public KeyedByte lastKeyed()
+    {
+        return getKeyedValue(size() - 1);
+    }
 
     /**
      * Copies the values into the provided array, allocating a new array when

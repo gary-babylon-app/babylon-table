@@ -12,6 +12,7 @@ package app.babylon.table.column;
 
 import java.util.function.IntPredicate;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
@@ -25,6 +26,14 @@ import app.babylon.text.Strings;
  */
 public interface ColumnInt extends Column
 {
+    public static record KeyedInt(ColumnName key, int value, boolean isSet) implements Column.KeyedValue
+    {
+        public KeyedInt
+        {
+            key = ArgumentCheck.nonNull(key);
+        }
+    }
+
     /**
      * Column type descriptor for primitive int columns.
      */
@@ -152,6 +161,24 @@ public interface ColumnInt extends Column
 
     @Override
     public boolean isSet(int i);
+
+    @Override
+    default public KeyedInt getKeyedValue(int i)
+    {
+        return new KeyedInt(getName(), isSet(i) ? get(i) : 0, isSet(i));
+    }
+
+    @Override
+    default public KeyedInt firstKeyed()
+    {
+        return getKeyedValue(0);
+    }
+
+    @Override
+    default public KeyedInt lastKeyed()
+    {
+        return getKeyedValue(size() - 1);
+    }
 
     /**
      * Copies the values into the provided array, allocating a new array when

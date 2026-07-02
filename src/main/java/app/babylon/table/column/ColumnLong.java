@@ -12,9 +12,10 @@ package app.babylon.table.column;
 
 import java.util.function.LongPredicate;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.type.TypeParser;
-import app.babylon.table.selection.Selection;
 import app.babylon.table.selection.RowPredicate;
+import app.babylon.table.selection.Selection;
 import app.babylon.text.ByteSequence;
 import app.babylon.text.Sentence.ParseMode;
 import app.babylon.text.Strings;
@@ -25,6 +26,14 @@ import app.babylon.text.Strings;
  */
 public interface ColumnLong extends Column
 {
+    public static record KeyedLong(ColumnName key, long value, boolean isSet) implements Column.KeyedValue
+    {
+        public KeyedLong
+        {
+            key = ArgumentCheck.nonNull(key);
+        }
+    }
+
     /**
      * Column type descriptor for primitive long columns.
      */
@@ -163,6 +172,24 @@ public interface ColumnLong extends Column
 
     @Override
     public boolean isSet(int i);
+
+    @Override
+    default public KeyedLong getKeyedValue(int i)
+    {
+        return new KeyedLong(getName(), isSet(i) ? get(i) : 0L, isSet(i));
+    }
+
+    @Override
+    default public KeyedLong firstKeyed()
+    {
+        return getKeyedValue(0);
+    }
+
+    @Override
+    default public KeyedLong lastKeyed()
+    {
+        return getKeyedValue(size() - 1);
+    }
 
     /**
      * Copies the values into the provided array, allocating a new array when

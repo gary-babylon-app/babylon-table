@@ -30,6 +30,13 @@ import app.babylon.text.Strings;
  */
 public interface Column
 {
+    public static interface KeyedValue
+    {
+        public ColumnName key();
+
+        public boolean isSet();
+    }
+
     public enum Operator
     {
         EQUAL("="), NOT_EQUAL("<>"), GREATER_THAN(">"), GREATER_THAN_OR_EQUAL(">="), LESS_THAN("<"), LESS_THAN_OR_EQUAL(
@@ -344,6 +351,18 @@ public interface Column
      * @return {@code true} when the row contains a value
      */
     public boolean isSet(int i);
+
+    public KeyedValue getKeyedValue(int i);
+
+    default public KeyedValue firstKeyed()
+    {
+        return getKeyedValue(0);
+    }
+
+    default public KeyedValue lastKeyed()
+    {
+        return getKeyedValue(size() - 1);
+    }
 
     /**
      * Indicates whether every row in the column contains a value.

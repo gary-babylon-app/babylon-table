@@ -13,6 +13,7 @@ package app.babylon.table.column;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
+import app.babylon.lang.ArgumentCheck;
 import app.babylon.table.column.type.TypeParser;
 import app.babylon.table.selection.RowPredicate;
 import app.babylon.table.selection.Selection;
@@ -25,6 +26,14 @@ import app.babylon.text.Sentence.ParseMode;
  */
 public interface ColumnBoolean extends Column
 {
+    public static record KeyedBoolean(ColumnName key, boolean value, boolean isSet) implements Column.KeyedValue
+    {
+        public KeyedBoolean
+        {
+            key = ArgumentCheck.nonNull(key);
+        }
+    }
+
     /**
      * Column type descriptor for primitive boolean columns.
      */
@@ -140,6 +149,24 @@ public interface ColumnBoolean extends Column
      * @return the boolean value
      */
     public boolean get(int i);
+
+    @Override
+    default public KeyedBoolean getKeyedValue(int i)
+    {
+        return new KeyedBoolean(getName(), isSet(i) ? get(i) : false, isSet(i));
+    }
+
+    @Override
+    default public KeyedBoolean firstKeyed()
+    {
+        return getKeyedValue(0);
+    }
+
+    @Override
+    default public KeyedBoolean lastKeyed()
+    {
+        return getKeyedValue(size() - 1);
+    }
 
     /**
      * Copies the values into the provided array, allocating a new array when

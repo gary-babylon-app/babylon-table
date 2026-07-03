@@ -39,6 +39,11 @@ public class DataResources
         return new DataResourceString(data, resourceName);
     }
 
+    public static DataResource fromBytes(byte[] bytes, String resourceName)
+    {
+        return new DataResourceBytes(bytes, resourceName);
+    }
+
     public static DataResource fromBase64(String fileBase64, String resourceName, MimeType mimeType)
     {
         return new DataResourceBase64(fileBase64, resourceName, mimeType);

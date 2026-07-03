@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +37,33 @@ public class DataResourcesTest
         assertEquals("values.csv", source.getName());
         assertEquals("alpha\nbeta\n", DataResources.getAsString(source));
         assertEquals("alpha\nbeta\n", DataResources.getSnippet(source));
+    }
+
+    @Test
+    public void fromBytesShouldExposeNameAndRepeatableContent() throws Exception
+    {
+        byte[] bytes = "alpha\nbeta\n".getBytes(StandardCharsets.UTF_8);
+        DataResource source = DataResources.fromBytes(bytes, "values.csv");
+
+        assertEquals("values.csv", source.getName());
+        assertEquals("alpha\nbeta\n", DataResources.getAsString(source));
+
+        try (InputStream first = source.openStream(); InputStream second = source.openStream())
+        {
+            assertEquals('a', first.read());
+            assertEquals('a', second.read());
+        }
+    }
+
+    @Test
+    public void fromBytesShouldDefensivelyCopyInputBytes()
+    {
+        byte[] bytes = "hello".getBytes(StandardCharsets.UTF_8);
+        DataResource source = DataResources.fromBytes(bytes, "hello.txt");
+
+        bytes[0] = 'j';
+
+        assertEquals("hello", DataResources.getAsString(source));
     }
 
     @Test

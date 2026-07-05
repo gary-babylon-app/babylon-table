@@ -486,6 +486,33 @@ public class StringsTest
     }
 
     @Test
+    public void stripShouldTrimRequestedCharactersFromEdgesOnly()
+    {
+        String plain = "abc";
+
+        assertNull(Strings.strip(null, ":"));
+        assertSame(plain, Strings.strip(plain, ":"));
+        assertEquals("abc", Strings.strip("::abc::", ":"));
+        assertEquals("a:b:c", Strings.strip("::a:b:c::", ":"));
+        assertEquals("abc", Strings.strip(".,abc:.", ".:,"));
+        assertEquals("", Strings.strip(":::,,,", ":,"));
+        assertEquals("::abc::", Strings.strip("::abc::", ""));
+        assertEquals("abc", Strings.strip("  abc  ", null));
+    }
+
+    @Test
+    public void stripShouldTrimRequestedCharactersFromSlices()
+    {
+        CharSequence s = "xx::abc::yy";
+
+        assertEquals("abc", Strings.strip(s, 2, 9, ":").toString());
+        assertEquals("a:b:c", Strings.strip("xx::a:b:c::yy", 2, 11, ":").toString());
+        assertEquals("", Strings.strip("xx::::yy", 2, 6, ":"));
+        assertEquals("::abc::", Strings.strip(s, 2, 9, "").toString());
+        assertEquals("abc", Strings.strip("xx  abc  yy", 2, 9, null).toString());
+    }
+
+    @Test
     public void stripStartAndStripEndShouldTrimRequestedSlice()
     {
         CharSequence s = "xx  abc  yy";
@@ -498,6 +525,23 @@ public class StringsTest
         assertEquals(6, Strings.stripEnd("xx\nabc\ryy", 2, 7));
         assertEquals(2, Strings.stripStart("xx\uFEFFabc yy", 2, 7));
         assertEquals(6, Strings.stripEnd("xx\uFEFFabc yy", 2, 7));
+    }
+
+    @Test
+    public void stripStartAndStripEndShouldTrimRequestedCharactersFromSlice()
+    {
+        CharSequence s = "xx::abc::yy";
+
+        assertEquals(4, Strings.stripStart(s, 2, 9, ":"));
+        assertEquals(7, Strings.stripEnd(s, 2, 9, ":"));
+        assertEquals(5, Strings.stripStart("xx.,:abc:,.yy", 2, 11, ".:,"));
+        assertEquals(8, Strings.stripEnd("xx.,:abc:,.yy", 2, 11, ".:,"));
+        assertEquals(2, Strings.stripStart(s, 2, 9, ""));
+        assertEquals(9, Strings.stripEnd(s, 2, 9, ""));
+        assertEquals(4, Strings.stripStart("xx  abc  yy", 2, 9, null));
+        assertEquals(7, Strings.stripEnd("xx  abc  yy", 2, 9, null));
+        assertEquals(0, Strings.stripStart(null, 0, 3, ":"));
+        assertEquals(0, Strings.stripEnd(null, 0, 3, ":"));
     }
 
     @Test

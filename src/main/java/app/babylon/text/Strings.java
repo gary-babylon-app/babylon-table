@@ -800,6 +800,50 @@ public final class Strings
     }
 
     /**
+     * Edge-strips characters from the whole source.
+     * <p>
+     * When {@code stripChars} is null, this uses normal Unicode whitespace rules
+     * and behaves like {@link #strip(CharSequence)}. When {@code stripChars} is
+     * empty, no characters are stripped.
+     */
+    public static CharSequence strip(CharSequence s, CharSequence stripChars)
+    {
+        return s == null ? null : strip(s, 0, s.length(), stripChars);
+    }
+
+    /**
+     * Edge-strips characters from a slice and returns the resulting slice as a
+     * {@link CharSequence}.
+     * <p>
+     * Slice-oriented parsing code should prefer
+     * {@link #stripStart(CharSequence, int, int, CharSequence)} and
+     * {@link #stripEnd(CharSequence, int, int, CharSequence)} when it only needs
+     * bounds and wants to avoid creating a subsequence view.
+     */
+    public static CharSequence strip(CharSequence s, int start, int end, CharSequence stripChars)
+    {
+        if (s == null)
+        {
+            return null;
+        }
+        if (start >= end)
+        {
+            return "";
+        }
+        int strippedStart = stripStart(s, start, end, stripChars);
+        int strippedEnd = stripEnd(s, strippedStart, end, stripChars);
+        if (strippedStart >= strippedEnd)
+        {
+            return "";
+        }
+        if (strippedStart == 0 && strippedEnd == s.length())
+        {
+            return s;
+        }
+        return s.subSequence(strippedStart, strippedEnd);
+    }
+
+    /**
      * Returns the inclusive start index of the trimmed slice after Unicode
      * whitespace stripping.
      * <p>
@@ -839,6 +883,45 @@ public final class Strings
     }
 
     /**
+     * Returns the inclusive start index of the stripped slice after removing any
+     * leading character present in {@code stripChars}.
+     * <p>
+     * When {@code stripChars} is null, normal Unicode whitespace is stripped. When
+     * {@code stripChars} is empty, {@code start} is returned unchanged.
+     */
+    public static int stripStart(CharSequence s, int start, int end, CharSequence stripChars)
+    {
+        if (stripChars == null)
+        {
+            return stripStart(s, start, end);
+        }
+        if (s == null || start >= end || stripChars.length() == 0)
+        {
+            return start;
+        }
+        int strippedStart = start;
+        while (strippedStart < end)
+        {
+            char c = s.charAt(strippedStart);
+            boolean strip = false;
+            for (int i = 0; i < stripChars.length(); ++i)
+            {
+                if (stripChars.charAt(i) == c)
+                {
+                    strip = true;
+                    break;
+                }
+            }
+            if (!strip)
+            {
+                break;
+            }
+            ++strippedStart;
+        }
+        return strippedStart;
+    }
+
+    /**
      * Returns the exclusive end index of the trimmed slice after Unicode whitespace
      * stripping.
      * <p>
@@ -861,6 +944,49 @@ public final class Strings
         int strippedEnd = end;
         while (strippedEnd > start && Character.isWhitespace(s.charAt(strippedEnd - 1)))
         {
+            --strippedEnd;
+        }
+        return strippedEnd;
+    }
+
+    /**
+     * Returns the exclusive end index of the stripped slice after removing any
+     * trailing character present in {@code stripChars}.
+     * <p>
+     * When {@code stripChars} is null, normal Unicode whitespace is stripped. When
+     * {@code stripChars} is empty, {@code end} is returned unchanged.
+     */
+    public static int stripEnd(CharSequence s, int start, int end, CharSequence stripChars)
+    {
+        if (stripChars == null)
+        {
+            return stripEnd(s, start, end);
+        }
+        if (s == null || start >= end)
+        {
+            return start;
+        }
+        if (stripChars.length() == 0)
+        {
+            return end;
+        }
+        int strippedEnd = end;
+        while (strippedEnd > start)
+        {
+            char c = s.charAt(strippedEnd - 1);
+            boolean strip = false;
+            for (int i = 0; i < stripChars.length(); ++i)
+            {
+                if (stripChars.charAt(i) == c)
+                {
+                    strip = true;
+                    break;
+                }
+            }
+            if (!strip)
+            {
+                break;
+            }
             --strippedEnd;
         }
         return strippedEnd;

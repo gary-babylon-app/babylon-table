@@ -29,6 +29,17 @@ jobs:
         env:
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
+      - name: Cache Eclipse formatter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.p2
+            ~/.eclipse
+            ~/.cache/spotless
+          key: ${{ runner.os }}-eclipse-spotless-${{ hashFiles('pom.xml', 'eclipse-formatter.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-eclipse-spotless-
+
       - name: Build and verify signatures
         env:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}

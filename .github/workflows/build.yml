@@ -25,6 +25,17 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - name: Cache Eclipse formatter dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.p2
+            ~/.eclipse
+            ~/.cache/spotless
+          key: ${{ runner.os }}-eclipse-spotless-${{ hashFiles('pom.xml', 'eclipse-formatter.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-eclipse-spotless-
+
       - name: Build, run tests, and generate JaCoCo report
         run: mvn -B clean test jacoco:report
 

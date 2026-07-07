@@ -32,32 +32,10 @@ public interface TablePlan
      * Use this lower-level entry point when the caller already owns the live source
      * resource and wants to control its lifetime explicitly.
      * <p>
-     * CSV example:
-     *
-     * <pre>{@code
-     * DataResource streamSource = ...;
-     * TablePlanRead plan = new TablePlanRead();
-     *
-     * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(';').build();
-     * try (InputStream inputStream = streamSource.openStream();
-     *         RowCursor rowCursor = RowCursors.create(options, inputStream))
-     * {
-     *     TableColumnar table = plan.execute(rowCursor);
-     * }
-     * }</pre>
-     *
-     * JDBC example:
-     *
-     * <pre>{@code
-     * PreparedStatement preparedStatement = ...;
-     * TablePlanRead plan = new TablePlanRead();
-     *
-     * try (ResultSet resultSet = preparedStatement.executeQuery();
-     *         RowCursor rowCursor = new RowCursorResultSet(resultSet))
-     * {
-     *     TableColumnar table = plan.execute(rowCursor);
-     * }
-     * }</pre>
+     * For CSV, open the input stream, create a {@code RowCursor}, then pass that
+     * cursor to this method inside the caller's resource scope. For JDBC, execute
+     * the prepared statement, wrap the live {@code ResultSet} in a row cursor, and
+     * pass it to this method before closing the JDBC resources.
      *
      * @param rowCursor
      *            open row supplier to consume
@@ -71,26 +49,8 @@ public interface TablePlan
      * This is the simplest high-level entry point when the source should handle
      * opening and closing its own row supplier internally.
      * <p>
-     * CSV example:
-     *
-     * <pre>{@code
-     * DataResource streamSource = ...;
-     * TablePlanRead plan = new TablePlanRead();
-     *
-     * ReadOptionsCsv options = ReadOptionsCsv.builder().withSeparator(';').build();
-     * TableColumnar table = plan.execute(RowSources.create(options, streamSource));
-     * }</pre>
-     *
-     * JDBC example:
-     *
-     * <pre>{@code
-     * PreparedStatement preparedStatement = ...;
-     * TablePlanRead plan = new TablePlanRead();
-     *
-     * TableColumnar table = plan.execute(RowSourceResultSet.builder()
-     *         .withPreparedStatement(preparedStatement)
-     *         .build());
-     * }</pre>
+     * For CSV or JDBC, build an appropriate {@code RowSource} and pass it to this
+     * method. The row source owns the open/close lifecycle for each execution.
      *
      * @param rowSource
      *            configured source that opens rows for this execution

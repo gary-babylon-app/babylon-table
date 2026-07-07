@@ -397,11 +397,7 @@ public final class Strings
      * {@code withStripping(true)} and {@code withRemoveEmpty(true)}.
      * <p>
      * This is convenient for one-off calls. For repeated use with the same
-     * delimiter, prefer a reusable immutable {@link Splitter}:
-     * 
-     * <pre>{@code
-     * private static final Strings.Splitter PIPE = Strings.splitter().withSplitter('|');
-     * }</pre>
+     * delimiter, prefer a reusable immutable {@link Splitter}.
      */
     public static String[] split(CharSequence s, char splitter)
     {
@@ -496,11 +492,7 @@ public final class Strings
      * and replacement characters.
      * <p>
      * Because splitter configurations are immutable, configured instances can be
-     * stored as constants for repeated use:
-     * 
-     * <pre>{@code
-     * private static final Strings.Splitter PIPE = Strings.splitter().withSplitter('|');
-     * }</pre>
+     * stored as constants for repeated use.
      */
     public static Splitter splitter()
     {
@@ -511,13 +503,7 @@ public final class Strings
      * Configurable string splitter.
      * <p>
      * Splitters are immutable. Fluent configuration methods return a new splitter,
-     * so configured instances can be safely reused as constants, for example:
-     * 
-     * <pre>{@code
-     * static final Strings.Splitter PIPE_SPLITTER = Strings.splitter().withSplitter('|');
-     * static final Strings.Splitter DATE_SPLITTER = Strings.splitter().withSplitters('-', '/');
-     * String[] fields = PIPE_SPLITTER.withRemoveEmpty(false).split(source);
-     * }</pre>
+     * so configured instances can be safely reused as constants.
      */
     public static final class Splitter
     {
@@ -853,16 +839,8 @@ public final class Strings
      * whether a slice changed and only materialize a subsequence if the downstream
      * parser requires one.
      * <p>
-     * Typical usage:
-     * 
-     * <pre>{@code
-     * int strippedStart = Strings.stripStart(s, start, end);
-     * int strippedEnd = Strings.stripEnd(s, start, end);
-     * if (strippedStart < strippedEnd)
-     * {
-     *     CharSequence candidate = s.subSequence(strippedStart, strippedEnd);
-     * }
-     * }</pre>
+     * Typical usage is to compute stripped start and end bounds, check whether the
+     * resulting slice is non-empty, then materialize a subsequence only if needed.
      * <p>
      * This is generally preferable to a hypothetical
      * {@code strip(CharSequence, int, int)} helper for low-level parsing, because

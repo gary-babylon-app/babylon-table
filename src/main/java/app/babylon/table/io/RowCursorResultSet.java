@@ -37,27 +37,10 @@ import app.babylon.text.Strings;
  * is a no-op; the caller remains responsible for the lifecycle of the
  * underlying JDBC resources.
  * <p>
- * Example:
- *
- * <pre>{@code
- * Connection connection = ...;
- * try (PreparedStatement statement = connection
- *         .prepareStatement("select city, amount from trades where trade_date >= ?"))
- * {
- *     statement.setDate(1, java.sql.Date.valueOf("2026-01-01"));
- *     try (ResultSet resultSet = statement.executeQuery())
- *     {
- *         RowCursor supplier = new RowCursorResultSet(resultSet);
- *
- *         ColumnDefinition[] columns = supplier.columns();
- *         while (supplier.next())
- *         {
- *             RowValues row = supplier.current();
- *         }
- *     }
- * }
- * }</pre>
- *
+ * Create it around a live {@code ResultSet}, call {@link #columns()} once if
+ * column metadata is needed, then advance with {@link #next()} and read each
+ * row through {@link #current()}.
+ * <p>
  * This implementation is a demonstration of what is possible and the likely
  * structure given the ResultSet API. Different drivers may still have quirks
  * that require special implementations.
